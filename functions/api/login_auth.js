@@ -41,7 +41,7 @@ export async function onRequestPost({ request, env }) {
 
         // Genera Token
         const payload = { 
-            userId: user.id, 
+            zwid: user.zwift_power_id || user.id, // Usa zwift_power_id registrato
             username: user.username, 
             role: user.role,
             exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS

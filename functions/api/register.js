@@ -12,19 +12,19 @@ export async function onRequestPost(context) {
     }
 
     try {
-        const { username, email, password } = await request.json();
+        const { username, email, password, zwid } = await request.json();
 
-        if (!username || !email || !password || password.length < 8) {
-            return new Response(JSON.stringify({ message: 'Dati mancanti o password troppo corta (min 8 car).' }), { 
+        if (!username || !email || !password || !zwid || password.length < 8) {
+            return new Response(JSON.stringify({ message: 'Dati mancanti (Username, Email, Password, Zwift ID) o password troppo corta.' }), { 
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // 1. Controllo duplicati
-        const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+        // 1. Controllo duplicati (Email o ZWID)
+        const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ? OR zwift_power_id = ?").bind(email, zwid).first();
         if (existing) {
-            return new Response(JSON.stringify({ message: 'Email già in uso.' }), { 
+            return new Response(JSON.stringify({ message: 'Email o Zwift ID già registrati.' }), { 
                 status: 409,
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -33,14 +33,15 @@ export async function onRequestPost(context) {
         // 2. Hashing
         const hashedPassword = await bcrypt.hash(password, 10); 
 
-        // 3. Inserimento
-        const result = await env.DB.prepare(
-            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)"
-        ).bind(username, email, hashedPassword, 'athlete').run();
+        // 3. Inserimento in USERS e ATHLETES (Transazione via batch)
+        await env.DB.batch([
+            env.DB.prepare("INSERT INTO users (username, email, password_hash, role, zwift_power_id) VALUES (?, ?, ?, ?, ?)").bind(username, email, hashedPassword, 'athlete', zwid),
+            env.DB.prepare("INSERT INTO athletes (zwid, name, email, role) VALUES (?, ?, ?, ?)").bind(zwid, username, email, 'athlete')
+        ]);
 
         return new Response(JSON.stringify({ 
             message: 'Registrazione completata! Ora puoi effettuare il login.',
-            userId: result.meta.lastRowId
+            zwid: zwid
         }), { 
             status: 201,
             headers: { 'Content-Type': 'application/json' } 

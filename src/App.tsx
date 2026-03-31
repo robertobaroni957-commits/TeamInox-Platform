@@ -14,6 +14,7 @@ import Availability from './pages/Availability';
 import RosterBuilder from './pages/RosterBuilder';
 import UserManagement from './pages/admin/UserManagement';
 import EventManagement from './pages/admin/EventManagement';
+import AvailabilityManagement from './pages/admin/AvailabilityManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
@@ -29,9 +30,7 @@ const App: React.FC = () => {
         <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
         {/* Main Platform (Nested in Layout) */}
-        {/* The MainLayout itself is protected, meaning a user must be logged in to see it */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-          {/* Publicly accessible within layout (if logged in) */}
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
@@ -57,8 +56,13 @@ const App: React.FC = () => {
               <EventManagement />
             </ProtectedRoute>
           } />
+          <Route path="admin/availability" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AvailabilityManagement />
+            </ProtectedRoute>
+          } />
 
-          {/* Fallback route for any unmatched paths within the layout */}
+          {/* Fallback route */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

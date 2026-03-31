@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, Shield, Loader2, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, Shield, Loader2, ArrowRight, Activity } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -79,6 +79,23 @@ const Register: React.FC = () => {
                 className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 focus:border-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
               />
             </div>
+          </div>
+
+          {/* ZWIFT ID */}
+          <div>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Zwift ID (ZWID)</label>
+            <div className="relative">
+              <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+              <input
+                type="text"
+                value={zwid}
+                onChange={(e) => setZwid(e.target.value)}
+                required
+                placeholder="Es: 1234567"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-cyan/50 focus:border-inox-cyan/50 transition-all placeholder:text-zinc-800 font-medium"
+              />
+            </div>
+            <p className="text-[8px] text-zinc-600 font-bold uppercase mt-2 ml-1 italic tracking-wider">Lo trovi nel tuo profilo ZwiftPower o nell'URL del tuo profilo Zwift.</p>
           </div>
 
           {/* EMAIL */}

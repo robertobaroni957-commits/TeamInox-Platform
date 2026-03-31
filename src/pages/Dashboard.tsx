@@ -13,22 +13,56 @@ const Dashboard: React.FC = () => {
   const [activeSeries, setActiveSeries] = useState<Series | null>(null);
   const [allSeries, setAllSeries] = useState<Series[]>([]);
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [hasAvailability, setHasAvailability] = useState<boolean>(true);
 
   useEffect(() => {
     const token = localStorage.getItem('inox_token');
+    let userRole = '';
+    
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({ username: payload.username, role: payload.role });
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUser({ username: payload.username, role: payload.role });
+        userRole = payload.role;
+      } catch (e) {
+        console.error('Invalid token format');
+        localStorage.removeItem('inox_token');
+        return;
+      }
     }
 
     const loadData = async () => {
       try {
+        // Carichiamo le serie (comune a tutti)
         const seriesData = await api.getSeries();
         setAllSeries(seriesData);
-        // Cerchiamo ZRL come serie attiva
         setActiveSeries(seriesData.find(s => s.is_active && s.name.toUpperCase().includes('ZRL')) || seriesData.find(s => s.is_active) || null);
+
+        // Se l'utente è ADMIN, saltiamo il controllo disponibilità e usciamo
+        if (userRole === 'admin') {
+          setHasAvailability(true);
+          return;
+        }
+
+        // Carichiamo la disponibilità solo per i Rider (Athlete/Captain)
+        try {
+          const availabilityData = await api.getUserAvailability();
+          if (availabilityData && !availabilityData.error) {
+            const hasPrefs = (availabilityData.preferences || []).length > 0;
+            const hasRounds = (availabilityData.rounds || []).some((r: any) => r.status === 'available' || r.status === 'unavailable');
+            setHasAvailability(hasPrefs || hasRounds);
+          } else {
+            setHasAvailability(false);
+          }
+        } catch (apiErr) {
+          console.error('Availability API Error:', apiErr);
+          setHasAvailability(false);
+        }
+
       } catch (err) {
-        console.error(err);
+        console.error('Dashboard Data Error:', err);
+        // In caso di errore critico, se admin non blocchiamo la dashboard
+        setHasAvailability(userRole === 'admin');
       }
     };
     loadData();
@@ -61,6 +95,26 @@ const Dashboard: React.FC = () => {
           {user?.role} Level Access
         </div>
       </header>
+
+      {/* MISSING AVAILABILITY ALERT */}
+      {!hasAvailability && user?.role !== 'admin' && (
+        <div className="p-8 rounded-[2rem] bg-gradient-to-r from-inox-orange to-red-600 shadow-[0_0_50px_rgba(252,103,25,0.3)] animate-pulse relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-20">
+            <Zap size={120} className="text-white rotate-12" />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
+            <div>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">ATTENZIONE RIDER!</h2>
+              <p className="font-bold italic text-sm opacity-90 max-w-xl">
+                Il tuo profilo disponibilità per la ZRL Spring 2026 è vuoto. Senza i tuoi dati, l'IA non potrà assegnarti a nessuna squadra. Compila il form ora!
+              </p>
+            </div>
+            <a href="/availability" className="px-10 py-4 bg-black text-white font-black italic rounded-2xl hover:scale-105 transition-all uppercase text-xs tracking-[0.2em] shadow-2xl whitespace-nowrap">
+              COMPILA DISPONIBILITÀ ORA
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* STRATEGIC HUB - ZRL & MWT (PRIORITY) */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">

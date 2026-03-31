@@ -139,6 +139,7 @@ const Sidebar: React.FC = () => {
             <>
               <SectionTitle>Command Center</SectionTitle>
               <NavItem to="/admin/users" icon={Users} label="Gestione Utenti" special="admin" />
+              <NavItem to="/admin/availability" icon={Calendar} label="Disponibilità ZRL" special="admin" />
               <NavItem to="/admin/events" icon={Calendar} label="Gestione Eventi" special="admin" />
               <NavItem to="/admin/teams" icon={Shield} label="Config Squadre" special="admin" />
             </>

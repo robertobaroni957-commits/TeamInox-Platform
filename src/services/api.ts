@@ -19,34 +19,55 @@ const getHeaders = () => {
   };
 };
 
+const handleResponse = async (res: Response) => {
+  const contentType = res.headers.get("content-type");
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('inox_token');
+      // Non facciamo redirect forzato qui per evitare loop nel mezzo di un render
+    }
+    const errorData = (contentType && contentType.includes("application/json")) 
+      ? await res.json() 
+      : { message: `Errore Server: ${res.status}` };
+    throw new Error(errorData.message || errorData.error || 'Errore sconosciuto');
+  }
+  
+  if (!contentType || !contentType.includes("application/json")) {
+    console.error("Ricevuta risposta non-JSON:", await res.text());
+    throw new Error("Il server ha risposto con un formato non valido (HTML). Controlla le API.");
+  }
+  
+  return res.json();
+};
+
 export const api = {
   getSeries: async (): Promise<Series[]> => {
     const res = await fetch(`${API_BASE}/series`, { headers: getHeaders() });
-    const data = await res.json();
+    const data = await handleResponse(res);
     return data.series || data;
   },
 
   getRounds: async (seriesId?: number): Promise<Round[]> => {
     const url = seriesId ? `${API_BASE}/rounds?series_id=${seriesId}` : `${API_BASE}/rounds`;
     const res = await fetch(url, { headers: getHeaders() });
-    const data = await res.json();
+    const data = await handleResponse(res);
     return data.rounds || data;
   },
 
   getTeams: async (): Promise<Team[]> => {
     const res = await fetch(`${API_BASE}/teams`, { headers: getHeaders() });
-    const data = await res.json();
+    const data = await handleResponse(res);
     return data.teams || data;
   },
 
   getLineup: async (roundId: number): Promise<LineupEntry[]> => {
     const res = await fetch(`${API_BASE}/lineup?round_id=${roundId}`, { headers: getHeaders() });
-    return res.json();
+    return handleResponse(res);
   },
 
   getAvailableAthletes: async (roundId: number): Promise<Athlete[]> => {
     const res = await fetch(`${API_BASE}/availability?round_id=${roundId}`, { headers: getHeaders() });
-    const data = await res.json();
+    const data = await handleResponse(res);
     return data.rounds ? data.rounds.filter((r:any) => r.status === 'available').map((r:any) => ({
       zwid: r.zwid,
       name: r.athlete_name || 'Rider',
@@ -56,7 +77,7 @@ export const api = {
 
   getResults: async (roundId: number): Promise<RaceResult[]> => {
     const res = await fetch(`${API_BASE}/results?round_id=${roundId}`, { headers: getHeaders() });
-    const data = await res.json();
+    const data = await handleResponse(res);
     return data.results || data;
   },
 
@@ -66,7 +87,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(entry),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
   removeFromLineup: async (round_id: number, team_id: number, athlete_id: number): Promise<any> => {
@@ -75,51 +96,63 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify({ round_id, team_id, athlete_id }),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
   getUserAvailability: async (): Promise<AvailabilityData> => {
     const res = await fetch(`${API_BASE}/availability`, { headers: getHeaders() });
-    return res.json();
+    return handleResponse(res);
+  },
+
+  getAllAvailabilities: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/availability?all=true`, { headers: getHeaders() });
+    return handleResponse(res);
   },
 
   updateTimePreferences: async (preferences: { slotId: string, level: number }[]): Promise<any> => {
-    const res = await fetch(`${API_BASE}/availability/preferences`, {
+    const res = await fetch(`${API_BASE}/availability`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ preferences }),
+      body: JSON.stringify({ type: 'preferences', payload: preferences }),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
   updateRaceAvailability: async (roundId: number, status: string): Promise<any> => {
-    const res = await fetch(`${API_BASE}/availability/race`, {
+    const res = await fetch(`${API_BASE}/availability`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ roundId, status }),
+      body: JSON.stringify({ type: 'race', payload: { roundId, status } }),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
-  // Admin Methods
   listUsers: async (): Promise<any[]> => {
     const res = await fetch(`${API_BASE}/admin/list_users`, { headers: getHeaders() });
-    return res.json();
+    return handleResponse(res);
   },
 
-  updateUserRole: async (userId: number, newRole: string): Promise<any> => {
+  updateUserRole: async (userId: number, role: string): Promise<any> => {
     const res = await fetch(`${API_BASE}/admin/update_role`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ userId, newRole }),
+      body: JSON.stringify({ userId, role }),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
-  // Event Methods
+  deleteUser: async (userId: number): Promise<any> => {
+    const res = await fetch(`${API_BASE}/admin/delete_user`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ userId }),
+    });
+    return handleResponse(res);
+  },
+
   getEvents: async (): Promise<InoxEvent[]> => {
     const res = await fetch(`${API_BASE}/events`, { headers: getHeaders() });
-    return res.json();
+    return handleResponse(res);
   },
 
   createEvent: async (event: Omit<InoxEvent, 'id'>): Promise<any> => {
@@ -128,7 +161,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(event),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
   updateEvent: async (event: InoxEvent): Promise<any> => {
@@ -137,7 +170,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(event),
     });
-    return res.json();
+    return handleResponse(res);
   },
 
   deleteEvent: async (id: number): Promise<any> => {
@@ -145,6 +178,6 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    return res.json();
+    return handleResponse(res);
   }
 };

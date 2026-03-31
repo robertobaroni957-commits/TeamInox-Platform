@@ -4,14 +4,10 @@ export async function onRequest(context) {
 
     // Helper per estrarre ZWID dal token (assumendo middleware JWT attivo)
     // Se non c'è JWT, si può restituire un errore o usare un valore di default per il test
-    const getZwid = (req) => {
-        // context.data.user dovrebbe essere popolato da un middleware che valida il JWT
-        const user = context.data?.user; 
-        return user ? user.zwid : null;
-    };
+    const user = context.data?.user;
+    const zwid = user?.zwid;
+    const role = user?.role;
 
-    const zwid = getZwid(request);
-    // Per testing locale senza JWT, si può rimuovere questo check o impostare un zwid fisso
     if (!zwid) {
         return new Response(JSON.stringify({ error: "Unauthorized: Missing or invalid JWT" }), { status: 401 });
     }
@@ -19,16 +15,42 @@ export async function onRequest(context) {
     // GET: Recupera orari, preferenze e disponibilità
     if (method === "GET") {
         try {
+            const url = new URL(request.url);
+            const isAdminRequest = url.searchParams.get('all') === 'true';
+
+            // Se è un admin che richiede tutto
+            if (isAdminRequest && role === 'admin') {
+                const [allPrefsRes, allAvailRes, athletesRes] = await env.DB.batch([
+                    env.DB.prepare(`
+                        SELECT p.*, a.name 
+                        FROM user_time_preferences p
+                        JOIN athletes a ON p.zwid = a.zwid
+                    `).all(),
+                    env.DB.prepare(`
+                        SELECT v.*, a.name 
+                        FROM availability v
+                        JOIN athletes a ON v.athlete_id = a.zwid
+                    `).all(),
+                    env.DB.prepare("SELECT zwid, name, team, base_category FROM athletes").all()
+                ]);
+
+                return new Response(JSON.stringify({
+                    allPreferences: allPrefsRes.results,
+                    allAvailabilities: allAvailRes.results,
+                    athletes: athletesRes.results
+                }), { headers: { "Content-Type": "application/json" } });
+            }
+
+            // Richiesta standard per il singolo utente
             const [timeSlotsRes, preferencesRes, roundsRes] = await env.DB.batch([
                 env.DB.prepare("SELECT * FROM league_times ORDER BY slot_order").all(),
                 env.DB.prepare("SELECT * FROM user_time_preferences WHERE zwid = ?").bind(zwid).all(),
-                // Selezioniamo solo i round della stagione corrente (es. ID 19 per ZRL)
                 env.DB.prepare(`
                     SELECT 
-                        r.id, r.name, r.date, r.world, r.route, r.category,
+                        r.id, r.name, r.date, r.world, r.route,
                         (SELECT status FROM availability WHERE athlete_id = ? AND round_id = r.id) as status
                     FROM rounds r 
-                    WHERE r.series_id = (SELECT id FROM series WHERE external_season_id = 19 LIMIT 1) -- ZRL Season 19
+                    WHERE r.series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
                     ORDER BY r.date ASC
                 `).bind(zwid).all()
             ]);

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { Save, CheckCircle, AlertCircle, Zap, Calendar, Clock, ChevronRight } from 'lucide-react';
 import type { TimeSlot, Round } from '../services/types';
 
 const PREF_LEVELS = [
-  { id: 0, label: 'NO', color: 'border-red-900 text-red-500 bg-red-950/20', active: 'bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]' },
-  { id: 1, label: 'OK', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-zinc-700 text-white border-zinc-500 shadow-lg' },
-  { id: 2, label: 'FAV', color: 'border-inox-orange/30 text-inox-orange bg-inox-orange/5', active: 'bg-inox-orange text-black border-orange-400 shadow-[0_0_20px_rgba(252,103,25,0.5)]' }
+  { id: 0, label: 'MAI', desc: 'Impossibile', color: 'border-red-900 text-red-500 bg-red-950/20', active: 'bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]' },
+  { id: 1, label: 'OK', desc: 'Disponibile', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-zinc-700 text-white border-zinc-500 shadow-lg' },
+  { id: 2, label: 'FAV', desc: 'Preferito', color: 'border-inox-orange/30 text-inox-orange bg-inox-orange/5', active: 'bg-inox-orange text-black border-orange-400 shadow-[0_0_20px_rgba(252,103,25,0.5)]' }
 ];
 
 const Availability: React.FC = () => {
@@ -15,7 +17,9 @@ const Availability: React.FC = () => {
   const [presences, setPresences] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -23,19 +27,39 @@ const Availability: React.FC = () => {
     try {
       const data = await api.getUserAvailability();
       
-      setTimeSlots(data.timeSlots || []);
-      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const slots = data.timeSlots || [];
+      const roundList = data.rounds || [];
+
+      setTimeSlots(slots);
+      setRaces(roundList);
+
+      // Inizializziamo le preferenze in modo sicuro
       const prefs: Record<string, number> = {};
-      (data.preferences || []).forEach(p => prefs[p.time_slot_id] = p.preference_level);
+      slots.forEach(slot => {
+        const existing = data.preferences?.find(p => p.time_slot_id === slot.id);
+        prefs[slot.id] = existing ? existing.preference_level : 1;
+      });
       setUserPrefs(prefs);
 
+      // Inizializziamo le presenze in modo sicuro
       const currentPresences: Record<number, string> = {};
-      (data.rounds || []).forEach(r => currentPresences[r.id] = r.status || 'unavailable');
+      roundList.forEach(r => {
+        currentPresences[r.id] = r.status || 'unavailable';
+      });
       setPresences(currentPresences);
-      setRaces(data.rounds || []);
+
     } catch (e: any) {
       console.error('Error loading data:', e);
-      setError(e.message || 'Failed to load availability data');
+      if (e.message?.includes('401') || e.message?.includes('Unauthorized')) {
+        localStorage.removeItem('inox_token');
+        navigate('/login');
+      } else {
+        setError(e.message || 'Errore nel caricamento del questionario.');
+      }
     } finally {
       setLoading(false);
     }
@@ -45,30 +69,25 @@ const Availability: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const updatePref = async (slotId: string, level: number) => {
+  const handleSaveAll = async () => {
     setSaving(true);
     setError(null);
     try {
-      await api.updateTimePreferences([{ slotId, level }]);
-      setUserPrefs(prev => ({ ...prev, [slotId]: level }));
-    } catch (e: any) {
-      setError(e.message || 'Failed to update preferences');
-    } finally {
-      setSaving(false);
-    }
-  };
+      // 1. Salviamo le preferenze orarie
+      const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
+      await api.updateTimePreferences(prefsPayload);
 
-  const togglePresence = async (raceId: number, currentStatus: string) => {
-    setSaving(true);
-    setError(null);
-    const newStatus = currentStatus === 'available' ? 'unavailable' : 'available';
-    setPresences(prev => ({ ...prev, [raceId]: newStatus }));
+      // 2. Salviamo le presenze per ogni round (in sequenza o batch se supportato)
+      // Per semplicità usiamo un loop, ma l'API potrebbe essere ottimizzata per un batch
+      const presencePromises = Object.entries(presences).map(([roundId, status]) => 
+        api.updateRaceAvailability(parseInt(roundId), status)
+      );
+      await Promise.all(presencePromises);
 
-    try {
-      await api.updateRaceAvailability(raceId, newStatus);
+      setSuccess(true);
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (e: any) {
-      setError(e.message || 'Failed to update race availability');
-      setPresences(prev => ({ ...prev, [raceId]: currentStatus })); // Rollback
+      setError('Errore durante il salvataggio dei dati.');
     } finally {
       setSaving(false);
     }
@@ -77,51 +96,55 @@ const Availability: React.FC = () => {
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-inox-orange font-black italic text-xl animate-pulse uppercase tracking-[0.2em]">
-        Synchronizing Bio-Data...
+        Inizializzazione Questionario...
       </div>
     </div>
   );
 
   return (
-    <div className="p-6">
-      <header className="mb-12 flex flex-col md:flex-row justify-between items-end border-b border-zinc-800 pb-6">
-        <div>
-          <span className="text-inox-orange font-black text-xs tracking-[0.3em] uppercase italic">Rider Profile</span>
-          <h1 className="text-6xl font-black italic tracking-tighter leading-none mt-2 text-white">
-            AVAILABILITY <span className="text-zinc-600">CENTER</span>
-          </h1>
-        </div>
-        {saving && <span className="text-inox-cyan font-black italic text-xs animate-pulse mb-2 tracking-widest uppercase">Saving changes...</span>}
+    <div className="p-6 max-w-6xl mx-auto pb-24">
+      <header className="mb-12 border-b border-zinc-800 pb-8">
+        <span className="text-inox-orange font-black text-xs tracking-[0.4em] uppercase italic">Stagione ZRL 2026</span>
+        <h1 className="text-6xl font-black italic tracking-tighter leading-none mt-2 text-white uppercase">
+          Questionario <span className="text-zinc-600">Disponibilità</span>
+        </h1>
+        <p className="text-zinc-500 mt-4 font-medium italic max-w-2xl text-lg">
+          Inserisci i tuoi orari preferiti e conferma la tua presenza fisica. I capitani useranno questi dati per formare le squadre.
+        </p>
       </header>
 
-      {error && (
-        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold italic text-center">
-          {error}
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        
+        {/* PARTE 1: LEAGUE PREFERENCES */}
+        <section className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-inox-orange text-black flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(252,103,25,0.3)]">1</div>
+            <div>
+              <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">Preferenze Orarie</h2>
+              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">In quali leghe puoi correre?</p>
+            </div>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        {/* 1. Global Time Preferences */}
-        <section>
-          <h2 className="text-2xl font-black italic mb-8 flex items-center gap-3 uppercase text-white">
-            <span className="w-8 h-8 rounded bg-inox-orange text-black flex items-center justify-center not-italic">1</span>
-            Preferenze Orarie Globali
-          </h2>
-          <p className="text-zinc-500 text-sm mb-8 font-medium italic">Definisci in quali slot orari preferisci correre solitamente.</p>
-          
-          <div className="space-y-4">
+          <div className="grid gap-3">
             {timeSlots.map(slot => (
-              <div key={slot.id} className="bg-zinc-900/50 p-5 rounded-2xl border border-zinc-800 flex items-center justify-between group hover:border-zinc-700 transition-all">
-                <div className="font-bold text-white uppercase tracking-tight">{slot.display_name}</div>
-                <div className="flex gap-2">
+              <div key={slot.id} className="bg-zinc-900/40 p-5 rounded-[2rem] border border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-zinc-700 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500">
+                    <Clock size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-inox-orange tracking-widest uppercase opacity-70">{slot.id.replace('ZRL_', '')} LEAGUE</span>
+                    <h3 className="font-bold text-white uppercase tracking-tight text-lg leading-none">{slot.display_name}</h3>
+                  </div>
+                </div>
+                <div className="flex gap-1.5 self-end md:self-center">
                   {PREF_LEVELS.map(lvl => {
-                    const isActive = (userPrefs[slot.id] ?? 1) === lvl.id;
+                    const isActive = userPrefs[slot.id] === lvl.id;
                     return (
                       <button
                         key={lvl.id}
-                        disabled={saving}
-                        onClick={() => updatePref(slot.id, lvl.id)}
-                        className={`w-12 h-10 rounded-lg border font-black text-[10px] transition-all transform active:scale-95 ${isActive ? lvl.active : lvl.color}`}
+                        onClick={() => setUserPrefs(prev => ({ ...prev, [slot.id]: lvl.id }))}
+                        className={`px-4 py-2.5 rounded-xl border font-black text-[10px] transition-all transform active:scale-90 ${isActive ? lvl.active : lvl.color + ' hover:border-zinc-600'}`}
                       >
                         {lvl.label}
                       </button>
@@ -133,37 +156,47 @@ const Availability: React.FC = () => {
           </div>
         </section>
 
-        {/* 2. Race Availability */}
-        <section>
-          <h2 className="text-2xl font-black italic mb-8 flex items-center gap-3 uppercase text-white">
-            <span className="w-8 h-8 rounded bg-inox-cyan text-black flex items-center justify-center not-italic">2</span>
-            Calendario Gare
-          </h2>
-          <p className="text-zinc-500 text-sm mb-8 font-medium italic">Conferma la tua presenza fisica per le singole date.</p>
+        {/* PARTE 2: ROUND PRESENCE */}
+        <section className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-inox-cyan text-black flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">2</div>
+            <div>
+              <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">Presenza Round</h2>
+              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Conferma le singole settimane</p>
+            </div>
+          </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {races.map(race => {
-              const currentStatus = presences[race.id] || 'unavailable';
-              const isPresent = currentStatus === 'available';
-              const raceDate = race.date ? new Date(race.date) : null;
+              const isPresent = presences[race.id] === 'available';
+              const raceDate = new Date(race.date);
               
               return (
                 <button
                   key={race.id}
-                  disabled={saving}
-                  onClick={() => togglePresence(race.id, currentStatus)}
-                  className={`p-6 rounded-2xl border text-left transition-all relative overflow-hidden group ${isPresent ? 'border-inox-cyan/50 bg-inox-cyan/5 shadow-[0_0_30px_rgba(30,242,242,0.1)]' : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'}`}
+                  onClick={() => setPresences(prev => ({ ...prev, [race.id]: isPresent ? 'unavailable' : 'available' }))}
+                  className={`p-5 rounded-[2rem] border text-left transition-all relative overflow-hidden group ${isPresent ? 'border-inox-cyan/50 bg-inox-cyan/10' : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'}`}
                 >
                   <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-[10px] font-black text-inox-cyan tracking-widest uppercase">
-                        {raceDate ? raceDate.toLocaleDateString('it-IT', { weekday: 'short', month: 'short', day: 'numeric' }) : 'DATA TBD'}
-                      </span>
-                      <h3 className="text-xl font-black italic text-white uppercase mt-1">{race.name}</h3>
-                      <p className="text-zinc-500 text-xs font-bold uppercase mt-1">{race.route}</p>
+                    <div className="flex items-center gap-5">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all shadow-lg ${isPresent ? 'border-inox-cyan text-inox-cyan bg-black' : 'border-zinc-800 text-zinc-700 bg-zinc-900'}`}>
+                        <div className="text-center">
+                          <div className="text-[10px] font-black uppercase leading-none">{raceDate.toLocaleDateString('it-IT', { month: 'short' })}</div>
+                          <div className="text-xl font-black italic leading-none">{raceDate.getDate()}</div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-zinc-500 tracking-[0.2em] uppercase">{raceDate.toLocaleDateString('it-IT', { weekday: 'long' })}</span>
+                        <h3 className="text-xl font-black italic text-white uppercase leading-none mt-1">{race.name}</h3>
+                        <div className="flex gap-2 items-center mt-1">
+                          <span className="text-inox-cyan text-[9px] font-bold uppercase tracking-widest">{race.world}</span>
+                          <span className="text-zinc-700 text-[9px] font-black">•</span>
+                          <span className="text-zinc-500 text-[9px] font-bold uppercase truncate max-w-[150px]">{race.route}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all transform group-hover:scale-110 ${isPresent ? 'border-inox-cyan text-inox-cyan shadow-[0_0_15px_rgba(30,242,242,0.3)]' : 'border-zinc-700 text-zinc-700'}`}>
-                      <span className="font-black italic text-sm">{isPresent ? 'YES' : 'NO'}</span>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isPresent ? 'border-inox-cyan bg-inox-cyan text-black' : 'border-zinc-800 text-zinc-700'}`}>
+                      <Zap size={18} className={isPresent ? 'fill-current' : ''} />
                     </div>
                   </div>
                 </button>
@@ -171,6 +204,34 @@ const Availability: React.FC = () => {
             })}
           </div>
         </section>
+      </div>
+
+      {/* FOOTER DI SALVATAGGIO FISSO */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-black/80 backdrop-blur-xl border-t border-zinc-900 z-50 flex justify-center">
+        <div className="max-w-6xl w-full flex items-center justify-between gap-8">
+          <div className="hidden md:block">
+            <p className="text-zinc-500 text-xs font-bold uppercase italic">Controlla bene i dati prima di inviare.</p>
+            <p className="text-white text-[10px] font-black uppercase tracking-widest mt-1">Stato: {Object.values(presences).filter(v => v === 'available').length} round confermati</p>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            {error && <span className="text-red-500 font-bold italic text-xs animate-bounce flex items-center gap-2"><AlertCircle size={16}/> {error}</span>}
+            {success && <span className="text-emerald-500 font-bold italic text-xs flex items-center gap-2"><CheckCircle size={16}/> Salvataggio completato! Reindirizzamento...</span>}
+            
+            <button
+              onClick={handleSaveAll}
+              disabled={saving || success}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-2xl font-black italic transition-all uppercase text-sm tracking-widest shadow-2xl active:scale-95 ${saving ? 'bg-zinc-800 text-zinc-500 cursor-wait' : 'bg-inox-orange text-black hover:bg-orange-500 hover:scale-105'}`}
+            >
+              {saving ? 'Invio in corso...' : (
+                <>
+                  <Save size={20} />
+                  Salva e Invia Disponibilità
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

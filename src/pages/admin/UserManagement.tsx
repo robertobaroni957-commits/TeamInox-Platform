@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-// Import UserData type directly from ./types
 import type { UserData } from '../../services/types'; 
-import { Users, Shield, User, Loader2 } from 'lucide-react'; // Removed unused: Save
+import { Users, Shield, User, Loader2, Trash2, Mail, Calendar } from 'lucide-react';
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
@@ -12,15 +11,34 @@ const UserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const data: UserData[] = await api.listUsers(); // Specify type for data
+      const response = await fetch('/api/admin/list_users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('inox_token');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(`Errore Server: ${response.status}`);
+      }
+
+      const data = await response.json();
       if (Array.isArray(data)) {
         setUsers(data);
       } else {
-        setError('Formato dati non valido');
+        console.error('Data is not an array:', data);
+        setUsers([]);
+        setError('Formato dati non valido ricevuto dal server.');
       }
-    } catch (err: any) { // Type the error
-      setError(err.message || 'Errore nel caricamento utenti');
+    } catch (err: any) {
+      console.error('Fetch Users Error:', err);
+      setError('Impossibile caricare la lista utenti. Verifica la connessione.');
     } finally {
       setLoading(false);
     }
@@ -34,11 +52,25 @@ const UserManagement: React.FC = () => {
     setUpdating(userId);
     try {
       await api.updateUserRole(userId, newRole);
-      setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, role: newRole } : u)); // Type 'prev' and 'u'
-    } catch (err: any) { // Type the error
+      setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, role: newRole } : u));
+    } catch (err: any) {
       alert('Errore aggiornamento ruolo: ' + err.message);
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number, username: string) => {
+    if (window.confirm(`Sei sicuro di voler eliminare definitivamente l'utente ${username}? Questa azione non è reversibile.`)) {
+      setUpdating(userId);
+      try {
+        await api.deleteUser(userId);
+        setUsers(prev => prev.filter((u: UserData) => u.id !== userId));
+      } catch (err: any) {
+        alert('Errore eliminazione utente: ' + err.message);
+      } finally {
+        setUpdating(null);
+      }
     }
   };
 
@@ -50,8 +82,8 @@ const UserManagement: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <header className="flex justify-between items-end border-b border-zinc-800 pb-6">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-6 gap-4">
         <div>
           <span className="text-red-500 font-black text-xs tracking-[0.3em] uppercase italic">System Administration</span>
           <h1 className="text-6xl font-black italic tracking-tighter leading-none mt-2 text-white uppercase">
@@ -82,7 +114,7 @@ const UserManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {users.map((user: UserData) => ( // Type 'user' here
+              {users.map((user: UserData) => (
                 <tr key={user.id} className="hover:bg-zinc-800/20 transition-all group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -90,13 +122,18 @@ const UserManagement: React.FC = () => {
                         <User size={24} />
                       </div>
                       <div>
-                        <div className="text-white font-black uppercase tracking-tight text-lg">{user.username}</div>
-                        <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">ID: #{user.id} • Created: {new Date(user.created_at).toLocaleDateString()}</div>
+                        <div className="text-white font-black uppercase tracking-tight text-lg leading-none">{user.username}</div>
+                        <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 italic opacity-70">
+                           {user.zwift_power_id ? `ZWID: ${user.zwift_power_id}` : 'NO ZWID'} • ID: #{user.id}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="text-zinc-400 font-medium">{user.email}</span>
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <Mail size={14} className="opacity-40" />
+                      <span className="font-medium text-sm">{user.email}</span>
+                    </div>
                   </td>
                   <td className="px-8 py-6">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
@@ -108,23 +145,27 @@ const UserManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end items-center gap-4">
                       <select
                         value={user.role}
                         disabled={updating === user.id}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-xs font-black uppercase text-zinc-400 focus:border-inox-orange outline-none transition-all disabled:opacity-50"
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-400 focus:border-inox-orange outline-none transition-all disabled:opacity-50"
                       >
                         <option value="athlete">Athlete</option>
                         <option value="captain">Captain</option>
                         <option value="admin">Admin</option>
                         <option value="moderator">Moderator</option>
                       </select>
-                      {updating === user.id && (
-                        <div className="flex items-center px-2">
-                          <Loader2 className="animate-spin text-inox-orange" size={16} />
-                        </div>
-                      )}
+                      
+                      <button
+                        onClick={() => handleDeleteUser(user.id, user.username)}
+                        disabled={updating === user.id}
+                        className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-600 hover:text-red-500 hover:border-red-500/50 transition-all disabled:opacity-20"
+                        title="Elimina Utente"
+                      >
+                        {updating === user.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                      </button>
                     </div>
                   </td>
                 </tr>
