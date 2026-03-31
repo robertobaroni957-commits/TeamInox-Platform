@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Gestione Round WTRL{% endblock %}
+
+{% block page_title %}📋 Round e Stagioni WTRL{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 760px;">
+  <h4 class="mb-4">📋 Round e Stagioni WTRL</h4>
+
+  <!-- 🔹 Sezione: Round già registrati -->
+  <fieldset class="border rounded p-3">
+    <legend class="float-none w-auto px-2">📋 Round registrati</legend>
+    {% if existing_rounds %}
+    <table class="table table-bordered table-sm text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Stagione</th>
+          <th>Nome</th>
+          <th>Inizio</th>
+          <th>Fine</th>
+          <th>Attivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in existing_rounds %}
+        <tr>
+          <td>{{ r.round_number }}</td>
+          <td>{{ r.season_label }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.start_date }}</td>
+          <td>{{ r.end_date }}</td>
+          <td>{% if r.is_active %}✅{% else %}❌{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Nessun round registrato.</p>
+    {% endif %}
+  </fieldset>
+</div>
+{% endblock %}
