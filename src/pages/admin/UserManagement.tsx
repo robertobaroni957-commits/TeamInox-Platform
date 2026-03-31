@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 // Import UserData type directly from ./types
-import type { UserData } from '../services/types'; 
+import type { UserData } from '../../services/types'; 
 import { Users, Shield, User, Loader2 } from 'lucide-react'; // Removed unused: Save
 
 const UserManagement: React.FC = () => {
@@ -143,4 +143,3 @@ const UserManagement: React.FC = () => {
 };
 
 export default UserManagement;
-nagement;

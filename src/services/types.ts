@@ -74,3 +74,16 @@ export interface InoxEvent {
   category?: string;
   is_active?: boolean;
 }
+
+export interface UserData {
+  id: number;
+  zwid: number;
+  name: string;
+  username?: string;
+  email?: string;
+  role: 'admin' | 'captain' | 'athlete' | string;
+  team?: string;
+  base_category?: string;
+  avatar_url?: string;
+  created_at: string;
+}
