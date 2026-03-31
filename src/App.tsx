@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
@@ -30,7 +29,9 @@ const App: React.FC = () => {
         <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
         {/* Main Platform (Nested in Layout) */}
+        {/* The MainLayout itself is protected, meaning a user must be logged in to see it */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+          {/* Publicly accessible within layout (if logged in) */}
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
@@ -38,7 +39,7 @@ const App: React.FC = () => {
           <Route path="teams" element={<Teams />} />
           <Route path="availability" element={<Availability />} />
           
-          {/* Routes protette per ruolo */}
+          {/* Routes protected by role */}
           <Route path="roster" element={
             <ProtectedRoute allowedRoles={['captain', 'admin']}>
               <RosterBuilder />
@@ -57,6 +58,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } />
 
+          {/* Fallback route for any unmatched paths within the layout */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import type { UserData } from '../services/types'; // Keep as type import if only used for type checking
-import { Users, Shield, User, Loader2 } from 'lucide-react';
+// Import UserData type directly from ./types
+import type { UserData } from '../services/types'; 
+import { Users, Shield, User, Loader2 } from 'lucide-react'; // Removed unused: Save
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
@@ -12,13 +13,13 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data: UserData[] = await api.listUsers(); // Type the data
+      const data: UserData[] = await api.listUsers(); // Specify type for data
       if (Array.isArray(data)) {
         setUsers(data);
       } else {
         setError('Formato dati non valido');
       }
-    } catch (err: any) { // Explicitly type error for clarity
+    } catch (err: any) { // Type the error
       setError(err.message || 'Errore nel caricamento utenti');
     } finally {
       setLoading(false);
@@ -34,7 +35,7 @@ const UserManagement: React.FC = () => {
     try {
       await api.updateUserRole(userId, newRole);
       setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, role: newRole } : u)); // Type 'prev' and 'u'
-    } catch (err: any) { // Explicitly type error
+    } catch (err: any) { // Type the error
       alert('Errore aggiornamento ruolo: ' + err.message);
     } finally {
       setUpdating(null);
@@ -81,7 +82,7 @@ const UserManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {users.map((user) => (
+              {users.map((user: UserData) => ( // Type 'user' here
                 <tr key={user.id} className="hover:bg-zinc-800/20 transition-all group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -142,3 +143,4 @@ const UserManagement: React.FC = () => {
 };
 
 export default UserManagement;
+nagement;
