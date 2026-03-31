@@ -91,10 +91,7 @@ const Sidebar: React.FC = () => {
         {/* Logo */}
         <div className="p-8 border-b border-zinc-900 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" className="h-8" alt="" />
-            <span className="text-2xl font-black italic tracking-tighter text-white uppercase">
-              INOX<span className="text-inox-orange">PLATFORM</span>
-            </span>
+            <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" className="h-8" alt="Inoxteam Logo" />
           </div>
         </div>
 
