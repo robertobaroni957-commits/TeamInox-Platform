@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-I';
 import Sidebar from '../components/Sidebar';
 import { Shield } from 'lucide-react';
 
@@ -11,9 +11,9 @@ const MainLayout: React.FC = () => {
     if (path === '/racing') return 'Gare Live';
     if (path === '/teams') return 'Roster Squadre';
     if (path === '/login') return 'Rider Access';
+    if (path === '/register') return 'Registrazione Nuovo Rider'; // Added for registration page
     if (path === '/availability') return 'Mia Disponibilità';
     if (path === '/roster') return 'Command Center';
-    if (path === '/events') return 'Calendario Eventi';
     if (path === '/admin/users') return 'Gestione Utenti';
     if (path === '/admin/events') return 'Gestione Eventi';
     if (path === '/ranking') return 'Classifiche';
