@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import type { InoxEvent } from '../../services/types';
-import { 
-  Calendar, 
-  Clock, 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Save, 
-  X, 
-  ExternalLink,
-  Loader2,
-  AlertCircle
-} from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 
 const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const CATEGORIES = ['Race', 'Recon', 'Social', 'Phenotypes Cup', 'MWT', 'Trilogy'];

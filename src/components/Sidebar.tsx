@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LogOut, Home, Users, Calendar, Trophy, Zap, Shield, User, Mail, LayoutDashboard } from 'lucide-react';
+import { LogOut, Calendar, Trophy, Zap, Shield, Mail, LayoutDashboard } from 'lucide-react';
 
 interface UserData {
   role: 'athlete' | 'captain' | 'admin' | 'moderator';

@@ -1,11 +1,12 @@
-import type { 
+import { 
   Round, 
   Team, 
   Athlete, 
   AvailabilityData, 
   LineupEntry, 
   RaceResult, 
-  Series 
+  Series,
+  InoxEvent
 } from './types';
 
 const API_BASE = '/api';
@@ -146,4 +147,6 @@ export const api = {
     });
     return res.json();
   }
+};
+
 };

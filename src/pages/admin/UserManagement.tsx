@@ -1,14 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Users, Shield, User, Loader2, Save } from 'lucide-react';
-
-interface UserData {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-  created_at: string;
-}
+import type { UserData } from '../../types';
+import { Users, Shield, User, Loader2 } from 'lucide-react';
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import type { InoxEvent } from '../services/types';
-import { Calendar, Clock, ExternalLink, Tag, Loader2, MapPin } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Loader2 } from 'lucide-react';
 
 const DAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 
