@@ -1,5 +1,6 @@
-import { api } from '../../services/api';
-import type { UserData } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
+import type { UserData } from '../services/types'; // Keep as type import if only used for type checking
 import { Users, Shield, User, Loader2 } from 'lucide-react';
 
 const UserManagement: React.FC = () => {
@@ -11,13 +12,13 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data = await api.listUsers();
+      const data: UserData[] = await api.listUsers(); // Type the data
       if (Array.isArray(data)) {
         setUsers(data);
       } else {
         setError('Formato dati non valido');
       }
-    } catch (err: any) {
+    } catch (err: any) { // Explicitly type error for clarity
       setError(err.message || 'Errore nel caricamento utenti');
     } finally {
       setLoading(false);
@@ -32,8 +33,8 @@ const UserManagement: React.FC = () => {
     setUpdating(userId);
     try {
       await api.updateUserRole(userId, newRole);
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-    } catch (err: any) {
+      setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, role: newRole } : u)); // Type 'prev' and 'u'
+    } catch (err: any) { // Explicitly type error
       alert('Errore aggiornamento ruolo: ' + err.message);
     } finally {
       setUpdating(null);
