@@ -30,9 +30,17 @@ export async function onRequestGET({ request, env }) {
   }
 }
 
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPOST(context) {
+  const { request, env, data } = context;
+  const user = data?.user;
+
+  if (!user || (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain')) {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin, Moderator, or Captain access required" }), { status: 403 });
+  }
+
   try {
     const { round_id, team_id, athlete_id, role, status } = await request.json();
+    // TODO: Se Captain, verificare che team_id appartenga a lui
     await env.DB.prepare(`
       INSERT INTO race_lineup (round_id, team_id, athlete_id, role, status)
       VALUES (?, ?, ?, ?, ?)
@@ -47,9 +55,17 @@ export async function onRequestPOST({ request, env }) {
   }
 }
 
-export async function onRequestDELETE({ request, env }) {
+export async function onRequestDELETE(context) {
+  const { request, env, data } = context;
+  const user = data?.user;
+
+  if (!user || (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain')) {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin, Moderator, or Captain access required" }), { status: 403 });
+  }
+
   try {
     const { round_id, team_id, athlete_id } = await request.json();
+    // TODO: Se Captain, verificare che team_id appartenga a lui
     await env.DB.prepare(`
       DELETE FROM race_lineup 
       WHERE round_id = ? AND team_id = ? AND athlete_id = ?

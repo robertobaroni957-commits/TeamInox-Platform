@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -11,10 +11,8 @@ const Login: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Controlla se arriviamo dalla registrazione con un messaggio di successo
     if (location.state && (location.state as any).message) {
       setSuccess((location.state as any).message);
-      // Pulisci lo stato per non mostrarlo di nuovo al refresh
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -29,7 +27,7 @@ const Login: React.FC = () => {
       const response = await fetch('/api/login_auth', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await response.json();
@@ -67,16 +65,16 @@ const Login: React.FC = () => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
-              Email o Zwift ID
+            <label htmlFor="identifier" className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Zwift ID o Email
             </label>
             <input
               type="text"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="identifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
-              placeholder="atleta@inoxteam.it"
+              placeholder="es: 3252657"
               className="w-full px-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
             />
           </div>

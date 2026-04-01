@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('inox_token');
-    let userRole = '';
+    let userRole = 'guest';
     
     if (token) {
       try {
@@ -27,8 +27,10 @@ const Dashboard: React.FC = () => {
       } catch (e) {
         console.error('Invalid token format');
         localStorage.removeItem('inox_token');
-        return;
+        setUser({ username: 'GUEST RIDER', role: 'guest' });
       }
+    } else {
+        setUser({ username: 'GUEST RIDER', role: 'guest' });
     }
 
     const loadData = async () => {
@@ -38,13 +40,13 @@ const Dashboard: React.FC = () => {
         setAllSeries(seriesData);
         setActiveSeries(seriesData.find(s => s.is_active && s.name.toUpperCase().includes('ZRL')) || seriesData.find(s => s.is_active) || null);
 
-        // Se l'utente è ADMIN, saltiamo il controllo disponibilità e usciamo
-        if (userRole === 'admin') {
+        // Se l'utente è ADMIN o MODERATOR o GUEST, saltiamo il controllo disponibilità e usciamo
+        if (userRole === 'admin' || userRole === 'moderator' || userRole === 'guest') {
           setHasAvailability(true);
           return;
         }
 
-        // Carichiamo la disponibilità solo per i Rider (Athlete/Captain)
+        // Carichiamo la disponibilità solo per i Rider (User/Captain)
         try {
           const availabilityData = await api.getUserAvailability();
           if (availabilityData && !availabilityData.error) {
@@ -61,8 +63,8 @@ const Dashboard: React.FC = () => {
 
       } catch (err) {
         console.error('Dashboard Data Error:', err);
-        // In caso di errore critico, se admin non blocchiamo la dashboard
-        setHasAvailability(userRole === 'admin');
+        // In caso di errore critico, se admin/mod/guest non blocchiamo la dashboard
+        setHasAvailability(userRole === 'admin' || userRole === 'moderator' || userRole === 'guest');
       }
     };
     loadData();
@@ -82,22 +84,52 @@ const Dashboard: React.FC = () => {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase">
-            BENTORNATO, <span className="text-inox-orange">{user?.username || 'Rider'}</span>
+            {user?.role === 'guest' ? 'BENVENUTO RIDER' : `BENTORNATO, ${user?.username}`}
           </h1>
-          <p className="text-zinc-500 font-medium italic text-sm mt-1">Status Operativo: Ottimale. Controllo dei sistemi in corso...</p>
+          <p className="text-zinc-500 font-medium italic text-sm mt-1">
+            {user?.role === 'guest' ? 'Scopri il mondo INOXTEAM. La nostra filosofia, le nostre gare.' : 'Status Operativo: Ottimale. Controllo dei sistemi in corso...'}
+          </p>
         </div>
         <div className={`px-4 py-2 rounded-xl border font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 ${
           user?.role === 'admin' ? 'border-red-500 text-red-500 bg-red-500/10' :
+          user?.role === 'moderator' ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' :
           user?.role === 'captain' ? 'border-inox-orange text-inox-orange bg-inox-orange/10' :
+          user?.role === 'guest' ? 'border-zinc-500 text-zinc-500 bg-zinc-500/10' :
           'border-inox-cyan text-inox-cyan bg-inox-cyan/10'
         }`}>
           <Shield size={14} />
-          {user?.role} Level Access
+          {user?.role === 'guest' ? 'Guest Access' : `${user?.role} Level Access`}
         </div>
       </header>
 
-      {/* MISSING AVAILABILITY ALERT */}
-      {!hasAvailability && user?.role !== 'admin' && (
+      {/* GUEST WELCOME HUB */}
+      {user?.role === 'guest' && (
+        <div className="p-10 rounded-[3rem] bg-gradient-to-r from-inox-cyan/20 to-inox-orange/20 border border-zinc-800 shadow-[0_0_50px_rgba(0,240,255,0.1)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Activity size={150} className="text-white -rotate-12" />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+            <div className="max-w-2xl">
+              <h2 className="text-5xl font-black italic uppercase tracking-tighter text-white mb-4">ENTRA NELLA <span className="text-inox-orange">SQUADRA</span></h2>
+              <p className="text-zinc-300 font-medium italic text-lg leading-relaxed">
+                INOXTEAM non è solo un club, è una community di atleti che puntano all'eccellenza. 
+                Dalla ZRL ai Master Winter Tour, corriamo insieme per vincere.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 w-full md:w-auto">
+              <a href="/register" className="px-12 py-5 bg-inox-orange text-black font-black italic rounded-2xl hover:scale-105 transition-all uppercase text-sm tracking-[0.2em] shadow-2xl text-center">
+                RICHIEDI ISCRIZIONE
+              </a>
+              <a href="/login" className="px-12 py-5 bg-white/5 border border-white/10 text-white font-black italic rounded-2xl hover:bg-white/10 transition-all uppercase text-sm tracking-[0.2em] text-center">
+                ACCESSIBILE AI SOCI
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MISSING AVAILABILITY ALERT (HIDDEN FOR GUESTS) */}
+      {!hasAvailability && user?.role !== 'admin' && user?.role !== 'guest' && (
         <div className="p-8 rounded-[2rem] bg-gradient-to-r from-inox-orange to-red-600 shadow-[0_0_50px_rgba(252,103,25,0.3)] animate-pulse relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-20">
             <Zap size={120} className="text-white rotate-12" />
@@ -119,7 +151,7 @@ const Dashboard: React.FC = () => {
       {/* STRATEGIC HUB - ZRL & MWT (PRIORITY) */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* ZRL CARD - ALWAYS PROMINENT */}
+        {/* ZRL CARD */}
         <div className="p-10 rounded-[3rem] bg-gradient-to-br from-zinc-900 to-black border-2 border-zinc-800 hover:border-inox-orange/40 transition-all group relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
             <Flag size={200} className="rotate-12" />
@@ -128,7 +160,7 @@ const Dashboard: React.FC = () => {
           <div className="relative z-10 h-full flex flex-col">
             <div className="flex justify-between items-start mb-12">
               <div className="px-4 py-1.5 rounded-full bg-inox-orange/10 border border-inox-orange/30 text-inox-orange text-[10px] font-black uppercase tracking-widest">
-                Strategic Priority: Active
+                {user?.role === 'guest' ? 'Public Info' : 'Strategic Priority: Active'}
               </div>
               <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-inox-orange">
                 <Layout size={24} />
@@ -144,9 +176,15 @@ const Dashboard: React.FC = () => {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <a href="/roster" className="px-8 py-4 bg-white text-black font-black italic rounded-2xl hover:bg-inox-orange transition-all uppercase text-xs tracking-widest shadow-xl active:scale-95">
-                  Gestione Roster
-                </a>
+                {user?.role !== 'guest' ? (
+                   <a href="/roster" className="px-8 py-4 bg-white text-black font-black italic rounded-2xl hover:bg-inox-orange transition-all uppercase text-xs tracking-widest shadow-xl active:scale-95">
+                     Gestione Roster
+                   </a>
+                ) : (
+                   <a href="/events" className="px-8 py-4 bg-white text-black font-black italic rounded-2xl hover:bg-inox-orange transition-all uppercase text-xs tracking-widest shadow-xl active:scale-95">
+                     Calendario Gare
+                   </a>
+                )}
                 <a href="/racing" className="px-8 py-4 bg-zinc-800 text-zinc-300 font-black italic rounded-2xl hover:bg-zinc-700 transition-all uppercase text-xs tracking-widest border border-zinc-700">
                   Classifiche Live
                 </a>
@@ -155,7 +193,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* MWT CARD - FINISHED BUT IMPORTANT */}
+        {/* MWT CARD */}
         <div className="p-10 rounded-[3rem] bg-gradient-to-br from-zinc-900/50 to-black border-2 border-zinc-800 hover:border-inox-cyan/40 transition-all group relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
             <Trophy size={200} className="-rotate-12" />
@@ -193,22 +231,24 @@ const Dashboard: React.FC = () => {
 
       </section>
 
-      {/* Global Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.label} className="p-6 rounded-3xl bg-[#1a1d20] border border-zinc-800 shadow-xl hover:border-zinc-700 transition-all group cursor-pointer overflow-hidden relative">
-            <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`} />
-            <div className="flex justify-between items-start mb-6">
-              <div className={`p-3.5 rounded-2xl bg-zinc-800/80 group-hover:scale-110 transition-transform ${stat.color} border border-zinc-700/50`}>
-                <stat.icon size={22} />
-              </div>
-              <ArrowUpRight size={16} className="text-zinc-600 opacity-0 group-hover:opacity-100 transition-all" />
+      {/* Global Stats (HIDDEN FOR GUESTS) */}
+      {user?.role !== 'guest' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat) => (
+            <div key={stat.label} className="p-6 rounded-3xl bg-[#1a1d20] border border-zinc-800 shadow-xl hover:border-zinc-700 transition-all group cursor-pointer overflow-hidden relative">
+                <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className="flex justify-between items-start mb-6">
+                <div className={`p-3.5 rounded-2xl bg-zinc-800/80 group-hover:scale-110 transition-transform ${stat.color} border border-zinc-700/50`}>
+                    <stat.icon size={22} />
+                </div>
+                <ArrowUpRight size={16} className="text-zinc-600 opacity-0 group-hover:opacity-100 transition-all" />
+                </div>
+                <div className="text-4xl font-black text-white mb-1 tracking-tighter">{stat.value}</div>
+                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stat.label}</div>
             </div>
-            <div className="text-4xl font-black text-white mb-1 tracking-tighter">{stat.value}</div>
-            <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stat.label}</div>
-          </div>
-        ))}
-      </div>
+            ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -244,7 +284,21 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {user?.role === 'athlete' && (
+          {user?.role === 'moderator' && (
+            <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-950/40 to-zinc-900 border border-emerald-900/30 shadow-2xl relative overflow-hidden group">
+              <div className="relative z-10">
+                <h3 className="text-2xl font-black text-white italic uppercase mb-2">Staff Operations</h3>
+                <p className="text-zinc-400 text-sm mb-6 max-w-md">Gestione eventi e monitoraggio disponibilità. Assicurati che tutti i dati siano aggiornati.</p>
+                <div className="flex gap-4">
+                  <a href="/admin/events" className="px-6 py-3 bg-emerald-600 text-white font-black rounded-xl hover:bg-emerald-500 transition-all uppercase text-[10px] tracking-widest shadow-lg">Gestisci Eventi</a>
+                  <a href="/admin/availability" className="px-6 py-3 bg-zinc-800 text-zinc-300 font-black rounded-xl hover:bg-zinc-700 transition-all uppercase text-[10px] tracking-widest border border-zinc-700">Check Disponibilità</a>
+                </div>
+              </div>
+              <Activity size={120} className="absolute -right-8 -bottom-8 text-emerald-500/10 rotate-12 group-hover:scale-110 transition-transform duration-700" />
+            </div>
+          )}
+
+          {user?.role === 'user' && (
             <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-cyan-950/40 to-zinc-900 border border-inox-cyan/30 shadow-2xl relative overflow-hidden group">
               <div className="relative z-10">
                 <h3 className="text-2xl font-black text-white italic uppercase mb-2">Pronto per correre?</h3>
@@ -258,30 +312,46 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-8 rounded-[2rem] bg-zinc-900 border border-zinc-800 flex flex-col justify-between">
-              <div>
-                <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Prossimo Round ZRL</h4>
-                <p className="text-lg font-bold text-white italic">Week 4 - Makuri Islands</p>
+          {user?.role === 'guest' && (
+            <div className="p-8 rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800 shadow-2xl relative overflow-hidden group">
+              <div className="relative z-10">
+                <h3 className="text-2xl font-black text-white italic uppercase mb-2">Inox Philosophy</h3>
+                <p className="text-zinc-400 text-sm mb-6 max-w-md">Scopri i nostri valori, la nostra storia e come lavoriamo per far crescere ogni atleta del team.</p>
+                <div className="flex gap-4">
+                  <a href="/about" className="px-6 py-3 bg-zinc-100 text-black font-black rounded-xl hover:bg-white transition-all uppercase text-[10px] tracking-widest shadow-lg">Scopri di più</a>
+                  <a href="/register" className="px-6 py-3 bg-inox-orange text-black font-black rounded-xl hover:bg-orange-500 transition-all uppercase text-[10px] tracking-widest shadow-lg">Unisciti a noi</a>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-inox-orange mt-4">
-                <Calendar size={16} />
-                <span className="text-xs font-black uppercase tracking-tight">Martedì 7 Aprile, 20:00 CET</span>
-              </div>
+              <Star size={120} className="absolute -right-8 -bottom-8 text-white/5 rotate-12 group-hover:scale-110 transition-transform duration-700" />
             </div>
-            
-            <div className="p-8 rounded-[2rem] bg-zinc-900 border border-zinc-800 flex flex-col justify-between">
-              <div>
-                <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Weekly Events</h4>
-                <p className="text-lg font-bold text-white italic">Discovery Recon</p>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-400 mt-4">
-                <Calendar size={16} />
-                <span className="text-xs font-black uppercase tracking-tight">Lunedì, 18:50 CET</span>
-              </div>
+          )}
+
+          {/* Quick Info Grid (HIDDEN FOR GUESTS) */}
+          {user?.role !== 'guest' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-8 rounded-[2rem] bg-zinc-900 border border-zinc-800 flex flex-col justify-between">
+                <div>
+                    <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Prossimo Round ZRL</h4>
+                    <p className="text-lg font-bold text-white italic">Week 4 - Makuri Islands</p>
+                </div>
+                <div className="flex items-center gap-2 text-inox-orange mt-4">
+                    <Calendar size={16} />
+                    <span className="text-xs font-black uppercase tracking-tight">Martedì 7 Aprile, 20:00 CET</span>
+                </div>
+                </div>
+                
+                <div className="p-8 rounded-[2rem] bg-zinc-900 border border-zinc-800 flex flex-col justify-between">
+                <div>
+                    <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Weekly Events</h4>
+                    <p className="text-lg font-bold text-white italic">Discovery Recon</p>
+                </div>
+                <div className="flex items-center gap-2 text-zinc-400 mt-4">
+                    <Calendar size={16} />
+                    <span className="text-xs font-black uppercase tracking-tight">Lunedì, 18:50 CET</span>
+                </div>
+                </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* SIDEBAR COLUMN */}
@@ -300,13 +370,16 @@ const Dashboard: React.FC = () => {
                   <ArrowUpRight size={14} className="text-zinc-700 group-hover:text-inox-orange transition-all" />
                 </div>
               ))}
-              <div className="p-4 rounded-2xl bg-zinc-900 border border-inox-cyan/20 flex items-center justify-between border-dashed">
-                <div>
-                  <h3 className="text-sm font-bold text-inox-cyan italic uppercase">MWT 2025/26</h3>
-                  <p className="text-zinc-500 text-[9px] font-black uppercase tracking-widest">Season Recap Available</p>
+              
+              {user?.role !== 'guest' && (
+                <div className="p-4 rounded-2xl bg-zinc-900 border border-inox-cyan/20 flex items-center justify-between border-dashed">
+                    <div>
+                    <h3 className="text-sm font-bold text-inox-cyan italic uppercase">MWT 2025/26</h3>
+                    <p className="text-zinc-500 text-[9px] font-black uppercase tracking-widest">Season Recap Available</p>
+                    </div>
+                    <Trophy size={14} className="text-inox-cyan" />
                 </div>
-                <Trophy size={14} className="text-inox-cyan" />
-              </div>
+              )}
             </div>
           </div>
 

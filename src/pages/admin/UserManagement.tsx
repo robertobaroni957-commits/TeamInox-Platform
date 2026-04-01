@@ -48,6 +48,44 @@ const UserManagement: React.FC = () => {
     fetchUsers();
   }, []);
 
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const token = localStorage.getItem('inox_token');
+      
+      const response = await fetch('/api/admin/import-csv', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: text
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Errore durante l\'importazione');
+
+      alert(`Importazione completata!\nAtleti: ${result.athletesCount}\nSquadre: ${result.teamsCount}\nPreferenze: ${result.preferencesCount}`);
+      
+      // Ricarica la lista utenti dopo l'import
+      const updatedUsers = await api.listUsers();
+      setUsers(updatedUsers);
+
+    } catch (err: any) {
+      console.error('Import Error:', err);
+      alert('Errore: ' + err.message);
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleRoleChange = async (userId: number, newRole: string) => {
     setUpdating(userId);
     try {
@@ -90,9 +128,27 @@ const UserManagement: React.FC = () => {
             USER <span className="text-zinc-600">MANAGEMENT</span>
           </h1>
         </div>
-        <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl flex items-center gap-3">
-          <Shield size={18} className="text-red-500" />
-          <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Security Level: Admin</span>
+        <div className="flex items-center gap-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportCSV}
+            accept=".csv"
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="bg-zinc-900 border border-zinc-800 hover:border-inox-orange text-zinc-400 hover:text-white px-6 py-2.5 rounded-xl flex items-center gap-3 transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+          >
+            {importing ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
+            {importing ? 'Importing...' : 'Importa Rider CSV'}
+          </button>
+
+          <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl flex items-center gap-3">
+            <Shield size={18} className="text-red-500" />
+            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Security Level: Admin</span>
+          </div>
         </div>
       </header>
 
@@ -138,10 +194,11 @@ const UserManagement: React.FC = () => {
                   <td className="px-8 py-6">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                       user.role === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                      user.role === 'moderator' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                       user.role === 'captain' ? 'bg-inox-orange/10 text-inox-orange border-inox-orange/20' :
                       'bg-inox-cyan/10 text-inox-cyan border-inox-cyan/20'
                     }`}>
-                      {user.role}
+                      {user.role === 'athlete' ? 'user' : user.role}
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">
@@ -152,10 +209,10 @@ const UserManagement: React.FC = () => {
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
                         className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-400 focus:border-inox-orange outline-none transition-all disabled:opacity-50"
                       >
-                        <option value="athlete">Athlete</option>
+                        <option value="athlete">User (Athlete)</option>
                         <option value="captain">Captain</option>
-                        <option value="admin">Admin</option>
                         <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
                       </select>
                       
                       <button

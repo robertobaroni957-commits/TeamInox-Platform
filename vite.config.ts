@@ -8,4 +8,13 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8788', // indirizzo dove gira il tuo Worker
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

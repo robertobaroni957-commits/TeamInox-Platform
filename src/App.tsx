@@ -30,34 +30,44 @@ const App: React.FC = () => {
         <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
         {/* Main Platform (Nested in Layout) */}
-        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route element={<ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin', 'guest']}><MainLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
           <Route path="events" element={<Events />} />
-          <Route path="teams" element={<Teams />} />
-          <Route path="availability" element={<Availability />} />
           
-          {/* Routes protected by role */}
+          {/* Routes restricted from Guests */}
+          <Route path="teams" element={
+            <ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin']}>
+              <Teams />
+            </ProtectedRoute>
+          } />
+          <Route path="availability" element={
+            <ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin']}>
+              <Availability />
+            </ProtectedRoute>
+          } />
+          
+          {/* Roles specifically for staff/captains */}
           <Route path="roster" element={
-            <ProtectedRoute allowedRoles={['captain', 'admin']}>
+            <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
               <RosterBuilder />
             </ProtectedRoute>
           } />
           
-          {/* Admin Routes */}
+          {/* Admin/Moderator Routes */}
           <Route path="admin/users" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <UserManagement />
             </ProtectedRoute>
           } />
           <Route path="admin/events" element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
               <EventManagement />
             </ProtectedRoute>
           } />
           <Route path="admin/availability" element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
               <AvailabilityManagement />
             </ProtectedRoute>
           } />

@@ -3,12 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Calendar, Trophy, Zap, Shield, LayoutDashboard,Home, Users, User, Mail } from 'lucide-react'; 
 
 interface UserData {
-  role: 'athlete' | 'captain' | 'admin' | 'moderator';
+  role: 'user' | 'captain' | 'admin' | 'moderator' | 'guest';
   name: string;
 }
 
 const Sidebar: React.FC = () => {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>({ role: 'guest', name: 'GUEST RIDER' });
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -17,20 +17,32 @@ const Sidebar: React.FC = () => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        const rawRole = payload.role;
+        
+        if (!rawRole) {
+           setUser({ role: 'guest', name: 'GUEST RIDER' });
+           return;
+        }
+
+        const role = (rawRole === 'athlete' ? 'user' : rawRole) as UserData['role'];
+        
         setUser({ 
-          role: payload.role || 'athlete', 
+          role, 
           name: payload.username || 'Rider' 
         });
       } catch (e) {
         console.error('Session Error:', e);
         localStorage.removeItem('inox_token');
+        setUser({ role: 'guest', name: 'GUEST RIDER' });
       }
+    } else {
+        setUser({ role: 'guest', name: 'GUEST RIDER' });
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('inox_token');
-    setUser(null);
+    setUser({ role: 'guest', name: 'GUEST RIDER' });
     navigate('/');
   };
 
@@ -41,9 +53,9 @@ const Sidebar: React.FC = () => {
       className={({ isActive }) => 
         `flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-l-4 ${
           isActive 
-            ? (special === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500 shadow-[inset_4px_0_15px_rgba(239,68,68,0.1)]' : 
-               special === 'mwt' ? 'bg-inox-orange/10 text-inox-orange border-inox-orange shadow-[inset_4px_0_15px_rgba(252,103,25,0.1)]' :
-               'bg-inox-cyan/10 text-inox-cyan border-inox-cyan shadow-[inset_4px_0_15px_rgba(0,240,255,0.1)]')
+            ? (special === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500 shadow-[inset_4px_0_15_rgba(239,68,68,0.1)]' : 
+               special === 'mwt' ? 'bg-inox-orange/10 text-inox-orange border-inox-orange shadow-[inset_4px_0_15_rgba(252,103,25,0.1)]' :
+               'bg-inox-cyan/10 text-inox-cyan border-inox-cyan shadow-[inset_4px_0_15_rgba(0,240,255,0.1)]')
             : 'text-zinc-500 border-transparent hover:bg-zinc-900/50 hover:text-zinc-300'
         }`
       }
@@ -59,7 +71,7 @@ const Sidebar: React.FC = () => {
     </div>
   );
 
-  if (!user) return null;
+  const isGuest = user?.role === 'guest';
 
   return (
     <>
@@ -99,15 +111,17 @@ const Sidebar: React.FC = () => {
         <div className="px-6 py-6 border-b border-zinc-900 bg-zinc-900/20">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 ${
-              user.role === 'admin' ? 'border-red-500 text-red-500 bg-red-500/10' :
-              user.role === 'captain' ? 'border-inox-orange text-inox-orange bg-inox-orange/10' :
+              user?.role === 'admin' ? 'border-red-500 text-red-500 bg-red-500/10' :
+              user?.role === 'moderator' ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' :
+              user?.role === 'captain' ? 'border-inox-orange text-inox-orange bg-inox-orange/10' :
+              user?.role === 'guest' ? 'border-zinc-500 text-zinc-500 bg-zinc-500/10' :
               'border-inox-cyan text-inox-cyan bg-inox-cyan/10'
             }`}>
-              {user.name.substring(0, 2).toUpperCase()}
+              {user?.name.substring(0, 2).toUpperCase() || '??'}
             </div>
             <div>
-              <p className="text-xs font-black text-white uppercase truncate max-w-[160px]">{user.name}</p>
-              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{user.role}</p>
+              <p className="text-xs font-black text-white uppercase truncate max-w-[160px]">{user?.name || 'GUEST'}</p>
+              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{user?.role || 'visitor'}</p>
             </div>
           </div>
         </div>
@@ -115,44 +129,82 @@ const Sidebar: React.FC = () => {
         {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
           
-          <SectionTitle>Main Hub</SectionTitle>
-          <NavItem to="/dashboard" icon={LayoutDashboard} label="War Room" />
+          <SectionTitle>{isGuest ? 'Public Hub' : 'Main Hub'}</SectionTitle>
+          {isGuest ? (
+             <NavItem to="/" icon={Home} label="Inox Philosophy" />
+          ) : (
+             <NavItem to="/dashboard" icon={LayoutDashboard} label="War Room" />
+          )}
           <NavItem to="/racing" icon={Zap} label="Gare Live" />
           <NavItem to="/ranking" icon={Trophy} label="Classifiche MWT" special="mwt" />
           <NavItem to="/events" icon={Calendar} label="Calendario Eventi" />
 
-          {/* ATHLETE SECTION */}
-          <SectionTitle>Rider Tools</SectionTitle>
-          <NavItem to="/availability" icon={Calendar} label="Disponibilità" />
-          <NavItem to="/teams" icon={Users} label="I Miei Team" />
-
-          {/* CAPTAIN SECTION */}
-          {(user.role === 'captain' || user.role === 'admin') && (
+          {/* GUEST SPECIFIC */}
+          {isGuest && (
             <>
-              <SectionTitle>Captain Deck</SectionTitle>
-              <NavItem to="/roster" icon={Shield} label="Gestione Roster" />
+              <SectionTitle>Onboarding</SectionTitle>
+              <NavItem to="/register" icon={User} label="Richiesta Iscrizione" />
+              <NavItem to="/contact" icon={Mail} label="Contattaci" />
+              {/* TODO: Aggiungere pagina regolamento pubblico */}
             </>
           )}
 
-          {/* ADMIN SECTION */}
-          {user.role === 'admin' && (
+          {/* USER SECTION (Athlete) - Hidden for Admin/Moderator to keep it clean */}
+          {!isGuest && user?.role !== 'admin' && user?.role !== 'moderator' && (
+            <>
+              <SectionTitle>Rider Tools</SectionTitle>
+              <NavItem to="/availability" icon={Calendar} label="Disponibilità" />
+              <NavItem to="/teams" icon={Users} label="I Miei Team" />
+            </>
+          )}
+
+          {/* CAPTAIN SECTION (Team Manager) */}
+          {(user?.role === 'captain' || user?.role === 'admin') && (
+            <>
+              <SectionTitle>Captain Deck</SectionTitle>
+              <NavItem to="/roster" icon={Shield} label="Gestione Roster" />
+              {/* TODO: Aggiungere gestione membri team */}
+            </>
+          )}
+
+          {/* MODERATOR SECTION (Staff) */}
+          {(user?.role === 'moderator' || user?.role === 'admin') && (
+            <>
+              <SectionTitle>Staff Ops</SectionTitle>
+              <NavItem to="/admin/events" icon={Calendar} label="Modifica Eventi" />
+              <NavItem to="/admin/availability" icon={Calendar} label="Controllo Disponibilità" />
+              {/* TODO: Aggiungere approvazione risultati */}
+            </>
+          )}
+
+          {/* ADMIN SECTION (Superuser) */}
+          {user?.role === 'admin' && (
             <>
               <SectionTitle>Command Center</SectionTitle>
               <NavItem to="/admin/users" icon={Users} label="Gestione Utenti" special="admin" />
-              <NavItem to="/admin/availability" icon={Calendar} label="Disponibilità ZRL" special="admin" />
-              <NavItem to="/admin/events" icon={Calendar} label="Gestione Eventi" special="admin" />
               <NavItem to="/admin/teams" icon={Shield} label="Config Squadre" special="admin" />
+              {/* TODO: Aggiungere log di sistema e configurazione globale */}
             </>
           )}
 
           <div className="mt-8 pt-4 border-t border-zinc-900">
-            <button 
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all"
-            >
-              <LogOut size={18} strokeWidth={2.5} />
-              <span>Scollegati (Logout)</span>
-            </button>
+            {isGuest ? (
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-inox-orange hover:bg-inox-orange/10 transition-all"
+                >
+                  <User size={18} strokeWidth={2.5} />
+                  <span>Accedi (Login)</span>
+                </button>
+            ) : (
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all"
+                >
+                  <LogOut size={18} strokeWidth={2.5} />
+                  <span>Scollegati (Logout)</span>
+                </button>
+            )}
           </div>
         </nav>
       </aside>

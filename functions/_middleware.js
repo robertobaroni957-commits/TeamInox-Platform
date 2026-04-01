@@ -12,7 +12,8 @@ export async function onRequest(context) {
         url.pathname === '/api/series' || 
         url.pathname === '/api/rounds' || 
         url.pathname === '/api/results' ||
-        url.pathname === '/api/events'
+        url.pathname === '/api/events' ||
+        url.pathname === '/api/teams'
     );
 
     if (isPublicPath || isPublicGet || !url.pathname.startsWith('/api/')) {

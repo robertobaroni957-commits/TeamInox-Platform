@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS athletes (
     zwid INTEGER PRIMARY KEY,        
     name TEXT NOT NULL,
-    email TEXT UNIQUE,
+    email TEXT,
     password_hash TEXT,              
     team TEXT,
     base_category TEXT,              

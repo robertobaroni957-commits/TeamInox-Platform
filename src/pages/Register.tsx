@@ -4,11 +4,13 @@ import { User, Mail, Lock, Shield, Loader2, ArrowRight, Activity } from 'lucide-
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
+  const [zwid, setZwid] = useState(''); // <-- FIX AGGIUNTO
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -31,14 +33,20 @@ const Register: React.FC = () => {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({
+          username,
+          zwid,        // <-- INCLUSO NEL BODY
+          email,
+          password
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Registrazione successo
-        navigate('/login', { state: { message: 'Registrazione completata! Effettua il primo accesso.' } });
+        navigate('/login', {
+          state: { message: 'Registrazione completata! Effettua il primo accesso.' }
+        });
       } else {
         setError(data.message || 'Errore durante la registrazione.');
       }
@@ -65,9 +73,12 @@ const Register: React.FC = () => {
         </div>
         
         <form onSubmit={handleRegister} className="space-y-5">
+
           {/* USERNAME */}
           <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Username / Nome</label>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Username / Nome
+            </label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input
@@ -76,14 +87,16 @@ const Register: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Es: Mario Rossi"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 focus:border-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
             </div>
           </div>
 
-          {/* ZWIFT ID */}
+          {/* ZWID */}
           <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Zwift ID (ZWID)</label>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Zwift ID (ZWID)
+            </label>
             <div className="relative">
               <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input
@@ -92,15 +105,19 @@ const Register: React.FC = () => {
                 onChange={(e) => setZwid(e.target.value)}
                 required
                 placeholder="Es: 1234567"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-cyan/50 focus:border-inox-cyan/50 transition-all placeholder:text-zinc-800 font-medium"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
             </div>
-            <p className="text-[8px] text-zinc-600 font-bold uppercase mt-2 ml-1 italic tracking-wider">Lo trovi nel tuo profilo ZwiftPower o nell'URL del tuo profilo Zwift.</p>
+            <p className="text-[8px] text-zinc-600 font-bold uppercase mt-2 ml-1 italic tracking-wider">
+              Lo trovi nel tuo profilo ZwiftPower o nell'URL del tuo profilo Zwift.
+            </p>
           </div>
 
           {/* EMAIL */}
           <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Email Ufficiale</label>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Email Ufficiale
+            </label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input
@@ -109,14 +126,16 @@ const Register: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="atleta@inoxteam.it"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 focus:border-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
             </div>
           </div>
-          
+
           {/* PASSWORD */}
           <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Password</label>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input
@@ -125,14 +144,16 @@ const Register: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Minimo 8 caratteri"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 focus:border-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
             </div>
           </div>
 
           {/* CONFIRM PASSWORD */}
           <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">Conferma Password</label>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Conferma Password
+            </label>
             <div className="relative">
               <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
               <input
@@ -141,15 +162,16 @@ const Register: React.FC = () => {
                 onChange={(e) => setPasswordConfirm(e.target.value)}
                 required
                 placeholder="Ripeti la password"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 focus:border-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
             </div>
           </div>
 
+          {/* SUBMIT */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white hover:bg-inox-orange text-black font-black italic text-xl py-4 rounded-2xl transition-all transform active:scale-95 shadow-xl flex items-center justify-center gap-3 group disabled:opacity-50 disabled:hover:bg-white"
+            className="w-full bg-white hover:bg-inox-orange text-black font-black italic text-xl py-4 rounded-2xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -163,16 +185,19 @@ const Register: React.FC = () => {
               </>
             )}
           </button>
-          
+
           {error && (
             <div className="text-center text-red-500 text-xs font-bold mt-4 bg-red-500/10 py-3 rounded-xl border border-red-500/20 uppercase tracking-widest">
               {error}
             </div>
           )}
         </form>
-        
+
         <div className="text-center text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] mt-8">
-          Hai già un account? <Link to="/login" className="text-inox-cyan hover:text-white transition-all underline decoration-inox-cyan/30 underline-offset-4">Accedi qui</Link>
+          Hai già un account?{' '}
+          <Link to="/login" className="text-inox-cyan hover:text-white underline underline-offset-4">
+            Accedi qui
+          </Link>
         </div>
       </div>
     </div>

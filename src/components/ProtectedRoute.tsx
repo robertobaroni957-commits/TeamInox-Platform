@@ -10,7 +10,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   const token = localStorage.getItem('inox_token');
   const location = useLocation();
 
+  // If GUEST is allowed, we don't strictly need a token
   if (!token) {
+    if (allowedRoles && allowedRoles.includes('guest')) {
+      return <>{children}</>;
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -20,17 +24,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     // Controllo scadenza
     if (payload.exp && Date.now() >= payload.exp * 1000) {
       localStorage.removeItem('inox_token');
+      if (allowedRoles && allowedRoles.includes('guest')) {
+        return <>{children}</>;
+      }
       return <Navigate to="/login" replace />;
     }
 
     // Controllo ruoli
-    if (allowedRoles && !allowedRoles.includes(payload.role)) {
+    const userRole = payload.role === 'athlete' ? 'user' : payload.role;
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
       return <Navigate to="/dashboard" replace />;
     }
 
     return <>{children}</>;
   } catch (e) {
     localStorage.removeItem('inox_token');
+    if (allowedRoles && allowedRoles.includes('guest')) {
+        return <>{children}</>;
+    }
     return <Navigate to="/login" replace />;
   }
 };

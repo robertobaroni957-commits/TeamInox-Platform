@@ -1,7 +1,7 @@
 // src/pages/Welcome.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, ChevronRight, Trophy, Users } from 'lucide-react';
+import { Zap, ChevronRight, Trophy, Users, Activity } from 'lucide-react';
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
@@ -30,15 +30,25 @@ const Welcome: React.FC = () => {
           </p>
         </div>
 
-        {/* CTA Button */}
-        <div className="pt-8">
+        {/* CTA Buttons */}
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-center gap-6">
           <button 
             onClick={() => navigate('/login')}
-            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-xl hover:shadow-white/20"
+            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-xl hover:shadow-white/20 w-full md:w-auto"
           >
             ENTER THE ARENA
             <div className="w-8 h-8 rounded-full bg-[#fc6719] flex items-center justify-center text-white group-hover:translate-x-2 transition-transform">
               <ChevronRight size={20} />
+            </div>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-zinc-900 border border-zinc-800 text-zinc-400 font-black text-xl rounded-2xl hover:bg-zinc-800 transition-all w-full md:w-auto"
+          >
+            SCOPRI IL TEAM
+            <div className="text-zinc-600 group-hover:text-inox-cyan transition-colors">
+              <Activity size={24} />
             </div>
           </button>
         </div>

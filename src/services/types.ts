@@ -37,6 +37,7 @@ export interface AvailabilityData {
   timeSlots: TimeSlot[];
   preferences: TimePreference[];
   rounds: (Round & { status?: string })[];
+  error?: string;
 }
 
 export interface LineupEntry {
@@ -78,10 +79,11 @@ export interface InoxEvent {
 export interface UserData {
   id: number;
   zwid: number;
+  zwift_power_id?: number;
   name: string;
-  username?: string;
+  username: string;
   email?: string;
-  role: 'admin' | 'captain' | 'athlete' | string;
+  role: 'admin' | 'moderator' | 'captain' | 'user' | 'guest' | string;
   team?: string;
   base_category?: string;
   avatar_url?: string;

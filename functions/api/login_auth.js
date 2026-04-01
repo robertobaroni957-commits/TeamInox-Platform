@@ -7,33 +7,59 @@ const ALG = 'HS256';
 
 export async function onRequestPost({ request, env }) {
     try {
-        const { email, password } = await request.json();
+        const body = await request.json();
+        const loginId = (body.identifier || body.zwid || body.email || "").toString().trim();
+        const password = body.password;
         
-        if (!email || !password) {
-            return new Response(JSON.stringify({ message: 'Email e password richiesti.' }), { 
+        if (!loginId || !password) {
+            return new Response(JSON.stringify({ message: 'Credenziali richieste.' }), { 
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // Recupera l'utente
-        const user = await env.DB.prepare(
-            "SELECT * FROM users WHERE email = ?"
-        ).bind(email).first();
+        // Cerca l'atleta nel DB tramite ZwiftID, Email o Nome (per massima flessibilità admin)
+        let user;
+        const isNumeric = /^\d+$/.test(loginId);
+
+        if (isNumeric) {
+            user = await env.DB.prepare(
+                "SELECT * FROM athletes WHERE zwid = ?"
+            ).bind(parseInt(loginId)).first();
+        } 
+        
+        // Se non trovato via Zwid o non numerico, cerca via Email
+        if (!user) {
+            user = await env.DB.prepare(
+                "SELECT * FROM athletes WHERE LOWER(email) = ?"
+            ).bind(loginId.toLowerCase()).first();
+        }
+
+        // Se ancora non trovato, cerca via Nome (per l'Admin che usa 'AdminInox')
+        if (!user) {
+            user = await env.DB.prepare(
+                "SELECT * FROM athletes WHERE LOWER(name) = ?"
+            ).bind(loginId.toLowerCase()).first();
+        }
 
         if (!user) {
-             return new Response(JSON.stringify({ message: 'Credenziali non valide.' }), { 
+             return new Response(JSON.stringify({ message: 'Utente non trovato.' }), { 
                  status: 401,
                  headers: { 'Content-Type': 'application/json' }
              });
         }
 
-        // Confronta password
-        const hashToCompare = user.password_hash;
-        const isPasswordValid = await bcrypt.compare(password, hashToCompare); 
+        // Verifica Password
+        let isPasswordValid = false;
+        if (user.password_hash) {
+            isPasswordValid = await bcrypt.compare(password, user.password_hash); 
+        } else {
+            // Fallback per utenti CSV senza password: password = zwid
+            isPasswordValid = (password === user.zwid.toString());
+        }
 
         if (!isPasswordValid) {
-             return new Response(JSON.stringify({ message: 'Credenziali non valide.' }), { 
+             return new Response(JSON.stringify({ message: 'Password errata.' }), { 
                  status: 401,
                  headers: { 'Content-Type': 'application/json' }
              });
@@ -41,9 +67,9 @@ export async function onRequestPost({ request, env }) {
 
         // Genera Token
         const payload = { 
-            zwid: user.zwift_power_id || user.id, // Usa zwift_power_id registrato
-            username: user.username, 
-            role: user.role,
+            zwid: user.zwid,
+            username: user.name, 
+            role: user.role || 'user',
             exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS
         };
         const secret = new TextEncoder().encode(env.JWT_SECRET);
@@ -63,10 +89,7 @@ export async function onRequestPost({ request, env }) {
         });
 
     } catch (error) {
-        console.error("Login Auth Error:", error);
-        return new Response(JSON.stringify({ message: 'Errore interno: ' + error.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        console.error("Login Error:", error);
+        return new Response(JSON.stringify({ message: 'Errore: ' + error.message }), { status: 500 });
     }
 }

@@ -7,45 +7,32 @@ export async function onRequestGet({ env }) {
     }
 
     try {
-        // 1. CREAZIONE TABELLA 'users'
-        await env.DB.prepare(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT,
-                role TEXT DEFAULT 'athlete',
-                zwift_power_id INTEGER,
-                active INTEGER DEFAULT 1,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `).run();
-
         const email = "admin@teaminox.it";
         const password = "InoxTeam2026!";
         const username = "AdminInox";
         const role = "admin";
+        const zwid = 1; // ZwiftID fisso per l'Admin di sistema
 
         // Hashing della password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 2. INSERIMENTO/AGGIORNAMENTO ADMIN
-        const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+        // INSERIMENTO/AGGIORNAMENTO NELLA TABELLA ATHLETES (quella usata dal sistema unified)
+        const existing = await env.DB.prepare("SELECT zwid FROM athletes WHERE zwid = ?").bind(zwid).first();
 
         if (existing) {
             await env.DB.prepare(
-                "UPDATE users SET password_hash = ?, role = ?, username = ? WHERE email = ?"
-            ).bind(hashedPassword, role, username, email).run();
+                "UPDATE athletes SET name = ?, email = ?, password_hash = ?, role = ? WHERE zwid = ?"
+            ).bind(username, email, hashedPassword, role, zwid).run();
         } else {
             await env.DB.prepare(
-                "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)"
-            ).bind(username, email, hashedPassword, role).run();
+                "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
+            ).bind(zwid, username, email, hashedPassword, role).run();
         }
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: "Tabella 'users' verificata e Admin generato/aggiornato!",
-            credentials: { email, password, role }
+            message: "Admin generato/aggiornato nella tabella athletes!",
+            credentials: { zwid, email, password, role }
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (error) {

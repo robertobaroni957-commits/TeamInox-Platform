@@ -13,8 +13,8 @@ export async function onRequestGET({ env }) {
 
 export async function onRequestPOST({ request, env, data }) {
   // Check for admin role (context data populated by middleware)
-  if (data.user?.role !== 'admin') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin access required" }), { status: 403 });
+  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
   }
 
   try {
@@ -30,8 +30,8 @@ export async function onRequestPOST({ request, env, data }) {
 }
 
 export async function onRequestPATCH({ request, env, data }) {
-  if (data.user?.role !== 'admin') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin access required" }), { status: 403 });
+  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
   }
 
   try {
@@ -47,8 +47,8 @@ export async function onRequestPATCH({ request, env, data }) {
 }
 
 export async function onRequestDELETE({ request, env, data }) {
-  if (data.user?.role !== 'admin') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin access required" }), { status: 403 });
+  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
   }
 
   const url = new URL(request.url);
