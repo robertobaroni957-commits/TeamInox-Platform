@@ -1,3 +1,4 @@
+// functions/api/events.js
 export async function onRequestGet({ env }) {
   try {
     const { results } = await env.DB.prepare(
@@ -11,12 +12,8 @@ export async function onRequestGet({ env }) {
   }
 }
 
-export async function onRequestPOST({ request, env, data }) {
-  // Check for admin role (context data populated by middleware)
-  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
-  }
-
+export async function onRequestPOST({ request, env }) {
+  // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { name, day_of_week, time, description, zwift_link, category } = await request.json();
     const result = await env.DB.prepare(
@@ -29,11 +26,8 @@ export async function onRequestPOST({ request, env, data }) {
   }
 }
 
-export async function onRequestPATCH({ request, env, data }) {
-  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
-  }
-
+export async function onRequestPATCH({ request, env }) {
+  // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { id, name, day_of_week, time, description, zwift_link, category, is_active } = await request.json();
     await env.DB.prepare(
@@ -46,11 +40,8 @@ export async function onRequestPATCH({ request, env, data }) {
   }
 }
 
-export async function onRequestDELETE({ request, env, data }) {
-  if (data.user?.role !== 'admin' && data.user?.role !== 'moderator') {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { status: 403 });
-  }
-
+export async function onRequestDELETE({ request, env }) {
+  // Il middleware garantisce che solo Admin/Moderator arrivino qui
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
 

@@ -6,8 +6,8 @@ import type { TimeSlot, Round } from '../services/types';
 
 const PREF_LEVELS = [
   { id: 0, label: 'MAI', desc: 'Impossibile', color: 'border-red-900 text-red-500 bg-red-950/20', active: 'bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]' },
-  { id: 1, label: 'OK', desc: 'Disponibile', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-zinc-700 text-white border-zinc-500 shadow-lg' },
-  { id: 2, label: 'FAV', desc: 'Preferito', color: 'border-inox-orange/30 text-inox-orange bg-inox-orange/5', active: 'bg-inox-orange text-black border-orange-400 shadow-[0_0_20px_rgba(252,103,25,0.5)]' }
+  { id: 1, label: 'OK', desc: 'Disponibile', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-yellow-500 text-black border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]' },
+  { id: 2, label: 'FAV', desc: 'Preferito', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]' }
 ];
 
 const Availability: React.FC = () => {
@@ -63,7 +63,7 @@ const Availability: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     loadData();
@@ -77,8 +77,7 @@ const Availability: React.FC = () => {
       const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
       await api.updateTimePreferences(prefsPayload);
 
-      // 2. Salviamo le presenze per ogni round (in sequenza o batch se supportato)
-      // Per semplicità usiamo un loop, ma l'API potrebbe essere ottimizzata per un batch
+      // 2. Salviamo le presenze per ogni round
       const presencePromises = Object.entries(presences).map(([roundId, status]) => 
         api.updateRaceAvailability(parseInt(roundId), status)
       );
@@ -95,7 +94,7 @@ const Availability: React.FC = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="text-inox-orange font-black italic text-xl animate-pulse uppercase tracking-[0.2em]">
+      <div className="text-[#fc6719] font-black italic text-xl animate-pulse uppercase tracking-[0.2em]">
         Inizializzazione Questionario...
       </div>
     </div>
@@ -104,7 +103,7 @@ const Availability: React.FC = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto pb-24">
       <header className="mb-12 border-b border-zinc-800 pb-8">
-        <span className="text-inox-orange font-black text-xs tracking-[0.4em] uppercase italic">Stagione ZRL 2026</span>
+        <span className="text-[#fc6719] font-black text-xs tracking-[0.4em] uppercase italic">Stagione ZRL 2026</span>
         <h1 className="text-6xl font-black italic tracking-tighter leading-none mt-2 text-white uppercase">
           Questionario <span className="text-zinc-600">Disponibilità</span>
         </h1>
@@ -118,7 +117,7 @@ const Availability: React.FC = () => {
         {/* PARTE 1: LEAGUE PREFERENCES */}
         <section className="space-y-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-inox-orange text-black flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(252,103,25,0.3)]">1</div>
+            <div className="w-12 h-12 rounded-2xl bg-[#fc6719] text-black flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(252,103,25,0.3)]">1</div>
             <div>
               <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">Preferenze Orarie</h2>
               <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">In quali leghe puoi correre?</p>
@@ -133,7 +132,7 @@ const Availability: React.FC = () => {
                     <Clock size={18} />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-inox-orange tracking-widest uppercase opacity-70">{slot.id.replace('ZRL_', '')} LEAGUE</span>
+                    <span className="text-[10px] font-black text-[#fc6719] tracking-widest uppercase opacity-70">{slot.id.replace('T_', '')} SLOT</span>
                     <h3 className="font-bold text-white uppercase tracking-tight text-lg leading-none">{slot.display_name}</h3>
                   </div>
                 </div>
@@ -159,7 +158,7 @@ const Availability: React.FC = () => {
         {/* PARTE 2: ROUND PRESENCE */}
         <section className="space-y-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-inox-cyan text-black flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">2</div>
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-[#fc6719] flex items-center justify-center font-black italic text-xl shadow-[0_0_20px_rgba(252,103,25,0.1)] border border-[#fc6719]/20">2</div>
             <div>
               <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">Presenza Round</h2>
               <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Conferma le singole settimane</p>
@@ -175,11 +174,11 @@ const Availability: React.FC = () => {
                 <button
                   key={race.id}
                   onClick={() => setPresences(prev => ({ ...prev, [race.id]: isPresent ? 'unavailable' : 'available' }))}
-                  className={`p-5 rounded-[2rem] border text-left transition-all relative overflow-hidden group ${isPresent ? 'border-inox-cyan/50 bg-inox-cyan/10' : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'}`}
+                  className={`p-5 rounded-[2rem] border text-left transition-all relative overflow-hidden group ${isPresent ? 'border-[#fc6719]/50 bg-[#fc6719]/5' : 'border-zinc-800 bg-zinc-900/20 hover:border-zinc-700'}`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-5">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all shadow-lg ${isPresent ? 'border-inox-cyan text-inox-cyan bg-black' : 'border-zinc-800 text-zinc-700 bg-zinc-900'}`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all shadow-lg ${isPresent ? 'border-[#fc6719] text-[#fc6719] bg-black' : 'border-zinc-800 text-zinc-700 bg-zinc-900'}`}>
                         <div className="text-center">
                           <div className="text-[10px] font-black uppercase leading-none">{raceDate.toLocaleDateString('it-IT', { month: 'short' })}</div>
                           <div className="text-xl font-black italic leading-none">{raceDate.getDate()}</div>
@@ -189,13 +188,13 @@ const Availability: React.FC = () => {
                         <span className="text-[10px] font-black text-zinc-500 tracking-[0.2em] uppercase">{raceDate.toLocaleDateString('it-IT', { weekday: 'long' })}</span>
                         <h3 className="text-xl font-black italic text-white uppercase leading-none mt-1">{race.name}</h3>
                         <div className="flex gap-2 items-center mt-1">
-                          <span className="text-inox-cyan text-[9px] font-bold uppercase tracking-widest">{race.world}</span>
+                          <span className="text-[#fc6719] text-[9px] font-bold uppercase tracking-widest">{race.world}</span>
                           <span className="text-zinc-700 text-[9px] font-black">•</span>
                           <span className="text-zinc-500 text-[9px] font-bold uppercase truncate max-w-[150px]">{race.route}</span>
                         </div>
                       </div>
                     </div>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isPresent ? 'border-inox-cyan bg-inox-cyan text-black' : 'border-zinc-800 text-zinc-700'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${isPresent ? 'border-[#fc6719] bg-[#fc6719] text-black' : 'border-zinc-800 text-zinc-700'}`}>
                       <Zap size={18} className={isPresent ? 'fill-current' : ''} />
                     </div>
                   </div>
@@ -216,17 +215,17 @@ const Availability: React.FC = () => {
           
           <div className="flex items-center gap-4 w-full md:w-auto">
             {error && <span className="text-red-500 font-bold italic text-xs animate-bounce flex items-center gap-2"><AlertCircle size={16}/> {error}</span>}
-            {success && <span className="text-emerald-500 font-bold italic text-xs flex items-center gap-2"><CheckCircle size={16}/> Salvataggio completato! Reindirizzamento...</span>}
+            {success && <span className="text-emerald-500 font-bold italic text-xs flex items-center gap-2"><CheckCircle size={16}/> Salvataggio completato!</span>}
             
             <button
               onClick={handleSaveAll}
               disabled={saving || success}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-2xl font-black italic transition-all uppercase text-sm tracking-widest shadow-2xl active:scale-95 ${saving ? 'bg-zinc-800 text-zinc-500 cursor-wait' : 'bg-inox-orange text-black hover:bg-orange-500 hover:scale-105'}`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-2xl font-black italic transition-all uppercase text-sm tracking-widest shadow-2xl active:scale-95 ${saving ? 'bg-zinc-800 text-zinc-500 cursor-wait' : 'bg-[#fc6719] text-black hover:bg-orange-500 hover:scale-105'}`}
             >
               {saving ? 'Invio in corso...' : (
                 <>
                   <Save size={20} />
-                  Salva e Invia Disponibilità
+                  Salva Disponibilità
                 </>
               )}
             </button>

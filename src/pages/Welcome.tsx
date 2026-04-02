@@ -1,92 +1,68 @@
-// src/pages/Welcome.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, ChevronRight, Trophy, Users, Activity } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Zap } from 'lucide-react';
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-[#0d0f11] flex flex-col items-center justify-center relative overflow-hidden font-sans">
-      {/* Background Glows - Usando colori hex per sicurezza */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#fc6719]/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#00f0ff]/10 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#0D0D0D] text-zinc-100 font-sans selection:bg-[#00AEEF]/30 overflow-hidden relative flex flex-col items-center justify-center p-6">
+      
+      {/* BACKGROUND VIDEO & OVERLAY (Consistent with platform) */}
+      <video 
+        autoPlay 
+        muted 
+        loop 
+        playsInline
+        className="fixed top-0 left-0 w-full h-full object-cover z-0 opacity-10 saturate-50 blur-[1px] pointer-events-none"
+      >
+        <source src="https://www.teaminox.it/wp-content/uploads/2025/11/Presentazione-2025-.mp4" type="video/mp4" />
+      </video>
+      <div className="fixed top-0 left-0 w-full h-full bg-gradient-to-b from-[#0D0D0D]/80 via-[#0D0D0D] to-[#0D0D0D] z-0 pointer-events-none"></div>
 
-      {/* Main Content */}
-      <div className="relative z-10 text-center space-y-8 max-w-4xl px-6 py-12">
-        {/* Animated Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-          <span className="w-2 h-2 rounded-full bg-[#fc6719] animate-pulse" />
-          Season 2026 Live Now
+      {/* CENTERED CONTENT */}
+      <div className="relative z-10 w-full max-w-sm text-center">
+        
+        {/* LOGO */}
+        <div className="mb-12 animate-fade-in">
+          <img 
+            src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" 
+            className="h-16 md:h-20 mx-auto transition-transform hover:scale-110 duration-500" 
+            alt="Team Inox Logo" 
+          />
         </div>
 
-        {/* Hero Text */}
+        {/* WELCOME TITLE */}
+        <h1 className="text-2xl font-black italic tracking-tighter uppercase mb-12 text-zinc-400">
+          Benvenuto nel <span className="text-zinc-100">Team Inox</span>
+        </h1>
+
+        {/* CTA BUTTONS */}
         <div className="space-y-4">
-          <h1 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter leading-none uppercase">
-            INOX<span className="text-[#fc6719]">TEAM</span>
-          </h1>
-          <p className="text-zinc-500 text-lg md:text-xl font-medium tracking-wide max-w-2xl mx-auto leading-relaxed">
-            La piattaforma definitiva per il cronometraggio live, la gestione dei roster e il ranking del team Inox.
-          </p>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-center gap-6">
           <button 
             onClick={() => navigate('/login')}
-            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-xl hover:shadow-white/20 w-full md:w-auto"
+            className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#FF6A00] hover:bg-[#e65c00] text-black font-black rounded-2xl transition-all shadow-2xl shadow-[#FF6A00]/20 uppercase italic tracking-tighter text-lg"
           >
-            ENTER THE ARENA
-            <div className="w-8 h-8 rounded-full bg-[#fc6719] flex items-center justify-center text-white group-hover:translate-x-2 transition-transform">
-              <ChevronRight size={20} />
-            </div>
+            <ShieldCheck size={24} />
+            <span>Accedi</span>
           </button>
-          
+
           <button 
-            onClick={() => navigate('/dashboard')}
-            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-zinc-900 border border-zinc-800 text-zinc-400 font-black text-xl rounded-2xl hover:bg-zinc-800 transition-all w-full md:w-auto"
+            onClick={() => navigate('/guest')}
+            className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 border border-zinc-800 hover:border-[#00AEEF] text-zinc-300 hover:text-[#00AEEF] font-black rounded-2xl transition-all uppercase italic tracking-tighter text-lg"
           >
-            SCOPRI IL TEAM
-            <div className="text-zinc-600 group-hover:text-inox-cyan transition-colors">
-              <Activity size={24} />
-            </div>
+            <Zap size={24} />
+            <span>Scopri il Team Inox</span>
           </button>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 pt-16 border-t border-zinc-800/50">
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center text-[#00f0ff] border border-zinc-800 mx-auto shadow-inner">
-              <Zap size={28} />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">Live Stats</h3>
-              <p className="text-zinc-500 text-sm mt-1">Dati in tempo reale da Sauce4Zwift direttamente nel browser.</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center text-[#fc6719] border border-zinc-800 mx-auto shadow-inner">
-              <Trophy size={28} />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">Dynamic Ranking</h3>
-              <p className="text-zinc-500 text-sm mt-1">Classifiche cumulate calcolate istantaneamente su database D1.</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-100 border border-zinc-800 mx-auto shadow-inner">
-              <Users size={28} />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">Roster ZRL</h3>
-              <p className="text-zinc-500 text-sm mt-1">Organizza i tuoi team con il builder intelligente per i capitani.</p>
-            </div>
-          </div>
-        </div>
+        {/* MINIMAL FOOTER */}
+        <footer className="mt-16 pt-8 border-t border-zinc-900">
+           <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+             Unified Platform &copy; 2026
+           </p>
+        </footer>
       </div>
-
-      {/* Frame Effect */}
-      <div className="absolute inset-0 pointer-events-none border-[24px] border-zinc-900/10" />
     </div>
   );
 };

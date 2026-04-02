@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Welcome from './pages/Welcome';
+import Guest from './pages/Guest';
 import Dashboard from './pages/Dashboard';
 import Racing from './pages/Racing';
 import Teams from './pages/Teams';
@@ -21,8 +22,9 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing Page (Welcome) */}
+        {/* Landing Page (Welcome Gate) */}
         <Route path="/" element={<Welcome />} />
+        <Route path="/guest" element={<Guest />} />
         
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

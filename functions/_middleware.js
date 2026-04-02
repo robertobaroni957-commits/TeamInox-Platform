@@ -1,103 +1,133 @@
 // ================================
 // Middleware globale INOXTEAM API
-// JWT + Anti-cache + Logging
+// JWT + RBAC + Anti-cache
 // ================================
 import { jwtVerify } from 'jose';
+
+// Matrice dei permessi: Percorso -> Ruoli ammessi
+// Se il valore è un array, si applica a tutti i metodi.
+// Se è un oggetto, si applica ai singoli metodi.
+const RBAC_POLICY = {
+    '/api/admin': ['admin'],
+    '/api/create-admin': ['admin'],
+    '/api/events': {
+        GET: ['admin', 'moderator', 'captain', 'user'],
+        POST: ['admin', 'moderator'],
+        PATCH: ['admin', 'moderator'],
+        DELETE: ['admin', 'moderator']
+    },
+    '/api/availability': {
+        GET: ['admin', 'moderator', 'captain', 'user'],
+        POST: ['admin', 'moderator', 'captain', 'user']
+    },
+    '/api/lineup': {
+        POST: ['admin', 'captain'],
+        PATCH: ['admin', 'captain']
+    }
+};
+
+const PUBLIC_ROUTES = [
+    '/api/login_auth',
+    '/api/register',
+    '/api/test',
+    '/api/series',
+    '/api/rounds',
+    '/api/results',
+    '/api/teams',
+    '/api/setup-zrl-2026'
+];
 
 export async function onRequest(context) {
     const { request, env, next, data } = context;
     const url = new URL(request.url);
     const path = url.pathname.toLowerCase().replace(/\/$/, '');
+    const method = request.method;
 
-    // Log richieste API
-    console.log(`[Middleware] ${request.method} ${path}`);
-
-    // ============================
-    // 1. Se non inizia con /api, passa al frontend
-    // ============================
+    // 1. Pass-through per asset statici (non /api)
     if (!path.startsWith('/api')) {
         return next();
     }
 
-    // ============================
-    // 2. API pubbliche (SOLO le strettamente necessarie)
-    // ============================
-    const publicApiRoutes = [
-        '/api/login_auth',
-        '/api/register',
-        '/api/create-admin',
-        '/api/test',
-        '/api/series',
-        '/api/rounds',
-        '/api/results',
-        '/api/events',
-        '/api/teams'
-    ];
-
-    if (publicApiRoutes.includes(path)) {
-        console.log(`[Middleware] Accesso pubblico consentito per ${path}`);
-        try {
-            const response = await next();
-            if (response.status === 404) {
-                return jsonError(`API endpoint not found: ${path}`, 404);
-            }
-            return applyNoCache(response);
-        } catch (e) {
-            return jsonError(`Server Error: ${e.message}`, 500);
-        }
+    // 2. Controllo Route Pubbliche (Sola Lettura per alcune)
+    // Se è in PUBLIC_ROUTES ed è un GET, passa sempre. 
+    // Se è un metodo di scrittura, deve passare dal controllo JWT sotto.
+    if (PUBLIC_ROUTES.includes(path) && method === 'GET') {
+        return handleNext(next);
     }
 
-    // ============================
-    // 3. API protette → JWT richiesto
-    // ============================
+    // Special case: login e register sono sempre pubblici
+    if (['/api/login_auth', '/api/register', '/api/test'].includes(path)) {
+        return handleNext(next);
+    }
+
+    // 3. Verifica JWT per tutte le altre rotte
     const authHeader = request.headers.get('Authorization');
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return jsonError('Missing or invalid authentication token', 401);
+        return jsonError('Authentication required', 401);
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
+        const token = authHeader.split(' ')[1];
         const secret = new TextEncoder().encode(env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
 
+        // Uniformiamo il ruolo 'athlete' in 'user' se necessario
+        if (payload.role === 'athlete') payload.role = 'user';
+        
         data.user = payload;
-        console.log(`[Middleware] JWT valido → ${payload.username} (${payload.role})`);
 
-        const response = await next();
-        return applyNoCache(response);
+        // 4. Controllo RBAC
+        if (!checkPermissions(path, method, payload.role)) {
+            console.warn(`[RBAC] Access Denied: ${payload.username} (${payload.role}) -> ${method} ${path}`);
+            return jsonError(`Forbidden: ${payload.role} role cannot access this resource`, 403);
+        }
+
+        return handleNext(next);
 
     } catch (err) {
-        console.error('[Middleware] JWT Error:', err.message);
+        console.error('[Middleware] JWT/RBAC Error:', err.message);
         return jsonError('Unauthorized: Session expired or invalid', 401);
     }
 }
 
-// ================================
-// Funzione helper: risposta JSON errore
-// ================================
+function checkPermissions(path, method, userRole) {
+    // Admin scavalca tutto
+    if (userRole === 'admin') return true;
+
+    // Cerca una regola corrispondente (anche parziale per sottocartelle admin)
+    for (const [route, requirements] of Object.entries(RBAC_POLICY)) {
+        if (path.startsWith(route)) {
+            const allowedRoles = Array.isArray(requirements) 
+                ? requirements 
+                : requirements[method];
+            
+            if (allowedRoles && allowedRoles.includes(userRole)) return true;
+            return false; // Trovata regola ma ruolo non ammesso
+        }
+    }
+
+    // Se non c'è una regola specifica in RBAC_POLICY, permetti solo se loggato (default safe)
+    return true;
+}
+
+async function handleNext(next) {
+    try {
+        const response = await next();
+        return applyNoCache(response);
+    } catch (e) {
+        return jsonError(`Server Error: ${e.message}`, 500);
+    }
+}
+
 function jsonError(message, status = 400) {
     return new Response(JSON.stringify({ error: message }), {
         status,
-        headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache'
-        }
+        headers: { 'Content-Type': 'application/json' }
     });
 }
 
-// ================================
-// Funzione helper: applica anti-cache
-// ================================
 function applyNoCache(response) {
-    const headers = new Headers(response.headers);
-    headers.set('Cache-Control', 'no-store');
-    headers.set('Pragma', 'no-cache');
-
-    return new Response(response.body, {
-        status: response.status,
-        headers
-    });
+    const newResponse = new Response(response.body, response);
+    newResponse.headers.set('Cache-Control', 'no-store');
+    return newResponse;
 }

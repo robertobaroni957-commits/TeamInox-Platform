@@ -30,9 +30,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
       return <Navigate to="/login" replace />;
     }
 
-    // Controllo ruoli
-    const userRole = payload.role === 'athlete' ? 'user' : payload.role;
+    // Controllo ruoli e mapping legacy
+    let userRole = payload.role || 'guest';
+    if (userRole === 'athlete') userRole = 'user';
+
     if (allowedRoles && !allowedRoles.includes(userRole)) {
+      console.warn(`[ProtectedRoute] Accesso negato per ruolo: ${userRole}. Richiesti: ${allowedRoles.join(', ')}`);
       return <Navigate to="/dashboard" replace />;
     }
 

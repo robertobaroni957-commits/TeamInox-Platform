@@ -63,6 +63,7 @@ export interface Series {
   name: string;
   is_active: boolean;
   total_rounds?: number;
+  external_season_id?: number;
 }
 
 export interface InoxEvent {

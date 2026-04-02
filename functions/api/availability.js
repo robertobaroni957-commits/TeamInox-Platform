@@ -115,15 +115,20 @@ export async function onRequestPost(context) {
 
             await env.DB.batch(statements);
 
-            return new Response(JSON.stringify({ success: true, message: "Preferences updated" }));
-        }
+            return new Response(JSON.stringify({ success: true, message: "Preferences updated" }), {
+                headers: { "Content-Type": "application/json" }
+            });
+            }
 
-        // ============================
-        // Race Availability
-        // ============================
-        if (type === 'race') {
+            // ============================
+            // Race Availability
+            // ============================
+            if (type === 'race') {
             if (!payload || payload.roundId === undefined || payload.status === undefined) {
-                return new Response(JSON.stringify({ error: "Invalid payload for race availability" }), { status: 400 });
+                return new Response(JSON.stringify({ error: "Invalid payload for race availability" }), { 
+                    status: 400,
+                    headers: { "Content-Type": "application/json" }
+                });
             }
 
             console.log(`[DEBUG] Inserimento availability: roundId=${payload.roundId}, status=${payload.status}`);
@@ -134,13 +139,21 @@ export async function onRequestPost(context) {
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             `).bind(zwid, payload.roundId, payload.status).run();
 
-            return new Response(JSON.stringify({ success: true, message: "Race availability updated" }));
-        }
+            return new Response(JSON.stringify({ success: true, message: "Race availability updated" }), {
+                headers: { "Content-Type": "application/json" }
+            });
+            }
 
-        return new Response(JSON.stringify({ error: "Invalid request type" }), { status: 400 });
+            return new Response(JSON.stringify({ error: "Invalid request type" }), { 
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+            });
 
-    } catch (e) {
-        console.error("[DEBUG] API POST Availability Error:", e);
-        return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { status: 500 });
-    }
-}
+            } catch (e) {
+            console.error("[DEBUG] API POST Availability Error:", e);
+            return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+            });
+            }
+            }

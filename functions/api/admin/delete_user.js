@@ -1,13 +1,6 @@
 // functions/api/admin/delete_user.js
-export async function onRequestPost(context) {
-    const { request, env } = context;
-    const user = context.data?.user;
-
-    // Solo l'admin può eliminare
-    if (user?.role !== 'admin') {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-
+export async function onRequestPost({ request, env }) {
+    // Il middleware ha già garantito l'accesso per il ruolo 'admin'
     try {
         const { userId } = await request.json();
 
@@ -18,7 +11,7 @@ export async function onRequestPost(context) {
         // Eliminiamo l'atleta
         await env.DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId).run();
 
-        return new Response(JSON.stringify({ success: true, message: "Utente eliminato correttamente." }));
+        return new Response(JSON.stringify({ success: true, message: "Utente eliminato correttamente" }));
 
     } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
