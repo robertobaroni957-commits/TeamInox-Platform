@@ -29,7 +29,7 @@ export async function onRequestGET({ env, data }) {
         
         // Eseguiremo una query per dimostrazione
         const { results } = await env.DB.prepare(
-            "SELECT username, role, created_at FROM users LIMIT 10"
+            "SELECT name as username, role, created_at FROM athletes LIMIT 10"
         ).all();
         
         // Rimuoviamo il campo sensibile prima di inviare

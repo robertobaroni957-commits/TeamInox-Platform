@@ -1,33 +1,46 @@
 @echo off
 setlocal
+
+REM ========================================================
+REM CONFIG (Dati presi dal wrangler.toml)
+REM ========================================================
 set JWT_SECRET=test_dev_secret_inoxteam_2026
+set D1_DB_ID=c45289cd-c758-4a9b-85c8-3e06713df1e4
+
 echo ========================================================
-echo AVVIO COMPLETO INOXTEAM PLATFORM (UNIFIED DEV)
+echo AVVIO COMPLETO INOXTEAM PLATFORM (DEV MODE)
 echo ========================================================
-echo Frontend: Vite (React + TypeScript) on :5173
-echo Backend:  Cloudflare Pages + D1 Database on :8788
+echo Frontend + API: http://127.0.0.1:8788
+echo Database ID: %D1_DB_ID%
 echo ========================================================
 echo.
 
-echo [1/2] Avvio del Frontend (Vite)...
-start "Vite - Inoxteam Frontend" cmd /c "npm run dev"
+REM ========================================================
+REM STEP 1 - BUILD FRONTEND
+REM ========================================================
+echo [1/2] Build frontend...
+call npm run build
 
-echo [2/2] Avvio del Backend (Wrangler)...
-echo (Configurazione D1: inox_auth_db)
-start "Wrangler - Inoxteam Backend" cmd /c "npx wrangler pages dev --local --d1 DB=c45289cd-c758-4a9b-85c8-3e06713df1e4 --binding JWT_SECRET=%JWT_SECRET% --proxy 5173"
+IF %ERRORLEVEL% NEQ 0 (
+    echo ERRORE nella build del frontend. STOP.
+    pause
+    exit /b
+)
 
+echo Build completata.
 echo.
-echo Attendere il caricamento dei servizi (5 secondi)...
-timeout /t 5 /nobreak > nul
 
-echo.
-echo Apertura del browser su http://localhost:8788 ...
-start http://localhost:8788
+REM ========================================================
+REM STEP 2 - AVVIO WRANGLER (SERVER UNIFICATO)
+REM ========================================================
+echo [2/2] Avvio Wrangler (Server API + Static Files)...
+echo Verranno caricate le funzioni dalla cartella ./functions
 
-echo.
-echo Procedura completata.
-echo Usa la finestra di Wrangler per monitorare le chiamate API (/api/*).
-echo Usa la finestra di Vite per monitorare il log del frontend.
-echo.
+:: Nota: Usiamo l'ID esatto per collegarci ai rider caricati.
+:: Se i rider non appaiono, verifica che siano stati caricati in locale (--local)
+:: e non sul cloud Cloudflare.
+
+npx wrangler pages dev ./dist --local --d1 DB=%D1_DB_ID% --binding JWT_SECRET=%JWT_SECRET% --ip 127.0.0.1 --port 8788 --compatibility-date=2024-05-18
+
 pause
 endlocal

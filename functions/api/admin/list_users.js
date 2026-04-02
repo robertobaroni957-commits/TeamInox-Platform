@@ -23,7 +23,7 @@ export async function onRequestGet({ request, env }) {
 
         // 2. Recupera tutti gli utenti
         const { results } = await env.DB.prepare(
-            "SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC"
+            "SELECT zwid as id, name as username, email, role, created_at FROM athletes ORDER BY created_at DESC"
         ).all();
 
         return new Response(JSON.stringify(results), { 

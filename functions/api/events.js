@@ -1,4 +1,4 @@
-export async function onRequestGET({ env }) {
+export async function onRequestGet({ env }) {
   try {
     const { results } = await env.DB.prepare(
       "SELECT * FROM inox_events WHERE is_active = 1 ORDER BY CASE day_of_week WHEN 'Lunedì' THEN 1 WHEN 'Martedì' THEN 2 WHEN 'Mercoledì' THEN 3 WHEN 'Giovedì' THEN 4 WHEN 'Venerdì' THEN 5 WHEN 'Sabato' THEN 6 WHEN 'Domenica' THEN 7 END, time ASC"

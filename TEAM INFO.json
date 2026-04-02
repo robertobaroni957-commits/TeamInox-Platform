@@ -1,0 +1,3001 @@
+
+ {
+  "Column1": 1,
+  "A": "Rider Name",
+  "B": "CE",
+  "C": "e-mail",
+  "F": "ZwiftID",
+  "G": "06:00",
+  "H": "07:00",
+  "I": "07:30",
+  "J": "09:30",
+  "K": "10:30",
+  "L": "11:30",
+  "M": "12:00",
+  "N": "13:00",
+  "O": "14:00",
+  "P": "18:00",
+  "Q": "18:30",
+  "R": "19:00",
+  "S": "19:15",
+  "T": "19:30",
+  "U": "19:45",
+  "V": "20:00",
+  "W": "20:15",
+  "X": "20:30",
+  "Y": "20:45",
+  "Z": "Note",
+  "AA": "Presente\nAssente"
+ },
+ null,
+ {
+  "Column1": 2,
+  "A": "Andrea Cerri",
+  "B": "A",
+  "C": "a.cerri75@gmail.com",
+  "D": "ELITE",
+  "E": "​",
+  "F": 3252657,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💛",
+  "Q": "💛",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚",
+  "U": "💚",
+  "V": "💚",
+  "W": "💛",
+  "X": "💛",
+  "Y": "💛"
+ },
+ {
+  "Column1": 3,
+  "A": "Cristian Collesei",
+  "B": "A",
+  "C": "cristiancollesei@libero.it",
+  "D": "ELITE",
+  "E": "​",
+  "F": 3092045
+ },
+ {
+  "Column1": 4,
+  "A": "Francesco Avesani",
+  "B": "A",
+  "C": "francesco.avesani@gmail.com",
+  "D": "ELITE",
+  "E": "​",
+  "F": 413798
+ },
+ {
+  "Column1": 5,
+  "A": "Giovanni Bettega ",
+  "B": "A",
+  "C": "gbettega71@gmail.com",
+  "D": "ELITE",
+  "E": "​",
+  "F": 6778481
+ },
+ {
+  "Column1": 6,
+  "A": "Giovanni Guerrera",
+  "B": "A",
+  "C": "gioadry12@gmail.com",
+  "D": "ELITE",
+  "E": "​",
+  "F": 2320632,
+  "Z": "corre la domenica"
+ },
+ {
+  "Column1": 7,
+  "A": "Guido Lamet",
+  "B": "A",
+  "C": "guido.lamet@gmail.com",
+  "D": "ELITE",
+  "E": "​",
+  "F": 5965851
+ },
+ {
+  "Column1": 8,
+  "A": "Gerolamo Vigorelli",
+  "B": "A",
+  "C": "gerolamo.v@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6057042
+ },
+ {
+  "Column1": 9,
+  "A": "Giuseppe Malinconico",
+  "B": "A",
+  "C": "peppemal90@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 3139160,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "💛",
+  "O": "💛",
+  "P": "💛",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💛",
+  "U": "💛",
+  "V": "💛",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 10,
+  "A": "Lee Main",
+  "B": "A",
+  "C": "lm@atn-group.co.uk",
+  "D": "​",
+  "E": "​",
+  "F": 6796084
+ },
+ {
+  "Column1": 11,
+  "A": "Michele Cervellin",
+  "B": "A",
+  "C": "michelecervellin@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 6145554
+ },
+ {
+  "Column1": 12,
+  "A": "Mirko Gritti",
+  "B": "A",
+  "C": "mirko90gt@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 4379545
+ },
+ {
+  "Column1": 13,
+  "A": "Paolo Spadaro",
+  "B": "A",
+  "C": "Paolo.spadaro69@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4333414
+ },
+ {
+  "Column1": 14,
+  "A": "Simone Magi",
+  "B": "A",
+  "C": "simo.ptrainer@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1076112
+ },
+ {
+  "Column1": 15,
+  "A": "Alfredo Bertelli",
+  "B": "B",
+  "C": "alfred.bertelli@gmail.com",
+  "D": "BERSERK",
+  "E": "​",
+  "F": 1798563
+ },
+ {
+  "Column1": 16,
+  "A": "Danilo Mazzola",
+  "B": "B",
+  "C": "danilomazzola12@hotmail.it\nmazzola.dnl@gmail.com",
+  "D": "BERSERK",
+  "E": "​",
+  "F": 5376917,
+  "Z": "Assente per lavoro nel Round 4"
+ },
+ {
+  "Column1": 17,
+  "A": "Giulio Strazzulla",
+  "B": "B",
+  "C": "giuliostrazzulla@gmail.com",
+  "D": "BERSERK",
+  "E": "​",
+  "F": 1684452
+ },
+ {
+  "Column1": 18,
+  "A": "Nicholas Malvicini",
+  "B": "B",
+  "C": "nicholas.malvi@yahoo.com",
+  "D": "BERSERK",
+  "E": "​",
+  "F": 6922219,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "⛔",
+  "Q": "⛔",
+  "R": "⛔",
+  "S": "⛔",
+  "T": "💛",
+  "U": "💛",
+  "V": "💚",
+  "W": "💚",
+  "X": "💚",
+  "Y": "💛"
+ },
+ {
+  "Column1": 19,
+  "A": "Federico Garavaglia",
+  "B": "B",
+  "C": "federico-garavaglia@hotmail.it",
+  "D": "DEV",
+  "E": "​",
+  "F": 6057167
+ },
+ {
+  "Column1": 20,
+  "A": "Francesco Salis",
+  "B": "B",
+  "C": "salis.francesco@gmail.com",
+  "D": "DEV",
+  "E": "​",
+  "F": 2006706
+ },
+ {
+  "Column1": 21,
+  "A": "Gianmarco Donetti",
+  "B": "B",
+  "C": "gianmarco.donetti@yahoo.it",
+  "D": "DEV",
+  "E": "​",
+  "F": 789201
+ },
+ {
+  "Column1": 22,
+  "A": "Giuseppe Durante",
+  "B": "B",
+  "C": "gdurante50@hotmail.com",
+  "D": "DEV",
+  "E": "​",
+  "F": 904546
+ },
+ {
+  "Column1": 23,
+  "A": "Horse Crazy",
+  "B": "B",
+  "C": "tetopezz1968@gmail.com",
+  "D": "DEV",
+  "E": "​",
+  "F": "4314738\n6354912"
+ },
+ {
+  "Column1": 24,
+  "A": "Luigi Buso",
+  "B": "B",
+  "C": "arche.snc@gmail.com",
+  "D": "DEV",
+  "E": "​",
+  "F": 4412965
+ },
+ {
+  "Column1": 25,
+  "A": "Massimiliano Caccia",
+  "B": "B",
+  "C": "cacciamassimiliano@gmail.com",
+  "D": "DEV",
+  "E": "​",
+  "F": 5280007
+ },
+ {
+  "Column1": 26,
+  "A": "Roberto Pegoraro",
+  "B": "B",
+  "C": "roberto-pegoraro@outlook.com",
+  "D": "DEV",
+  "E": "​",
+  "F": 4686799,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "⛔",
+  "Q": "⛔",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚",
+  "U": "💚",
+  "V": "💚",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 27,
+  "A": "Andrew Jones",
+  "B": "B",
+  "C": "andrewjones2@sky.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 1120055
+ },
+ {
+  "Column1": 28,
+  "A": "Antonio Bove",
+  "B": "B",
+  "C": "prbove@gmail.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 4209127,
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚",
+  "U": "💛",
+  "V": "💛"
+ },
+ {
+  "Column1": 29,
+  "A": "Jon Hall",
+  "B": "B",
+  "C": "ionic-00.roomful@icloud.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 6873542,
+  "Z": "Infortunato"
+ },
+ {
+  "Column1": 30,
+  "A": "Kai Mittelmann",
+  "B": "B",
+  "C": "kai.mittelmann@mailbox.org",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 4840724
+ },
+ {
+  "Column1": 31,
+  "A": "Luca Durighel",
+  "B": "B",
+  "C": "lucadurighel@gmail.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 6139819
+ },
+ {
+  "Column1": 32,
+  "A": "Matteo Marsetti",
+  "B": "B",
+  "C": "masso85@gmail.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 906430
+ },
+ {
+  "Column1": 33,
+  "A": "Olaf Görnig ",
+  "B": "B",
+  "C": "olafgoernig@gmx.de",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 1210704
+ },
+ {
+  "Column1": 34,
+  "A": "Tony Howard",
+  "B": "B",
+  "C": "Howard_449@hotmail.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 1141125,
+  "G": "💚",
+  "H": "💚",
+  "I": "💚",
+  "J": "💚",
+  "K": "💚",
+  "L": "💚",
+  "M": "💚",
+  "N": "💚",
+  "O": "💚",
+  "P": "💚",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚",
+  "U": "💚",
+  "V": "💚",
+  "W": "💚",
+  "X": "💚",
+  "Y": "💚"
+ },
+ {
+  "Column1": 35,
+  "A": "Valerio Vassallo",
+  "B": "B",
+  "C": "kingxv10@libero.it\nvaleriovassallo0@gmail.com",
+  "D": "MADNESS",
+  "E": "​",
+  "F": 5794051,
+  "P": "💚",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚"
+ },
+ {
+  "Column1": 36,
+  "A": "Andrea Bianconcini",
+  "B": "B",
+  "C": "bianconcinicna@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 288609
+ },
+ {
+  "Column1": 37,
+  "A": "Andrea Erba",
+  "B": "B",
+  "C": "andreaerba@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 5650560
+ },
+ {
+  "Column1": 38,
+  "A": "Giuseppe Carbonari",
+  "B": "B",
+  "C": "carbonarigiuseppe95@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 7197230
+ },
+ {
+  "Column1": 39,
+  "A": "Luca Bollani",
+  "B": "B",
+  "C": "lucabollani1@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 3208463
+ },
+ {
+  "Column1": 40,
+  "A": "Matteo Casadei",
+  "B": "B",
+  "C": "matteo.casadei@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 199374
+ },
+ {
+  "Column1": 41,
+  "A": "Michele D'Andrea",
+  "B": "B",
+  "C": "gnappo@live.it",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 1520796
+ },
+ {
+  "Column1": 42,
+  "A": "Norberto Civardi",
+  "B": "B",
+  "C": "norbertocivardi@gmail.com",
+  "D": "NIGHTMARE",
+  "E": "​",
+  "F": 296309,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💛",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💛",
+  "T": "💛",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 43,
+  "A": "Andrea Falchetti",
+  "B": "B",
+  "C": "andreafalchetti@hotmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 3432509,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "💛",
+  "L": "💛",
+  "M": "💛",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💛",
+  "Q": "💛",
+  "R": "💛",
+  "S": "💛",
+  "T": "💛",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔",
+  "Z": "momentaneamente"
+ },
+ {
+  "Column1": 44,
+  "A": "Gaetano Lo Verde",
+  "B": "B",
+  "C": "loverdegaetano84@gmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 931830
+ },
+ {
+  "Column1": 45,
+  "A": "Loris Van de Kassteele",
+  "B": "B",
+  "C": "l.vandekassteele@gmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 810115,
+  "V": "💚"
+ },
+ {
+  "Column1": 46,
+  "A": "Luca Briccoli",
+  "B": "B",
+  "C": "lbriccoli@virgilio.it",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 1842490,
+  "S": "💛",
+  "T": "💚"
+ },
+ {
+  "Column1": 47,
+  "A": "Mario Cavallaro",
+  "B": "B",
+  "C": "cavallaro84@gmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 2690375,
+  "T": "⛔",
+  "U": "💛",
+  "V": "💚"
+ },
+ {
+  "Column1": 48,
+  "A": "Michele Tedesco",
+  "B": "B",
+  "C": "miky60mt@gmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 1152951
+ },
+ {
+  "Column1": 49,
+  "A": "Pierpaolo Varvazzo",
+  "B": "B",
+  "C": "pierpaolo.varvazzo@tin.it",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 3891733
+ },
+ {
+  "Column1": 50,
+  "A": "Ricardo Santos",
+  "B": "B",
+  "C": "ricardo_santos1985@live.com.pt",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 164627,
+  "R": "💚",
+  "S": "💚",
+  "T": "💚"
+ },
+ {
+  "Column1": 51,
+  "A": "Simone Oppezzo",
+  "B": "B",
+  "C": "oppezzosimone13271@gmail.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 475715
+ },
+ {
+  "Column1": 52,
+  "A": "Tiziano Speranza",
+  "B": "B",
+  "C": "tiziano.speranza@me.com",
+  "D": "TRINACRIA",
+  "E": "​",
+  "F": 5191249
+ },
+ {
+  "Column1": 53,
+  "A": "Diego Burattini",
+  "B": "B",
+  "C": "diegoburattini@gmail.com",
+  "D": "WARRIORS",
+  "E": "​",
+  "F": 2889372,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💚",
+  "Q": "💛",
+  "R": "💛",
+  "S": "⛔",
+  "T": "⛔",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 54,
+  "A": "Giovanni Lisi",
+  "B": "B",
+  "C": "giovanni.lisi89@gmail.com",
+  "D": "WARRIORS",
+  "E": "​",
+  "F": 1897358
+ },
+ {
+  "Column1": 55,
+  "A": "Massimo Fabbri",
+  "B": "B",
+  "C": "maxfabbri@libero.it",
+  "D": "WARRIORS",
+  "E": "​",
+  "F": 1867799
+ },
+ {
+  "Column1": 56,
+  "A": "Massimo Spagnoli",
+  "B": "B",
+  "C": "spagnolimassimo@icloud.com",
+  "D": "WARRIORS",
+  "E": "​",
+  "F": 7121469,
+  "J": "💚",
+  "K": "💚",
+  "L": "💚",
+  "M": "💚",
+  "N": "💚",
+  "O": "💚",
+  "P": "💚"
+ },
+ {
+  "Column1": 57,
+  "A": "Matteo Fumagalli",
+  "B": "B",
+  "C": "fuma9210@live.it",
+  "D": "WARRIORS",
+  "E": "​",
+  "F": 6562494,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💚",
+  "Q": "💚",
+  "R": "⛔",
+  "S": "⛔",
+  "T": "⛔",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 58,
+  "A": "Daniel Monachello",
+  "B": "B",
+  "D": "​",
+  "E": "​",
+  "F": 1881490
+ },
+ {
+  "Column1": 59,
+  "A": "Daniele Marzari",
+  "B": "B",
+  "C": "danythemafic@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5556575
+ },
+ {
+  "Column1": 60,
+  "A": "Emanuele Andreoni",
+  "B": "B",
+  "C": "emanu.andreoni@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6781105
+ },
+ {
+  "Column1": 61,
+  "A": "Fabrizio Bicchietti",
+  "B": "B",
+  "C": "Fabrizio8640@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1110228,
+  "Z": "Disponibile saltuariamente"
+ },
+ {
+  "Column1": 62,
+  "A": "Frank Peter Fiorentino",
+  "B": "B",
+  "C": "ffiorentino@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5061824
+ },
+ {
+  "Column1": 63,
+  "A": "Halil Cetinbas",
+  "B": "B",
+  "C": "hcetinbas57@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5311216
+ },
+ {
+  "Column1": 64,
+  "A": "Marco Farina",
+  "B": "B",
+  "C": "mfarina@fideuram.it",
+  "D": "​",
+  "E": "​",
+  "F": 3169461
+ },
+ {
+  "Column1": 65,
+  "A": "Onder Ozkaya",
+  "B": "B",
+  "C": "onder.ozk1983@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5153886
+ },
+ {
+  "Column1": 66,
+  "A": "Samuele Curradi",
+  "B": "B",
+  "C": "curra.sam@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7563772
+ },
+ {
+  "Column1": 67,
+  "A": "Stefano Caccia",
+  "B": "B",
+  "C": "cacciastefano@yahoo.it",
+  "D": "​",
+  "E": "​",
+  "F": 7001570
+ },
+ {
+  "Column1": 68,
+  "A": "Alessio Nisini",
+  "B": "C",
+  "C": "alessio.nisini@gmail.com",
+  "D": "AAB",
+  "E": "PRO",
+  "F": 4622555,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💛",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💛",
+  "U": "💛",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 69,
+  "A": "Claudio Ubertini",
+  "B": "C",
+  "C": "ubeprince@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 3059451,
+  "P": "💛",
+  "Q": "💛",
+  "R": "💛",
+  "S": "💛",
+  "T": "💚"
+ },
+ {
+  "Column1": 70,
+  "A": "Cristian Pelosi",
+  "B": "C",
+  "C": "cristianpelosi73@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 6797127,
+  "R": "💚",
+  "S": "💛"
+ },
+ {
+  "Column1": 71,
+  "A": "Fabio Bertoldi",
+  "B": "C",
+  "C": "fa_bert@libero.it",
+  "D": "AAB",
+  "E": "​",
+  "F": 966756,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "⛔",
+  "Q": "⛔",
+  "R": "💛",
+  "S": "💛",
+  "T": "💚",
+  "U": "💚",
+  "V": "💚",
+  "W": "💛",
+  "X": "💛",
+  "Y": "💛"
+ },
+ {
+  "Column1": 72,
+  "A": "Gabriele Forzelin",
+  "B": "C",
+  "C": "gabriele.forzelin@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 7806825
+ },
+ {
+  "Column1": 73,
+  "A": "Luca Adamo",
+  "B": "C",
+  "C": "cazzugo@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 4369191
+ },
+ {
+  "Column1": 74,
+  "A": "Luca Bille",
+  "B": "C",
+  "C": "lucabille81@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 6801312
+ },
+ {
+  "Column1": 75,
+  "A": "Martino Sabia",
+  "B": "C",
+  "C": "ezules@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 900612
+ },
+ {
+  "Column1": 76,
+  "A": "Nicola Mancini",
+  "B": "C",
+  "C": "nicola.mancini@gmail.com",
+  "D": "AAB",
+  "E": "​",
+  "F": 1237268
+ },
+ {
+  "Column1": 77,
+  "A": "Chris Musgrove",
+  "B": "C",
+  "C": "cmusgrove78@gmail.com",
+  "D": "FIRE",
+  "E": "​",
+  "F": 397261
+ },
+ {
+  "Column1": 78,
+  "A": "Claudio Varani",
+  "B": "C",
+  "C": "claudio.varani@fastwebnet.it",
+  "D": "FIRE",
+  "E": "PRO",
+  "F": 1992085
+ },
+ {
+  "Column1": 79,
+  "A": "Enzo Cabria (Viciu Paciu)",
+  "B": "C",
+  "C": "viciupacciu@gmail.com",
+  "D": "FIRE",
+  "E": "​",
+  "F": 1682095,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "💚",
+  "P": "💚",
+  "Q": "💚",
+  "R": "💛",
+  "S": "💛",
+  "T": "⛔",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 80,
+  "A": "Francesco Ravasi",
+  "B": "C",
+  "C": "fraravas@hotmail.com",
+  "D": "FIRE",
+  "E": "PRO",
+  "F": 3617605,
+  "R": "💚",
+  "S": "💚"
+ },
+ {
+  "Column1": 81,
+  "A": "Maximilian Mione",
+  "B": "C",
+  "C": "trentinomax@gmail.com",
+  "D": "FIRE",
+  "E": "​",
+  "F": 5372432,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💚",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💛",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 82,
+  "A": "Roberto Baroni",
+  "B": "C",
+  "C": "roberto.baroni957@gmail.com",
+  "D": "FIRE",
+  "E": "​",
+  "F": 2975361,
+  "P": "💚",
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚",
+  "T": "💚"
+ },
+ {
+  "Column1": 83,
+  "A": "Thomas Fischer",
+  "B": "C",
+  "C": "thomas95fischer@aol.com",
+  "D": "FIRE",
+  "E": "PRO",
+  "F": 5023502
+ },
+ {
+  "Column1": 84,
+  "A": "Vincenzo Larocca",
+  "B": "C",
+  "C": "gil88@live.it\ngilnews24@gmail.com",
+  "D": "FIRE",
+  "E": "​",
+  "F": 6441343,
+  "G": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "⛔",
+  "Q": "💛",
+  "R": "💚",
+  "S": "💚",
+  "T": "💛",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 85,
+  "A": "Luca Sampaolesi",
+  "B": "C",
+  "C": "lucasampa83@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 7596532,
+  "S": "💚",
+  "T": "💚"
+ },
+ {
+  "Column1": 86,
+  "A": "Antonio Caramia",
+  "B": "C",
+  "C": "antoniocaramia7@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 6059566
+ },
+ {
+  "Column1": 87,
+  "A": "Cesare Pisacane",
+  "B": "C",
+  "C": "cesare.pisacane@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 1821578
+ },
+ {
+  "Column1": 88,
+  "A": "Davide Bertin",
+  "B": "C",
+  "C": "davidebertin7501@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 2336555,
+  "Q": "💛"
+ },
+ {
+  "Column1": 89,
+  "A": "Michael Kirscht",
+  "B": "C",
+  "C": "michael_kirscht@web.de",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 7463714
+ },
+ {
+  "Column1": 90,
+  "A": "Michele Puri",
+  "B": "C",
+  "C": "michele.puri@gmail.com",
+  "D": "MONSTERS",
+  "E": "PRO",
+  "F": 1900916
+ },
+ {
+  "Column1": 91,
+  "A": "Roberto Sanna",
+  "B": "C",
+  "C": "robisanna@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 7371977,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "💛",
+  "M": "💛",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💚",
+  "Q": "💚",
+  "R": "⛔",
+  "S": "⛔",
+  "T": "⛔",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 92,
+  "A": "Salvo Matarazzo",
+  "B": "C",
+  "C": "salvatorematarazzo@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 943471,
+  "Q": "💚",
+  "X": "💚",
+  "Y": "💚"
+ },
+ {
+  "Column1": 93,
+  "A": "Sandro Giusti",
+  "B": "C",
+  "C": "sandrogiusti76@gmail.com",
+  "D": "MONSTERS",
+  "E": "​",
+  "F": 4583700,
+  "G": "⛔",
+  "H": "⛔",
+  "I": "⛔",
+  "J": "⛔",
+  "K": "⛔",
+  "L": "⛔",
+  "M": "⛔",
+  "N": "⛔",
+  "O": "⛔",
+  "P": "💚",
+  "Q": "💛",
+  "R": "⛔",
+  "S": "⛔",
+  "T": "⛔",
+  "U": "⛔",
+  "V": "⛔",
+  "W": "⛔",
+  "X": "⛔",
+  "Y": "⛔"
+ },
+ {
+  "Column1": 94,
+  "A": "Fabio Ghislotti",
+  "B": "C",
+  "C": "fabio@digitex.is.it",
+  "D": "PRO",
+  "E": "​",
+  "F": 7659233
+ },
+ {
+  "Column1": 95,
+  "A": "Giancarlo Rugolo",
+  "B": "C",
+  "C": "g.rugolo@gmx.de",
+  "D": "PRO",
+  "E": "​",
+  "F": 6109036
+ },
+ {
+  "Column1": 96,
+  "A": "Marco Esposito",
+  "B": "C",
+  "C": "marco.1978@alice.it",
+  "D": "PRO",
+  "E": "​",
+  "F": 6811945
+ },
+ {
+  "Column1": 97,
+  "A": "Umberto Dianzani ",
+  "B": "C",
+  "C": "umberto.dianzani@uniupo.it",
+  "D": "PRO",
+  "E": "​",
+  "F": 6172044,
+  "R": "💛",
+  "S": "💚"
+ },
+ {
+  "Column1": 98,
+  "A": "Andrea Castori",
+  "B": "D",
+  "C": "andrea.castori@alice.it",
+  "D": "LOL",
+  "E": "​",
+  "F": 3165807
+ },
+ {
+  "Column1": 99,
+  "A": "Claudio Fioravanti",
+  "B": "D",
+  "C": "claudio.fioravanti.ap@gmail.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 4386482
+ },
+ {
+  "Column1": 100,
+  "A": "Dario Paparella",
+  "B": "D",
+  "C": "dariop1975@gmail.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 2197162
+ },
+ {
+  "Column1": 101,
+  "A": "David Grosso",
+  "B": "D",
+  "C": "dgrosso@45consulting.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 6063066,
+  "Q": "💚",
+  "R": "💛",
+  "S": "💛"
+ },
+ {
+  "Column1": 102,
+  "A": "Graziano Gabrieli",
+  "B": "D",
+  "D": "LOL",
+  "E": "​",
+  "F": 1652663
+ },
+ {
+  "Column1": 103,
+  "A": "Paolo Campajola",
+  "B": "D",
+  "C": "p.campajola@gmail.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 4483917
+ },
+ {
+  "Column1": 104,
+  "A": "Raffaele Santoni",
+  "B": "D",
+  "C": "raffa.santoni50@gmail.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 2148682
+ },
+ {
+  "Column1": 105,
+  "A": "Roberto Regno",
+  "B": "D",
+  "C": "robren6660@gmail.com",
+  "D": "LOL",
+  "E": "​",
+  "F": 1573619,
+  "Q": "💚",
+  "R": "💚"
+ },
+ {
+  "Column1": 106,
+  "A": "Giovanni Cingolani",
+  "B": "D",
+  "C": "giovanni.cingolani.68@gmail.com",
+  "D": "TURTLES",
+  "E": "​",
+  "F": 7603081
+ },
+ {
+  "Column1": 107,
+  "A": "Cristian Bonafé",
+  "B": "D",
+  "C": "deltamarmi@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 7735580,
+  "Q": "💚",
+  "R": "💚",
+  "S": "💚"
+ },
+ {
+  "Column1": 108,
+  "A": "Aaron Barnett",
+  "B": "​",
+  "C": "vo2maxoh@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 209528
+ },
+ {
+  "Column1": 109,
+  "A": "Adrian Kloster",
+  "B": "​",
+  "C": "Klosteradrian84@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 766165
+ },
+ {
+  "Column1": 110,
+  "A": "Alberto Ianiro",
+  "B": "​",
+  "C": "aianiro@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 42382,
+  "Z": "Sono fuori"
+ },
+ {
+  "Column1": 111,
+  "A": "Alessandro Gabrieli",
+  "B": "​",
+  "C": "alessandrogabri_1987@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 2846874
+ },
+ {
+  "Column1": 112,
+  "A": "Alessandro Sozzi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 6731694
+ },
+ {
+  "Column1": 113,
+  "A": "Andrea Corbara",
+  "B": "​",
+  "C": "corbaraandrea@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1018362
+ },
+ {
+  "Column1": 114,
+  "A": "Andrea De Petris",
+  "B": "​",
+  "C": "andrea.depetris1986@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2332799
+ },
+ {
+  "Column1": 115,
+  "A": "Antonio Jimenez",
+  "B": "​",
+  "C": "antoniofast2008@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7994833
+ },
+ {
+  "Column1": 116,
+  "A": "Aurora Eva Sanna",
+  "B": "​",
+  "C": "robisan.na@gmail.com \naurorasanna99@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7345763
+ },
+ {
+  "Column1": 117,
+  "A": "Benedikt Magnusson",
+  "B": "​",
+  "C": "deadlift83@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 290613
+ },
+ {
+  "Column1": 118,
+  "A": "Brooke Goggin",
+  "B": "​",
+  "C": "brooke.goggin@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7317487
+ },
+ {
+  "Column1": 119,
+  "A": "Bruno Biancardi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5783213
+ },
+ {
+  "Column1": 120,
+  "A": "Capski Buttinski",
+  "B": "​",
+  "C": "artistsatwork1@mac.com",
+  "D": "​",
+  "E": "​",
+  "F": 16461
+ },
+ {
+  "Column1": 121,
+  "A": "Carlos Cubas",
+  "B": "​",
+  "C": "cubas666@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1121198
+ },
+ {
+  "Column1": 122,
+  "A": "Carlos Léon",
+  "B": "​",
+  "C": "carlosleoncastano@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5576083
+ },
+ {
+  "Column1": 123,
+  "A": "Cesare Carminati",
+  "B": "​",
+  "C": "cesare.carminati@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1791956
+ },
+ {
+  "Column1": 124,
+  "A": "Chris Lindström",
+  "B": "​",
+  "C": "chrislind90@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7536675
+ },
+ {
+  "Column1": 125,
+  "A": "Christian Bergamini",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 4464058
+ },
+ {
+  "Column1": 126,
+  "A": "Christian Tuzzi",
+  "B": "​",
+  "C": "carlitostoretto@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5313186
+ },
+ {
+  "Column1": 127,
+  "A": "Ciclista della Domenica",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 6060803
+ },
+ {
+  "Column1": 128,
+  "A": "Claudio Naselli",
+  "B": "​",
+  "C": "magicosboy@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 497406
+ },
+ {
+  "Column1": 129,
+  "A": "Claudio News",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 6940707
+ },
+ {
+  "Column1": 130,
+  "A": "Cosimo Gualano",
+  "B": "​",
+  "C": "cosimo.gualano@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 3251469
+ },
+ {
+  "Column1": 131,
+  "A": "Cristian Marcotto",
+  "B": "​",
+  "C": "marcottocristian72@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1564205
+ },
+ {
+  "Column1": 132,
+  "A": "Cristian Modolin",
+  "B": "​",
+  "C": "cristiansirk@icloud.com",
+  "D": "​",
+  "E": "​",
+  "F": 5015562
+ },
+ {
+  "Column1": 133,
+  "A": "Cristian Raimo",
+  "B": "​",
+  "C": "machebellosono@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6432653
+ },
+ {
+  "Column1": 134,
+  "A": "Daniele La Porta",
+  "B": "​",
+  "C": "laportadaniele@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2195105
+ },
+ {
+  "Column1": 135,
+  "A": "Daniele Sforza",
+  "B": "​",
+  "C": "dani.sforza@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 1799535
+ },
+ {
+  "Column1": 136,
+  "A": "Dario Finatti",
+  "B": "​",
+  "C": "dariofinatti@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 844179
+ },
+ {
+  "Column1": 137,
+  "A": "Dave OCarroll",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5425127
+ },
+ {
+  "Column1": 138,
+  "A": "David Crisp",
+  "B": "​",
+  "C": "david.crisp@shaw.ca",
+  "D": "​",
+  "E": "​",
+  "F": 848922
+ },
+ {
+  "Column1": 139,
+  "A": "David Kellogg",
+  "B": "​",
+  "C": "dave@kelloggassociates.com",
+  "D": "​",
+  "E": "​",
+  "F": 490979
+ },
+ {
+  "Column1": 140,
+  "A": "Davide Rufo",
+  "B": "​",
+  "C": "davide.rufo@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 2360782
+ },
+ {
+  "Column1": 141,
+  "A": "DB Tania",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 976527
+ },
+ {
+  "Column1": 142,
+  "A": "Dee Sagio",
+  "B": "​",
+  "C": "massimo.baldo@protonmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4972543
+ },
+ {
+  "Column1": 143,
+  "A": "Dieter Verbrugghe",
+  "B": "​",
+  "C": "verbrugghedieter@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5474460
+ },
+ {
+  "Column1": 144,
+  "A": "Elvis Gatta",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 3499743
+ },
+ {
+  "Column1": 145,
+  "A": "Emmanuel Cuet",
+  "B": "​",
+  "C": "emmanuel@cuet.fr",
+  "D": "​",
+  "E": "​",
+  "F": 1406131
+ },
+ {
+  "Column1": 146,
+  "A": "Enrico Emili",
+  "B": "​",
+  "C": "enricoemili1982@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7065061
+ },
+ {
+  "Column1": 147,
+  "A": "Enrico Oggiano",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 4444887
+ },
+ {
+  "Column1": 148,
+  "A": "Eugi Eugi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5343460
+ },
+ {
+  "Column1": 149,
+  "A": "Eveline Decock",
+  "B": "​",
+  "C": "eveline_decock@skynet.be",
+  "D": "​",
+  "E": "​",
+  "F": 7480908
+ },
+ {
+  "Column1": 150,
+  "A": "Federico Antognazza",
+  "B": "​",
+  "C": "antognazza.federico@gmail.com ",
+  "D": "​",
+  "E": "​",
+  "F": 1403401
+ },
+ {
+  "Column1": 151,
+  "A": "Florent Genestet",
+  "B": "​",
+  "C": "f.genestet@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 164079
+ },
+ {
+  "Column1": 152,
+  "A": "Francesco Cisko",
+  "B": "​",
+  "C": "cisko73mi@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1811855
+ },
+ {
+  "Column1": 153,
+  "A": "Francesco Maestri",
+  "B": "​",
+  "C": "fast_franz@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6046042
+ },
+ {
+  "Column1": 154,
+  "A": "Francois Lansival",
+  "B": "​",
+  "C": "francois.lansival@gmail.com",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 155,
+  "A": "Frederich E Sonia Costa",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5189456
+ },
+ {
+  "Column1": 156,
+  "A": "Fulvio Pedersini",
+  "B": "​",
+  "C": "fulvio.pedersini@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 604459
+ },
+ {
+  "Column1": 157,
+  "A": "Ganpiero Musarò",
+  "B": "​",
+  "C": "gian.musa@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 902450
+ },
+ {
+  "Column1": 158,
+  "A": "Garret Gosney",
+  "B": "​",
+  "C": "gosney.garret@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6144998
+ },
+ {
+  "Column1": 159,
+  "A": "Geordy Daws",
+  "B": "​",
+  "C": "geordy312@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1461193
+ },
+ {
+  "Column1": 160,
+  "A": "Gianluca Squitieri",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 3963089
+ },
+ {
+  "Column1": 161,
+  "A": "Giorgio Picasso",
+  "B": "​",
+  "C": "giopicgal@iol.it",
+  "D": "​",
+  "E": "​",
+  "F": 735777
+ },
+ {
+  "Column1": 162,
+  "A": "Giorgios Filiousis",
+  "B": "​",
+  "C": "giorgosfiliousis@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4562674
+ },
+ {
+  "Column1": 163,
+  "A": "Gonzalo Ruiz",
+  "B": "​",
+  "C": "ruizgonzalo1982@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7075516
+ },
+ {
+  "Column1": 164,
+  "A": "Gregg Christy",
+  "B": "​",
+  "C": "greggchristy94@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 15737
+ },
+ {
+  "Column1": 165,
+  "A": "Grzegorz Neubauer",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 260568
+ },
+ {
+  "Column1": 166,
+  "A": "Guido Grandi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 1555465
+ },
+ {
+  "Column1": 167,
+  "A": "Hugo Pecellin",
+  "B": "​",
+  "C": "hugojgpecellin@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1804867
+ },
+ {
+  "Column1": 168,
+  "A": "Igor Molino",
+  "B": "​",
+  "C": "igoro8746@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 35914
+ },
+ {
+  "Column1": 169,
+  "A": "Jack Regier",
+  "B": "​",
+  "C": "jackregier1115@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5326476
+ },
+ {
+  "Column1": 170,
+  "A": "James Carton",
+  "B": "​",
+  "C": "james.carton59@gmail.com\njamescarton59@outlook.fr",
+  "D": "​",
+  "E": "​",
+  "F": 5186440
+ },
+ {
+  "Column1": 171,
+  "A": "Jeff Bolton",
+  "B": "​",
+  "C": "jeffb831@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1469978
+ },
+ {
+  "Column1": 172,
+  "A": "Joao Branquinho",
+  "B": "​",
+  "C": "joaobranquinho81@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5908339
+ },
+ {
+  "Column1": 173,
+  "A": "Joel Boelke",
+  "B": "​",
+  "C": "joelboelke@yahoo.com",
+  "D": "​",
+  "E": "​",
+  "F": 3017268
+ },
+ {
+  "Column1": 174,
+  "A": "John Peters",
+  "B": "​",
+  "C": "john.j.peters@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 3049348
+ },
+ {
+  "Column1": 175,
+  "A": "Johnni Marchetto",
+  "B": "​",
+  "C": "j.marchetto78@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1484672
+ },
+ {
+  "Column1": 176,
+  "A": "Jonah Mittelmann",
+  "B": "​",
+  "C": "jonah.mittelmann@icloud.com",
+  "D": "​",
+  "E": "​",
+  "F": 16461
+ },
+ {
+  "Column1": 177,
+  "A": "JP Provost",
+  "B": "​",
+  "C": "jprovost64@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 846208
+ },
+ {
+  "Column1": 178,
+  "A": "Juan José De la muela Pavon",
+  "B": "​",
+  "C": "juanjo_muela@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1907363
+ },
+ {
+  "Column1": 179,
+  "A": "Julien Pierre",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 2895594
+ },
+ {
+  "Column1": 180,
+  "A": "Kevin Winterfield",
+  "B": "​",
+  "C": "kmwinterfield@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 475206
+ },
+ {
+  "Column1": 181,
+  "A": "L M",
+  "B": "​",
+  "C": "philliplee77@rocketmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2683925
+ },
+ {
+  "Column1": 182,
+  "A": "Lee Brenner",
+  "B": "​",
+  "C": "leebrenner164@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7026408
+ },
+ {
+  "Column1": 183,
+  "A": "Louis Swift",
+  "B": "​",
+  "C": "adresssignup@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7135119
+ },
+ {
+  "Column1": 184,
+  "A": "Luca Centioni",
+  "B": "​",
+  "C": "lucacentioni@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2418694
+ },
+ {
+  "Column1": 185,
+  "A": "Luca De Gregorio",
+  "B": "​",
+  "C": "lukart66@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1787843
+ },
+ {
+  "Column1": 186,
+  "A": "Luca Miggiano",
+  "B": "​",
+  "C": "miggianoluca.mobile@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1005113,
+  "Z": "Assente per orari "
+ },
+ {
+  "Column1": 187,
+  "A": "Luca Pastori",
+  "B": "​",
+  "C": "luca.pastori1989@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1121337,
+  "Z": "Non ci sarà per il round 3"
+ },
+ {
+  "Column1": 188,
+  "A": "Manuel Magnotti",
+  "B": "​",
+  "C": "magnotti.manuel@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5265039,
+  "Z": "Assenza per lavoro e bimbo"
+ },
+ {
+  "Column1": 189,
+  "A": "Marc Carrera",
+  "B": "​",
+  "C": "silvertomcat@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1101089
+ },
+ {
+  "Column1": 190,
+  "A": "Marcel Gode",
+  "B": "​",
+  "C": "pepetxins@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1132368
+ },
+ {
+  "Column1": 191,
+  "A": "Marco Imola",
+  "B": "​",
+  "C": "mimolasport@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2454868
+ },
+ {
+  "Column1": 192,
+  "A": "Marco Leti",
+  "B": "​",
+  "C": "dott.marcoleti@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 935456
+ },
+ {
+  "Column1": 193,
+  "A": "Marco Zanocco",
+  "B": "​",
+  "C": "marco.zanocco@tiscali.it",
+  "D": "​",
+  "E": "​",
+  "F": 6077381
+ },
+ {
+  "Column1": 194,
+  "A": "Mario Serino",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 2018335
+ },
+ {
+  "Column1": 195,
+  "A": "Mark Tighe",
+  "B": "​",
+  "C": "mark.tighe@hymans.co.uk",
+  "D": "​",
+  "E": "​",
+  "F": 6345533
+ },
+ {
+  "Column1": 196,
+  "A": "Markus Amplatz",
+  "B": "​",
+  "C": "markus.amplatz@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1548408
+ },
+ {
+  "Column1": 197,
+  "A": "Martin Rombach",
+  "B": "​",
+  "C": "atw78de@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 3184906
+ },
+ {
+  "Column1": 198,
+  "A": "Massimiliano Firmani",
+  "B": "​",
+  "C": "massimilianofirmani@alice.it",
+  "D": "​",
+  "E": "​",
+  "F": 5457066
+ },
+ {
+  "Column1": 199,
+  "A": "Massimo Picozzi",
+  "B": "​",
+  "C": "massimo.picozzi@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6745513
+ },
+ {
+  "Column1": 200,
+  "A": "Mathieu Baglan",
+  "B": "​",
+  "C": "mathieu.baglan24@orange.fr",
+  "D": "​",
+  "E": "​",
+  "F": 5281288
+ },
+ {
+  "Column1": 201,
+  "A": "Matt Hartley",
+  "B": "​",
+  "C": "matthartley2508@yahoo.co.uk",
+  "D": "​",
+  "E": "​",
+  "F": 2686515
+ },
+ {
+  "Column1": 202,
+  "A": "Matteo Crosa Lenz",
+  "B": "​",
+  "C": "mcrosalenz@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 1839454
+ },
+ {
+  "Column1": 203,
+  "A": "Matteo Currà",
+  "B": "​",
+  "C": "ciurri90@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4452175
+ },
+ {
+  "Column1": 204,
+  "A": "Matthieu De Smet",
+  "B": "​",
+  "C": "lesloupsdesterresdunord@outlook.fr",
+  "D": "​",
+  "E": "​",
+  "F": 6853346
+ },
+ {
+  "Column1": 205,
+  "A": "Mattia Brocco",
+  "B": "​",
+  "C": "mattia.brocco@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6073767
+ },
+ {
+  "Column1": 206,
+  "A": "Mattia Ferrini",
+  "B": "​",
+  "C": "mattiaferrini1998@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4661355
+ },
+ {
+  "Column1": 207,
+  "A": "Mattia Milchick",
+  "B": "​",
+  "C": "fot.79@hotmail.com\nmattiafontana28@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7506263
+ },
+ {
+  "Column1": 208,
+  "A": "Mauro Abisso",
+  "B": "​",
+  "C": "oceanblue89@hotmail.it",
+  "D": "​",
+  "E": "​",
+  "F": 3196182
+ },
+ {
+  "Column1": 209,
+  "A": "Mauro Nana",
+  "B": "​",
+  "C": "mauronana30@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5577047
+ },
+ {
+  "Column1": 210,
+  "A": "Mauro Ottonelli",
+  "B": "​",
+  "C": "marmar49.m@libero.It",
+  "D": "​",
+  "E": "​",
+  "F": 4870988
+ },
+ {
+  "Column1": 211,
+  "A": "Michael Sendner",
+  "B": "​",
+  "C": "msendner@web.de",
+  "D": "​",
+  "E": "​",
+  "F": 1705274
+ },
+ {
+  "Column1": 212,
+  "A": "Michelangelo Ianzito",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 6064280
+ },
+ {
+  "Column1": 213,
+  "A": "Michele Bonometti",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 4430242
+ },
+ {
+  "Column1": 214,
+  "A": "Michele Viola",
+  "B": "​",
+  "C": "miky60@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2253341
+ },
+ {
+  "Column1": 215,
+  "A": "Mick Summerfield",
+  "B": "​",
+  "C": "mike@salesblitz.com.au",
+  "D": "​",
+  "E": "​",
+  "F": 5417875
+ },
+ {
+  "Column1": 216,
+  "A": "Mike Lucinsky",
+  "B": "​",
+  "C": "mnm8@xtra.co.nz",
+  "D": "​",
+  "E": "​",
+  "F": 5702975
+ },
+ {
+  "Column1": 217,
+  "A": "Mirco Lassandari",
+  "B": "​",
+  "C": "mirco.silvia2@gmail.com",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 218,
+  "A": "Mirko Foltran",
+  "B": "​",
+  "C": "mirkofolt@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2741332
+ },
+ {
+  "Column1": 219,
+  "A": "Mirko Pistolozzi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 2040540
+ },
+ {
+  "Column1": 220,
+  "A": "Mr Dennis",
+  "B": "​",
+  "C": "raiderdre@gmail.com",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 221,
+  "A": "Nathan Penland",
+  "B": "​",
+  "C": "nathan.penland@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 139067
+ },
+ {
+  "Column1": 222,
+  "A": "Nathan Robertson",
+  "B": "​",
+  "C": "njrobertson75@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1995551
+ },
+ {
+  "Column1": 223,
+  "A": "Nicola Montanari",
+  "B": "​",
+  "C": "nicomontanari83@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": "1789592\n5189456"
+ },
+ {
+  "Column1": 224,
+  "A": "Norves Lazzarini",
+  "B": "​",
+  "C": "norves.lazzarini@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 5327554
+ },
+ {
+  "Column1": 225,
+  "A": "Omar Pedretti",
+  "B": "​",
+  "C": "omarpedro@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4408468
+ },
+ {
+  "Column1": 226,
+  "A": "Oskari Lehtovaara",
+  "B": "​",
+  "C": "oskarilehtovaara@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1228600
+ },
+ {
+  "Column1": 227,
+  "A": "Paolo Baldas",
+  "B": "​",
+  "C": "baldaspaolo@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5526266
+ },
+ {
+  "Column1": 228,
+  "A": "Paolo Casarini",
+  "B": "​",
+  "C": "p.casarini@tiscali.it",
+  "D": "​",
+  "E": "​",
+  "F": 2124374
+ },
+ {
+  "Column1": 229,
+  "A": "Paolo Pellegrini",
+  "B": "​",
+  "C": "pellegrini.nazione@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1797268,
+  "Z": "Sono fuori"
+ },
+ {
+  "Column1": 230,
+  "A": "Paolo Pontonio",
+  "B": "​",
+  "C": "pontonio.paolo@libero.it",
+  "D": "​",
+  "E": "​",
+  "F": 5145191
+ },
+ {
+  "Column1": 231,
+  "A": "Paolo Sebastiani",
+  "B": "​",
+  "C": "paolosebastiani0303@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 319194
+ },
+ {
+  "Column1": 232,
+  "A": "Patrick Kam",
+  "B": "​",
+  "C": "kampakyeungpatrick@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7513238
+ },
+ {
+  "Column1": 233,
+  "A": "Paul Nixon",
+  "B": "​",
+  "C": "paulos.pedals@icloud.com",
+  "D": "​",
+  "E": "​",
+  "F": 6047258
+ },
+ {
+  "Column1": 234,
+  "A": "Peter Brockhaus",
+  "B": "​",
+  "C": "peter.brockhaus@gmx.de",
+  "D": "​",
+  "E": "​",
+  "F": 3621244
+ },
+ {
+  "Column1": 235,
+  "A": "Peter Swann",
+  "B": "​",
+  "C": "peter.hunnylodge@btinternet.com",
+  "D": "​",
+  "E": "​",
+  "F": 4391995
+ },
+ {
+  "Column1": 236,
+  "A": "Piero Maretti",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 1678635
+ },
+ {
+  "Column1": 237,
+  "A": "Pietro Caroli",
+  "B": "​",
+  "C": "pipa.fa1967@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2921513
+ },
+ {
+  "Column1": 238,
+  "A": "Pietro Tomasoni",
+  "B": "​",
+  "C": "pietrotomasoni97@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7448557
+ },
+ {
+  "Column1": 239,
+  "A": "Piotr Chojnowski ",
+  "B": "​",
+  "C": "pchojnowski37@googlemail.com",
+  "D": "​",
+  "E": "​",
+  "F": 7568949
+ },
+ {
+  "Column1": 240,
+  "A": "R. Riccio",
+  "B": "​",
+  "C": "iw4eqr@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 463325
+ },
+ {
+  "Column1": 241,
+  "A": "Renato Coco",
+  "B": "​",
+  "C": "renato.coco@icloud.com",
+  "D": "​",
+  "E": "​",
+  "F": 3509403
+ },
+ {
+  "Column1": 242,
+  "A": "Robert Boak",
+  "B": "​",
+  "C": "robertboak@live.co.uk",
+  "D": "​",
+  "E": "​",
+  "F": 1497252
+ },
+ {
+  "Column1": 243,
+  "A": "Robert Schulz",
+  "B": "​",
+  "C": "ro_schulz@web.de",
+  "D": "​",
+  "E": "​",
+  "F": 4514178
+ },
+ {
+  "Column1": 244,
+  "A": "Roberto Castori",
+  "B": "​",
+  "C": "rcastori_123@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5927549
+ },
+ {
+  "Column1": 245,
+  "A": "Roberto Cecconi",
+  "B": "​",
+  "C": "cecconiroberto@alice.it",
+  "D": "​",
+  "E": "​",
+  "F": 6944697
+ },
+ {
+  "Column1": 246,
+  "A": "Roberto Crescini",
+  "B": "​",
+  "C": "robertocrescini@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1464340
+ },
+ {
+  "Column1": 247,
+  "A": "Roberto Iarossi",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 1780581
+ },
+ {
+  "Column1": 248,
+  "A": "Roberto Vietti",
+  "B": "​",
+  "C": "robvietti@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1047283
+ },
+ {
+  "Column1": 249,
+  "A": "Roman Hensel",
+  "B": "​",
+  "C": "roman@hensel.biz",
+  "D": "​",
+  "E": "​",
+  "F": 2752564
+ },
+ {
+  "Column1": 250,
+  "A": "Rosario",
+  "B": "​",
+  "C": "arosario4150@icloud.com",
+  "D": "​",
+  "E": "​",
+  "F": 7670305
+ },
+ {
+  "Column1": 251,
+  "A": "Rune Bruun Brodersen (The Mighty Shrimp)",
+  "B": "​",
+  "C": "rune.bruun.brodersen@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2708681
+ },
+ {
+  "Column1": 252,
+  "A": "Russell Young",
+  "B": "​",
+  "C": "russell.young92@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 819162
+ },
+ {
+  "Column1": 253,
+  "A": "Salvatore Cannazza",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 3668635
+ },
+ {
+  "Column1": 254,
+  "A": "Sean Moore",
+  "B": "​",
+  "C": "sgmoore4568@sky.com",
+  "D": "​",
+  "E": "​",
+  "F": 83153
+ },
+ {
+  "Column1": 255,
+  "A": "Sebastian Helm Andersen",
+  "B": "​",
+  "C": "seb.helm@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 6965131
+ },
+ {
+  "Column1": 256,
+  "A": "Sebastian Reeck",
+  "B": "​",
+  "C": "sebastianreeck@hotmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5127808
+ },
+ {
+  "Column1": 257,
+  "A": "Silvio Schuster",
+  "B": "​",
+  "C": "silvioschuster@o2online.de",
+  "D": "​",
+  "E": "​",
+  "F": 6103212
+ },
+ {
+  "Column1": 258,
+  "A": "Simone Gentili",
+  "B": "​",
+  "C": "simonegentili2012@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2606135
+ },
+ {
+  "Column1": 259,
+  "A": "Simone Mingolla",
+  "B": "​",
+  "C": "mingollasimone@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 4431468
+ },
+ {
+  "Column1": 260,
+  "A": "Srinivas Gokulnath",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 1069919
+ },
+ {
+  "Column1": 261,
+  "A": "Stefan Kentsch",
+  "B": "​",
+  "C": "stefan.kentsch@provinzial.de",
+  "D": "​",
+  "E": "​",
+  "F": 1001244
+ },
+ {
+  "Column1": 262,
+  "A": "Stefano Bordi",
+  "B": "​",
+  "C": "stefanobordi63@yahoo.it",
+  "D": "​",
+  "E": "​",
+  "F": 6012732
+ },
+ {
+  "Column1": 263,
+  "A": "Stefano Bortolot",
+  "B": "​",
+  "C": "stefano.bortolot@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2029876
+ },
+ {
+  "Column1": 264,
+  "A": "Stefano Caffari",
+  "B": "​",
+  "C": "caffarri.stefano@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 227084
+ },
+ {
+  "Column1": 265,
+  "A": "Stefano Pierini",
+  "B": "​",
+  "C": "pierini.stefano@yahoo.it",
+  "D": "​",
+  "E": "​",
+  "F": 403323
+ },
+ {
+  "Column1": 266,
+  "A": "Stephen Stewart",
+  "B": "​",
+  "C": "stephen@stobo.com",
+  "D": "​",
+  "E": "​",
+  "F": 88836
+ },
+ {
+  "Column1": 267,
+  "A": "Stuart Bulloch",
+  "B": "​",
+  "C": "stuart.sa.bulloch@dupont.com",
+  "D": "​",
+  "E": "​",
+  "F": 1330223
+ },
+ {
+  "Column1": 268,
+  "A": "Tewe",
+  "B": "​",
+  "C": "wehner-walluf@t-online.de",
+  "D": "​",
+  "E": "​",
+  "F": 1105970
+ },
+ {
+  "Column1": 269,
+  "A": "Thomas Borghese",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5797700
+ },
+ {
+  "Column1": 270,
+  "A": "Tobi Klesen",
+  "B": "​",
+  "C": "tobias.klesen@gmx.de",
+  "D": "​",
+  "E": "​",
+  "F": 2425903
+ },
+ {
+  "Column1": 271,
+  "A": "Tom Pritchard",
+  "B": "​",
+  "C": "tomtom41982@yahoo.co.uk",
+  "D": "​",
+  "E": "​",
+  "F": 6272522
+ },
+ {
+  "Column1": 272,
+  "A": "Tomer Kenan",
+  "B": "​",
+  "C": "tomerke99@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 5949065
+ },
+ {
+  "Column1": 273,
+  "A": "Tommaso Conforti",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 537810
+ },
+ {
+  "Column1": 274,
+  "A": "Toretto Eth",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 5063080
+ },
+ {
+  "Column1": 275,
+  "A": "Uli Extermann",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 4719640
+ },
+ {
+  "Column1": 276,
+  "A": "Ulisse Bellucci",
+  "B": "​",
+  "D": "​",
+  "E": "​",
+  "F": 6465392
+ },
+ {
+  "Column1": 277,
+  "A": "Wey Jyun ku",
+  "B": "​",
+  "C": "marce1.ku.777@gmail.com\ncooper.kuii@yahoo.com",
+  "D": "​",
+  "E": "​",
+  "F": 4668815
+ },
+ {
+  "Column1": 278,
+  "A": "Wilfried Weitz",
+  "B": "​",
+  "C": "wilfried@weitz-online.de",
+  "D": "​",
+  "E": "​",
+  "F": 1720489
+ },
+ {
+  "Column1": 279,
+  "A": "Wout van Wannabe",
+  "B": "​",
+  "C": "ole@dalner.dk",
+  "D": "​",
+  "E": "​",
+  "F": 3011267
+ },
+ {
+  "Column1": 280,
+  "A": "Yann Le Boulaire",
+  "B": "​",
+  "C": "yann.leboulaire.bts2a@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 2769745
+ },
+ {
+  "Column1": 281,
+  "A": "J Ester",
+  "B": "​",
+  "C": "4d.getty@gmail.com",
+  "D": "​",
+  "E": "​",
+  "F": 1039041
+ },
+ {
+  "Column1": 282,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 283,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 284,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 285,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 286,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 287,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 288,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 289,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 290,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 291,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 292,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 293,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 294,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 295,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 296,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 297,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 298,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 299,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ },
+ {
+  "Column1": 300,
+  "B": "​",
+  "D": "​",
+  "E": "​"
+ }

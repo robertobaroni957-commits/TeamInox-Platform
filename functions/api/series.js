@@ -1,8 +1,13 @@
-// /functions/api/series.ts
+// /functions/api/series.js
 
-export async function onRequestGET({ env }) {
+export async function onRequestGet({ env }) {
+  console.log("=> API SERIES: Ricevuta richiesta GET");
   try {
-    // Recupera tutte le series con conteggio dei round
+    if (!env.DB) {
+      throw new Error("Binding 'DB' non trovato in env. Controlla wrangler.toml e i parametri di avvio.");
+    }
+
+    console.log("=> API SERIES: Esecuzione query su D1...");
     const { results } = await env.DB.prepare(`
       SELECT s.*, 
         (SELECT COUNT(*) FROM rounds r WHERE r.series_id = s.id) AS total_rounds
@@ -10,18 +15,28 @@ export async function onRequestGET({ env }) {
       ORDER BY id DESC
     `).all();
 
-    return new Response(JSON.stringify(results), {
-      headers: { "Content-Type": "application/json" }
+    console.log(`=> API SERIES: Query completata. Trovati ${results?.length || 0} record.`);
+
+    return new Response(JSON.stringify(results || []), {
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("!!! ERRORE CRITICO API SERIES:", error.message);
+    return new Response(JSON.stringify({ 
+      error: error.message, 
+      stack: error.stack,
+      context: "Errore durante l'estrazione delle serie dal database D1" 
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
   }
 }
 
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
     const { name, external_season_id, scoring_type, is_active } = body;
@@ -51,7 +66,7 @@ export async function onRequestPOST({ request, env }) {
   }
 }
 
-export async function onRequestPATCH({ request, env }) {
+export async function onRequestPatch({ request, env }) {
   try {
     const body = await request.json();
     const { id, is_active } = body;

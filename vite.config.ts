@@ -9,11 +9,19 @@ export default defineConfig({
     react(),
   ],
   server: {
+    host: '127.0.0.1', // Forza Vite su IPv4
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8788', // indirizzo dove gira il tuo Worker
+        target: 'http://127.0.0.1:8788',
         changeOrigin: true,
         secure: false,
+        // Evita il proxy se la richiesta proviene già da Wrangler per evitare loop
+        bypass: (req) => {
+          if (req.headers['x-forwarded-host']?.includes('8788')) {
+            return req.url;
+          }
+        }
       },
     },
   },

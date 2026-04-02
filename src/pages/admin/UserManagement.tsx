@@ -133,7 +133,7 @@ const UserManagement: React.FC = () => {
             type="file"
             ref={fileInputRef}
             onChange={handleImportCSV}
-            accept=".csv"
+            accept=".csv,.json"
             className="hidden"
           />
           <button
@@ -142,7 +142,7 @@ const UserManagement: React.FC = () => {
             className="bg-zinc-900 border border-zinc-800 hover:border-inox-orange text-zinc-400 hover:text-white px-6 py-2.5 rounded-xl flex items-center gap-3 transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
           >
             {importing ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
-            {importing ? 'Importing...' : 'Importa Rider CSV'}
+            {importing ? 'Importing...' : 'Importa Rider CSV/JSON'}
           </button>
 
           <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl flex items-center gap-3">

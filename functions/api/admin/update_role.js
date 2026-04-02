@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
 
         // 3. Aggiorna DB
         await env.DB.prepare(
-            "UPDATE users SET role = ? WHERE id = ?"
+            "UPDATE athletes SET role = ? WHERE zwid = ?"
         ).bind(newRole, userId).run();
 
         return new Response(JSON.stringify({ message: 'Ruolo aggiornato con successo.' }), { 

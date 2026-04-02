@@ -15,13 +15,8 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ error: "User ID is required" }), { status: 400 });
         }
 
-        // Eliminiamo l'utente e i suoi dati correlati (se necessario)
-        // Nota: Qui andrebbe usata una transazione se vogliamo eliminare anche da 'athletes'
-        await env.DB.batch([
-            env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId),
-            // Se esiste un record atleta con lo stesso zwid (estratto dal database prima della cancellazione)
-            // lo eliminiamo qui. Altrimenti l'admin può farlo manualmente dalla lista atleti.
-        ]);
+        // Eliminiamo l'atleta
+        await env.DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId).run();
 
         return new Response(JSON.stringify({ success: true, message: "Utente eliminato correttamente." }));
 

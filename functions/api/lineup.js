@@ -1,5 +1,5 @@
 // functions/api/lineup.js
-export async function onRequestGET({ request, env }) {
+export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const round_id = url.searchParams.get("round_id");
   const team_id = url.searchParams.get("team_id");

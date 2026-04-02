@@ -1,4 +1,4 @@
-export async function onRequestGET(context) {
+export async function onRequestGet(context) {
   const { env } = context;
 
   try {

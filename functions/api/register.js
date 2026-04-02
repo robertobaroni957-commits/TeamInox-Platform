@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
         }
 
         // 1. Controllo duplicati (Email o ZWID)
-        const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ? OR zwift_power_id = ?").bind(email, zwid).first();
+        const existing = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ? OR zwid = ?").bind(email, zwid).first();
         if (existing) {
             return new Response(JSON.stringify({ message: 'Email o Zwift ID già registrati.' }), { 
                 status: 409,
@@ -33,11 +33,10 @@ export async function onRequestPost(context) {
         // 2. Hashing
         const hashedPassword = await bcrypt.hash(password, 10); 
 
-        // 3. Inserimento in USERS e ATHLETES (Transazione via batch)
-        await env.DB.batch([
-            env.DB.prepare("INSERT INTO users (username, email, password_hash, role, zwift_power_id) VALUES (?, ?, ?, ?, ?)").bind(username, email, hashedPassword, 'athlete', zwid),
-            env.DB.prepare("INSERT INTO athletes (zwid, name, email, role) VALUES (?, ?, ?, ?)").bind(zwid, username, email, 'athlete')
-        ]);
+        // 3. Inserimento in ATHLETES
+        await env.DB.prepare(
+            "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
+        ).bind(zwid, username, email, hashedPassword, 'athlete').run();
 
         return new Response(JSON.stringify({ 
             message: 'Registrazione completata! Ora puoi effettuare il login.',
