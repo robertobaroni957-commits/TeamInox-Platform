@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS athletes (
     name TEXT NOT NULL,
     email TEXT,
     password_hash TEXT,              
-    team TEXT,
     base_category TEXT,              
     is_registered_tour BOOLEAN DEFAULT 0,
     role TEXT DEFAULT 'athlete',     -- 'admin', 'captain', 'athlete'
@@ -43,11 +42,18 @@ CREATE TABLE IF NOT EXISTS teams (
     division TEXT,                   -- Division 1, 2, 3...
     division_number INTEGER,
     captain_id INTEGER REFERENCES athletes(zwid),
-    wtrl_team_id INTEGER,            -- ID per sync (es: 75150)
+    wtrl_team_id INTEGER UNIQUE,     -- ID per sync (es: 75150)
     club_id TEXT
 );
 
--- 4. LINEUP (Chi corre questa settimana)
+-- 3b. ROSTER DEI TEAM (Membri effettivi dei team - Relazione Molti-a-Molti)
+CREATE TABLE IF NOT EXISTS team_members (
+    team_id INTEGER REFERENCES teams(id),
+    athlete_id INTEGER REFERENCES athletes(zwid),
+    PRIMARY KEY (team_id, athlete_id)
+);
+
+-- 4. LINEUP (Chi corre questa settimana - Un atleta può stare in UNA sola lineup per round)
 CREATE TABLE IF NOT EXISTS race_lineup (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     round_id INTEGER REFERENCES rounds(id),
@@ -55,7 +61,7 @@ CREATE TABLE IF NOT EXISTS race_lineup (
     athlete_id INTEGER REFERENCES athletes(zwid),
     role TEXT DEFAULT 'starter',     -- 'starter', 'reserve'
     status TEXT DEFAULT 'pending',   -- 'pending', 'confirmed', 'rejected'
-    UNIQUE(round_id, team_id, athlete_id)
+    UNIQUE(round_id, athlete_id)     -- VINCOLO: Solo una lineup per round per atleta
 );
 
 -- 5. RISULTATI (Dati Sauce + ZP)
@@ -96,9 +102,14 @@ CREATE TABLE IF NOT EXISTS user_time_preferences (
     FOREIGN KEY (time_slot_id) REFERENCES league_times(id)
 );
 
--- Inizializzazione Slot Orari Standard ZRL
+-- Inizializzazione Slot Orari Standard ZRL (Convertiti in CEST per Parigi/Amsterdam)
 INSERT OR REPLACE INTO league_times (id, region, start_time_utc, display_name, slot_order) VALUES
-('EMEA_C', 'Europe', '18:30', 'EMEA Central (19:30 CET)', 4);
+('EMEA_E', 'EMEA', '17:00', 'EMEA East (18:00 CEST)', 1),
+('EMEA_C', 'EMEA', '18:30', 'EMEA Central (19:30 CEST)', 2),
+('EMEA_W', 'EMEA', '20:00', 'EMEA West (21:00 CEST)', 3),
+('AMER_E', 'Americas', '23:00', 'Americas East (00:00+1 CEST)', 4),
+('AMER_W', 'Americas', '01:00', 'Americas West (02:00+1 CEST)', 5),
+('OCEANIA', 'Oceania', '09:00', 'Oceania (10:00 CEST)', 6);
 
 -- 8. EVENTI SETTIMANALI INOX
 CREATE TABLE IF NOT EXISTS inox_events (
@@ -132,4 +143,3 @@ INSERT OR REPLACE INTO inox_events (name, day_of_week, time, description, catego
 ('Sunday Masters Trilogy (1/3)', 'Domenica', '18:00', 'Trilogia della Domenica - Gara 1.', 'Trilogy', 'https://www.zwift.com/events/tag/inox'),
 ('Sunday Masters Trilogy (2/3)', 'Domenica', '18:20', 'Trilogia della Domenica - Gara 2.', 'Trilogy', 'https://www.zwift.com/events/tag/inox'),
 ('Sunday Masters Trilogy (3/3)', 'Domenica', '18:40', 'Trilogia della Domenica - Gara 3.', 'Trilogy', 'https://www.zwift.com/events/tag/inox');
-

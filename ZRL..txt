@@ -1,0 +1,12 @@
+ZRL. 
+-NUOVA Stagione
+1) inserire numero stagione (attualmente 19) e data inizio/fine
+2) chiedere agli atleti disponibilità (compilare form sul sito). Ad ogni accesso avviso di mancata compilazione. sollecitazioni anche tramite Discord.
+3) importare dal sito WTRL le squadre iscritte per la stagione corrente
+4) Comporre i roster in base ai suggerimenti ricavati dalle disponibilità
+5) Per ciascuna squadra importare i corridori dal sito WTRL
+6) composizione lineup da parte del capitano e pubblicazione in apposito spazio sul sito
+7) importare risultati da WTRL e pubblicare in apposito spazio sul sito.
+8) Generare un Giornalino dove vengono evdenziate le prestazioni di tutte le squadre.
+9) Bilancio della stagione con pubblicazioni
+10) Nuova stagione-----> torna al punto 1

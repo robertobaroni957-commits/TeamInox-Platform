@@ -155,6 +155,24 @@ export const api = {
     return handleResponse(res);
   },
 
+  getRoster: async (teamId: number, roundId?: number): Promise<Athlete[]> => {
+    const url = roundId 
+      ? `${API_BASE}/roster?team_id=${teamId}&round_id=${roundId}`
+      : `${API_BASE}/roster?team_id=${teamId}`;
+    const res = await fetch(url, { headers: getHeaders() });
+    const data = await handleResponse(res);
+    return data.roster || [];
+  },
+
+  assignToRoster: async (athleteZwid: number, teamId: number): Promise<any> => {
+    const res = await fetch(`${API_BASE}/roster`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ athlete_zwid: athleteZwid, team_id: teamId }),
+    });
+    return handleResponse(res);
+  },
+
   createEvent: async (event: Omit<InoxEvent, 'id'>): Promise<any> => {
     const res = await fetch(`${API_BASE}/events`, {
       method: 'POST',
@@ -178,6 +196,16 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(),
     });
+    return handleResponse(res);
+  },
+
+  getRosterSuggestions: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/admin/roster-suggestions`, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
+  checkAvailabilityStatus: async (): Promise<{ missing: boolean }> => {
+    const res = await fetch(`${API_BASE}/availability-check`, { headers: getHeaders() });
     return handleResponse(res);
   }
 };

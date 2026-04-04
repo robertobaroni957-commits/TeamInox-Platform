@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LogOut, Calendar, Trophy, Zap, Shield, LayoutDashboard,Home, Users, User, Mail } from 'lucide-react'; 
+import { 
+  LogOut, Calendar, Trophy, Zap, Shield, LayoutDashboard, 
+  Home, Users, User, Mail, Settings, Briefcase
+} from 'lucide-react'; 
 
 interface UserData {
   role: 'user' | 'captain' | 'admin' | 'moderator' | 'guest';
@@ -18,25 +21,12 @@ const Sidebar: React.FC = () => {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const rawRole = payload.role;
-        
-        if (!rawRole) {
-           setUser({ role: 'guest', name: 'GUEST RIDER' });
-           return;
-        }
-
         const role = (rawRole === 'athlete' ? 'user' : rawRole) as UserData['role'];
-        
-        setUser({ 
-          role, 
-          name: payload.username || 'Rider' 
-        });
+        setUser({ role, name: payload.username || 'Rider' });
       } catch (e) {
-        console.error('Session Error:', e);
         localStorage.removeItem('inox_token');
         setUser({ role: 'guest', name: 'GUEST RIDER' });
       }
-    } else {
-        setUser({ role: 'guest', name: 'GUEST RIDER' });
     }
   }, []);
 
@@ -54,7 +44,7 @@ const Sidebar: React.FC = () => {
         `flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-l-4 ${
           isActive 
             ? (special === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500 shadow-[inset_4px_0_15_rgba(239,68,68,0.1)]' : 
-               special === 'mwt' ? 'bg-inox-orange/10 text-inox-orange border-inox-orange shadow-[inset_4px_0_15_rgba(252,103,25,0.1)]' :
+               special === 'zrl' ? 'bg-orange-500/10 text-orange-500 border-orange-500 shadow-[inset_4px_0_15_rgba(252,103,25,0.1)]' :
                'bg-inox-cyan/10 text-inox-cyan border-inox-cyan shadow-[inset_4px_0_15_rgba(0,240,255,0.1)]')
             : 'text-zinc-500 border-transparent hover:bg-zinc-900/50 hover:text-zinc-300'
         }`
@@ -72,14 +62,12 @@ const Sidebar: React.FC = () => {
   );
 
   const isGuest = user?.role === 'guest';
+  const isAdmin = user?.role === 'admin' || user?.role === 'moderator';
+  const isCaptain = user?.role === 'captain' || user?.role === 'admin';
 
   return (
     <>
-      {/* Mobile Toggle */}
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-[100] p-3 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl text-inox-orange"
-      >
+      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden fixed top-4 left-4 z-[100] p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-inox-orange">
         <div className="flex flex-col gap-1 w-5">
           <span className={`h-1 bg-current transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
           <span className={`h-1 bg-current transition-all ${isOpen ? 'opacity-0' : ''}`}></span>
@@ -87,123 +75,56 @@ const Sidebar: React.FC = () => {
         </div>
       </button>
 
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] lg:hidden"
-        ></div>
-      )}
+      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] lg:hidden"></div>}
 
-      {/* Sidebar Content */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 w-[300px] bg-black border-r border-zinc-900 z-[90] transform transition-transform duration-300 ease-in-out flex flex-col
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        {/* Logo */}
-        <div className="p-8 border-b border-zinc-900 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" className="h-8" alt="Inoxteam Logo" />
-          </div>
+      <aside className={`fixed lg:static inset-y-0 left-0 w-[300px] bg-black border-r border-zinc-900 z-[90] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-8 border-b border-zinc-900">
+          <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" className="h-8" alt="Logo" />
         </div>
 
-        {/* User Profile Summary */}
-        <div className="px-6 py-6 border-b border-zinc-900 bg-zinc-900/20">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 ${
-              user?.role === 'admin' ? 'border-red-500 text-red-500 bg-red-500/10' :
-              user?.role === 'moderator' ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' :
-              user?.role === 'captain' ? 'border-inox-orange text-inox-orange bg-inox-orange/10' :
-              user?.role === 'guest' ? 'border-zinc-500 text-zinc-500 bg-zinc-500/10' :
-              'border-inox-cyan text-inox-cyan bg-inox-cyan/10'
-            }`}>
-              {user?.name.substring(0, 2).toUpperCase() || '??'}
-            </div>
-            <div>
-              <p className="text-xs font-black text-white uppercase truncate max-w-[160px]">{user?.name || 'GUEST'}</p>
-              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{user?.role || 'visitor'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          
-          <SectionTitle>{isGuest ? 'Public Hub' : 'Main Hub'}</SectionTitle>
+          <SectionTitle>{isGuest ? 'Public' : 'Inox Hub'}</SectionTitle>
           {isGuest ? (
-             <NavItem to="/" icon={Home} label="Inox Philosophy" />
+            <NavItem to="/" icon={Home} label="Philosophy" />
           ) : (
-             <NavItem to="/dashboard" icon={LayoutDashboard} label="War Room" />
+            <NavItem to="/dashboard" icon={LayoutDashboard} label="War Room" />
           )}
           <NavItem to="/racing" icon={Zap} label="Gare Live" />
-          <NavItem to="/ranking" icon={Trophy} label="Classifiche MWT" special="mwt" />
-          <NavItem to="/events" icon={Calendar} label="Calendario Eventi" />
+          <NavItem to="/ranking" icon={Trophy} label="Classifiche" />
+          <NavItem to="/events" icon={Calendar} label="Calendario" />
 
-          {/* GUEST SPECIFIC */}
-          {isGuest && (
+          {/* ZRL CENTRALIZED HUB */}
+          {!isGuest && (
             <>
-              <SectionTitle>Onboarding</SectionTitle>
-              <NavItem to="/register" icon={User} label="Richiesta Iscrizione" />
-              <NavItem to="/contact" icon={Mail} label="Contattaci" />
-              {/* TODO: Aggiungere pagina regolamento pubblico */}
+              <SectionTitle>Zwift Racing League</SectionTitle>
+              {isCaptain ? (
+                <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+              ) : (
+                <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità" />
+              )}
             </>
           )}
 
-          {/* USER SECTION (Athlete) - Hidden for Admin/Moderator to keep it clean */}
-          {!isGuest && user?.role !== 'admin' && user?.role !== 'moderator' && (
+          {/* ADMIN TOOLS */}
+          {isAdmin && (
             <>
-              <SectionTitle>Rider Tools</SectionTitle>
-              <NavItem to="/availability" icon={Calendar} label="Disponibilità" />
-              <NavItem to="/teams" icon={Users} label="I Miei Team" />
-            </>
-          )}
-
-          {/* CAPTAIN SECTION (Team Manager) */}
-          {(user?.role === 'captain' || user?.role === 'admin') && (
-            <>
-              <SectionTitle>Captain Deck</SectionTitle>
-              <NavItem to="/roster" icon={Shield} label="Gestione Roster" />
-              {/* TODO: Aggiungere gestione membri team */}
-            </>
-          )}
-
-          {/* MODERATOR SECTION (Staff) */}
-          {(user?.role === 'moderator' || user?.role === 'admin') && (
-            <>
-              <SectionTitle>Staff Ops</SectionTitle>
-              <NavItem to="/admin/events" icon={Calendar} label="Modifica Eventi" />
-              <NavItem to="/admin/availability" icon={Calendar} label="Controllo Disponibilità" />
-              {/* TODO: Aggiungere approvazione risultati */}
-            </>
-          )}
-
-          {/* ADMIN SECTION (Superuser) */}
-          {user?.role === 'admin' && (
-            <>
-              <SectionTitle>Command Center</SectionTitle>
-              <NavItem to="/admin/users" icon={Users} label="Gestione Utenti" special="admin" />
-              <NavItem to="/admin/teams" icon={Shield} label="Config Squadre" special="admin" />
-              {/* TODO: Aggiungere log di sistema e configurazione globale */}
+              <SectionTitle>Administration</SectionTitle>
+              <NavItem to="/admin/users" icon={Users} label="Utenti" special="admin" />
+              <NavItem to="/admin/events" icon={Settings} label="Config Eventi" special="admin" />
             </>
           )}
 
           <div className="mt-8 pt-4 border-t border-zinc-900">
             {isGuest ? (
-                <button 
-                  onClick={() => navigate('/login')}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-inox-orange hover:bg-inox-orange/10 transition-all"
-                >
-                  <User size={18} strokeWidth={2.5} />
-                  <span>Accedi (Login)</span>
-                </button>
+              <button onClick={() => navigate('/login')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-inox-orange hover:bg-inox-orange/10 transition-all">
+                <User size={18} strokeWidth={2.5} />
+                <span>Login</span>
+              </button>
             ) : (
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all"
-                >
-                  <LogOut size={18} strokeWidth={2.5} />
-                  <span>Scollegati (Logout)</span>
-                </button>
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all">
+                <LogOut size={18} strokeWidth={2.5} />
+                <span>Logout</span>
+              </button>
             )}
           </div>
         </nav>

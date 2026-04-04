@@ -41,7 +41,8 @@ export async function onRequestPost({ env }) {
     for (const t of allTeams) {
       const teamName = (t.teamname || t.name || '').toUpperCase();
       const clubId = t.clubId || t.club_id || '';
-      if (clubId !== INOX_CLUB_ID && !teamName.includes('INOX')) continue;
+      
+      if (clubId !== INOX_CLUB_ID && (!teamName.includes('INOX') || teamName.includes('EQUINOX'))) continue;
 
       const teamResult = await env.DB.prepare(`
         INSERT OR REPLACE INTO teams (name, category, division, wtrl_team_id, club_id)
@@ -59,48 +60,67 @@ export async function onRequestPost({ env }) {
 
       if (!teamResult || teamResult.id === undefined) continue;
       const internalTeamId = teamResult.id;
+      const wtrlTeamId = parseInt(t.id || t.wtrl_team_id);
       report.teams_synced++;
 
-      // Assicuriamoci che members sia un array
+      // RECUPERO ROSTER
+      console.log(`[WTRL] Fetching roster for team ${wtrlTeamId} (${teamName})...`);
       let members = [];
-      if (Array.isArray(t.members)) {
-        members = t.members;
-      } else if (t.members && typeof t.members === 'object') {
-        members = Object.values(t.members);
-      } else {
-        console.log(`[INFO] Team senza membri array: ${teamName}, dati raw:`, JSON.stringify(t).substring(0,200));
+      try {
+        const rosterUrl = `https://www.wtrl.racing/api/zrl/${SEASON_ID}/teams/${wtrlTeamId}`;
+        const rosterRes = await fetch(rosterUrl, {
+          headers: {
+            "accept": "application/json",
+            "cookie": WTRL_COOKIE,
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+          }
+        });
+        
+        if (rosterRes.ok) {
+          const rosterData = await rosterRes.json();
+          members = rosterData.members || [];
+        }
+      } catch (rosterErr) {
+        console.error(`[WTRL ERROR] Roster fetch error:`, rosterErr.message);
       }
 
-      const athleteStatements = members
-        .filter(m => m.zwiftId || m.zwid)
-        .map(m => env.DB.prepare(`
-          INSERT OR REPLACE INTO athletes (zwid, name, team_id, role)
-          VALUES (?, ?, ?, 'athlete')
-        `).bind(parseInt(m.zwiftId || m.zwid), m.name, internalTeamId));
+      const statements = [];
+      for (const m of members) {
+        const zwid = parseInt(m.zwiftId || m.zwid);
+        if (!zwid) continue;
 
-      if (athleteStatements.length > 0) {
-        await env.DB.batch(athleteStatements);
-        report.athletes_synced += athleteStatements.length;
+        // 1. Inseriamo/Aggiorniamo l'atleta
+        statements.push(env.DB.prepare(`
+          INSERT OR REPLACE INTO athletes (zwid, name, role)
+          VALUES (?, ?, 'athlete')
+        `).bind(zwid, m.name));
+
+        // 2. Associamo l'atleta al team nel roster (Many-to-Many)
+        statements.push(env.DB.prepare(`
+          INSERT OR IGNORE INTO team_members (team_id, athlete_id)
+          VALUES (?, ?)
+        `).bind(internalTeamId, zwid));
       }
 
-      report.details.push({ team: teamName, wtrl_id: t.id, roster_count: members.length });
+      if (statements.length > 0) {
+        await env.DB.batch(statements);
+        report.athletes_synced += members.length;
+      }
+
+      report.details.push({ team: teamName, wtrl_id: wtrlTeamId, roster_count: members.length });
     }
-
-    console.log(`✅ Totale squadre Inox trovate: ${report.teams_synced}`);
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Sincronizzazione completata: ${report.teams_synced} squadre trovate, ${report.athletes_synced} atleti aggiornati.`,
+      message: `Sincronizzazione completata: ${report.teams_synced} squadre e roster aggiornati.`,
       report
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (err) {
     console.error('ERRORE Sync All Teams:', err);
-    return new Response(JSON.stringify({
-      success: false,
-      error: err.message
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ success: false, error: err.message }), { 
+      status: 500, 
+      headers: { 'Content-Type': 'application/json' } 
+    });
   }
 }

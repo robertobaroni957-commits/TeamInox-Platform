@@ -10,7 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Ranking from './pages/Ranking';
 import Events from './pages/Events';
-import ZRLManagement from './pages/ZRLManagement';
+import ZRLOperations from './pages/admin/ZRLOperations';
 import WinterTourManagement from './pages/WinterTourManagement';
 
 import Availability from './pages/Availability';
@@ -18,6 +18,7 @@ import RosterBuilder from './pages/RosterBuilder';
 import UserManagement from './pages/admin/UserManagement';
 import EventManagement from './pages/admin/EventManagement';
 import AvailabilityManagement from './pages/admin/AvailabilityManagement';
+import RosterSuggestions from './pages/admin/RosterSuggestions';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
@@ -39,9 +40,9 @@ const App: React.FC = () => {
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
           <Route path="events" element={<Events />} />
-          <Route path="zrl-management" element={
+          <Route path="zrl-operations" element={
             <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
-              <ZRLManagement />
+              <ZRLOperations />
             </ProtectedRoute>
           } />
           <Route path="winter-tour-management" element={
@@ -83,6 +84,11 @@ const App: React.FC = () => {
           <Route path="admin/availability" element={
             <ProtectedRoute allowedRoles={['admin', 'moderator']}>
               <AvailabilityManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/optimizer" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RosterSuggestions />
             </ProtectedRoute>
           } />
 
