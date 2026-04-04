@@ -34,7 +34,9 @@ const PUBLIC_ROUTES = [
     '/api/rounds',
     '/api/results',
     '/api/teams',
-    '/api/setup-zrl-2026'
+    '/api/setup-zrl-2026',
+    '/api/sync-schedule',
+    '/api/sync-all-teams'
 ];
 
 export async function onRequest(context) {
@@ -55,8 +57,8 @@ export async function onRequest(context) {
         return handleNext(next);
     }
 
-    // Special case: login e register sono sempre pubblici
-    if (['/api/login_auth', '/api/register', '/api/test'].includes(path)) {
+    // Special case: login, register e sync sono sempre pubblici
+    if (['/api/login_auth', '/api/register', '/api/test', '/api/sync-schedule', '/api/sync-all-teams'].includes(path)) {
         return handleNext(next);
     }
 

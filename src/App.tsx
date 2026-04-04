@@ -10,6 +10,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Ranking from './pages/Ranking';
 import Events from './pages/Events';
+import ZRLManagement from './pages/ZRLManagement';
+import WinterTourManagement from './pages/WinterTourManagement';
 
 import Availability from './pages/Availability';
 import RosterBuilder from './pages/RosterBuilder';
@@ -37,6 +39,16 @@ const App: React.FC = () => {
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
           <Route path="events" element={<Events />} />
+          <Route path="zrl-management" element={
+            <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
+              <ZRLManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="winter-tour-management" element={
+            <ProtectedRoute allowedRoles={['moderator', 'admin']}>
+              <WinterTourManagement />
+            </ProtectedRoute>
+          } />
           
           {/* Routes restricted from Guests */}
           <Route path="teams" element={

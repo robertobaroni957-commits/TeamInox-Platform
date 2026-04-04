@@ -1,94 +1,106 @@
-export async function onRequestPost(context) {
-  const { env } = context;
-  
+export async function onRequestPost({ env }) {
   try {
-    const seasonId = "19"; 
-    const action = "teamlist";
-    const testParam = btoa(action); 
-    const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
-    const bearerToken = btoa(env.WTRL_SID);
+    const INOX_CLUB_ID = 'cef70cde-9149-43a2-b3ae-187643a44703';
+    const SEASON_ID = "19";
+    const WTRL_COOKIE = env.WTRL_COOKIE || "";
 
-    // Funzione helper per scaricare da una lega specifica
-    const fetchFromWtrl = async (wtrlId) => {
-        const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${seasonId}&action=${action}&test=${testParam}`;
+    const wtrlIds = ["zrl", "wzrl"];
+
+    const fetchTeams = async (wtrlId) => {
+      const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
+      console.log(`[WTRL] Fetching teamlist-${wtrlId}: ${url}`);
+
+      try {
         const res = await fetch(url, {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-                "Accept": "application/json",
-                "Authorization": `Bearer ${bearerToken}`,
-                "Wtrl-Integrity": env.WTRL_INTEGRITY,
-                "Cookie": `wtrl_sid=${env.WTRL_SID}; wtrl_ouid=${env.WTRL_OUID}`,
-                "X-Requested-With": "XMLHttpRequest"
-            }
+          headers: {
+            "accept": "application/json",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "cookie": WTRL_COOKIE
+          }
         });
-        if (!res.ok) return [];
+
+        if (!res.ok) {
+          const txt = await res.text();
+          console.error(`[WTRL ERROR] teamlist-${wtrlId} → ${res.status}: ${txt.substring(0, 200)}`);
+          return [];
+        }
+
         const data = await res.json();
         return data.payload || [];
+      } catch (err) {
+        console.error(`[WTRL ERROR] Fetch failed for ${wtrlId}:`, err.message);
+        return [];
+      }
     };
 
-    console.log("Inizio scansione ZRL (Open) e WZRL (Women)...");
+    const teamsLists = await Promise.all(wtrlIds.map(fetchTeams));
+    const allTeams = teamsLists.flat();
 
-    // Eseguiamo le due chiamate in parallelo
-    const [openTeams, womenTeams] = await Promise.all([
-        fetchFromWtrl("zrl"),
-        fetchFromWtrl("wzrl")
-    ]);
+    const report = { teams_synced: 0, athletes_synced: 0, details: [] };
 
-    const allTeams = [...openTeams, ...womenTeams];
+    for (const t of allTeams) {
+      const teamName = (t.teamname || t.name || '').toUpperCase();
+      const clubId = t.clubId || t.club_id || '';
+      if (clubId !== INOX_CLUB_ID && !teamName.includes('INOX')) continue;
 
-    // Filtriamo per Club ID o per Nome (evitando falsi positivi come Equinox)
-    const inoxTeams = allTeams.filter(t => {
-        const teamName = (t.teamname || "").toUpperCase();
-        const hasCorrectId = t.clubId === INOX_CLUB_ID;
-        
-        // Controllo preciso: "INOX" come parola a sé stante, non parte di altre parole (es. EQUINOX)
-        const hasInoxName = /\bINOX\b/.test(teamName);
-        
-        // Escludiamo esplicitamente Equinox per sicurezza se non ha il Club ID corretto
-        const isEquinox = teamName.includes("EQUINOX");
-        
-        return (hasCorrectId || hasInoxName) && !isEquinox;
-    });
+      const teamResult = await env.DB.prepare(`
+        INSERT OR REPLACE INTO teams (name, category, division, wtrl_team_id, club_id)
+        VALUES (?, ?, ?, ?, ?)
+        RETURNING id
+      `)
+      .bind(
+        t.teamname || t.name,
+        t.division || '',
+        t.zrldivision || '',
+        parseInt(t.id || t.wtrl_team_id),
+        clubId || INOX_CLUB_ID
+      )
+      .first();
 
-    console.log(`DEBUG: Trovate ${inoxTeams.length} squadre totali (Open: ${openTeams.length}, Women: ${womenTeams.length}).`);
+      if (!teamResult || teamResult.id === undefined) continue;
+      const internalTeamId = teamResult.id;
+      report.teams_synced++;
 
-    if (inoxTeams.length > 0) {
-        // 1. Inserimento/Aggiornamento delle squadre trovate
-        const statements = inoxTeams.map(t => {
-            return env.DB.prepare(`
-                INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(wtrl_team_id) DO UPDATE SET 
-                    name = excluded.name,
-                    category = excluded.category,
-                    division = excluded.division,
-                    club_id = excluded.club_id
-            `).bind(t.teamname, t.division, t.zrldivision, t.id, t.clubId);
-        });
-        await env.DB.batch(statements);
+      // Assicuriamoci che members sia un array
+      let members = [];
+      if (Array.isArray(t.members)) {
+        members = t.members;
+      } else if (t.members && typeof t.members === 'object') {
+        members = Object.values(t.members);
+      } else {
+        console.log(`[INFO] Team senza membri array: ${teamName}, dati raw:`, JSON.stringify(t).substring(0,200));
+      }
 
-        // 2. Pulizia: Rimuoviamo dal database le squadre che hanno un WTRL ID 
-        // ma non sono più nella nostra lista filtrata (es: Equinox rimosso dal filtro)
-        const inoxWtrlIds = inoxTeams.map(t => t.id);
-        if (inoxWtrlIds.length > 0) {
-            const placeholders = inoxWtrlIds.map(() => "?").join(",");
-            await env.DB.prepare(`
-                DELETE FROM teams 
-                WHERE wtrl_team_id IS NOT NULL 
-                AND wtrl_team_id NOT IN (${placeholders})
-            `).bind(...inoxWtrlIds).run();
-        }
+      const athleteStatements = members
+        .filter(m => m.zwiftId || m.zwid)
+        .map(m => env.DB.prepare(`
+          INSERT OR REPLACE INTO athletes (zwid, name, team_id, role)
+          VALUES (?, ?, ?, 'athlete')
+        `).bind(parseInt(m.zwiftId || m.zwid), m.name, internalTeamId));
+
+      if (athleteStatements.length > 0) {
+        await env.DB.batch(athleteStatements);
+        report.athletes_synced += athleteStatements.length;
+      }
+
+      report.details.push({ team: teamName, wtrl_id: t.id, roster_count: members.length });
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      count: inoxTeams.length,
-      message: `Database aggiornato con ${inoxTeams.length} squadre (ZRL + WZRL).` 
+    console.log(`✅ Totale squadre Inox trovate: ${report.teams_synced}`);
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: `Sincronizzazione completata: ${report.teams_synced} squadre trovate, ${report.athletes_synced} atleti aggiornati.`,
+      report
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    console.error('ERRORE Sync All Teams:', err);
+    return new Response(JSON.stringify({
+      success: false,
+      error: err.message
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
