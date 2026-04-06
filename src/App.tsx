@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import Ranking from './pages/Ranking';
 import Events from './pages/Events';
 import ZRLOperations from './pages/admin/ZRLOperations';
+import ZRLRoundManager from './pages/ZRLRoundManager';
 import WinterTourManagement from './pages/WinterTourManagement';
 
 import Availability from './pages/Availability';
@@ -43,6 +44,11 @@ const App: React.FC = () => {
           <Route path="zrl-operations" element={
             <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
               <ZRLOperations />
+            </ProtectedRoute>
+          } />
+          <Route path="zrl-round-manager" element={
+            <ProtectedRoute allowedRoles={['moderator', 'admin']}>
+              <ZRLRoundManager />
             </ProtectedRoute>
           } />
           <Route path="winter-tour-management" element={

@@ -98,7 +98,10 @@ const Sidebar: React.FC = () => {
             <>
               <SectionTitle>Zwift Racing League</SectionTitle>
               {isCaptain ? (
-                <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+                <>
+                  <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+                  {isAdmin && <NavItem to="/zrl-round-manager" icon={Calendar} label="Round Manager" special="zrl" />}
+                </>
               ) : (
                 <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità" />
               )}

@@ -15,8 +15,12 @@ import {
   Clock,
   ExternalLink,
   Star,
-  ChevronRight
+  ChevronRight,
+  AlertCircle,
+  TrendingUp,
+  Wind
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface UserInfo {
   username: string;
@@ -54,33 +58,19 @@ const Dashboard: React.FC = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // 1. Carichiamo le serie
         const seriesData = await api.getSeries();
         setAllSeries(seriesData);
         const zrlSeries = seriesData.find(s => s.is_active && s.name.toUpperCase().includes('ZRL')) || seriesData.find(s => s.is_active);
         setActiveSeries(zrlSeries || null);
 
-        // 2. Carichiamo tutti i round della serie
         if (zrlSeries) {
           try {
             const rounds = await api.getRounds(zrlSeries.id);
-            
-            // Filtro anti-duplicati rigoroso nel frontend:
-            // Usiamo una Map per tenere solo l'ID più alto per ogni nome di round
-            const uniqueRoundsMap = new Map();
-            (rounds || []).forEach(r => {
-              const existing = uniqueRoundsMap.get(r.name);
-              if (!existing || r.id > existing.id) {
-                uniqueRoundsMap.set(r.name, r);
-              }
-            });
-
-            const sorted = Array.from(uniqueRoundsMap.values()).sort((a, b) => 
+            const sorted = (rounds || []).sort((a, b) => 
               new Date(a.date).getTime() - new Date(b.date).getTime()
             );
             
             setAllRounds(sorted);
-            
             const now = new Date();
             const next = sorted.find(r => new Date(r.date) >= now);
             setNextRound(next || sorted[sorted.length - 1] || null);
@@ -89,7 +79,6 @@ const Dashboard: React.FC = () => {
           }
         }
 
-        // 3. Carichiamo gli eventi settimanali
         try {
           const eventsData = await api.getEvents();
           setEvents((eventsData || []).slice(0, 4));
@@ -97,7 +86,6 @@ const Dashboard: React.FC = () => {
           console.error('Events load error:', err);
         }
 
-        // 4. Controllo disponibilità
         if (userRole !== 'admin' && userRole !== 'moderator' && userRole !== 'guest') {
           try {
             const availabilityData = await api.getUserAvailability();
@@ -114,7 +102,6 @@ const Dashboard: React.FC = () => {
         } else {
           setHasAvailability(true);
         }
-
       } catch (err) {
         console.error('Dashboard Data Error:', err);
       } finally {
@@ -124,87 +111,96 @@ const Dashboard: React.FC = () => {
     loadData();
   }, []);
 
+  const handleZRLClick = () => {
+    if (user?.role === 'admin' || user?.role === 'captain' || user?.role === 'moderator') {
+      navigate('/zrl-operations');
+    } else {
+      navigate('/racing');
+    }
+  };
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 pb-12">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       
       {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white">
+      <header className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-zinc-800 pb-6">
         <div>
-          <h1 className="text-4xl font-black italic tracking-tighter uppercase">
-            {user?.role === 'guest' ? 'BENVENUTO RIDER' : `BENTORNATO, ${user?.username}`}
-          </h1>
-          <p className="text-zinc-500 font-medium italic text-sm mt-1">
-            Status Operativo: {loading ? 'Sincronizzazione...' : 'Sistemi Online'}
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-2 h-8 bg-[#fc6719] rounded-full" />
+            <h1 className="text-3xl font-black italic tracking-tighter uppercase text-white">
+              {user?.role === 'guest' ? 'GUEST RIDER' : user?.username}
+            </h1>
+          </div>
+          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest ml-5">
+            {loading ? 'Sincronizzazione Sistemi...' : 'Operational Status: Online'}
           </p>
         </div>
         <div className={`px-4 py-2 rounded-xl border font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 ${
           user?.role === 'admin' ? 'border-red-500 text-red-500 bg-red-500/10' :
-          user?.role === 'captain' ? 'border-[#fc6719] text-[#fc6719] bg-[#fc6719]/10' :
           'border-[#fc6719] text-[#fc6719] bg-[#fc6719]/10'
         }`}>
-          <Shield size={14} />
-          {user?.role} Level Access
+          <Shield size={12} />
+          {user?.role} ACCESS
         </div>
       </header>
 
       {/* Availability Alert */}
       {!hasAvailability && user?.role === 'user' && (
-        <div 
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           onClick={() => navigate('/availability')}
-          className="p-8 rounded-[2rem] bg-gradient-to-r from-[#fc6719] to-[#ff8c00] shadow-[0_0_50px_rgba(252,103,25,0.3)] animate-pulse relative overflow-hidden group cursor-pointer"
-          aria-label="Avviso disponibilità mancante. Clicca per compilare."
+          className="p-6 rounded-3xl bg-gradient-to-r from-[#fc6719] to-[#ff8c00] shadow-xl cursor-pointer group relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
-            <Zap size={120} className="text-white rotate-12" />
+          <div className="absolute right-[-20px] top-[-20px] opacity-10 rotate-12 group-hover:scale-110 transition-transform">
+            <Zap size={140} className="text-white" />
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-black font-black text-center md:text-left">
-            <div>
-              <h2 className="text-3xl italic uppercase tracking-tighter leading-none">ATTENZIONE RIDER!</h2>
-              <p className="italic text-sm opacity-90 mt-1 uppercase tracking-tight">Il tuo profilo disponibilità è vuoto. Compila il form ora!</p>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 text-black">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-black rounded-2xl text-[#fc6719]">
+                <AlertCircle size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black italic uppercase tracking-tight leading-tight">Profilo Incompleto</h2>
+                <p className="text-xs font-bold opacity-80 uppercase tracking-tighter">Aggiorna la tua disponibilità per le prossime gare</p>
+              </div>
             </div>
-            <button className="px-10 py-4 bg-black text-white italic rounded-2xl hover:scale-105 transition-all uppercase text-xs tracking-[0.2em] shadow-2xl">
+            <button className="px-6 py-3 bg-black text-white font-black italic rounded-xl hover:scale-105 transition-all uppercase text-[10px] tracking-widest shadow-2xl">
               COMPILA ORA
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Main Strategic Area */}
+      {/* Main Grid */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* ZRL Season Timeline Card */}
+        {/* ZRL Timeline Card */}
         <div 
-          onClick={() => {
-            if (user?.role === 'admin' || user?.role === 'captain') {
-              navigate('/zrl-management');
-            } else {
-              navigate('/racing');
-            }
-          }}
-          className="lg:col-span-2 p-10 rounded-[3rem] bg-gradient-to-br from-zinc-900 to-black border-2 border-zinc-800 hover:border-[#fc6719]/40 transition-all group relative overflow-hidden shadow-2xl min-h-[450px] flex flex-col justify-between text-white cursor-pointer"
-          role="button"
-          aria-label="Calendario ZRL. Clicca per i dettagli o la gestione."
+          onClick={handleZRLClick}
+          className="lg:col-span-2 p-8 rounded-[2.5rem] bg-[#0A0A0A] border border-zinc-800 hover:border-[#fc6719]/50 transition-all group relative overflow-hidden shadow-2xl flex flex-col justify-between cursor-pointer"
         >
-          <Flag size={250} className="absolute -right-10 -top-10 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity rotate-12" />
+          <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+            <Flag size={200} />
+          </div>
           
-          <div className="relative z-10 w-full">
+          <div className="relative z-10">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <div className="px-4 py-1.5 rounded-full bg-[#fc6719]/10 border border-[#fc6719]/30 text-[#fc6719] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mb-2 w-fit">
-                  <div className="w-2 h-2 bg-[#fc6719] rounded-full animate-ping" />
-                  {activeSeries?.name || 'ZRL Season 19'}
-                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#fc6719] mb-1 block">
+                  {activeSeries?.name || 'Zwift Racing League'}
+                </span>
                 <h2 className="text-4xl font-black italic text-white tracking-tighter uppercase leading-none">
                   Season <span className="text-[#fc6719]">Timeline</span>
                 </h2>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-[#fc6719] group-hover:scale-110 transition-transform">
-                <Trophy size={24} />
+              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#fc6719] group-hover:bg-[#fc6719] group-hover:text-black transition-all">
+                <Trophy size={20} />
               </div>
             </div>
 
             {/* Timeline Rounds */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-10">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
               {(allRounds.length > 0 ? allRounds : Array(4).fill(null)).map((round, idx) => {
                 const isPast = round ? new Date(round.date) < new Date() : false;
                 const isNext = nextRound && round && round.id === nextRound.id;
@@ -214,38 +210,55 @@ const Dashboard: React.FC = () => {
                     key={round?.id || idx} 
                     className={`relative p-5 rounded-2xl border transition-all ${
                       isNext 
-                        ? 'bg-[#fc6719]/10 border-[#fc6719] shadow-[0_0_20px_rgba(252,103,25,0.2)]' 
+                        ? 'bg-[#fc6719]/5 border-[#fc6719]/50 shadow-[0_0_20px_rgba(252,103,25,0.1)]' 
                         : isPast 
-                          ? 'bg-zinc-900/40 border-zinc-800 opacity-60' 
+                          ? 'bg-zinc-900/40 border-zinc-800 opacity-40' 
                           : 'bg-zinc-900/20 border-zinc-800'
                     }`}
                   >
-                    {isPast && (
-                      <div className="absolute top-3 right-3 text-[#fc6719]">
-                        <Shield size={14} fill="currentColor" fillOpacity={0.2} />
+                    <div className="mb-4">
+                      <div className="flex justify-between items-start mb-1">
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isNext ? 'text-[#fc6719]' : 'text-zinc-500'}`}>
+                          {round ? round.name : `Round ${idx + 1}`}
+                        </p>
+                        {round?.format && (
+                           <span className={`text-[7px] px-1.5 py-0.5 rounded font-black uppercase ${
+                             round.format === 'TTT' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 
+                             round.format === 'Points' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 
+                             'bg-green-500/20 text-green-400 border border-green-500/30'
+                           }`}>
+                             {round.format}
+                           </span>
+                        )}
                       </div>
-                    )}
-                    
-                    <div className="mb-3">
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isNext ? 'text-[#fc6719]' : 'text-zinc-500'}`}>
-                        {round ? round.name : `Round ${idx + 1}`}
-                      </p>
-                      <p className="text-[9px] font-bold text-zinc-600 uppercase">
+                      <p className="text-[10px] font-bold text-white uppercase tracking-tighter">
                         {round ? new Date(round.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD'}
                       </p>
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-black italic uppercase truncate">{round?.world || '---'}</p>
-                      <p className="text-[10px] text-zinc-500 font-medium truncate italic">{round?.route || '---'}</p>
+                      <p className="text-[11px] font-black italic uppercase truncate text-zinc-100 leading-none">{round?.world || '---'}</p>
+                      <p className="text-[9px] text-zinc-500 font-medium truncate italic uppercase tracking-tighter mb-2">{round?.route || '---'}</p>
+                      
+                      {round?.distance && (
+                        <div className="flex items-center gap-2 text-[8px] font-black text-zinc-600 uppercase tracking-widest mt-2 border-t border-zinc-800 pt-2">
+                           <TrendingUp size={8} className="text-[#fc6719]" />
+                           <span>{round.distance}km / {round.elevation}m</span>
+                        </div>
+                      )}
                     </div>
 
                     {isNext && (
                       <div className="mt-4 flex items-center gap-2">
-                        <div className="h-1 flex-1 bg-zinc-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#fc6719] w-full animate-pulse" />
+                        <div className="h-0.5 flex-1 bg-zinc-800 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "0%" }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="h-full bg-[#fc6719] w-full" 
+                          />
                         </div>
-                        <span className="text-[8px] font-black text-[#fc6719] uppercase tracking-tighter">UPCOMING</span>
+                        <span className="text-[7px] font-black text-[#fc6719] uppercase tracking-tighter">ACTIVE</span>
                       </div>
                     )}
                   </div>
@@ -254,31 +267,31 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative z-10 flex flex-wrap gap-4 mt-10">
+          <div className="relative z-10 flex flex-wrap gap-3 mt-8 pt-6 border-t border-zinc-900">
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 window.open("https://www.wtrl.racing/zwift-racing-league/#schedule", "_blank");
               }}
-              className="px-6 py-3 bg-white text-black font-black italic rounded-xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-[10px] tracking-widest shadow-xl flex items-center gap-2"
+              className="px-5 py-2.5 bg-zinc-950 text-zinc-500 font-bold border border-zinc-800 rounded-xl hover:bg-[#fc6719] hover:text-black hover:border-[#fc6719] transition-all uppercase text-[9px] tracking-widest flex items-center gap-2"
             >
-              WTRL Schedule <ExternalLink size={12} />
+              WTRL Schedule <ExternalLink size={10} />
             </button>
-            {(user?.role === 'captain' || user?.role === 'admin') && (
+            {(user?.role === 'captain' || user?.role === 'admin' || user?.role === 'moderator') && (
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate('/zrl-management');
+                  navigate('/zrl-operations');
                 }}
-                className="px-6 py-3 bg-[#fc6719]/10 border border-[#fc6719]/30 text-[#fc6719] font-black italic rounded-xl hover:bg-[#fc6719]/20 transition-all uppercase text-[10px] tracking-widest"
+                className="px-5 py-2.5 bg-[#fc6719]/10 border border-[#fc6719]/30 text-[#fc6719] font-black italic rounded-xl hover:bg-[#fc6719]/20 transition-all uppercase text-[9px] tracking-widest"
               >
-                Gestione Roster
+                Gestione Operativa
               </button>
             )}
           </div>
         </div>
 
-        {/* Master Winter Tour Reminder Card */}
+        {/* Master Winter Tour Card */}
         <div 
           onClick={() => {
             if (user?.role === 'admin' || user?.role === 'moderator') {
@@ -287,134 +300,108 @@ const Dashboard: React.FC = () => {
               navigate('/ranking');
             }
           }}
-          className="p-10 rounded-[3rem] bg-gradient-to-br from-zinc-900/50 to-black border-2 border-zinc-800 hover:border-[#fc6719]/40 transition-all group relative overflow-hidden shadow-2xl min-h-[400px] flex flex-col justify-between text-white cursor-pointer"
-          role="button"
-          aria-label="Master Winter Tour. Clicca per vedere le classifiche o gestire la stagione."
+          className="p-8 rounded-[2.5rem] bg-gradient-to-br from-[#0e0e0e] to-black border border-zinc-800 hover:border-[#fc6719]/40 transition-all group relative overflow-hidden shadow-2xl flex flex-col justify-between text-white cursor-pointer"
         >
-          <Trophy size={200} className="absolute -right-10 -top-10 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity -rotate-12" />
+          <div className="absolute -right-10 -top-10 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity rotate-12">
+            <Trophy size={180} />
+          </div>
           <div className="relative z-10">
-            <div className="flex justify-between items-start mb-12">
-              <div className="px-4 py-1.5 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                Season Reminder
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-[#fc6719] group-hover:scale-110 transition-transform">
-                <Star size={24} />
-              </div>
+            <div className="flex justify-between items-start mb-6">
+              <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-600 text-[8px] font-black uppercase tracking-widest">
+                Internal League
+              </span>
+              <Star size={18} className="text-[#fc6719]" />
             </div>
-            <h2 className="text-5xl font-black italic text-white tracking-tighter leading-tight mb-4 uppercase group-hover:text-[#fc6719] transition-colors">
+            <h2 className="text-3xl font-black italic tracking-tighter leading-tight mb-2 uppercase">
               MASTER <span className="text-[#fc6719]">WINTER TOUR</span>
             </h2>
-            <p className="text-zinc-500 text-lg font-medium italic mb-8">
-              {user?.role === 'admin' || user?.role === 'moderator' ? 'Pannello di Gestione Stagione' : 'La nostra arena invernale tornerà presto. Preparati per la prossima stagione.'}
+            <p className="text-zinc-500 text-sm font-medium italic">
+              {user?.role === 'admin' || user?.role === 'moderator' ? 'Dashboard di Gestione' : 'La gloria invernale ti aspetta.'}
             </p>
           </div>
-          <div className="relative z-10 flex flex-col gap-3">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('/ranking');
-              }}
-              className="w-full px-8 py-4 bg-white text-black font-black italic rounded-2xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-xs tracking-widest shadow-xl text-center"
-            >
-              Hall of Fame
+          <div className="relative z-10 space-y-2 mt-8">
+            <button className="w-full px-6 py-3 bg-white text-black font-black italic rounded-xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-[10px] tracking-widest shadow-lg">
+              Classifiche & Risultati
             </button>
-            {(user?.role === 'admin' || user?.role === 'moderator') && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/winter-tour-management');
-                }}
-                className="w-full px-8 py-4 bg-zinc-800 text-[#fc6719] font-black italic rounded-2xl hover:bg-zinc-700 transition-all uppercase text-[10px] tracking-widest border border-[#fc6719]/20 text-center"
-              >
-                Gestione Stagione
-              </button>
-            )}
           </div>
         </div>
       </section>
 
-      {/* Weekly Schedule Hub & Archivio */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
+      {/* Events Hub */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between px-2">
             <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-2">
-              <Calendar size={14} className="text-[#fc6719]" /> Weekly Schedule Hub
+              <Calendar size={12} className="text-[#fc6719]" /> Weekly Schedule
             </h3>
             <button 
               onClick={() => navigate('/events')}
-              className="text-[10px] font-black text-[#fc6719] uppercase tracking-widest hover:underline transition-all"
+              className="text-[9px] font-black text-[#fc6719] uppercase tracking-widest hover:underline"
             >
-              Full Calendar &rarr;
+              Vedi tutto &rarr;
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {events.length > 0 ? (
               events.map((event) => (
-                <div key={event.id} className="p-6 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all group flex flex-col justify-between h-full shadow-lg">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={event.id} className="p-5 rounded-3xl bg-[#0A0A0A] border border-zinc-900 hover:border-zinc-800 transition-all group flex flex-col justify-between shadow-sm">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="text-[9px] font-black text-[#fc6719] uppercase tracking-widest mb-1">{event.day_of_week}</h4>
-                      <p className="text-lg font-bold text-white italic leading-tight uppercase truncate max-w-[180px]">{event.name}</p>
+                      <h4 className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">{event.day_of_week}</h4>
+                      <p className="text-base font-bold text-white italic leading-tight uppercase truncate">{event.name}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter block font-mono">{event.time}</span>
-                      <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">{event.category || 'All Cat'}</span>
+                      <span className="text-[11px] font-black text-white block">{event.time}</span>
+                      <span className="text-[8px] font-bold text-[#fc6719] uppercase">{event.category}</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2 text-zinc-500">
-                      <Zap size={12} className={event.zwift_link ? 'text-[#fc6719]' : ''} />
-                      <span className="text-[9px] font-black uppercase tracking-tight text-white">Status: Ready</span>
-                    </div>
+                  <div className="flex items-center justify-between mt-2 pt-3 border-t border-zinc-900/50">
+                    <span className="text-[9px] font-black uppercase text-zinc-700">Status: Active</span>
                     {event.zwift_link ? (
-                      <a href={event.zwift_link} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-zinc-800 hover:bg-[#fc6719] text-zinc-300 hover:text-black font-black text-[9px] uppercase tracking-widest rounded-lg transition-all flex items-center gap-2">
-                        Join Event <ArrowUpRight size={10} />
+                      <a href={event.zwift_link} target="_blank" rel="noopener noreferrer" className="text-[#fc6719] hover:text-white transition-colors">
+                        <ArrowUpRight size={14} />
                       </a>
                     ) : (
-                      <span className="text-[9px] font-black text-zinc-700 uppercase italic">TBD</span>
+                      <span className="text-[9px] font-bold text-zinc-900 uppercase italic">TBD</span>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="col-span-full p-12 rounded-[3rem] border border-dashed border-zinc-800 text-center text-zinc-600 font-bold uppercase text-[10px] tracking-[0.3em]">
-                Sincronizzazione Eventi...
+              <div className="col-span-full p-8 rounded-3xl border border-dashed border-zinc-800 text-center text-zinc-700 text-[10px] font-black uppercase tracking-widest italic">
+                Sincronizzazione Eventi Hub...
               </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar: Historical & Links */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          <div className="p-8 rounded-[2.5rem] bg-[#1a1d20] border border-zinc-800 shadow-2xl h-fit">
-            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-              <Trophy size={14} className="text-[#fc6719]" /> Seasons Archive
+          <div className="p-6 rounded-3xl bg-[#0A0A0A] border border-zinc-800 shadow-xl">
+            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+              <Trophy size={12} className="text-[#fc6719]" /> Archivio Stagioni
             </h3>
-            <div className="space-y-3">
-              {(allSeries || []).filter(s => !s.is_active).map(s => (
-                <div key={s.id} className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex items-center justify-between group hover:border-[#fc6719]/30 transition-all cursor-pointer text-white">
+            <div className="space-y-2">
+              {(allSeries || []).filter(s => !s.is_active).slice(0, 3).map(s => (
+                <div key={s.id} className="p-3 rounded-xl bg-zinc-900/20 border border-zinc-900 flex items-center justify-between group hover:border-zinc-700 cursor-pointer">
                   <div>
-                    <h3 className="text-sm font-bold italic uppercase">{s.name}</h3>
-                    <p className="text-zinc-500 text-[9px] font-black uppercase tracking-widest">{s.total_rounds || 0} Rounds</p>
+                    <h3 className="text-xs font-bold text-zinc-500 group-hover:text-zinc-300 transition-colors uppercase">{s.name}</h3>
                   </div>
-                  <ArrowUpRight size={14} className="text-zinc-700 group-hover:text-[#fc6719] transition-all" />
+                  <ChevronRight size={12} className="text-zinc-700" />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="p-8 rounded-[2.5rem] bg-gradient-to-b from-[#fc6719]/5 to-transparent border border-zinc-800 h-fit">
-            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-6">Official Hubs</h3>
-            <ul className="space-y-4">
-              <li><a href="https://www.teaminox.it" target="_blank" rel="noreferrer" className="text-xs text-zinc-400 hover:text-[#fc6719] transition-colors flex items-center gap-2 font-bold uppercase tracking-wide">/ Inoxteam Website</a></li>
-              <li><a href="https://www.wtrl.racing/zwift-racing-league/" target="_blank" rel="noreferrer" className="text-xs text-zinc-400 hover:text-[#fc6719] transition-colors flex items-center gap-2 font-bold uppercase tracking-wide">/ WTRL ZRL Portal</a></li>
-              <li><a href="https://discord.gg/cpr3rBGaZy" target="_blank" rel="noreferrer" className="text-xs text-zinc-400 hover:text-[#fc6719] transition-colors flex items-center gap-2 font-bold uppercase tracking-wide">/ Discord Community</a></li>
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#fc6719]/5 to-transparent border border-zinc-900">
+            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4">Official Links</h3>
+            <ul className="space-y-3">
+              <li><a href="https://www.teaminox.it" target="_blank" rel="noreferrer" className="text-[10px] text-zinc-500 hover:text-[#fc6719] font-bold uppercase tracking-wide flex items-center gap-2 transition-colors italic">/ Website</a></li>
+              <li><a href="https://discord.gg/cpr3rBGaZy" target="_blank" rel="noreferrer" className="text-[10px] text-zinc-500 hover:text-[#fc6719] font-bold uppercase tracking-wide flex items-center gap-2 transition-colors italic">/ Discord Community</a></li>
             </ul>
           </div>
         </div>
-
       </div>
     </div>
   );

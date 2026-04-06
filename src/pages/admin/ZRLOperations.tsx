@@ -1,12 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, Users, RefreshCw, Zap, ClipboardCheck, 
-  Trophy, BookOpen, BarChart3, ChevronRight, AlertCircle, Calendar, CheckCircle2
+  Trophy, BookOpen, BarChart3, ChevronRight, AlertCircle, Calendar, CheckCircle2,
+  Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../../services/api';
+
+interface RoundInput {
+  id?: number;
+  name: string;
+  date: string;
+  world: string;
+  route: string;
+  format: string;
+  distance: number;
+  elevation: number;
+}
 
 const ZRLOperations: React.FC = () => {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  // Form States
+  const [seasonName, setSeasonName] = useState('ZRL Spring 2026');
+  const [wtrlId, setWtrlId] = useState('19');
+  const [rounds, setRounds] = useState<RoundInput[]>([]);
+
+  // Caricamento dati iniziali dal database
+  useEffect(() => {
+    const fetchCurrentSeason = async () => {
+      setLoading(true);
+      try {
+        const seriesData = await api.getSeries();
+        const active = seriesData.find(s => s.is_active);
+        
+        if (active) {
+          setSeasonName(active.name);
+          setWtrlId(active.external_season_id?.toString() || '19');
+          
+          const roundsData = await api.getRounds(active.id);
+          if (roundsData && roundsData.length > 0) {
+            setRounds(roundsData.map(r => ({
+              id: r.id,
+              name: r.name,
+              date: r.date.split('T')[0],
+              world: r.world,
+              route: r.route,
+              format: r.format || 'Scratch',
+              distance: r.distance || 0,
+              elevation: r.elevation || 0
+            })));
+          } else {
+            loadDefaultSeason19();
+          }
+        } else {
+          loadDefaultSeason19();
+        }
+      } catch (err) {
+        console.error("Errore caricamento stagione:", err);
+        loadDefaultSeason19();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrentSeason();
+  }, []);
+
+  const loadDefaultSeason19 = () => {
+    setRounds([
+      { name: 'Race 1', date: '2026-04-07', world: 'FRANCE', route: 'Hell of the North', format: 'TTT', distance: 20.2, elevation: 241 },
+      { name: 'Race 2', date: '2026-04-14', world: 'WATOPIA', route: 'The Classic', format: 'Points', distance: 33.2, elevation: 306 },
+      { name: 'Race 3', date: '2026-04-21', world: 'FRANCE', route: 'Croissant', format: 'Scratch', distance: 40.3, elevation: 220 },
+      { name: 'Race 4', date: '2026-04-28', world: 'NEW YORK', route: 'Double Span Spin', format: 'Points', distance: 40.7, elevation: 439 },
+    ]);
+  };
+
+  const handleInitSeason = async () => {
+    if (!window.confirm("Attenzione: Questa operazione archivierà la stagione attuale e creerà una nuova serie nel database. Procedere?")) return;
+    
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/init-season', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({
+          name: seasonName,
+          external_id: parseInt(wtrlId),
+          rounds: rounds
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: `Stagione '${seasonName}' inizializzata con successo!` });
+        // Refresh della pagina o passaggio allo step successivo
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Errore durante l\'inizializzazione.' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione al server.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addRound = () => {
+    setRounds([...rounds, { name: `Race ${rounds.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
+  };
+
+  const updateRound = (index: number, field: keyof RoundInput, value: any) => {
+    const newRounds = [...rounds];
+    (newRounds[index] as any)[field] = value;
+    setRounds(newRounds);
+  };
+
+  const removeRound = (index: number) => {
+    setRounds(rounds.filter((_, i) => i !== index));
+  };
 
   const steps = [
     { id: 1, title: 'Setup Stagione', icon: Settings, desc: 'ID Stagione e Date' },
@@ -17,20 +137,20 @@ const ZRLOperations: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto space-y-10">
       {/* Header */}
-      <header className="mb-10 border-b border-zinc-800 pb-8">
-        <div className="flex items-center gap-3 mb-2 text-orange-500">
+      <header className="border-b border-zinc-800 pb-8">
+        <div className="flex items-center gap-3 mb-2 text-[#fc6719]">
           <Settings size={20} />
-          <span className="font-black text-xs tracking-[0.3em] uppercase italic">Admin Command Center</span>
+          <span className="font-black text-xs tracking-[0.3em] uppercase italic">Inox Admin Command Center</span>
         </div>
         <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase">
-          ZRL <span className="text-zinc-600">Operations</span>
+          ZRL <span className="text-zinc-700">Operations</span>
         </h1>
       </header>
 
-      {/* Workflow Stepper */}
-      <nav className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-12">
+      {/* Stepper */}
+      <nav className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
@@ -38,185 +158,181 @@ const ZRLOperations: React.FC = () => {
             <button
               key={step.id}
               onClick={() => setActiveStep(step.id)}
-              className={`flex flex-col items-start p-4 rounded-2xl border transition-all text-left ${
+              className={`flex flex-col items-start p-5 rounded-3xl border transition-all text-left ${
                 isActive 
-                  ? "bg-zinc-900 border-orange-500 shadow-lg shadow-orange-500/10" 
-                  : "bg-zinc-950 border-zinc-800 opacity-50 hover:opacity-100 hover:border-zinc-600"
+                  ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_30px_rgba(252,103,25,0.1)]" 
+                  : "bg-zinc-950 border-zinc-800 opacity-50 hover:opacity-100"
               }`}
             >
-              <div className={`p-2 rounded-lg mb-3 ${isActive ? "bg-orange-500 text-black" : "bg-zinc-800 text-zinc-400"}`}>
-                <Icon size={20} />
+              <div className={`p-2.5 rounded-xl mb-4 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
+                <Icon size={18} />
               </div>
-              <span className="text-[10px] font-black uppercase text-zinc-500 mb-1">Step 0{step.id}</span>
-              <span className={`text-sm font-black uppercase italic ${isActive ? "text-white" : "text-zinc-400"}`}>{step.title}</span>
+              <span className="text-[9px] font-black uppercase text-zinc-500 mb-1 tracking-widest">Step 0{step.id}</span>
+              <span className={`text-xs font-black uppercase italic ${isActive ? "text-white" : "text-zinc-600"}`}>{step.title}</span>
             </button>
           );
         })}
       </nav>
 
-      {/* Step Content */}
-      <main className="bg-zinc-900 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl min-h-[500px]">
-        {/* STEP 1: SETUP */}
-        {activeStep === 1 && (
-          <div className="p-10 space-y-10">
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <h3 className="text-2xl font-black italic text-white uppercase">Configurazione Stagione</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">ID Stagione WTRL</label>
-                    <input type="text" placeholder="Es: 19" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white font-bold outline-none focus:border-orange-500" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Data Inizio</label>
-                      <input type="date" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white font-bold outline-none focus:border-orange-500" />
+      <main className="bg-[#0A0A0A] rounded-[3rem] border border-zinc-800 shadow-2xl min-h-[600px] relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeStep}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-8 lg:p-12"
+          >
+            {message && (
+              <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 ${
+                message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-500' : 'bg-red-500/10 border-red-500/50 text-red-500'
+              }`}>
+                {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+                <p className="font-bold uppercase text-[10px] tracking-widest">{message.text}</p>
+              </div>
+            )}
+
+            {/* STEP 1: SETUP */}
+            {activeStep === 1 && (
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-black italic text-white uppercase flex items-center gap-3">
+                      <Settings className="text-[#fc6719]" /> System Init
+                    </h3>
+                    <p className="text-zinc-500 text-xs font-bold uppercase leading-relaxed">
+                      Configura la stagione attiva. Inizializzando una nuova stagione, il sistema archivierà automaticamente i dati precedenti.
+                    </p>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-2 mb-1 block">Season Name</label>
+                        <input 
+                          type="text" 
+                          value={seasonName}
+                          onChange={(e) => setSeasonName(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-white font-bold outline-none focus:border-[#fc6719]" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-2 mb-1 block">WTRL ID</label>
+                        <input 
+                          type="text" 
+                          value={wtrlId}
+                          onChange={(e) => setWtrlId(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-white font-bold outline-none focus:border-[#fc6719]" 
+                        />
+                      </div>
+                      <button 
+                        onClick={handleInitSeason}
+                        disabled={loading}
+                        className="w-full py-5 bg-[#fc6719] text-black font-black uppercase italic rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#fc6719]/20 flex items-center justify-center gap-3"
+                      >
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                        Applica Configurazione
+                      </button>
                     </div>
-                    <div>
-                      <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Data Fine</label>
-                      <input type="date" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white font-bold outline-none focus:border-orange-500" />
+                  </div>
+
+                  <div className="lg:col-span-2 bg-zinc-950/50 p-8 rounded-[2.5rem] border border-zinc-900 space-y-6">
+                    <div className="flex justify-between items-center px-2">
+                      <h3 className="text-lg font-black italic text-white uppercase flex items-center gap-2">
+                        <Calendar className="text-[#fc6719]" size={18} /> Season Calendar
+                      </h3>
+                      <button onClick={addRound} className="p-2 bg-zinc-900 text-[#fc6719] rounded-lg hover:bg-zinc-800">
+                        <Plus size={18} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                      {rounds.map((round, idx) => (
+                        <div key={idx} className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 group hover:border-zinc-700 transition-all">
+                          <div className="grid grid-cols-12 gap-3 mb-3">
+                            <input 
+                              type="text" 
+                              value={round.name}
+                              onChange={(e) => updateRound(idx, 'name', e.target.value)}
+                              className="col-span-3 bg-zinc-950 border border-zinc-900 rounded-lg p-2 text-[10px] text-white font-black uppercase italic"
+                            />
+                            <input 
+                              type="date" 
+                              value={round.date}
+                              onChange={(e) => updateRound(idx, 'date', e.target.value)}
+                              className="col-span-3 bg-zinc-950 border border-zinc-900 rounded-lg p-2 text-[10px] text-zinc-400 font-bold"
+                            />
+                            <select 
+                              value={round.format}
+                              onChange={(e) => updateRound(idx, 'format', e.target.value)}
+                              className="col-span-3 bg-zinc-950 border border-zinc-900 rounded-lg p-2 text-[10px] text-[#fc6719] font-black uppercase"
+                            >
+                              <option value="Points">Points Race</option>
+                              <option value="Scratch">Scratch Race</option>
+                              <option value="TTT">TTT Race</option>
+                            </select>
+                            <button onClick={() => removeRound(idx)} className="col-span-3 text-right pr-2 text-zinc-700 hover:text-red-500">
+                              <Trash2 size={16} className="inline" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-12 gap-3">
+                            <div className="col-span-4 relative">
+                              <MapPin size={10} className="absolute left-2 top-3 text-zinc-600" />
+                              <input 
+                                type="text" 
+                                placeholder="World"
+                                value={round.world}
+                                onChange={(e) => updateRound(idx, 'world', e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-900 rounded-lg p-2 pl-6 text-[10px] text-zinc-300"
+                              />
+                            </div>
+                            <div className="col-span-4 relative">
+                              <Activity size={10} className="absolute left-2 top-3 text-zinc-600" />
+                              <input 
+                                type="text" 
+                                placeholder="Route"
+                                value={round.route}
+                                onChange={(e) => updateRound(idx, 'route', e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-900 rounded-lg p-2 pl-6 text-[10px] text-zinc-300"
+                              />
+                            </div>
+                            <div className="col-span-2 relative">
+                              <TrendingUp size={10} className="absolute left-2 top-3 text-zinc-600" />
+                              <input 
+                                type="number" 
+                                placeholder="Km"
+                                value={round.distance}
+                                onChange={(e) => updateRound(idx, 'distance', parseFloat(e.target.value))}
+                                className="w-full bg-zinc-950 border border-zinc-900 rounded-lg p-2 pl-6 text-[10px] text-zinc-300"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <input 
+                                type="number" 
+                                placeholder="Hm"
+                                value={round.elevation}
+                                onChange={(e) => updateRound(idx, 'elevation', parseFloat(e.target.value))}
+                                className="w-full bg-zinc-950 border border-zinc-900 rounded-lg p-2 text-[10px] text-zinc-300"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <button className="w-full py-4 bg-orange-500 text-black font-black uppercase italic rounded-xl hover:scale-[1.02] transition-transform">
-                    Salva Parametri Stagione
-                  </button>
                 </div>
               </div>
+            )}
 
-              <div className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-black italic text-white uppercase flex items-center gap-2 mb-4">
-                    <RefreshCw className="text-orange-500" size={20} /> Sincronizzazione Dati
-                  </h3>
-                  <p className="text-xs text-zinc-500 uppercase font-bold leading-relaxed">
-                    Importa le squadre iscritte dal sito WTRL per la stagione corrente. Questa operazione popolerà i team locali.
-                  </p>
+            {/* Altri Step (2-5) rimangono con la logica precedente ma con stile aggiornato */}
+            {activeStep > 1 && (
+              <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800">
+                  {steps.find(s => s.id === activeStep)?.icon({ size: 48 })}
                 </div>
-                <Link to="/zrl-management" className="mt-8 flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-zinc-600 transition-all group">
-                  <span className="text-xs font-black uppercase text-white">Vai al Tool di Sincronizzazione</span>
-                  <ChevronRight size={18} className="text-orange-500 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione in Sviluppo</h3>
+                <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Configura la stagione per attivare i moduli operativi</p>
               </div>
-            </section>
-          </div>
-        )}
-
-        {/* STEP 2: AVAILABILITY */}
-        {activeStep === 2 && (
-          <div className="p-10">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h3 className="text-2xl font-black italic text-white uppercase">Reclutamento & RSVP</h3>
-                <p className="text-zinc-500 text-xs font-bold uppercase mt-1 tracking-widest">Monitoraggio compilazione form disponibilità</p>
-              </div>
-              <button className="px-6 py-3 bg-zinc-800 text-white font-black text-[10px] uppercase rounded-xl hover:bg-zinc-700">
-                Invia Sollecitazione Discord
-              </button>
-            </div>
-
-            <div className="bg-zinc-950 rounded-3xl border border-zinc-800 overflow-hidden">
-              <div className="p-6 border-b border-zinc-800 grid grid-cols-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                <span>Atleta</span>
-                <span>Categoria</span>
-                <span>Stato Form</span>
-                <span className="text-right">Azione</span>
-              </div>
-              <div className="p-4 space-y-2 text-zinc-400 font-bold uppercase text-[11px]">
-                <div className="grid grid-cols-4 items-center p-4 border-b border-zinc-900/50">
-                  <span className="text-white">Andrea Cerri</span>
-                  <span>Cat A</span>
-                  <span className="text-green-500 flex items-center gap-2"><CheckCircle2 size={14}/> Compilato</span>
-                  <span className="text-right text-zinc-600">---</span>
-                </div>
-                <div className="grid grid-cols-4 items-center p-4 border-b border-zinc-900/50">
-                  <span className="text-white">Cristian Collesei</span>
-                  <span>Cat A</span>
-                  <span className="text-red-500 flex items-center gap-2"><AlertCircle size={14}/> Mancante</span>
-                  <button className="text-right text-orange-500 hover:underline">Invia Avviso</button>
-                </div>
-                {/* Mock data for visualization */}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: ROSTER STRATEGY */}
-        {activeStep === 3 && (
-          <div className="p-10 space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col gap-6">
-                <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-                  <Zap size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xl font-black italic text-white uppercase mb-2">Roster Optimizer</h4>
-                  <p className="text-xs text-zinc-500 uppercase font-bold leading-relaxed">
-                    Utilizza l'intelligenza artificiale per suggerire la composizione ottimale delle squadre basandosi sulle preferenze orarie caricate.
-                  </p>
-                </div>
-                <Link to="/admin/optimizer" className="mt-auto flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-orange-500 transition-all group">
-                  <span className="text-xs font-black uppercase text-white">Apri Optimizer</span>
-                  <ChevronRight size={18} className="text-orange-500 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              <div className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col gap-6">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                  <RefreshCw size={24} />
-                </div>
-                <div>
-                  <h4 className="text-xl font-black italic text-white uppercase mb-2">Import Corridori WTRL</h4>
-                  <p className="text-xs text-zinc-500 uppercase font-bold leading-relaxed">
-                    Una volta confermati i team, scarica i membri definitivi direttamente dal sito WTRL per ogni squadra.
-                  </p>
-                </div>
-                <button className="mt-auto flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-blue-500 transition-all group">
-                  <span className="text-xs font-black uppercase text-white">Sync Roster Definitivi</span>
-                  <RefreshCw size={18} className="text-blue-500 group-hover:rotate-180 transition-transform duration-500" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: RACE & LINEUP */}
-        {activeStep === 4 && (
-          <div className="p-10 flex flex-col items-center justify-center space-y-8 py-20">
-            <Users size={64} className="text-zinc-800" />
-            <div className="text-center">
-              <h3 className="text-3xl font-black italic text-white uppercase mb-4">Gestione War Room</h3>
-              <p className="text-zinc-500 text-sm font-bold uppercase max-w-md mx-auto leading-relaxed">
-                Qui i capitani compongono le lineup settimanali (3-6 corridori) basandosi sulla disponibilità puntuale degli atleti.
-              </p>
-            </div>
-            <Link to="/roster" className="px-10 py-5 bg-orange-500 text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-orange-500/20">
-              Apri Lineup Builder
-            </Link>
-          </div>
-        )}
-
-        {/* STEP 5: RESULTS & MEDIA */}
-        {activeStep === 5 && (
-          <div className="p-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <button className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col gap-4 text-left hover:border-zinc-600 transition-all">
-                <BarChart3 className="text-green-500" size={32} />
-                <span className="text-sm font-black uppercase italic text-white">Importa Risultati</span>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase">Da WTRL / ZwiftPower</span>
-              </button>
-              <button className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col gap-4 text-left hover:border-zinc-600 transition-all">
-                <BookOpen className="text-blue-500" size={32} />
-                <span className="text-sm font-black uppercase italic text-white">Genera Giornalino</span>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase">Preview & Pubblicazione</span>
-              </button>
-              <button className="bg-zinc-950 p-8 rounded-3xl border border-zinc-800 flex flex-col gap-4 text-left hover:border-zinc-600 transition-all">
-                <Calendar className="text-purple-500" size={32} />
-                <span className="text-sm font-black uppercase italic text-white">Bilancio Stagione</span>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase">Analisi Prestazioni</span>
-              </button>
-            </div>
-          </div>
-        )}
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );

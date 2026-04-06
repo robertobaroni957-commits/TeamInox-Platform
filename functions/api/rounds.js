@@ -1,20 +1,28 @@
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { env, request } = context;
+  const url = new URL(request.url);
+  const seriesId = url.searchParams.get("series_id");
 
   try {
-    // Selezioniamo i round filtrando i duplicati a livello di query
-    // Prendiamo l'ID più alto per ogni nome di round nella stessa serie
-    const { results } = await env.DB.prepare(`
+    let query = `
       SELECT r.*, s.name as series_name 
       FROM rounds r
       LEFT JOIN series s ON r.series_id = s.id
-      WHERE r.id IN (
-        SELECT MAX(id) 
-        FROM rounds 
-        GROUP BY name, series_id
-      )
-      ORDER BY r.date ASC
-    `).all();
+    `;
+    
+    let params = [];
+
+    if (seriesId) {
+      query += ` WHERE r.series_id = ? `;
+      params.push(seriesId);
+    } else {
+      // Se non specificato, restituiamo solo i round della serie ATTIVA
+      query += ` WHERE s.is_active = 1 `;
+    }
+
+    query += ` ORDER BY r.date ASC `;
+
+    const { results } = await env.DB.prepare(query).bind(...params).all();
 
     return new Response(JSON.stringify({ 
         success: true, 

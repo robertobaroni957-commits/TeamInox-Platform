@@ -5,6 +5,15 @@ export interface Round {
   date: string;
   world: string;
   route: string;
+  format?: string;
+  distance?: number;
+  elevation?: number;
+  powerups?: string;
+  strategy_details?: string | {
+    fal_segments: string[];
+    fts_segments: string[];
+    powerup_details?: string;
+  };
 }
 
 export interface Team {
