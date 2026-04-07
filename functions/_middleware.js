@@ -36,7 +36,8 @@ const PUBLIC_ROUTES = [
     '/api/teams',
     '/api/setup-zrl-2026',
     '/api/sync-schedule',
-    '/api/sync-all-teams'
+    '/api/sync-all-teams',
+    '/api/setup-admin'
 ];
 
 export async function onRequest(context) {
@@ -70,6 +71,9 @@ export async function onRequest(context) {
 
     try {
         const token = authHeader.split(' ')[1];
+        if (!env.JWT_SECRET || env.JWT_SECRET.length === 0) {
+            throw new Error("JWT_SECRET mancante nella configurazione server.");
+        }
         const secret = new TextEncoder().encode(env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
 

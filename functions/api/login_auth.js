@@ -72,6 +72,10 @@ export async function onRequestPost({ request, env, data }) {
         // ======================================================
         // 3️⃣ Genera JWT
         // ======================================================
+        if (!env.JWT_SECRET || env.JWT_SECRET.length === 0) {
+            throw new Error("Configurazione server incompleta: JWT_SECRET mancante.");
+        }
+
         const payload = {
             zwid: user.zwid,
             username: user.name,

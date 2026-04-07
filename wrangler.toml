@@ -1,14 +1,8 @@
-name = "inoxteam-pages-functions"
+name = "inoxteam-platform"
+pages_build_output_dir = "dist"
 compatibility_date = "2024-05-18"
 
-# ❌ RIMUOVI completamente questa riga
-# main = false
-
-# Configurazione D1
 [[d1_databases]]
 binding = "DB"
-database_name = "inox_auth_db"
-database_id = "c45289cd-c758-4a9b-85c8-3e06713df1e4"
-
-[dev]
-port = 8787
+database_name = "team_inox_db"
+database_id = "edd85466-cdf5-4cbe-a42b-f59d859bf73f"

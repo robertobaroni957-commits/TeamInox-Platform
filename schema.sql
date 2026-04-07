@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS teams (
     club_id TEXT
 );
 
+-- Tabella di associazione Round-Teams (per definire quali team corrono in quale round e in che slot)
+CREATE TABLE IF NOT EXISTS round_teams (
+    round_id INTEGER REFERENCES rounds(id),
+    team_id INTEGER REFERENCES teams(id),
+    timeslot_id TEXT REFERENCES league_times(id),
+    PRIMARY KEY (round_id, team_id)
+);
+
 -- 3b. ROSTER DEI TEAM (Membri effettivi dei team - Relazione Molti-a-Molti)
 CREATE TABLE IF NOT EXISTS team_members (
     team_id INTEGER REFERENCES teams(id),
