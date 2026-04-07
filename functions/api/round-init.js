@@ -26,19 +26,36 @@ export async function onRequestPost(context) {
         const seriesName = `ZRL ${year} Round ${round_index}`;
         const slotId = default_timeslot_id || 'EMEA_C';
 
-        // 1. Fetch da WTRL
+        // 1. Fetch da WTRL (con cookie e gestione HTML)
         const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
+        const wtrlCookie = env.WTRL_COOKIE || "";
+
         const wtrlRes = await fetch(wtrlUrl, {
             headers: { 
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "Cookie": wtrlCookie
             }
         });
 
-        if (!wtrlRes.ok) throw new Error(`WTRL API error: ${wtrlRes.status}`);
+        if (!wtrlRes.ok) {
+            const errorText = await wtrlRes.text();
+            throw new Error(`WTRL API error: ${wtrlRes.status}. Detail: ${errorText.substring(0, 100)}`);
+        }
+
+        const contentType = wtrlRes.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const text = await wtrlRes.text();
+            console.error("WTRL restituì HTML invece di JSON:", text.substring(0, 200));
+            throw new Error(`WTRL ha risposto con HTML invece di JSON. Potrebbe essere necessario aggiornare il WTRL_COOKIE.`);
+        }
+
         const wtrlData = await wtrlRes.json();
         const rawRounds = wtrlData.payload || (Array.isArray(wtrlData) ? wtrlData : []);
-        if (rawRounds.length === 0) throw new Error("WTRL non ha restituito gare per questa stagione.");
+        
+        if (rawRounds.length === 0) {
+            throw new Error("WTRL non ha restituito gare per questa stagione.");
+        }
 
         // 2. Upsert Serie
         let series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(wtrlSeasonId).first();
