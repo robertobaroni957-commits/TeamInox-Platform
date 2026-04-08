@@ -48,7 +48,7 @@ export async function onRequest(context) {
     const method = request.method;
 
     // EMERGENZA: Bypass totale per la migrazione database
-    if (path === '/api/admin/migrate') {
+    if (path === '/api/admin/migrate' || path === '/api/migrate') {
         return next();
     }
 
