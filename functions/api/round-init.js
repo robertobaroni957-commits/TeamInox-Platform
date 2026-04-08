@@ -120,7 +120,7 @@ export async function onRequestPost(context) {
 
         return new Response(JSON.stringify({
             success: true,
-            version: "2.1-debug",
+            version: "2.2-final",
             message: `Importati ${validRounds.length} round con successo.`
         }), { headers: { "Content-Type": "application/json" } });
 
@@ -128,8 +128,8 @@ export async function onRequestPost(context) {
         console.error("[round-init] CRITICAL:", err);
         return new Response(JSON.stringify({ 
             success: false, 
-            version: "2.1-debug",
-            error: err.message 
+            version: "2.2-final",
+            error: "[API-v2.2] Errore Import: " + err.message 
         }), { 
             status: 200, 
             headers: { "Content-Type": "application/json" }
