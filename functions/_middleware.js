@@ -26,7 +26,6 @@ const RBAC_POLICY = {
 const PUBLIC_ROUTES = [
     '/api/login_auth',
     '/api/register',
-    '/api/test',
     '/api/series',
     '/api/rounds',
     '/api/results',
@@ -51,7 +50,7 @@ export async function onRequest(context) {
         return handleNext(next);
     }
 
-    if (['/api/login_auth', '/api/register', '/api/test', '/api/sync-schedule', '/api/sync-all-teams'].includes(path)) {
+    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-all-teams'].includes(path)) {
         return handleNext(next);
     }
 
