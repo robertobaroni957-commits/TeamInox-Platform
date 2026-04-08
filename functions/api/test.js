@@ -1,4 +1,4 @@
-// functions/api/test.js
+// functions/api/test.js - FORCE DEPLOY 08:35
 export async function onRequestGet({ env }) {
     try {
         const queries = [
