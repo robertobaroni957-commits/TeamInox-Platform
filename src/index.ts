@@ -1,18 +1,11 @@
-// src/index.ts
-// Questo Worker è necessario per soddisfare la build di Cloudflare,
-// ma non deve interferire con le Functions di Pages nella cartella /functions.
+// src/index.ts - COMPLETAMENTE VUOTO PER EVITARE INTERFERENZE CON PAGES FUNCTIONS
+// Questo file serve solo a far passare la build se Cloudflare lo richiede,
+// ma non deve gestire nessuna richiesta.
 
 export default {
   async fetch(request: Request, env: any, ctx: any): Promise<Response> {
-    const url = new URL(request.url);
-    
-    // Se la richiesta è per l'API, e questo Worker venisse chiamato per errore,
-    // cerchiamo di non bloccare la richiesta. 
-    // In un setup Pages corretto, questo file non dovrebbe nemmeno essere invocato per /api.
-    if (url.pathname.startsWith('/api')) {
-      return new Response("API Forwarding...", { status: 200 });
-    }
-
-    return new Response("Inoxteam Platform Worker Active", { status: 200 });
+    // Restituiamo 404 per forzare Cloudflare a cercare una rotta nelle Functions di Pages
+    // se per qualche motivo questo Worker venisse invocato.
+    return new Response("Not Found in Worker", { status: 404 });
   },
 };
