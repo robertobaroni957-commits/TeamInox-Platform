@@ -47,7 +47,7 @@ export async function onRequestPost(context) {
         if (!contentType || !contentType.includes("application/json")) {
             const text = await wtrlRes.text();
             console.error("WTRL restituì HTML invece di JSON:", text.substring(0, 200));
-            throw new Error(`WTRL ha risposto con HTML invece di JSON. Potrebbe essere necessario aggiornare il WTRL_COOKIE.`);
+            throw new Error(`WTRL ha risposto con HTML invece di JSON. Potrebbe essere necessario aggiornare il WTRL_COOKIE o riprovare più tardi.`);
         }
 
         const wtrlData = await wtrlRes.json();
