@@ -47,6 +47,11 @@ export async function onRequest(context) {
     const path = url.pathname.toLowerCase().replace(/\/$/, '');
     const method = request.method;
 
+    // EMERGENZA: Bypass totale per la migrazione database
+    if (path === '/api/admin/migrate') {
+        return next();
+    }
+
     // 1. Pass-through per asset statici (non /api)
     if (!path.startsWith('/api')) {
         return next();
