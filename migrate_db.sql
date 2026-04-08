@@ -1,0 +1,5 @@
+ALTER TABLE rounds ADD COLUMN format TEXT DEFAULT 'Scratch';
+ALTER TABLE rounds ADD COLUMN distance REAL DEFAULT 0;
+ALTER TABLE rounds ADD COLUMN elevation REAL DEFAULT 0;
+ALTER TABLE rounds ADD COLUMN powerups TEXT;
+ALTER TABLE rounds ADD COLUMN strategy_details TEXT;
