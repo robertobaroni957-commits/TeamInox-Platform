@@ -1,31 +1,35 @@
-export async function onRequestGet(context) {
-  const { env } = context;
-  
-  try {
-    // 1. Crea la tabella round_teams se non esiste
-    await env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS round_teams (
-          round_id INTEGER REFERENCES rounds(id),
-          team_id INTEGER REFERENCES teams(id),
-          timeslot_id TEXT REFERENCES league_times(id),
-          PRIMARY KEY (round_id, team_id)
-      )
-    `).run();
+// functions/api/test.js
+export async function onRequestGet({ env }) {
+    try {
+        const queries = [
+            "ALTER TABLE rounds ADD COLUMN format TEXT DEFAULT 'Scratch'",
+            "ALTER TABLE rounds ADD COLUMN distance REAL DEFAULT 0",
+            "ALTER TABLE rounds ADD COLUMN elevation REAL DEFAULT 0",
+            "ALTER TABLE rounds ADD COLUMN powerups TEXT",
+            "ALTER TABLE rounds ADD COLUMN strategy_details TEXT"
+        ];
 
-    // 2. Verifica se ci sono team
-    const teams = await env.DB.prepare("SELECT COUNT(*) as count FROM teams").first();
+        const results = [];
+        for (const query of queries) {
+            try {
+                await env.DB.prepare(query).run();
+                results.push({ query, success: true });
+            } catch (err) {
+                // Se la colonna esiste già, lo ignoriamo
+                results.push({ query, success: false, error: err.message });
+            }
+        }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      message: "Database riparato: tabella round_teams creata o già esistente.",
-      teams_found: teams.count
-    }), {
-      headers: { "Content-Type": "application/json" }
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+        // Recuperiamo anche i team per conferma
+        const teams = await env.DB.prepare("SELECT COUNT(*) as count FROM teams").first();
+
+        return new Response(JSON.stringify({ 
+            message: "Migrazione DATABASE via /api/test completata", 
+            results: results,
+            teams_in_db: teams ? teams.count : 0
+        }), { headers: { "Content-Type": "application/json" } });
+
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    }
 }
