@@ -37,7 +37,8 @@ const PUBLIC_ROUTES = [
     '/api/setup-zrl-2026',
     '/api/sync-schedule',
     '/api/sync-all-teams',
-    '/api/setup-admin'
+    '/api/setup-admin',
+    '/api/admin/migrate'
 ];
 
 export async function onRequest(context) {
