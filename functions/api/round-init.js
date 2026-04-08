@@ -43,14 +43,15 @@ export async function onRequestPost(context) {
             throw new Error(`WTRL API error: ${wtrlRes.status}. Detail: ${errorText.substring(0, 100)}`);
         }
 
-        const contentType = wtrlRes.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            const text = await wtrlRes.text();
-            console.error("WTRL restituì HTML invece di JSON:", text.substring(0, 200));
-            throw new Error(`WTRL ha risposto con HTML invece di JSON. Potrebbe essere necessario aggiornare il WTRL_COOKIE o riprovare più tardi.`);
+        const responseText = await wtrlRes.text();
+        let wtrlData;
+        try {
+            wtrlData = JSON.parse(responseText);
+        } catch (e) {
+            console.error("Fallimento parsing JSON WTRL. Risposta:", responseText.substring(0, 300));
+            throw new Error("WTRL ha restituito dati non validi (HTML/Testo). Potrebbe essere necessario aggiornare il WTRL_COOKIE.");
         }
 
-        const wtrlData = await wtrlRes.json();
         const rawRounds = wtrlData.payload || (Array.isArray(wtrlData) ? wtrlData : []);
         
         if (rawRounds.length === 0) {
@@ -68,6 +69,8 @@ export async function onRequestPost(context) {
             seriesId = series.id;
             await env.DB.prepare("UPDATE series SET name = ?, is_active = 1 WHERE id = ?").bind(seriesName, seriesId).run();
         }
+        
+        // Disattiviamo le altre serie
         await env.DB.prepare("UPDATE series SET is_active = 0 WHERE id != ?").bind(seriesId).run();
 
         // 3. Pulizia a cascata
@@ -80,8 +83,9 @@ export async function onRequestPost(context) {
             env.DB.prepare(`DELETE FROM rounds WHERE series_id = ?`).bind(seriesId)
         ]);
 
-        // 4. Inserimento Round con protezione NULL
+        // 4. Inserimento Round e Associazione Team Massiva
         const validRounds = rawRounds.filter(item => item.eventDate || item.date);
+        
         for (const item of validRounds) {
             const rName = `Week ${item.race || item.round || '?'}`;
             const rDate = item.eventDate || item.date;
@@ -92,11 +96,13 @@ export async function onRequestPost(context) {
                 "INSERT INTO rounds (series_id, name, date, world, route, status) VALUES (?, ?, ?, ?, ?, 'planned') RETURNING id"
             ).bind(seriesId, rName, rDate, rWorld, rRoute).first();
 
-            // Associazione Team massiva via SQL per ogni round
-            await env.DB.prepare(`
-                INSERT INTO round_teams (round_id, team_id, timeslot_id)
-                SELECT ?, id, ? FROM teams
-            `).bind(round.id, slotId).run();
+            if (round && round.id) {
+                // Inserimento batch delle associazioni team per questo round
+                await env.DB.prepare(`
+                    INSERT INTO round_teams (round_id, team_id, timeslot_id)
+                    SELECT ?, id, ? FROM teams
+                `).bind(round.id, slotId).run();
+            }
         }
 
         return new Response(JSON.stringify({
@@ -105,11 +111,12 @@ export async function onRequestPost(context) {
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
+        console.error("ERRORE CRITICO round-init:", err);
         return new Response(JSON.stringify({ 
             success: false, 
             error: "Errore Import: " + err.message 
         }), { 
-            status: 200, 
+            status: 200, // Torniamo 200 per gestire l'errore nel frontend via JSON
             headers: { "Content-Type": "application/json" }
         });
     }
