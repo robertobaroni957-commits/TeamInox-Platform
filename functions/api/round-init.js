@@ -1,4 +1,4 @@
-// functions/api/round-init.js
+// functions/api/round-init.js (v2.1-debug)
 
 export async function onRequestPost(context) {
     const { env, request } = context;
@@ -30,32 +30,47 @@ export async function onRequestPost(context) {
         const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
         const wtrlCookie = env.WTRL_COOKIE || "";
 
+        console.log(`[round-init] Fetching WTRL Season ${wtrlSeasonId} for ${seriesName}`);
+
         const wtrlRes = await fetch(wtrlUrl, {
             headers: { 
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
-                "Cookie": wtrlCookie
+                "Cookie": wtrlCookie.trim()
             }
         });
 
+        const contentType = wtrlRes.headers.get("content-type") || "";
+        const responseText = await wtrlRes.text();
+
         if (!wtrlRes.ok) {
-            const errorText = await wtrlRes.text();
-            throw new Error(`WTRL API error: ${wtrlRes.status}. Detail: ${errorText.substring(0, 100)}`);
+            throw new Error(`WTRL API error ${wtrlRes.status}: ${responseText.substring(0, 100)}`);
         }
 
-        const responseText = await wtrlRes.text();
+        if (contentType.includes("text/html") || responseText.trim().startsWith("<")) {
+            console.error("[round-init] Ricevuto HTML invece di JSON. Primi 200 caratteri:", responseText.substring(0, 200));
+            
+            let extraHint = "Controlla il WTRL_COOKIE nelle impostazioni di Cloudflare.";
+            if (responseText.includes("cloudflare") || responseText.includes("ray-id")) {
+                extraHint = "Bloccato da Cloudflare (Challenge/WAF). L'IP dei server Cloudflare Workers è stato respinto.";
+            } else if (responseText.includes("login") || responseText.includes("signin")) {
+                extraHint = "Sessione WTRL scaduta. Aggiorna il WTRL_COOKIE.";
+            }
+
+            throw new Error(`WTRL ha restituito HTML (possibile errore di sessione o blocco). ${extraHint}`);
+        }
+
         let wtrlData;
         try {
             wtrlData = JSON.parse(responseText);
         } catch (e) {
-            console.error("Fallimento parsing JSON WTRL. Risposta:", responseText.substring(0, 300));
-            throw new Error("WTRL ha restituito dati non validi (HTML/Testo). Potrebbe essere necessario aggiornare il WTRL_COOKIE.");
+            throw new Error(`Errore parsing JSON WTRL: ${e.message}. Risposta: ${responseText.substring(0, 50)}`);
         }
 
         const rawRounds = wtrlData.payload || (Array.isArray(wtrlData) ? wtrlData : []);
         
-        if (rawRounds.length === 0) {
-            throw new Error("WTRL non ha restituito gare per questa stagione.");
+        if (!Array.isArray(rawRounds) || rawRounds.length === 0) {
+            throw new Error("WTRL non ha restituito gare valide per questa stagione (Payload vuoto).");
         }
 
         // 2. Upsert Serie
@@ -70,7 +85,6 @@ export async function onRequestPost(context) {
             await env.DB.prepare("UPDATE series SET name = ?, is_active = 1 WHERE id = ?").bind(seriesName, seriesId).run();
         }
         
-        // Disattiviamo le altre serie
         await env.DB.prepare("UPDATE series SET is_active = 0 WHERE id != ?").bind(seriesId).run();
 
         // 3. Pulizia a cascata
@@ -83,7 +97,7 @@ export async function onRequestPost(context) {
             env.DB.prepare(`DELETE FROM rounds WHERE series_id = ?`).bind(seriesId)
         ]);
 
-        // 4. Inserimento Round e Associazione Team Massiva
+        // 4. Inserimento Round
         const validRounds = rawRounds.filter(item => item.eventDate || item.date);
         
         for (const item of validRounds) {
@@ -97,7 +111,6 @@ export async function onRequestPost(context) {
             ).bind(seriesId, rName, rDate, rWorld, rRoute).first();
 
             if (round && round.id) {
-                // Inserimento batch delle associazioni team per questo round
                 await env.DB.prepare(`
                     INSERT INTO round_teams (round_id, team_id, timeslot_id)
                     SELECT ?, id, ? FROM teams
@@ -107,16 +120,18 @@ export async function onRequestPost(context) {
 
         return new Response(JSON.stringify({
             success: true,
+            version: "2.1-debug",
             message: `Importati ${validRounds.length} round con successo.`
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
-        console.error("ERRORE CRITICO round-init:", err);
+        console.error("[round-init] CRITICAL:", err);
         return new Response(JSON.stringify({ 
             success: false, 
-            error: "Errore Import: " + err.message 
+            version: "2.1-debug",
+            error: err.message 
         }), { 
-            status: 200, // Torniamo 200 per gestire l'errore nel frontend via JSON
+            status: 200, 
             headers: { "Content-Type": "application/json" }
         });
     }
