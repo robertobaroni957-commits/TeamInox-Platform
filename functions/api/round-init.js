@@ -27,7 +27,12 @@ export async function onRequestPost(context) {
 
         // 1. Fetch da WTRL (con cookie e gestione HTML)
         const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
-        const wtrlCookie = env.WTRL_COOKIE || "";
+        
+        // Supportiamo sia WTRL_COOKIE (stringa intera) che WTRL_SID (solo ID sessione)
+        let wtrlCookie = env.WTRL_COOKIE || "";
+        if (!wtrlCookie && env.WTRL_SID) {
+            wtrlCookie = `wtrl_sid=${env.WTRL_SID}`;
+        }
 
         console.log(`[round-init] Fetching WTRL Season ${wtrlSeasonId} for ${seriesName}`);
 
