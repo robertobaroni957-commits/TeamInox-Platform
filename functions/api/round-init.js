@@ -1,5 +1,4 @@
-// functions/api/round-init.js (v2.1-debug)
-
+// functions/api/round-init.js (DEPLOY-PAGES-FORCED-08:50)
 export async function onRequestPost(context) {
     const { env, request } = context;
 
