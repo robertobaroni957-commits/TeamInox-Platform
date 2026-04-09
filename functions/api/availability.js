@@ -30,7 +30,12 @@ export async function onRequestGet(context) {
             const results = await env.DB.batch([
                 env.DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
                 env.DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.athlete_id = a.zwid`),
-                env.DB.prepare(`SELECT zwid, name, team, base_category FROM athletes`)
+                env.DB.prepare(`
+                    SELECT a.zwid, a.name, a.base_category, t.name as team 
+                    FROM athletes a
+                    LEFT JOIN team_members tm ON a.zwid = tm.athlete_id
+                    LEFT JOIN teams t ON tm.team_id = t.id
+                `)
             ]);
 
             console.log(`[DEBUG] Query risultati: Prefs=${results[0].results.length}, Avail=${results[1].results.length}, Athletes=${results[2].results.length}`);
