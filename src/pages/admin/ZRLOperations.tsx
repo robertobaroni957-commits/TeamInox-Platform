@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Settings, Users, RefreshCw, Zap, ClipboardCheck, 
-  Trophy, BookOpen, BarChart3, ChevronRight, AlertCircle, Calendar, CheckCircle2,
+  Trophy, ChevronRight, AlertCircle, Calendar, CheckCircle2,
   Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../services/api';
+
+// Importazione componenti per gli step
+import AvailabilityManagement from './AvailabilityManagement';
+import RosterSuggestions from './RosterSuggestions';
+import RosterBuilder from '../RosterBuilder';
 
 interface RoundInput {
   id?: number;
@@ -54,15 +59,10 @@ const ZRLOperations: React.FC = () => {
               distance: r.distance || 0,
               elevation: r.elevation || 0
             })));
-          } else {
-            loadDefaultSeason19();
           }
-        } else {
-          loadDefaultSeason19();
         }
       } catch (err) {
         console.error("Errore caricamento stagione:", err);
-        loadDefaultSeason19();
       } finally {
         setLoading(false);
       }
@@ -70,15 +70,6 @@ const ZRLOperations: React.FC = () => {
 
     fetchCurrentSeason();
   }, []);
-
-  const loadDefaultSeason19 = () => {
-    setRounds([
-      { name: 'Race 1', date: '2026-04-07', world: 'FRANCE', route: 'Hell of the North', format: 'TTT', distance: 20.2, elevation: 241 },
-      { name: 'Race 2', date: '2026-04-14', world: 'WATOPIA', route: 'The Classic', format: 'Points', distance: 33.2, elevation: 306 },
-      { name: 'Race 3', date: '2026-04-21', world: 'FRANCE', route: 'Croissant', format: 'Scratch', distance: 40.3, elevation: 220 },
-      { name: 'Race 4', date: '2026-04-28', world: 'NEW YORK', route: 'Double Span Spin', format: 'Points', distance: 40.7, elevation: 439 },
-    ]);
-  };
 
   const handleInitSeason = async () => {
     if (!window.confirm("Attenzione: Questa operazione archivierà la stagione attuale e creerà una nuova serie nel database. Procedere?")) return;
@@ -102,7 +93,6 @@ const ZRLOperations: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         setMessage({ type: 'success', text: `Stagione '${seasonName}' inizializzata con successo!` });
-        // Refresh della pagina o passaggio allo step successivo
         setTimeout(() => window.location.reload(), 1500);
       } else {
         setMessage({ type: 'error', text: data.error || 'Errore durante l\'inizializzazione.' });
@@ -321,17 +311,29 @@ const ZRLOperations: React.FC = () => {
               </div>
             )}
 
-            {/* Altri Step (2-5) rimangono con la logica precedente ma con stile aggiornato */}
-            {activeStep > 1 && (
+            {/* STEP 2: DISPONIBILITÀ */}
+            {activeStep === 2 && (
+              <AvailabilityManagement />
+            )}
+
+            {/* STEP 3: ROSTER STRATEGY */}
+            {activeStep === 3 && (
+              <RosterSuggestions />
+            )}
+
+            {/* STEP 4: LINEUP */}
+            {activeStep === 4 && (
+              <RosterBuilder />
+            )}
+
+            {/* STEP 5: RISULTATI */}
+            {activeStep === 5 && (
               <div className="flex flex-col items-center justify-center py-20 space-y-6">
                 <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800">
-                  {(() => {
-                    const StepIcon = steps.find(s => s.id === activeStep)?.icon;
-                    return StepIcon ? <StepIcon size={48} /> : null;
-                  })()}
+                  <Trophy size={48} />
                 </div>
-                <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione in Sviluppo</h3>
-                <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Configura la stagione per attivare i moduli operativi</p>
+                <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione Risultati</h3>
+                <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Modulo per la generazione del giornalino e statistiche post-gara.</p>
               </div>
             )}
           </motion.div>
