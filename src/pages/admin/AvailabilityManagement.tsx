@@ -1,191 +1,284 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Settings, Users, RefreshCw, Zap, ClipboardCheck, 
+  Trophy, ChevronRight, AlertCircle, Calendar, CheckCircle2,
+  Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../services/api';
-import { LayoutDashboard, Users, Download, Filter, Search, CheckCircle, XCircle, HelpCircle } from 'lucide-react';
 
-interface AthleteAvail {
-  zwid: number;
+// Importazione componenti per gli step
+import AvailabilityManagement from './AvailabilityManagement';
+import RosterSuggestions from './RosterSuggestions';
+import RosterBuilder from '../RosterBuilder';
+
+interface RoundInput {
+  id?: number;
   name: string;
-  team: string;
-  category: string;
-  preferences: Record<string, number>;
-  availabilities: Record<number, string>;
+  date: string;
+  world: string;
+  route: string;
+  format: string;
+  distance: number;
+  elevation: number;
 }
 
-const AvailabilityManagement: React.FC = () => {
-  const [rounds, setRaces] = useState<any[]>([]);
-  const [athletes, setAthletes] = useState<AthleteAvail[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('ALL');
+const ZRLOperations: React.FC = () => {
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
+  // Form States
+  const [seasonName, setSeasonName] = useState('ZRL Spring 2026');
+  const [wtrlId, setWtrlId] = useState('19');
+  const [rounds, setRounds] = useState<RoundInput[]>([]);
+
+  // Caricamento dati iniziali dal database
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCurrentSeason = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        // Carichiamo i round attivi
-        const roundsData = await api.getRounds();
-        setRaces(roundsData);
-
-        // Carichiamo tutte le disponibilità
-        const adminData = await api.getAllAvailabilities();
+        const seriesData = await api.getSeries();
+        const active = seriesData.find(s => s.is_active);
         
-        // Trasformiamo i dati in una struttura piatta per la tabella
-        const mappedAthletes: AthleteAvail[] = adminData.athletes.map((a: any) => {
-          const prefs: Record<string, number> = {};
-          adminData.allPreferences
-            .filter((p: any) => p.zwid === a.zwid)
-            .forEach((p: any) => prefs[p.time_slot_id] = p.preference_level);
-
-          const avails: Record<number, string> = {};
-          adminData.allAvailabilities
-            .filter((v: any) => v.athlete_id === a.zwid)
-            .forEach((v: any) => avails[v.round_id] = v.status);
-
-          return {
-            zwid: a.zwid,
-            name: a.name,
-            team: a.team || 'N/A',
-            category: a.base_category || 'N/A',
-            preferences: prefs,
-            availabilities: avails
-          };
-        });
-
-        setAthletes(mappedAthletes);
-      } catch (e: any) {
-        setError(e.message || 'Errore nel caricamento dati');
+        if (active) {
+          setSeasonName(active.name);
+          setWtrlId(active.external_season_id?.toString() || '19');
+          
+          const roundsData = await api.getRounds(active.id);
+          if (roundsData && roundsData.length > 0) {
+            setRounds(roundsData.map(r => ({
+              id: r.id,
+              name: r.name,
+              date: r.date.split('T')[0],
+              world: r.world,
+              route: r.route,
+              format: r.format || 'Scratch',
+              distance: r.distance || 0,
+              elevation: r.elevation || 0
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Errore caricamento stagione:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchCurrentSeason();
   }, []);
 
-  const filteredAthletes = athletes.filter(a => {
-    const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          a.zwid.toString().includes(searchTerm);
-    const matchesCategory = filterCategory === 'ALL' || a.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const getStatusIcon = (status: string | undefined) => {
-    if (status === 'available') return <CheckCircle className="text-emerald-500" size={18} />;
-    if (status === 'unavailable') return <XCircle className="text-rose-500" size={18} />;
-    return <HelpCircle className="text-zinc-700" size={18} />;
-  };
-
-  const exportData = () => {
-    const dataString = JSON.stringify({
-        generatedAt: new Date().toISOString(),
-        athletes: filteredAthletes,
-        rounds: rounds
-    }, null, 2);
+  const handleInitSeason = async () => {
+    if (!window.confirm("Attenzione: Questa operazione archivierà la stagione attuale e creerà una nuova serie nel database. Procedere?")) return;
     
-    const blob = new Blob([dataString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `inox_availability_export_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/init-season', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({
+          name: seasonName,
+          external_id: parseInt(wtrlId),
+          rounds: rounds
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: `Stagione '${seasonName}' inizializzata con successo!` });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Errore durante l'inizializzazione.' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione al server.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="text-inox-orange font-black italic text-xl animate-pulse uppercase tracking-widest">
-        ANALYZING ROSTER DATA...
-      </div>
-    </div>
-  );
+  const addRound = () => {
+    setRounds([...rounds, { name: `Race ${rounds.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
+  };
+
+  const updateRound = (index: number, field: keyof RoundInput, value: any) => {
+    const newRounds = [...rounds];
+    (newRounds[index] as any)[field] = value;
+    setRounds(newRounds);
+  };
+
+  const removeRound = (index: number) => {
+    setRounds(rounds.filter((_, i) => i !== index));
+  };
+
+  const steps = [
+    { id: 1, title: 'Setup Stagione', icon: Settings, desc: 'ID Stagione e Date' },
+    { id: 2, title: 'Disponibilità', icon: ClipboardCheck, desc: 'Monitoraggio RSVP' },
+    { id: 3, title: 'Roster Strategy', icon: Zap, desc: 'Optimizer & Teams' },
+    { id: 4, title: 'Gare & Lineup', icon: Users, desc: 'Composizione Squadre' },
+    { id: 5, title: 'Risultati & Media', icon: Trophy, desc: 'Giornalino & Bilanci' },
+  ];
 
   return (
-    <div className="p-6">
-      <header className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4 border-b border-zinc-800 pb-6">
-        <div>
-          <span className="text-inox-orange font-black text-xs tracking-[0.3em] uppercase italic">Admin Command</span>
-          <h1 className="text-5xl font-black italic tracking-tighter text-white uppercase mt-1">
-            ZRL <span className="text-zinc-600">AVAILABILITY MATRIX</span>
-          </h1>
+    <div className="p-6 max-w-7xl mx-auto space-y-10">
+      {/* Header */}
+      <header className="border-b border-zinc-800 pb-8">
+        <div className="flex items-center gap-3 mb-2 text-[#fc6719]">
+          <Settings size={20} />
+          <span className="font-black text-xs tracking-[0.3em] uppercase italic">Inox Admin Command Center</span>
         </div>
-        <button 
-          onClick={exportData}
-          className="flex items-center gap-2 px-6 py-3 bg-inox-orange text-black font-black italic rounded-xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(252,103,25,0.3)] uppercase text-sm"
-        >
-          <Download size={18} />
-          Esporta per AI
-        </button>
+        <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase">
+          ZRL <span className="text-zinc-700">Operations</span>
+        </h1>
       </header>
 
-      {/* FILTRI */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-          <input 
-            type="text" 
-            placeholder="Cerca Rider o ZWID..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-inox-orange transition-all outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          {['ALL', 'A', 'B', 'C', 'D'].map(cat => (
+      {/* Stepper */}
+      <nav className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {steps.map((step) => {
+          const Icon = step.icon;
+          const isActive = activeStep === step.id;
+          return (
             <button
-              key={cat}
-              onClick={() => setFilterCategory(cat)}
-              className={`flex-1 py-3 rounded-xl font-black italic transition-all border ${filterCategory === cat ? 'bg-inox-cyan text-black border-inox-cyan' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}`}
+              key={step.id}
+              onClick={() => setActiveStep(step.id)}
+              className={`flex flex-col items-start p-5 rounded-3xl border transition-all text-left ${
+                isActive 
+                  ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_30px_rgba(252,103,25,0.1)]" 
+                  : "bg-zinc-950 border-zinc-800 opacity-50 hover:opacity-100"
+              }`}
             >
-              {cat}
+              <div className={`p-2.5 rounded-xl mb-4 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
+                <Icon size={18} />
+              </div>
+              <span className="text-[9px] font-black uppercase text-zinc-500 mb-1 tracking-widest">Step 0{step.id}</span>
+              <span className={`text-xs font-black uppercase italic ${isActive ? "text-white" : "text-zinc-600"}`}>{step.title}</span>
             </button>
-          ))}
-        </div>
-      </div>
+          );
+        })}
+      </nav>
 
-      {/* TABELLA MATRICE */}
-      <div className="bg-black border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-zinc-900/50 border-b border-zinc-800">
-                <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest sticky left-0 bg-black/90 backdrop-blur z-10 w-64">Rider / Info</th>
-                {rounds.map(r => (
-                  <th key={r.id} className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest text-center min-w-[100px]">
-                    <div className="text-inox-cyan">{r.name}</div>
-                    <div className="text-[8px] opacity-50 font-medium">{new Date(r.date).toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit'})}</div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAthletes.map((athlete) => (
-                <tr key={athlete.zwid} className="border-b border-zinc-900 hover:bg-zinc-900/30 transition-all">
-                  <td className="p-4 sticky left-0 bg-black/90 backdrop-blur z-10 border-r border-zinc-900/50">
-                    <div className="font-black italic text-white uppercase truncate">{athlete.name}</div>
-                    <div className="flex gap-2 mt-1">
-                      <span className="text-[8px] font-bold bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase">{athlete.category}</span>
-                      <span className="text-[8px] font-bold bg-zinc-800 text-inox-orange px-1.5 py-0.5 rounded uppercase">{athlete.team}</span>
-                    </div>
-                  </td>
-                  {rounds.map(r => (
-                    <td key={r.id} className="p-4 text-center">
-                      <div className="flex justify-center">
-                        {getStatusIcon(athlete.availabilities[r.id])}
+      <main className="bg-[#0A0A0A] rounded-[3rem] border border-zinc-800 shadow-2xl min-h-[600px] relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeStep}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-8 lg:p-12"
+          >
+            {message && (
+              <div className={`mb-8 p-4 rounded-2xl border flex items-Bcenter gap-3 ${
+                message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-500' : 'bg-red-500/10 border-red-500/50 text-red-500'
+              }`}>
+                {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+                <p className="font-bold uppercase text-[10px] tracking-widest">{message.text}</p>
+              </div>
+            )}
+
+            {/* STEP 1: SETUP */}
+            {activeStep === 1 && (
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-black italic text-white uppercase flex items-center gap-3">
+                      <Settings className="text-[#fc6719]" /> System Init
+                    </h3>
+                    <p className="text-zinc-500 text-xs font-bold uppercase leading-relaxed">
+                      Configura la stagione attiva. Inizializzando una nuova stagione, il sistema archivierà automaticamente i dati precedenti.
+                    </p>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="seasonName" className="text-[9px] font-black uppercase text-zinc-600 ml-2 mb-1 block">Season Name</label>
+                        <input 
+                          id="seasonName"
+                          name="seasonName"
+                          type="text" 
+                          value={seasonName}
+                          onChange={(e) => setSeasonName(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-white font-bold outline-none focus:border-[#fc6719]" 
+                        />
                       </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <div>
+                        <label htmlFor="wtrlId" className="text-[9px] font-black uppercase text-zinc-600 ml-2 mb-1 block">WTRL ID</label>
+                        <input 
+                          id="wtrlId"
+                          name="wtrlId"
+                          type="text" 
+                          value={wtrlId}
+                          onChange={(e) => setWtrlId(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-900 rounded-xl p-4 text-white font-bold outline-none focus:border-[#fc6719]" 
+                        />
+                      </div>
+                      <button 
+                        onClick={handleInitSeason}
+                        disabled={loading}
+                        className="w-full py-5 bg-[#fc6719] text-black font-black uppercase italic rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#fc6719]/20 flex items-center justify-center gap-3"
+                      >
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                        Applica Configurazione
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 bg-zinc-950/50 p-8 rounded-[2.5rem] border border-zinc-900 space-y-6">
+                    <div className="flex justify-between items-center px-2">
+                      <h3 className="text-lg font-black italic text-white uppercase flex items-center gap-2">
+                        <Calendar className="text-[#fc6719]" size={18} /> Season Calendar
+                      </h3>
+                      <button onClick={addRound} className="p-2 bg-zinc-900 text-[#fc6719] rounded-lg hover:bg-zinc-800">
+                        <Plus size={18} />
+                      </Thead>
+                        <tr className="bg-zinc-900/50 border-b border-zinc-800">
+                          <th className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest sticky left-0 bg-black/90 backdrop-blur z-10 w-64">Rider / Info</th>
+                          {rounds.map(r => (
+                            <th key={r.id} className="p-4 text-[10px] font-black uppercase text-zinc-500 tracking-widest text-center min-w-[100px]">
+                              <div className="text-inox-cyan">{r.name}</div>
+                              <div className="text-[8px] opacity-50 font-medium">{new Date(r.date).toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit'})}</div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAthletes.map((athlete) => (
+                          <tr key={athlete.zwid} className="border-b border-zinc-900 hover:bg-zinc-900/30 transition-all">
+                            <td className="p-4 sticky left-0 bg-black/90 backdrop-blur z-10 border-r border-zinc-900/50">
+                              <div className="font-black italic text-white uppercase truncate">{athlete.name}</div>
+                              <div className="flex gap-2 mt-1">
+                                <span className="text-[8px] font-bold bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase">{athlete.category}</span>
+                                <span className="text-[8px] font-bold bg-zinc-800 text-inox-orange px-1.5 py-0.5 rounded uppercase">{athlete.team}</span>
+                              </div>
+                            </td>
+                            {rounds.map(r => (
+                              <td key={r.id} className="p-4 text-center">
+                                <div className="flex justify-center">
+                                  {getStatusIcon(athlete.availabilities[r.id])}
+                                </div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {filteredAthletes.length === 0 && (
+                  <div className="p-12 text-center text-zinc-600 font-bold italic uppercase tracking-widest">
+                    Nessun rider trovato con i filtri attuali.
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-
-      {filteredAthletes.length === 0 && (
-        <div className="p-12 text-center text-zinc-600 font-bold italic uppercase tracking-widest">
-          Nessun rider trovato con i filtri attuali.
-        </div>
-      )}
     </div>
   );
 };
