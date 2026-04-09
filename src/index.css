@@ -1,34 +1,29 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --color-inox-dark: #0d0f11;
-  --color-inox-card: #1a1d20;
-  --color-inox-orange: #fc6719;
-  --color-inox-blue: #048ea0;
-  --color-inox-cyan: #00f0ff;
-  --color-inox-text: #f0f0f0;
-  --color-inox-gray: #888888;
-  
-  --color-zwift-orange: #ff5a00;
-  --color-zwift-dark: #1e1e24;
-  
-  --font-display: "Teko", sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-}
-
-@layer base {
-  :root {
-    color-scheme: dark;
-    background-color: var(--color-inox-dark);
-  }
+:root {
+  --inox-dark: #0d0f11;
+  --inox-card: #1a1d20;
+  --inox-orange: #fc6719;
+  --inox-blue: #048ea0;
+  --inox-cyan: #00f0ff;
+  --inox-text: #f0f0f0;
+  --inox-gray: #888888;
+  --zwift-orange: #ff5a00;
+  --zwift-dark: #1e1e24;
 }
 
 body {
   margin: 0;
-  font-family: var(--font-body);
-  background-color: var(--color-inox-dark);
-  color: var(--color-inox-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--inox-dark);
+  color: var(--inox-text);
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Teko', sans-serif;
 }
 
 /* Scrollbar Custom */
@@ -37,7 +32,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-inox-dark);
+  background: var(--inox-dark);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -54,12 +49,10 @@ body {
   border-radius: 10px;
 }
 
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
