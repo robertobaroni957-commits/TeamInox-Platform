@@ -1,3 +1,6 @@
 # Redirects per Cloudflare Pages
+# Indirizza tutte le chiamate API alla funzione corrispondente
 /api/*  /api/:splat  200
-/*      /index.html   200
+
+# Tutte le altre rotte devono essere gestite dall'index.html di React (SPA)
+/*  /index.html  200
