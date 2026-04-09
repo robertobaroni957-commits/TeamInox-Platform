@@ -78,7 +78,21 @@ const RosterBuilder: React.FC = () => {
         role: 'starter',
         status: 'confirmed'
       };
-      await api.updateLineup(entry);
+      // Effettuo la chiamata API esplicitando il metodo POST
+      const response = await fetch('/api/lineup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}` // Aggiungo token se presente
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
       setLineup(prev => [...prev, { ...entry, athlete_name: athlete.name }]);
     } catch (e: any) {
       setError(e.message || 'Atleta già schierato in un’altra squadra per questo round.');
