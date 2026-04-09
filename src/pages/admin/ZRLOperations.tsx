@@ -325,7 +325,10 @@ const ZRLOperations: React.FC = () => {
             {activeStep > 1 && (
               <div className="flex flex-col items-center justify-center py-20 space-y-6">
                 <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800">
-                  {steps.find(s => s.id === activeStep)?.icon({ size: 48 })}
+                  {(() => {
+                    const StepIcon = steps.find(s => s.id === activeStep)?.icon;
+                    return StepIcon ? <StepIcon size={48} /> : null;
+                  })()}
                 </div>
                 <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione in Sviluppo</h3>
                 <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Configura la stagione per attivare i moduli operativi</p>
