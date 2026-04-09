@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { 
   Calendar, 
   RefreshCw, 
@@ -7,7 +7,6 @@ import {
   Info, 
   AlertTriangle, 
   CheckCircle2,
-  Users,
   MapPin,
   Clock,
   ExternalLink
@@ -23,12 +22,10 @@ const ZRLRoundManager: React.FC = () => {
   const [totalSystemTeams, setTotalSystemTeams] = useState(0);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // Form states
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
 
-  // Calcola il link WTRL in modo reattivo basandosi sulla serie attiva caricata
-  const wtrlScheduleLink = React.useMemo(() => {
+  const wtrlScheduleLink = useMemo(() => {
     if (!series?.name) return null;
     const yearMatch = series.name.match(/\d{4}/);
     const roundMatch = series.name.match(/Round\s+(\d+)/);
@@ -42,14 +39,16 @@ const ZRLRoundManager: React.FC = () => {
     try {
       const data = await roundService.getStatus();
       console.log("DEBUG: Data fetched from API:", data);
+
       if (data.success) {
         setSeries(data.series);
-        setRounds(data.rounds);
-        setTotalSystemTeams(data.total_system_teams);
+        setRounds(data.rounds || []);
+        setTotalSystemTeams(data.total_system_teams || 0);
       } else {
         setMessage({ type: 'error', text: data.error || "Errore nel caricamento dati" });
       }
     } catch (err) {
+      console.error(err);
       setMessage({ type: 'error', text: "Errore di connessione al server" });
     } finally {
       setLoading(false);
@@ -71,12 +70,15 @@ const ZRLRoundManager: React.FC = () => {
 
       if (res.success) {
         setMessage({ type: 'success', text: res.message || "Stagione inizializzata con successo!" });
-        // Forziamo un refresh dello stato serie
         await loadData();
       } else {
-        setMessage({ type: 'error', text: res.error || "Errore durante l'inizializzazione" });
+        setMessage({
+          type: 'error',
+          text: res.error || "Errore durante l'inizializzazione."
+        });
       }
     } catch (err) {
+      console.error(err);
       setMessage({ type: 'error', text: "Errore durante la richiesta" });
     } finally {
       setActionLoading(false);
@@ -85,7 +87,6 @@ const ZRLRoundManager: React.FC = () => {
 
   const handleResetRound = async (roundId: number, roundName: string) => {
     const confirmed = window.confirm(`SEI SICURO? Questo cancellerà TUTTE le lineup, le disponibilità e le associazioni squadre per la gara "${roundName}". Questa operazione NON può essere annullata.`);
-    
     if (!confirmed) return;
 
     setActionLoading(true);
@@ -100,6 +101,7 @@ const ZRLRoundManager: React.FC = () => {
         setMessage({ type: 'error', text: res.error || "Errore durante il reset" });
       }
     } catch (err) {
+      console.error(err);
       setMessage({ type: 'error', text: "Errore durante la richiesta" });
     } finally {
       setActionLoading(false);
@@ -167,9 +169,9 @@ const ZRLRoundManager: React.FC = () => {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                 >
-                  <option value={2025} className="text-gray-900">2025</option>
-                  <option value={2026} className="text-gray-900">2026</option>
-                  <option value={2027} className="text-gray-900">2027</option>
+                  <option value={2025}>2025</option>
+                  <option value={2026}>2026</option>
+                  <option value={2027}>2027</option>
                 </select>
               </div>
 
@@ -204,20 +206,6 @@ const ZRLRoundManager: React.FC = () => {
                 </button>
               </div>
             </form>
-            
-            <div className="mt-6 space-y-4">
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-400 font-bold uppercase mb-2">Anteprima Link API</p>
-                <code className="text-[10px] break-all text-blue-600 font-mono">
-                  .../api/wtrlruby/?wtrlid=zrl&season={(selectedYear - 2026) * 4 + 20 + (selectedRoundIndex - 1)}&action=schedule
-                </code>
-              </div>
-
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3 text-sm text-blue-800">
-                <Info className="shrink-0" size={18} />
-                <p>L'operazione scaricherà tutte le settimane della stagione scelta e le preparerà per le lineup.</p>
-              </div>
-            </div>
           </div>
         </div>
 
