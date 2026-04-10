@@ -40,11 +40,12 @@ export async function onRequestPost({ request, env }) {
             if (roundStatements.length > 0) await env.DB.batch(roundStatements);
         }
 
-        // 4. SYNC TEAM INOX DA WTRL (NOVITÀ)
-        // Utilizziamo il Club ID degli Inox per recuperare tutte le squadre
+        // 4. SYNC TEAM INOX DA WTRL (MIGLIORATO)
         const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
-        const wtrlTeamsUrl = `https://www.wtrl.racing/api/zrl/teams.php?clubId=${INOX_CLUB_ID}`;
+        // Spesso WTRL richiede sia clubId che seasonId per filtrare correttamente
+        const wtrlTeamsUrl = `https://www.wtrl.racing/api/zrl/teams.php?clubId=${INOX_CLUB_ID}&seasonId=${external_id}`;
         
+        let syncedTeamsCount = 0;
         try {
             const teamResponse = await fetch(wtrlTeamsUrl, {
                 headers: { "accept": "application/json" }
@@ -52,30 +53,34 @@ export async function onRequestPost({ request, env }) {
 
             if (teamResponse.ok) {
                 const teamData = await teamResponse.json();
-                const teams = teamData.payload || [];
+                // Verifichiamo se i dati sono in payload o direttamente nel body
+                const teams = teamData.payload || (Array.isArray(teamData) ? teamData : []);
                 
-                const teamStatements = teams.map(t => {
-                    return env.DB.prepare(`
-                        INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
-                        VALUES (?, ?, ?, ?, ?)
-                        ON CONFLICT(wtrl_team_id) DO UPDATE SET 
-                            name = excluded.name,
-                            category = excluded.category,
-                            division = excluded.division
-                    `).bind(t.teamname, t.division, t.zrldivision, parseInt(t.id), INOX_CLUB_ID);
-                });
+                if (teams.length > 0) {
+                    const teamStatements = teams.map(t => {
+                        return env.DB.prepare(`
+                            INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
+                            VALUES (?, ?, ?, ?, ?)
+                            ON CONFLICT(wtrl_team_id) DO UPDATE SET 
+                                name = excluded.name,
+                                category = excluded.category,
+                                division = excluded.division
+                        `).bind(t.teamname || t.name, t.division || 'N/A', t.zrldivision || 'N/A', parseInt(t.id || t.wtrl_team_id), INOX_CLUB_ID);
+                    });
 
-                if (teamStatements.length > 0) await env.DB.batch(teamStatements);
+                    await env.DB.batch(teamStatements);
+                    syncedTeamsCount = teams.length;
+                }
             }
         } catch (syncErr) {
             console.error("Errore sincronizzazione team da WTRL:", syncErr);
-            // Non blocchiamo l'inizializzazione se WTRL è down
         }
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Stagione ${name} inizializzata. Squadre Inox sincronizzate da WTRL.`,
-            series_id: seriesId
+            message: `Stagione ${name} inizializzata. Sincronizzati ${syncedTeamsCount} team Inox.`,
+            series_id: seriesId,
+            teams_found: syncedTeamsCount
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {

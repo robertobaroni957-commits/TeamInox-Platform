@@ -193,8 +193,10 @@ const ZRLOperations: React.FC = () => {
                     <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Nuova Stagione</h3>
                     <div className="space-y-4">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
+                        <label htmlFor="seasonName" className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
                         <input 
+                          id="seasonName"
+                          name="seasonName"
                           type="text" 
                           value={seasonName} 
                           onChange={(e) => setSeasonName(e.target.value)}
@@ -202,8 +204,10 @@ const ZRLOperations: React.FC = () => {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Stagione WTRL</label>
+                        <label htmlFor="wtrlId" className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Stagione WTRL</label>
                         <input 
+                          id="wtrlId"
+                          name="wtrlId"
                           type="text" 
                           value={wtrlId} 
                           onChange={(e) => setWtrlId(e.target.value)}

@@ -150,19 +150,24 @@ const RosterBuilder: React.FC = () => {
         
         <div className="flex flex-wrap gap-4 w-full lg:w-auto">
           <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-            <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Squadra</label>
+            <label htmlFor="teamSelect" className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Squadra</label>
             <select 
+              id="teamSelect"
+              name="teamSelect"
               value={selectedTeam || ''} 
               onChange={(e) => setSelectedTeam(Number(e.target.value))}
               className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full"
             >
+              <option value="" disabled>Scegli una squadra...</option>
               {teams.map(t => <option key={t.id} value={t.id}>{t.name} (Cat {t.category})</option>)}
             </select>
           </div>
 
           <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-            <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Round</label>
+            <label htmlFor="roundSelect" className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Round</label>
             <select 
+              id="roundSelect"
+              name="roundSelect"
               value={selectedRound || ''} 
               onChange={(e) => setSelectedRound(Number(e.target.value))}
               className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full"
