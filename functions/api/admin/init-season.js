@@ -1,5 +1,5 @@
 // functions/api/admin/init-season.js
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPost({ request, env }) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) return new Response("Unauthorized", { status: 401 });
 
