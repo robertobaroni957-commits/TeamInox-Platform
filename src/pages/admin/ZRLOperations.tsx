@@ -108,24 +108,47 @@ const ZRLOperations: React.FC = () => {
   const handleSyncTeams = async () => {
     setLoading(true);
     setMessage(null);
+    const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
+    const seasonId = parseInt(wtrlId);
+
     try {
-      const response = await fetch('/api/admin/sync-teams', {
+      // 1. Scarichiamo la lista completa da WTRL direttamente dal browser
+      const wtrlTeamsUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&action=teamlist&test=dGVhbWxpc3Q%3D`;
+      
+      const response = await fetch(wtrlTeamsUrl);
+      if (!response.ok) throw new Error("Impossibile contattare WTRL (Errore di rete)");
+      
+      const data = await response.json();
+      const allTeams = data.payload || [];
+      
+      // 2. Filtriamo i team Inox nel browser (molto più veloce e sicuro)
+      const inoxTeams = allTeams.filter((t: any) => t.clubId === INOX_CLUB_ID);
+      
+      if (inoxTeams.length === 0) {
+        setMessage({ type: 'error', text: "Nessun team INOX trovato su WTRL per questa stagione." });
+        setLoading(false);
+        return;
+      }
+
+      // 3. Inviamo solo i team filtrati al nostro backend per il salvataggio
+      const saveResponse = await fetch('/api/admin/sync-teams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
         },
-        body: JSON.stringify({ seasonId: parseInt(wtrlId) })
+        body: JSON.stringify({ teams: inoxTeams })
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ type: 'success', text: data.message });
+      const saveData = await saveResponse.json();
+      if (saveData.success) {
+        setMessage({ type: 'success', text: `Sincronizzazione completata! ${inoxTeams.length} team reali importati.` });
       } else {
-        setMessage({ type: 'error', text: data.error || "Errore durante la sincronizzazione." });
+        setMessage({ type: 'error', text: saveData.error || "Errore durante il salvataggio dei team." });
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Timeout o errore di connessione a WTRL.' });
+    } catch (err: any) {
+      console.error("Sync Error:", err);
+      setMessage({ type: 'error', text: 'Errore durante la sincronizzazione: ' + err.message });
     } finally {
       setLoading(false);
     }
