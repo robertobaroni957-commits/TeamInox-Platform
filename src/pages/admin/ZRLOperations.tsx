@@ -95,10 +95,9 @@ const ZRLOperations: React.FC = () => {
         setMessage({ type: 'success', text: `Stagione '${seasonName}' inizializzata con successo!` });
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        // ✅ CORRETTO escape della stringa 'inizializzazione'
         setMessage({
           type: 'error',
-          text: data.error || "Errore durante l\'inizializzazione."
+          text: data.error || "Errore durante l'inizializzazione."
         });
       }
     } catch (err) {
@@ -189,7 +188,94 @@ const ZRLOperations: React.FC = () => {
             {/* STEP 1: SETUP */}
             {activeStep === 1 && (
               <div className="space-y-10">
-                {/* ... Resto STEP 1 (unchanged) ... */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Nuova Stagione</h3>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
+                        <input 
+                          type="text" 
+                          value={seasonName} 
+                          onChange={(e) => setSeasonName(e.target.value)}
+                          className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Stagione WTRL</label>
+                        <input 
+                          type="text" 
+                          value={wtrlId} 
+                          onChange={(e) => setWtrlId(e.target.value)}
+                          className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center">
+                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-relaxed mb-6">
+                      L'inizializzazione cancellerà le impostazioni precedenti e sincronizzerà i team Inox da WTRL.
+                    </p>
+                    <button 
+                      onClick={handleInitSeason}
+                      disabled={loading}
+                      className="w-full bg-[#fc6719] hover:bg-[#e65a15] text-black font-black italic uppercase py-5 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                    >
+                      {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
+                      {loading ? 'Inizializzazione...' : 'Inizializza Stagione'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Round & Gare</h3>
+                    <button 
+                      onClick={addRound}
+                      className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
+                    >
+                      <Plus size={14} /> Aggiungi Round
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {rounds.map((round, idx) => (
+                      <div key={idx} className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black uppercase text-[#fc6719] tracking-widest">Gara {idx + 1}</span>
+                          <button onClick={() => removeRound(idx)} className="text-zinc-700 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                        </div>
+                        <input 
+                          type="text" 
+                          placeholder="Nome Gara"
+                          value={round.name}
+                          onChange={(e) => updateRound(idx, 'name', e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
+                        />
+                        <input 
+                          type="date" 
+                          value={round.date}
+                          onChange={(e) => updateRound(idx, 'date', e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                           <input 
+                             placeholder="World" 
+                             value={round.world}
+                             onChange={(e) => updateRound(idx, 'world', e.target.value)}
+                             className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
+                           />
+                           <input 
+                             placeholder="Route" 
+                             value={round.route}
+                             onChange={(e) => updateRound(idx, 'route', e.target.value)}
+                             className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
+                           />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
