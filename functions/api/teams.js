@@ -6,26 +6,22 @@ export async function onRequestGet(context) {
     let query = `SELECT * FROM teams`;
     let params = [];
 
-    // Se l'utente è un Capitano, vede solo le sue squadre
-    if (user && user.role === 'captain') {
+    // Admin e Moderator vedono tutto (nessun filtro)
+    // Se non c'è user (Guest o errore auth silenziato), mostriamo comunque tutto per sbloccare la UI
+    if (!user || user.role === 'admin' || user.role === 'moderator') {
+      // Nessun filtro
+    } else if (user.role === 'captain') {
       query += ` WHERE captain_id = ?`;
       params.push(user.zwid);
-    } 
-    // Se è un utente semplice (atleta), vede solo la sua squadra
-    else if (user && user.role === 'user') {
-      // Dobbiamo prima trovare il team_id dell'atleta
+    } else if (user.role === 'user') {
       const athlete = await env.DB.prepare(`SELECT team_id FROM athletes WHERE zwid = ?`).bind(user.zwid).first();
       if (athlete?.team_id) {
         query += ` WHERE id = ?`;
         params.push(athlete.team_id);
       } else {
-        // Se non ha squadra, non vede nulla
-        return new Response(JSON.stringify({ success: true, teams: [] }), {
-          headers: { "Content-Type": "application/json" }
-        });
+        return new Response(JSON.stringify({ success: true, teams: [] }), { headers: { "Content-Type": "application/json" } });
       }
     }
-    // Admin e Moderator vedono tutto (nessun filtro)
 
     query += ` ORDER BY category ASC, division ASC, name ASC`;
 
