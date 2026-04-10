@@ -92,16 +92,40 @@ const ZRLOperations: React.FC = () => {
 
       const data = await response.json();
       if (data.success) {
-        setMessage({ type: 'success', text: `Stagione '${seasonName}' inizializzata con successo!` });
+        setMessage({ type: 'success', text: data.message });
+        // Ricarichiamo dopo un po' per mostrare il successo
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        setMessage({
-          type: 'error',
-          text: data.error || "Errore durante l'inizializzazione."
-        });
+        setMessage({ type: 'error', text: data.error || "Errore durante l'inizializzazione." });
       }
     } catch (err) {
       setMessage({ type: 'error', text: 'Errore di connessione al server.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSyncTeams = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/sync-teams', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({ seasonId: parseInt(wtrlId) })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+      } else {
+        setMessage({ type: 'error', text: data.error || "Errore durante la sincronizzazione." });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Timeout o errore di connessione a WTRL.' });
     } finally {
       setLoading(false);
     }
@@ -216,17 +240,31 @@ const ZRLOperations: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center">
-                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-relaxed mb-6">
-                      L'inizializzazione cancellerà le impostazioni precedenti e sincronizzerà i team Inox da WTRL.
+                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-4">
+                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-relaxed">
+                      L'inizializzazione crea la serie e i round nel database.
                     </p>
                     <button 
                       onClick={handleInitSeason}
                       disabled={loading}
-                      className="w-full bg-[#fc6719] hover:bg-[#e65a15] text-black font-black italic uppercase py-5 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                      className="w-full bg-white hover:bg-zinc-200 text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                    >
+                      {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                      {loading ? 'Esecuzione...' : '1. Salva Serie & Round'}
+                    </button>
+
+                    <div className="h-px bg-zinc-900 my-2" />
+
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                      Scarica i team reali del club Inox direttamente da WTRL.
+                    </p>
+                    <button 
+                      onClick={handleSyncTeams}
+                      disabled={loading}
+                      className="w-full bg-[#fc6719] hover:bg-[#e65a15] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                     >
                       {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
-                      {loading ? 'Inizializzazione...' : 'Inizializza Stagione'}
+                      {loading ? 'Sincronizzazione...' : '2. Sincronizza Team WTRL'}
                     </button>
                   </div>
                 </div>
