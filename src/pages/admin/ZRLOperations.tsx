@@ -98,7 +98,7 @@ const ZRLOperations: React.FC = () => {
         // ✅ CORRETTO escape della stringa 'inizializzazione'
         setMessage({
           type: 'error',
-          text: data.error || "Errore durante l'inizializzazione."
+          text: data.error || "Errore durante l\'inizializzazione."
         });
       }
     } catch (err) {

@@ -70,7 +70,7 @@ const ZRLRoundManager: React.FC = () => {
       } else {
         setMessage({
           type: 'error',
-          text: res.error || `Errore durante l'inizializzazione.`,
+          text: res.error || "Errore durante l\'inizializzazione.",
         });
       }
     } catch {
