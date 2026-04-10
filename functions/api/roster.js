@@ -10,16 +10,58 @@ export async function onRequestGet(context) {
   }
 
   try {
-    // Se l'utente è un Capitano, verifichiamo che possa gestire questo team
-    if (user && user.role === 'captain') {
-      const team = await env.DB.prepare(`SELECT captain_id FROM teams WHERE id = ?`).bind(team_id).first();
-      if (!team || team.captain_id !== user.zwid) {
-        return new Response(JSON.stringify({ error: "Forbidden: You are not the captain of this team" }), { status: 403 });
+    // 1. Recuperiamo i dettagli della serie attiva e del team
+    const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
+    const targetTeam = await env.DB.prepare("SELECT wtrl_team_id FROM teams WHERE id = ?").bind(team_id).first();
+
+    // 2. SYNC REAL-TIME CON WTRL (se abbiamo i dati necessari)
+    if (activeSeries?.external_season_id && targetTeam?.wtrl_team_id) {
+      const seasonId = activeSeries.external_season_id;
+      const wtrlTeamId = targetTeam.wtrl_team_id;
+      
+      // Chiamata all'API WTRL (utilizziamo l'API del sito WTRL)
+      const wtrlUrl = `https://www.wtrl.racing/api/zrl/teams.php?seasonId=${seasonId}&id=${wtrlTeamId}`;
+      
+      try {
+        const wtrlRes = await fetch(wtrlUrl, { headers: { "accept": "application/json" } });
+        if (wtrlRes.ok) {
+          const wtrlData = await wtrlRes.json();
+          const members = wtrlData.payload?.[0]?.riders || []; // Struttura tipica WTRL payload[0].riders
+
+          if (members.length > 0) {
+            // Prepariamo i batch per atleti e associazioni
+            const athleteStatements = [];
+            const memberStatements = [];
+
+            for (const rider of members) {
+              const zwid = parseInt(rider.zwid);
+              if (!zwid) continue;
+
+              // Upsert Atleta
+              athleteStatements.push(env.DB.prepare(`
+                INSERT INTO athletes (zwid, name, base_category)
+                VALUES (?, ?, ?)
+                ON CONFLICT(zwid) DO UPDATE SET name = excluded.name
+              `).bind(zwid, rider.name, rider.category || 'N/A'));
+
+              // Upsert Relazione Team-Membro
+              memberStatements.push(env.DB.prepare(`
+                INSERT OR IGNORE INTO team_members (team_id, athlete_id)
+                VALUES (?, ?)
+              `).bind(team_id, zwid));
+            }
+
+            // Eseguiamo i batch
+            if (athleteStatements.length > 0) await env.DB.batch(athleteStatements);
+            if (memberStatements.length > 0) await env.DB.batch(memberStatements);
+          }
+        }
+      } catch (e) {
+        console.error("WTRL Sync Error:", e.message);
       }
     }
 
-    // Recuperiamo tutti gli atleti del roster tramite team_members (M-M)
-    // Se round_id è fornito, includiamo anche lo stato di disponibilità
+    // 3. Recuperiamo i dati aggiornati dal DB locale
     let query = `
       SELECT a.zwid, a.name, a.base_category as category, a.role, a.avatar_url
     `;
@@ -27,7 +69,7 @@ export async function onRequestGet(context) {
 
     if (round_id) {
       query += `, (SELECT status FROM availability WHERE athlete_id = a.zwid AND round_id = ?) as availability_status `;
-      params.unshift(round_id); // Inseriamo round_id come primo parametro
+      params.unshift(round_id);
     }
 
     query += `
@@ -48,7 +90,7 @@ export async function onRequestGet(context) {
 
   } catch (err) {
     console.error("Errore recupero roster:", err.message);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message, roster: [] }), { status: 500 });
   }
 }
 
