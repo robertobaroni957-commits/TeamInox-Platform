@@ -220,9 +220,13 @@ const RosterBuilder: React.FC = () => {
                   {lineup.map(entry => (
                     <div key={entry.athlete_id} className="flex items-center justify-between p-4 bg-zinc-800 rounded-2xl border border-zinc-700 group hover:border-orange-500 transition-all">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-black font-black text-xs">
-                          {entry.athlete_name?.substring(0, 2).toUpperCase()}
-                        </div>
+                        {entry.avatar_url ? (
+                          <img src={entry.avatar_url} alt={entry.athlete_name} className="w-10 h-10 rounded-full border border-zinc-700 object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-black font-black text-xs">
+                            {entry.athlete_name?.substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <span className="text-sm font-black text-white uppercase block">{entry.athlete_name}</span>
                           <span className="text-[9px] font-bold text-zinc-500 uppercase">Starter</span>

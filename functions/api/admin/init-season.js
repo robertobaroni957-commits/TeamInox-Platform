@@ -40,10 +40,9 @@ export async function onRequestPost({ request, env }) {
             if (roundStatements.length > 0) await env.DB.batch(roundStatements);
         }
 
-        // 4. SYNC TEAM INOX DA WTRL (MIGLIORATO)
+        // 4. SYNC TEAM INOX DA WTRL (API teamlist ufficiale)
         const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
-        // Spesso WTRL richiede sia clubId che seasonId per filtrare correttamente
-        const wtrlTeamsUrl = `https://www.wtrl.racing/api/zrl/teams.php?clubId=${INOX_CLUB_ID}&seasonId=${external_id}`;
+        const wtrlTeamsUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${external_id}&action=teamlist&test=dGVhbWxpc3Q%3D`;
         
         let syncedTeamsCount = 0;
         try {
@@ -53,11 +52,12 @@ export async function onRequestPost({ request, env }) {
 
             if (teamResponse.ok) {
                 const teamData = await teamResponse.json();
-                // Verifichiamo se i dati sono in payload o direttamente nel body
-                const teams = teamData.payload || (Array.isArray(teamData) ? teamData : []);
+                // Filtriamo solo le squadre del club Inox
+                const allTeams = teamData.payload || [];
+                const inoxTeams = allTeams.filter(t => t.clubId === INOX_CLUB_ID);
                 
-                if (teams.length > 0) {
-                    const teamStatements = teams.map(t => {
+                if (inoxTeams.length > 0) {
+                    const teamStatements = inoxTeams.map(t => {
                         return env.DB.prepare(`
                             INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
                             VALUES (?, ?, ?, ?, ?)
@@ -65,11 +65,17 @@ export async function onRequestPost({ request, env }) {
                                 name = excluded.name,
                                 category = excluded.category,
                                 division = excluded.division
-                        `).bind(t.teamname || t.name, t.division || 'N/A', t.zrldivision || 'N/A', parseInt(t.id || t.wtrl_team_id), INOX_CLUB_ID);
+                        `).bind(
+                            t.teamname, 
+                            t.division,      // A, B, C, D
+                            t.zrldivision,   // Aqua, Blue, etc.
+                            parseInt(t.id), 
+                            INOX_CLUB_ID
+                        );
                     });
 
                     await env.DB.batch(teamStatements);
-                    syncedTeamsCount = teams.length;
+                    syncedTeamsCount = inoxTeams.length;
                 }
             }
         } catch (syncErr) {

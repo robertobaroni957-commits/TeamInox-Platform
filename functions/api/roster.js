@@ -19,17 +19,18 @@ export async function onRequestGet(context) {
       const seasonId = activeSeries.external_season_id;
       const wtrlTeamId = targetTeam.wtrl_team_id;
       
-      // Chiamata all'API WTRL (utilizziamo l'API del sito WTRL)
-      const wtrlUrl = `https://www.wtrl.racing/api/zrl/teams.php?seasonId=${seasonId}&id=${wtrlTeamId}`;
+      // Chiamata all'API WTRL specifica del team per la stagione
+      const wtrlUrl = `https://www.wtrl.racing/api/zrl/${seasonId}/teams/${wtrlTeamId}`;
       
       try {
         const wtrlRes = await fetch(wtrlUrl, { headers: { "accept": "application/json" } });
         if (wtrlRes.ok) {
           const wtrlData = await wtrlRes.json();
-          const members = wtrlData.payload?.[0]?.riders || []; // Struttura tipica WTRL payload[0].riders
+          // Nella nuova API WTRL, i riders sono solitamente nel primo elemento del payload
+          const teamInfo = wtrlData.payload?.[0] || {};
+          const members = teamInfo.riders || [];
 
           if (members.length > 0) {
-            // Prepariamo i batch per atleti e associazioni
             const athleteStatements = [];
             const memberStatements = [];
 
@@ -37,12 +38,14 @@ export async function onRequestGet(context) {
               const zwid = parseInt(rider.zwid);
               if (!zwid) continue;
 
-              // Upsert Atleta
+              // Upsert Atleta con Avatar
               athleteStatements.push(env.DB.prepare(`
-                INSERT INTO athletes (zwid, name, base_category)
-                VALUES (?, ?, ?)
-                ON CONFLICT(zwid) DO UPDATE SET name = excluded.name
-              `).bind(zwid, rider.name, rider.category || 'N/A'));
+                INSERT INTO athletes (zwid, name, base_category, avatar_url)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(zwid) DO UPDATE SET 
+                  name = excluded.name,
+                  avatar_url = excluded.avatar_url
+              `).bind(zwid, rider.name, rider.category || 'N/A', rider.avatar || ''));
 
               // Upsert Relazione Team-Membro
               memberStatements.push(env.DB.prepare(`
@@ -51,7 +54,6 @@ export async function onRequestGet(context) {
               `).bind(team_id, zwid));
             }
 
-            // Eseguiamo i batch
             if (athleteStatements.length > 0) await env.DB.batch(athleteStatements);
             if (memberStatements.length > 0) await env.DB.batch(memberStatements);
           }
