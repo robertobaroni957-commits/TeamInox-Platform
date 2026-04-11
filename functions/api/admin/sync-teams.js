@@ -1,13 +1,28 @@
 // functions/api/admin/sync-teams.js
 export async function onRequestPost({ request, env }) {
     try {
-        const body = await request.json();
+        // Verifica DB Binding
+        if (!env.DB) {
+            console.error("D1 Database Binding 'DB' non trovato.");
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: "Configurazione Server Errata: Database Binding 'DB' non trovato. Verifica le impostazioni su Cloudflare Dashboard." 
+            }), { status: 500, headers: { "Content-Type": "application/json" } });
+        }
+
+        // Parsing robusto del body
+        let body;
+        try {
+            const text = await request.text();
+            body = text ? JSON.parse(text) : {};
+        } catch (e) {
+            body = {};
+        }
+
         const seasonId = body.seasonId || 19;
         const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
         const WTRL_COOKIE = env.WTRL_COOKIE || "";
         
-        // Proviamo sia zrl che wzrl (Women's ZRL) se vogliamo essere completi
-        // Ma per ora restiamo su zrl come da richiesta originale
         const wtrlTeamsUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&action=teamlist&test=dGVhbWxpc3Q%3D`;
         
         console.log("Inizio fetch da WTRL per stagione", seasonId);
@@ -32,7 +47,6 @@ export async function onRequestPost({ request, env }) {
         const data = await response.json();
         const allTeams = data.payload || [];
         
-        // Filtriamo le squadre INOX con logica più robusta
         const inoxTeams = allTeams.filter(t => {
             const clubId = t.clubId || t.club_id;
             const teamName = (t.teamname || t.name || "").toUpperCase();
@@ -47,8 +61,6 @@ export async function onRequestPost({ request, env }) {
             }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // Prepariamo le istruzioni SQL
-        // Usiamo ON CONFLICT per evitare di rompere i foreign keys (mantenendo lo stesso id interno se wtrl_team_id esiste già)
         const insertStmts = inoxTeams.map(t => {
             const wtrlId = parseInt(t.id || t.wtrl_team_id);
             if (isNaN(wtrlId)) return null;
@@ -70,7 +82,6 @@ export async function onRequestPost({ request, env }) {
             );
         }).filter(stmt => stmt !== null);
 
-        // Eseguiamo il batch
         if (insertStmts.length > 0) {
             await env.DB.batch(insertStmts);
         }
@@ -85,7 +96,8 @@ export async function onRequestPost({ request, env }) {
         console.error("Sync Teams Error:", err.message);
         return new Response(JSON.stringify({ 
             success: false, 
-            error: "Errore interno durante la sincronizzazione: " + err.message 
+            error: "Errore interno durante la sincronizzazione: " + err.message,
+            stack: err.stack 
         }), { 
             status: 500, 
             headers: { "Content-Type": "application/json" } 
