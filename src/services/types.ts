@@ -21,6 +21,8 @@ export interface Team {
   name: string;
   category: string;
   division?: string;
+  wtrl_team_id?: number;
+  race_pass_url?: string;
 }
 
 export interface Athlete {

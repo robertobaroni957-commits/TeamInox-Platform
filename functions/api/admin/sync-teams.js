@@ -22,28 +22,24 @@ export async function onRequestPost({ request, env }) {
         const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
         const WTRL_COOKIE = env.WTRL_COOKIE || "";
         
-        // URL WTRL per la lista team
+        // URL pulito
         const wtrlTeamsUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&action=teamlist&test=dGVhbWxpc3Q%3D`;
         
-        // Aumentiamo il timeout a 25 secondi (WTRL può essere molto lento)
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 25000);
+        console.log("Fetching WTRL:", wtrlTeamsUrl);
 
         try {
+            // Usiamo una fetch semplice con gli stessi headers di sync-all-teams
             const response = await fetch(wtrlTeamsUrl, {
                 headers: { 
-                    "Accept": "application/json",
-                    "Cookie": WTRL_COOKIE,
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36"
-                },
-                signal: controller.signal
+                    "accept": "application/json",
+                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    "cookie": WTRL_COOKIE
+                }
             });
 
-            clearTimeout(timeout);
-
             if (!response.ok) {
-                const txt = await response.text().catch(() => "");
-                return errorRes(`WTRL ha risposto con errore ${response.status}`, response.status, txt.substring(0, 100));
+                const txt = await response.text().catch(() => "N/A");
+                return errorRes(`WTRL Error ${response.status}: ${txt.substring(0, 50)}`, response.status);
             }
 
             const data = await response.json();
@@ -58,7 +54,7 @@ export async function onRequestPost({ request, env }) {
             if (inoxTeams.length === 0) {
                 return new Response(JSON.stringify({ 
                     success: true, 
-                    message: `Nessun team INOX trovato (Season ${seasonId}). Verifica se la stagione è corretta su WTRL.`,
+                    message: `Nessun team INOX trovato per la stagione ${seasonId}.`,
                     count: 0 
                 }), { headers: { "Content-Type": "application/json" } });
             }
@@ -90,21 +86,16 @@ export async function onRequestPost({ request, env }) {
 
             return new Response(JSON.stringify({ 
                 success: true, 
-                message: `Sincronizzazione riuscita! Aggiornati ${inoxTeams.length} team INOX per la stagione ${seasonId}.`,
+                message: `Sincronizzazione riuscita! ${inoxTeams.length} team aggiornati.`,
                 count: inoxTeams.length 
             }), { headers: { "Content-Type": "application/json" } });
 
         } catch (fetchErr) {
-            clearTimeout(timeout);
-            const isTimeout = fetchErr.name === 'AbortError';
-            return errorRes(
-                isTimeout ? "Timeout: WTRL ha impiegato più di 25 secondi a rispondere." : "Errore di rete verso WTRL",
-                504, 
-                fetchErr.message
-            );
+            // Portiamo l'errore tecnico nel messaggio principale per vederlo in UI
+            return errorRes(`Errore di rete verso WTRL: ${fetchErr.message}`, 504);
         }
 
     } catch (err) {
-        return errorRes("Errore interno nel caricamento", 500, err.message);
+        return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
