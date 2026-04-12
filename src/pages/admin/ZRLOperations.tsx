@@ -256,15 +256,45 @@ const ZRLOperations: React.FC = () => {
                     <div className="h-px bg-zinc-900 my-2" />
 
                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                      Scarica i team reali del club Inox direttamente da WTRL.
+                      METODO ALTERNATIVO (Copia/Incolla): Incolla il sorgente HTML di WTRL "My Teams" per estrarre RacePass e ID automaticamente.
                     </p>
+                    <textarea 
+                      id="wtrlHtml"
+                      placeholder="Incolla qui il sorgente HTML (Ctrl+U su WTRL)..."
+                      className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] rounded-xl p-3 h-24 outline-none focus:border-[#fc6719] font-mono"
+                    />
                     <button 
-                      onClick={handleSyncTeams}
+                      onClick={async () => {
+                        const html = (document.getElementById('wtrlHtml') as HTMLTextAreaElement).value;
+                        if (!html) return alert("Incolla prima il codice!");
+                        setLoading(true);
+                        try {
+                          const res = await fetch('/api/admin/import-wtrl-html', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+                            },
+                            body: JSON.stringify({ html })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            setMessage({ type: 'success', text: data.message });
+                            (document.getElementById('wtrlHtml') as HTMLTextAreaElement).value = '';
+                          } else {
+                            setMessage({ type: 'error', text: data.error });
+                          }
+                        } catch (err) {
+                          setMessage({ type: 'error', text: "Errore durante l'invio." });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
                       disabled={loading}
-                      className="w-full bg-[#fc6719] hover:bg-[#e65a15] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                      className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                     >
                       {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
-                      {loading ? 'Sincronizzazione...' : '2. Sincronizza Team WTRL'}
+                      {loading ? 'Importazione...' : '3. Importa da HTML WTRL'}
                     </button>
                   </div>
                 </div>
