@@ -255,47 +255,33 @@ const ZRLOperations: React.FC = () => {
 
                     <div className="h-px bg-zinc-900 my-2" />
 
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                      METODO ALTERNATIVO (Copia/Incolla): Incolla il sorgente HTML di WTRL "My Teams" per estrarre RacePass e ID automaticamente.
-                    </p>
-                    <textarea 
-                      id="wtrlHtml"
-                      placeholder="Incolla qui il sorgente HTML (Ctrl+U su WTRL)..."
-                      className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] rounded-xl p-3 h-24 outline-none focus:border-[#fc6719] font-mono"
-                    />
-                    <button 
-                      onClick={async () => {
-                        const html = (document.getElementById('wtrlHtml') as HTMLTextAreaElement).value;
-                        if (!html) return alert("Incolla prima il codice!");
-                        setLoading(true);
-                        try {
-                          const res = await fetch('/api/admin/import-wtrl-html', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
-                            },
-                            body: JSON.stringify({ html })
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setMessage({ type: 'success', text: data.message });
-                            (document.getElementById('wtrlHtml') as HTMLTextAreaElement).value = '';
-                          } else {
-                            setMessage({ type: 'error', text: data.error });
-                          }
-                        } catch (err) {
-                          setMessage({ type: 'error', text: "Errore durante l'invio." });
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
-                      disabled={loading}
-                      className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-                    >
-                      {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
-                      {loading ? 'Importazione...' : '3. Importa da HTML WTRL'}
-                    </button>
+                    <div className="bg-[#fc6719]/10 border border-[#fc6719]/20 p-6 rounded-2xl space-y-4">
+                      <div className="flex items-center gap-2 text-[#fc6719]">
+                        <Zap size={18} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Smart Sync (Opzione 2)</span>
+                      </div>
+                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                        Per un'importazione 100% automatica: trascina il bottone qui sotto nella tua barra dei preferiti. 
+                        Poi vai su WTRL "My Teams" e cliccalo.
+                      </p>
+                      
+                      <a 
+                        href="javascript:(function(){const html=document.documentElement.outerHTML;fetch('https://teaminox-platform.pages.dev/api/admin/import-wtrl-html',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})}).then(r=>r.json()).then(d=>alert(d.success?d.message:d.error)).catch(e=>alert('Errore: '+e.message));})();"
+                        className="inline-flex items-center gap-3 bg-[#fc6719] text-black px-6 py-3 rounded-xl font-black italic uppercase text-xs transition-transform hover:scale-105 active:scale-95 shadow-lg"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        <RefreshCw size={16} /> ⚡ Sync to Inox
+                      </a>
+                      
+                      <div className="bg-black/40 p-3 rounded-xl">
+                        <p className="text-[9px] text-zinc-600 font-bold uppercase leading-relaxed">
+                          1. Trascina il bottone arancione sopra nella barra dei preferiti del browser.<br/>
+                          2. Vai su <a href='https://www.wtrl.racing/zwift-racing-league/myteams/' target='_blank' className='text-[#fc6719] underline'>WTRL My Teams</a>.<br/>
+                          3. Clicca il preferito "⚡ Sync to Inox".<br/>
+                          4. Fine! I team e i RacePass sono aggiornati.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

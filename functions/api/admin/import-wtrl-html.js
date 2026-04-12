@@ -1,13 +1,28 @@
 // functions/api/admin/import-wtrl-html.js
+export async function onRequestOptions() {
+    return new Response(null, {
+        headers: {
+            "Access-Control-Allow-Origin": "https://www.wtrl.racing",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400",
+        },
+    });
+}
+
 export async function onRequestPost({ request, env }) {
+    const corsHeaders = {
+        "Access-Control-Allow-Origin": "https://www.wtrl.racing",
+        "Content-Type": "application/json"
+    };
+
     try {
         const { html } = await request.json();
-        if (!html) return new Response(JSON.stringify({ error: "HTML mancante" }), { status: 400 });
+        if (!html) return new Response(JSON.stringify({ error: "HTML mancante" }), { status: 400, headers: corsHeaders });
 
         const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
         
-        // Regex per estrarre i blocchi dei team
-        // Cerchiamo l'ID trc, il nome del team e il link RacePass
+        // Regex migliorata per estrarre TRC, Nome e RacePass
         const teamRegex = /id="trc(\d+)"[\s\S]*?<span class="z-title">([^<]+)<\/span>[\s\S]*?copyRacePass\('([^']+)'\)/g;
         
         let match;
@@ -24,11 +39,11 @@ export async function onRequestPost({ request, env }) {
         if (foundTeams.length === 0) {
             return new Response(JSON.stringify({ 
                 success: false, 
-                error: "Nessun team trovato nell'HTML fornito. Assicurati di aver copiato l'intera pagina My Teams di WTRL." 
-            }), { status: 400 });
+                error: "Nessun team trovato. Assicurati di essere nella pagina 'My Teams' di WTRL." 
+            }), { status: 400, headers: corsHeaders });
         }
 
-        // Prepariamo il batch SQL
+        // Batch SQL per aggiornare o inserire i team
         const statements = foundTeams.map(t => {
             return env.DB.prepare(`
                 INSERT INTO teams (name, wtrl_team_id, club_id, race_pass_url, category)
@@ -43,12 +58,11 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Importazione completata! Elaborati ${foundTeams.length} team con relativi RacePass.`,
-            count: foundTeams.length,
-            teams: foundTeams.map(t => t.name)
-        }), { headers: { "Content-Type": "application/json" } });
+            message: `Sincronizzazione completata! ${foundTeams.length} team aggiornati con RacePass.`,
+            count: foundTeams.length
+        }), { headers: corsHeaders });
 
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
     }
 }
