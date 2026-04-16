@@ -106,10 +106,15 @@ const ZRLOperations: React.FC = () => {
   };
 
   const handleSyncTeams = async () => {
+    if (!wtrlId) {
+      setMessage({ type: 'error', text: 'Inserire un ID Stagione WTRL valido.' });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch('/api/admin/sync-teams', {
+      const response = await fetch('/api/sync-all-teams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,32 +258,42 @@ const ZRLOperations: React.FC = () => {
                       {loading ? 'Esecuzione...' : '1. Salva Serie & Round'}
                     </button>
 
+                    <button 
+                      onClick={handleSyncTeams}
+                      disabled={loading}
+                      className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 border border-zinc-700"
+                    >
+                      {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
+                      {loading ? 'Sincronizzazione...' : '2. Sincronizza Squadre & Roster'}
+                    </button>
+
                     <div className="h-px bg-zinc-900 my-2" />
 
                     <div className="bg-[#fc6719]/10 border border-[#fc6719]/20 p-6 rounded-2xl space-y-4">
                       <div className="flex items-center gap-2 text-[#fc6719]">
                         <Zap size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Smart Sync (Opzione 2)</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Ultra-Sync (Console Script)</span>
                       </div>
                       <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                        Per un'importazione 100% automatica: trascina il bottone qui sotto nella tua barra dei preferiti. 
-                        Poi vai su WTRL "My Teams" e cliccalo.
+                        Metodo alternativo se l'automatismo fallisce: Copia lo script, incollalo nella Console di WTRL (F12) e premi INVIO.
                       </p>
                       
-                      <a 
-                        href="javascript:(function(){const html=document.documentElement.outerHTML;fetch('https://teaminox-platform.pages.dev/api/admin/import-wtrl-html',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})}).then(r=>r.json()).then(d=>alert(d.success?d.message:d.error)).catch(e=>alert('Errore: '+e.message));})();"
-                        className="inline-flex items-center gap-3 bg-[#fc6719] text-black px-6 py-3 rounded-xl font-black italic uppercase text-xs transition-transform hover:scale-105 active:scale-95 shadow-lg"
-                        onClick={(e) => e.preventDefault()}
+                      <button 
+                        onClick={() => {
+                          const script = `(async function(){console.log("Inox Sync Avviato...");const teams=[];const panels=document.querySelectorAll(".panel-group[id^='trc']");for(const p of panels){const id=p.id.replace("trc","");const name=p.querySelector(".z-title").innerText;const cat=p.querySelector(".zrl-cat-A,.zrl-cat-B,.zrl-cat-C,.zrl-cat-D")?.innerText || "TBD";const riders=[];p.querySelectorAll("tr[data-zwid]").forEach(r=>{riders.push({zwid:parseInt(r.getAttribute("data-zwid")),name:r.querySelector(".zrl-rider-name").innerText,category:r.querySelector(".zrl-cat-A,.zrl-cat-B,.zrl-cat-C,.zrl-cat-D")?.innerText});});teams.push({id:parseInt(id),name,category:cat,riders});}const res=await fetch("${window.location.origin}/api/admin/import-wtrl-html",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({teams})});const data=await res.json();alert(data.message);})();`;
+                          navigator.clipboard.writeText(script);
+                          alert("Script copiato negli appunti! Ora vai su WTRL, premi F12, incolla in Console e premi Invio.");
+                        }}
+                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
                       >
-                        <RefreshCw size={16} /> ⚡ Sync to Inox
-                      </a>
+                        <ClipboardCheck size={20} /> Copia Script Ultra-Sync
+                      </button>
                       
                       <div className="bg-black/40 p-3 rounded-xl">
                         <p className="text-[9px] text-zinc-600 font-bold uppercase leading-relaxed">
-                          1. Trascina il bottone arancione sopra nella barra dei preferiti del browser.<br/>
-                          2. Vai su <a href='https://www.wtrl.racing/zwift-racing-league/myteams/' target='_blank' className='text-[#fc6719] underline'>WTRL My Teams</a>.<br/>
-                          3. Clicca il preferito "⚡ Sync to Inox".<br/>
-                          4. Fine! I team e i RacePass sono aggiornati.
+                          1. Vai su <a href='https://www.wtrl.racing/zwift-racing-league/myteams/' target='_blank' className='text-[#fc6719] underline'>WTRL My Teams</a>.<br/>
+                          2. Attendi che i roster siano caricati.<br/>
+                          3. Premi F12, vai nel tab 'Console', incolla e premi Invio.
                         </p>
                       </div>
                     </div>

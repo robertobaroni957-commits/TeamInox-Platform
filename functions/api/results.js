@@ -10,7 +10,7 @@ export async function onRequestGet({ request, env }) {
 
   try {
     const { results } = await env.DB.prepare(`
-      SELECT r.round_id, r.zwid, a.name, a.team, r.time, r.points_total, r.data_source 
+      SELECT r.round_id, r.zwid, a.name, r.time, r.points_total, r.data_source 
       FROM results r
       JOIN athletes a ON r.zwid = a.zwid
       WHERE r.round_id = ?

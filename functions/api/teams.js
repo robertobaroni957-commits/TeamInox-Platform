@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
       query += ` WHERE captain_id = ?`;
       params.push(user.zwid);
     } else if (user.role === 'user') {
-      const athlete = await env.DB.prepare(`SELECT team_id FROM athletes WHERE zwid = ?`).bind(user.zwid).first();
+      const athlete = await env.DB.prepare(`SELECT team_id FROM team_members WHERE athlete_id = ?`).bind(user.zwid).first();
       if (athlete?.team_id) {
         query += ` WHERE id = ?`;
         params.push(athlete.team_id);

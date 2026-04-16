@@ -1,7 +1,25 @@
-export async function onRequestPost({ env }) {
+export async function onRequestPost({ request, env }) {
   try {
     const INOX_CLUB_ID = 'cef70cde-9149-43a2-b3ae-187643a44703';
-    const SEASON_ID = "19";
+    let SEASON_ID = "19";
+
+    // Cerchiamo la serie attiva nel DB per usare il suo external_season_id come default
+    const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
+    if (activeSeries?.external_season_id) {
+      SEASON_ID = activeSeries.external_season_id.toString();
+    }
+    
+    // Tentiamo di sovrascrivere con seasonId dal body se presente
+    try {
+      const body = await request.json();
+      if (body.seasonId) SEASON_ID = body.seasonId.toString();
+    } catch (e) {
+      // Se fallisce (body vuoto o non JSON), cerchiamo nella query per flessibilità
+      const url = new URL(request.url);
+      const s = url.searchParams.get("seasonId");
+      if (s) SEASON_ID = s;
+    }
+
     const WTRL_COOKIE = env.WTRL_COOKIE || "";
 
     const wtrlIds = ["zrl", "wzrl"];
@@ -38,33 +56,42 @@ export async function onRequestPost({ env }) {
 
     const report = { teams_synced: 0, athletes_synced: 0, details: [] };
 
+    // Elaborazione team in parallelo limitato o sequenziale con ottimizzazione roster
     for (const t of allTeams) {
       const teamName = (t.teamname || t.name || '').toUpperCase();
       const clubId = t.clubId || t.club_id || '';
       
+      // Filtro rigoroso INOX
       if (clubId !== INOX_CLUB_ID && (!teamName.includes('INOX') || teamName.includes('EQUINOX'))) continue;
 
+      const wtrlTeamId = parseInt(t.id || t.wtrl_team_id);
+      if (isNaN(wtrlTeamId)) continue;
+
       const teamResult = await env.DB.prepare(`
-        INSERT OR REPLACE INTO teams (name, category, division, wtrl_team_id, club_id)
+        INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
         VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(wtrl_team_id) DO UPDATE SET
+          name = excluded.name,
+          category = excluded.category,
+          division = excluded.division,
+          club_id = excluded.club_id
         RETURNING id
       `)
       .bind(
         t.teamname || t.name,
         t.division || '',
         t.zrldivision || '',
-        parseInt(t.id || t.wtrl_team_id),
+        wtrlTeamId,
         clubId || INOX_CLUB_ID
       )
       .first();
 
       if (!teamResult || teamResult.id === undefined) continue;
       const internalTeamId = teamResult.id;
-      const wtrlTeamId = parseInt(t.id || t.wtrl_team_id);
       report.teams_synced++;
 
-      // RECUPERO ROSTER
-      console.log(`[WTRL] Fetching roster for team ${wtrlTeamId} (${teamName})...`);
+      // RECUPERO ROSTER DA WTRL (Obbligatorio)
+      console.log(`[WTRL] Syncing roster for team ${wtrlTeamId} (${teamName})...`);
       let members = [];
       try {
         const rosterUrl = `https://www.wtrl.racing/api/zrl/${SEASON_ID}/teams/${wtrlTeamId}`;
@@ -78,26 +105,32 @@ export async function onRequestPost({ env }) {
         
         if (rosterRes.ok) {
           const rosterData = await rosterRes.json();
-          members = rosterData.members || [];
+          // Gestione flessibile struttura WTRL (members o riders)
+          members = rosterData.members || rosterData.riders || [];
         }
       } catch (rosterErr) {
-        console.error(`[WTRL ERROR] Roster fetch error:`, rosterErr.message);
+        console.error(`[WTRL ERROR] Roster fetch error for ${wtrlTeamId}:`, rosterErr.message);
       }
 
       const statements = [];
+      
+      // PULIZIA ROSTER ATTUALE (Per rendere WTRL l'unica fonte di verità)
+      statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
+
       for (const m of members) {
         const zwid = parseInt(m.zwiftId || m.zwid);
         if (!zwid) continue;
 
-        // 1. Inseriamo/Aggiorniamo l'atleta
+        // 1. Upsert Atleta (senza cambiare ruolo)
         statements.push(env.DB.prepare(`
-          INSERT OR REPLACE INTO athletes (zwid, name, role)
+          INSERT INTO athletes (zwid, name, role)
           VALUES (?, ?, 'athlete')
+          ON CONFLICT(zwid) DO UPDATE SET name = excluded.name
         `).bind(zwid, m.name));
 
-        // 2. Associamo l'atleta al team nel roster (Many-to-Many)
+        // 2. Inserimento nel Roster
         statements.push(env.DB.prepare(`
-          INSERT OR IGNORE INTO team_members (team_id, athlete_id)
+          INSERT INTO team_members (team_id, athlete_id)
           VALUES (?, ?)
         `).bind(internalTeamId, zwid));
       }
@@ -112,7 +145,7 @@ export async function onRequestPost({ env }) {
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Sincronizzazione completata: ${report.teams_synced} squadre e roster aggiornati.`,
+      message: `Sincronizzazione completata: ${report.teams_synced} squadre e roster aggiornati per la stagione ${SEASON_ID}.`,
       report
     }), { headers: { 'Content-Type': 'application/json' } });
 
