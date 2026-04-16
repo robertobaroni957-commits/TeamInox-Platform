@@ -25,18 +25,39 @@ export async function onRequestPost({ request, env }) {
         if (jsonData && Array.isArray(jsonData)) {
             for (const t of jsonData) {
                 statements.push(env.DB.prepare(`
-                    INSERT INTO teams (name, wtrl_team_id, club_id, category)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(wtrl_team_id) DO UPDATE SET name = excluded.name, category = excluded.category
-                `).bind(t.name, t.id, INOX_CLUB_ID, t.category || 'TBD'));
+                    INSERT INTO teams (name, wtrl_team_id, club_id, category, division, rounds, member_count)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(wtrl_team_id) DO UPDATE SET 
+                        name = excluded.name, 
+                        category = excluded.category,
+                        division = excluded.division,
+                        rounds = excluded.rounds,
+                        member_count = excluded.member_count
+                `).bind(
+                    t.name, 
+                    t.id, 
+                    INOX_CLUB_ID, 
+                    t.category || 'TBD',
+                    t.division || '',
+                    t.rounds || '',
+                    t.riders?.length || 0
+                ));
 
                 if (t.riders && Array.isArray(t.riders)) {
                     for (const r of t.riders) {
                         statements.push(env.DB.prepare(`
-                            INSERT INTO athletes (zwid, name, base_category)
-                            VALUES (?, ?, ?)
-                            ON CONFLICT(zwid) DO UPDATE SET name = excluded.name, base_category = excluded.base_category
-                        `).bind(r.zwid, r.name, r.category));
+                            INSERT INTO athletes (zwid, name, base_category, avatar_url)
+                            VALUES (?, ?, ?, ?)
+                            ON CONFLICT(zwid) DO UPDATE SET 
+                                name = excluded.name, 
+                                base_category = excluded.base_category,
+                                avatar_url = excluded.avatar_url
+                        `).bind(
+                            r.zwid, 
+                            r.name, 
+                            r.category || '',
+                            r.avatar || ''
+                        ));
 
                         statements.push(env.DB.prepare(`
                             INSERT OR IGNORE INTO team_members (team_id, athlete_id)
