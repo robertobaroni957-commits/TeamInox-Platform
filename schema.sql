@@ -10,6 +10,12 @@ CREATE TABLE IF NOT EXISTS athletes (
     is_registered_tour BOOLEAN DEFAULT 0,
     role TEXT DEFAULT 'athlete',     -- 'admin', 'captain', 'athlete'
     avatar_url TEXT,
+    zftp REAL,
+    zftpw INTEGER,
+    zmap REAL,
+    zmapw INTEGER,
+    profile_id INTEGER,
+    wtrl_user_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,7 +49,18 @@ CREATE TABLE IF NOT EXISTS teams (
     division_number INTEGER,
     captain_id INTEGER REFERENCES athletes(zwid),
     wtrl_team_id INTEGER UNIQUE,     -- ID per sync (es: 75150)
-    club_id TEXT
+    club_id TEXT,
+    tttid INTEGER,
+    club_name TEXT,
+    gender TEXT,
+    league TEXT,
+    zrldivision TEXT,
+    league_color TEXT,
+    rec INTEGER,
+    status INTEGER,
+    is_dev INTEGER,
+    rounds TEXT,
+    member_count INTEGER
 );
 
 -- Tabella di associazione Round-Teams (per definire quali team corrono in quale round e in che slot)

@@ -64,19 +64,47 @@ export async function onRequestPost({ request, env }) {
                 if (isNaN(wtrlId)) return null;
 
                 return env.DB.prepare(`
-                    INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO teams (
+                        name, category, division, division_number, wtrl_team_id, club_id,
+                        tttid, club_name, gender, league, zrldivision, league_color,
+                        rec, status, is_dev, rounds, member_count
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(wtrl_team_id) DO UPDATE SET
                         name = excluded.name,
                         category = excluded.category,
                         division = excluded.division,
-                        club_id = excluded.club_id
+                        division_number = excluded.division_number,
+                        club_id = excluded.club_id,
+                        tttid = excluded.tttid,
+                        club_name = excluded.club_name,
+                        gender = excluded.gender,
+                        league = excluded.league,
+                        zrldivision = excluded.zrldivision,
+                        league_color = excluded.league_color,
+                        rec = excluded.rec,
+                        status = excluded.status,
+                        is_dev = excluded.is_dev,
+                        rounds = excluded.rounds,
+                        member_count = excluded.member_count
                 `).bind(
                     t.teamname || t.name, 
                     t.division || "N/A", 
                     t.zrldivision || "N/A", 
+                    parseInt(t.divnum) || 0,
                     wtrlId, 
-                    INOX_CLUB_ID
+                    INOX_CLUB_ID,
+                    parseInt(t.tttid) || null,
+                    t.clubName || '',
+                    t.gender || '',
+                    t.league || '',
+                    t.zrldivision || '',
+                    t.leagueColor || '',
+                    parseInt(t.rec) || 0,
+                    parseInt(t.status) || 0,
+                    parseInt(t.isdev) || 0,
+                    t.rounds || '',
+                    parseInt(t.members) || 0
                 );
             }).filter(s => s !== null);
 

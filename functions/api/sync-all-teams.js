@@ -68,21 +68,49 @@ export async function onRequestPost({ request, env }) {
       if (isNaN(wtrlTeamId)) continue;
 
       const teamResult = await env.DB.prepare(`
-        INSERT INTO teams (name, category, division, wtrl_team_id, club_id)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO teams (
+          name, category, division, division_number, wtrl_team_id, club_id, 
+          tttid, club_name, gender, league, zrldivision, league_color, 
+          rec, status, is_dev, rounds, member_count
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(wtrl_team_id) DO UPDATE SET
           name = excluded.name,
           category = excluded.category,
           division = excluded.division,
-          club_id = excluded.club_id
+          division_number = excluded.division_number,
+          club_id = excluded.club_id,
+          tttid = excluded.tttid,
+          club_name = excluded.club_name,
+          gender = excluded.gender,
+          league = excluded.league,
+          zrldivision = excluded.zrldivision,
+          league_color = excluded.league_color,
+          rec = excluded.rec,
+          status = excluded.status,
+          is_dev = excluded.is_dev,
+          rounds = excluded.rounds,
+          member_count = excluded.member_count
         RETURNING id
       `)
       .bind(
         t.teamname || t.name,
         t.division || '',
         t.zrldivision || '',
+        parseInt(t.divnum) || 0,
         wtrlTeamId,
-        clubId || INOX_CLUB_ID
+        clubId || INOX_CLUB_ID,
+        parseInt(t.tttid) || null,
+        t.clubName || '',
+        t.gender || '',
+        t.league || '',
+        t.zrldivision || '',
+        t.leagueColor || '',
+        parseInt(t.rec) || 0,
+        parseInt(t.status) || 0,
+        parseInt(t.isdev) || 0,
+        t.rounds || '',
+        parseInt(t.members) || 0
       )
       .first();
 
@@ -105,8 +133,8 @@ export async function onRequestPost({ request, env }) {
         
         if (rosterRes.ok) {
           const rosterData = await rosterRes.json();
-          // Gestione flessibile struttura WTRL (members o riders)
-          members = rosterData.members || rosterData.riders || [];
+          // Gestione flessibile struttura WTRL (riders o members)
+          members = rosterData.riders || rosterData.members || [];
         }
       } catch (rosterErr) {
         console.error(`[WTRL ERROR] Roster fetch error for ${wtrlTeamId}:`, rosterErr.message);
@@ -118,15 +146,38 @@ export async function onRequestPost({ request, env }) {
       statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
       for (const m of members) {
-        const zwid = parseInt(m.zwiftId || m.zwid);
+        const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
         if (!zwid) continue;
 
-        // 1. Upsert Atleta (senza cambiare ruolo)
+        // 1. Upsert Atleta con dati estesi
         statements.push(env.DB.prepare(`
-          INSERT INTO athletes (zwid, name, role)
-          VALUES (?, ?, 'athlete')
-          ON CONFLICT(zwid) DO UPDATE SET name = excluded.name
-        `).bind(zwid, m.name));
+          INSERT INTO athletes (
+            zwid, name, role, base_category, avatar_url, 
+            zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id
+          )
+          VALUES (?, ?, 'athlete', ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(zwid) DO UPDATE SET 
+            name = excluded.name,
+            base_category = excluded.base_category,
+            avatar_url = excluded.avatar_url,
+            zftp = excluded.zftp,
+            zftpw = excluded.zftpw,
+            zmap = excluded.zmap,
+            zmapw = excluded.zmapw,
+            profile_id = excluded.profile_id,
+            wtrl_user_id = excluded.wtrl_user_id
+        `).bind(
+          zwid, 
+          m.name, 
+          m.category || '', 
+          m.avatar || '',
+          parseFloat(m.zftp) || 0,
+          parseInt(m.zftpw) || 0,
+          parseFloat(m.zmap) || 0,
+          parseInt(m.zmapw) || 0,
+          parseInt(m.profileId) || null,
+          m.userId || ''
+        ));
 
         // 2. Inserimento nel Roster
         statements.push(env.DB.prepare(`
