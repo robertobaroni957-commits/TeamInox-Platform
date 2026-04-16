@@ -25,28 +25,32 @@ export async function onRequestPost({ request, env }) {
     const wtrlIds = ["zrl", "wzrl"];
 
     const fetchTeams = async (wtrlId) => {
-      const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
-      console.log(`[WTRL] Fetching teamlist-${wtrlId}: ${url}`);
+      const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist`;
+      console.log(`[WTRL] Fetching: ${url}`);
 
       try {
         const res = await fetch(url, {
           headers: {
             "accept": "application/json",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "cookie": WTRL_COOKIE
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
           }
         });
 
+        const text = await res.text();
         if (!res.ok) {
-          const txt = await res.text();
-          console.error(`[WTRL ERROR] teamlist-${wtrlId} → ${res.status}: ${txt.substring(0, 200)}`);
+          console.error(`[WTRL ERROR] ${res.status}: ${text.substring(0, 100)}`);
           return [];
         }
 
-        const data = await res.json();
-        return data.payload || [];
+        try {
+          const data = JSON.parse(text);
+          return data.payload || [];
+        } catch (e) {
+          console.error(`[JSON ERROR] Errore nel parse della risposta per ${wtrlId}`);
+          return [];
+        }
       } catch (err) {
-        console.error(`[WTRL ERROR] Fetch failed for ${wtrlId}:`, err.message);
+        console.error(`[FETCH ERROR] ${wtrlId}:`, err.message);
         return [];
       }
     };
@@ -54,7 +58,20 @@ export async function onRequestPost({ request, env }) {
     const teamsLists = await Promise.all(wtrlIds.map(fetchTeams));
     const allTeams = teamsLists.flat();
 
-    const report = { teams_synced: 0, athletes_synced: 0, details: [], total_teams_received: allTeams.length };
+    const report = { 
+      teams_synced: 0, 
+      athletes_synced: 0, 
+      details: [], 
+      total_received: allTeams.length 
+    };
+
+    if (allTeams.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Attenzione: WTRL ha restituito 0 squadre totali per la stagione ${SEASON_ID}. Verificare la connessione o i parametri.`,
+        report
+      }), { headers: { 'Content-Type': 'application/json' } });
+    }
 
     // Elaborazione team
     for (const t of allTeams) {
