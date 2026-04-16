@@ -49,8 +49,8 @@ export async function onRequestPost({ request, env }) {
           const data = JSON.parse(text);
           return { id: wtrlId, success: true, payload: data.payload || [], count: (data.payload || []).length };
         } catch (e) {
-          // In caso di errore JSON, mostriamo l'inizio della risposta per capire cosa sia (es. HTML di errore)
-          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 200).replace(/<[^>]*>?/gm, '') };
+          // Mostriamo una porzione più grande della risposta per capire il problema
+          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 500) };
         }
       } catch (err) {
         return { id: wtrlId, success: false, error: err.message };
