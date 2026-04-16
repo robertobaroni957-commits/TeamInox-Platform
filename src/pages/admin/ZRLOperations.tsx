@@ -280,19 +280,22 @@ const ZRLOperations: React.FC = () => {
                       
                       <button 
                         onClick={() => {
+                          const token = localStorage.getItem('inox_token');
                           const script = `(async function(){
                             console.log("Inox Ultra-Sync Avviato...");
                             const teams=[];
                             const panels=document.querySelectorAll(".panel-group[id^='trc']");
                             
+                            if(panels.length === 0) {
+                              alert("Nessun team trovato nella pagina! Assicurati di essere su 'My Teams' di WTRL e che i roster siano caricati.");
+                              return;
+                            }
+
                             for(const p of panels){
                               const id = p.id.replace("trc","");
                               const name = p.querySelector(".z-title")?.innerText?.trim() || "Unknown Team";
-                              
-                              // Estrazione Divisione (es: Open Lime League Division B1)
                               const divText = p.querySelector(".z-subtitle")?.innerText?.trim() || "";
                               
-                              // Estrazione Categoria (A, B, C, D) dai badge
                               let cat = "TBD";
                               const catBadge = p.querySelector(".zrl-cat-A, .zrl-cat-B, .zrl-cat-C, .zrl-cat-D");
                               if (catBadge) {
@@ -322,17 +325,24 @@ const ZRLOperations: React.FC = () => {
                               });
                             }
                             
-                            console.log("Dati estratti, invio al server...", teams);
+                            console.log("Dati estratti (" + teams.length + " team), invio al server...", teams);
                             const res = await fetch("${window.location.origin}/api/admin/import-wtrl-html", {
                               method: "POST",
-                              headers: {"Content-Type": "application/json"},
+                              headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer ${token}"
+                              },
                               body: JSON.stringify({teams})
                             });
                             const data = await res.json();
-                            alert(data.message || data.error);
+                            if(data.error) {
+                              alert("Errore Server: " + data.error);
+                            } else {
+                              alert(data.message);
+                            }
                           })();`;
                           navigator.clipboard.writeText(script);
-                          alert("Script Ultra-Sync aggiornato e copiato! Incollalo nella console di WTRL.");
+                          alert("Script Ultra-Sync aggiornato (con Token) e copiato! Incollalo nella console di WTRL.");
                         }}
                         className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
                       >
