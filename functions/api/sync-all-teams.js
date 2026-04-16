@@ -68,7 +68,7 @@ export async function onRequestPost({ request, env }) {
     if (allTeams.length === 0) {
       return new Response(JSON.stringify({
         success: false,
-        message: `WTRL ha restituito 0 squadre per la stagione ${SEASON_ID}. Diagnostica: ${JSON.stringify(results.map(r => r.id + ":" + (r.success ? r.count : r.error || r.status)))}`,
+        error: `WTRL ha restituito 0 squadre per la stagione ${SEASON_ID}. Diagnostica: ${JSON.stringify(results.map(r => r.id + ":" + (r.success ? r.count : r.error || r.status)))}`,
         report
       }), { headers: { 'Content-Type': 'application/json' } });
     }
@@ -146,6 +146,8 @@ export async function onRequestPost({ request, env }) {
       // RECUPERO ROSTER DA WTRL (Obbligatorio)
       console.log(`[WTRL] Syncing roster for team ${wtrlTeamId} (${teamName})...`);
       let members = [];
+      let metaData = null;
+
       try {
         const rosterUrl = `https://www.wtrl.racing/api/zrl/${SEASON_ID}/teams/${wtrlTeamId}`;
         const rosterRes = await fetch(rosterUrl, {
@@ -158,11 +160,27 @@ export async function onRequestPost({ request, env }) {
         
         if (rosterRes.ok) {
           const rosterData = await rosterRes.json();
-          // Gestione flessibile struttura WTRL (riders o members)
           members = rosterData.riders || rosterData.members || [];
+          metaData = rosterData.meta;
         }
       } catch (rosterErr) {
         console.error(`[WTRL ERROR] Roster fetch error for ${wtrlTeamId}:`, rosterErr.message);
+      }
+
+      // AGGIORNAMENTO DATI SQUADRA DA META (Dati più precisi)
+      if (metaData && metaData.competition) {
+        await env.DB.prepare(`
+          UPDATE teams SET 
+            category = ?, 
+            division = ?,
+            member_count = ?
+          WHERE id = ?
+        `).bind(
+          metaData.competition.division || t.division || '', // Categoria reale (A, B, C, D)
+          metaData.division || t.zrldivision || '',          // Divisione reale (es: Open Lime B1)
+          metaData.memberCount || parseInt(t.members) || 0,
+          internalTeamId
+        ).run();
       }
 
       const statements = [];
