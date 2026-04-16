@@ -25,29 +25,32 @@ export async function onRequestPost({ request, env }) {
     const wtrlIds = ["zrl", "wzrl"];
 
     const fetchTeams = async (wtrlId) => {
-      const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist`;
+      // Aggiungiamo il parametro test=dGVhbWxpc3Q%3D che WTRL spesso richiede
+      const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
       
       try {
         const res = await fetch(url, {
           headers: {
-            "accept": "application/json",
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "cookie": env.WTRL_COOKIE || "",
-            "referer": "https://www.wtrl.racing/",
+            "referer": "https://www.wtrl.racing/zwift-racing-league/",
             "x-requested-with": "XMLHttpRequest"
           }
         });
 
         const text = await res.text();
         if (!res.ok) {
-          return { id: wtrlId, success: false, status: res.status, preview: text.substring(0, 100) };
+          return { id: wtrlId, success: false, status: res.status, preview: text.substring(0, 200) };
         }
 
         try {
           const data = JSON.parse(text);
           return { id: wtrlId, success: true, payload: data.payload || [], count: (data.payload || []).length };
         } catch (e) {
-          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 100) };
+          // In caso di errore JSON, mostriamo l'inizio della risposta per capire cosa sia (es. HTML di errore)
+          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 200).replace(/<[^>]*>?/gm, '') };
         }
       } catch (err) {
         return { id: wtrlId, success: false, error: err.message };
