@@ -69,9 +69,15 @@ export async function onRequestPost({ request, env }) {
     };
 
     if (allTeams.length === 0) {
+      const diagMsg = results.map(r => {
+        if (r.success) return `${r.id}: ${r.count} teams`;
+        const details = r.preview ? ` (Preview: ${r.preview})` : '';
+        return `${r.id}: ${r.error || r.status}${details}`;
+      }).join(" | ");
+
       return new Response(JSON.stringify({
         success: false,
-        error: `WTRL ha restituito 0 squadre per la stagione ${SEASON_ID}. Diagnostica: ${JSON.stringify(results.map(r => r.id + ":" + (r.success ? r.count : r.error || r.status)))}`,
+        error: `WTRL ha restituito 0 squadre. Diagnostica: ${diagMsg}. Cookie presente: ${!!env.WTRL_COOKIE}`,
         report
       }), { headers: { 'Content-Type': 'application/json' } });
     }
