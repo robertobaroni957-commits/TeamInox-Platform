@@ -54,15 +54,23 @@ export async function onRequestPost({ request, env }) {
     const teamsLists = await Promise.all(wtrlIds.map(fetchTeams));
     const allTeams = teamsLists.flat();
 
-    const report = { teams_synced: 0, athletes_synced: 0, details: [] };
+    const report = { teams_synced: 0, athletes_synced: 0, details: [], total_teams_received: allTeams.length };
 
-    // Elaborazione team in parallelo limitato o sequenziale con ottimizzazione roster
+    // Elaborazione team
     for (const t of allTeams) {
       const teamName = (t.teamname || t.name || '').toUpperCase();
-      const clubId = t.clubId || t.club_id || '';
+      const clubId = (t.clubId || t.club_id || '').toLowerCase();
+      const TARGET_CLUB_ID = INOX_CLUB_ID.toLowerCase();
       
-      // Filtro rigoroso INOX
-      if (clubId !== INOX_CLUB_ID && (!teamName.includes('INOX') || teamName.includes('EQUINOX'))) continue;
+      // Log per i primi 10 team o se il nome contiene INOX per debug
+      if (teamName.includes('INOX')) {
+        console.log(`[DEBUG] Controllo Team: "${teamName}", ClubID: "${clubId}", Target: "${TARGET_CLUB_ID}"`);
+      }
+
+      // Filtro rigoroso INOX (reso case-insensitive per il clubId)
+      if (clubId !== TARGET_CLUB_ID && (!teamName.includes('INOX') || teamName.includes('EQUINOX'))) continue;
+
+      console.log(`[MATCH] Trovato team INOX: ${teamName} (ID: ${t.id || t.wtrl_team_id})`);
 
       const wtrlTeamId = parseInt(t.id || t.wtrl_team_id);
       if (isNaN(wtrlTeamId)) continue;
