@@ -25,16 +25,29 @@ export async function onRequestPost({ request, env }) {
     const wtrlIds = ["zrl", "wzrl"];
 
     const fetchTeams = async (wtrlId) => {
-      // Aggiungiamo il parametro test=dGVhbWxpc3Q%3D che WTRL spesso richiede
       const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
       
+      // Pulizia cookie: teniamo solo quelli WTRL, rimuoviamo quelli Cloudflare che causano blocchi IP
+      const cleanCookie = (env.WTRL_COOKIE || "")
+        .split(';')
+        .filter(c => c.trim().startsWith('wtrl_') || c.trim().startsWith('_ga'))
+        .join(';');
+
       try {
         const res = await fetch(url, {
           headers: {
             "accept": "application/json, text/plain, */*",
-            "accept-language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "cookie": env.WTRL_COOKIE || "",
+            "accept-language": "en-US,en;q=0.9",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "sec-ch-ua": '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "cookie": cleanCookie,
             "referer": "https://www.wtrl.racing/zwift-racing-league/",
             "x-requested-with": "XMLHttpRequest"
           }
