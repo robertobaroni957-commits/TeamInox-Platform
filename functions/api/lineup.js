@@ -55,6 +55,10 @@ export async function onRequestPOST(context) {
   }
 }
 
+export async function onRequestPATCH(context) {
+  return onRequestPOST(context);
+}
+
 export async function onRequestDELETE(context) {
   const { request, env, data } = context;
   const user = data?.user;
