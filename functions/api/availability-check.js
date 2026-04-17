@@ -3,7 +3,9 @@ export async function onRequestGet(context) {
   const user = data?.user;
 
   if (!user || user.role === 'guest') {
-    return new Response(JSON.stringify({ missing: false }));
+    return new Response(JSON.stringify({ missing: false }), {
+      headers: { "Content-Type": "application/json" }
+    });
   }
 
   try {

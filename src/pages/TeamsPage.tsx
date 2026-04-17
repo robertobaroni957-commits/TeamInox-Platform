@@ -29,30 +29,54 @@ export default function TeamsPage() {
   const [currentSeason, setCurrentSeason] = useState('19');
   const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function fetchTeamsAndRosters() {
-      setIsLoading(true);
-      try {
-        const teamsData = await api.getTeams();
-        const teamsWithRosters = await Promise.all(
-          teamsData.map(async (team) => {
-            try {
-              const roster = await api.getRoster(team.id);
-              return { ...team, roster };
-            } catch (err) {
-              return { ...team, roster: [] };
-            }
-          })
-        );
-        setTeams(teamsWithRosters);
-      } catch (err) {
-        console.error("Fetch Teams Error:", err);
-      } finally {
-        setIsLoading(false);
-      }
+  const [isSyncAll, setIsSyncAll] = useState(false);
+
+  async function fetchTeamsAndRosters() {
+    setIsLoading(true);
+    try {
+      const teamsData = await api.getTeams();
+      const teamsWithRosters = await Promise.all(
+        teamsData.map(async (team) => {
+          try {
+            const roster = await api.getRoster(team.id);
+            return { ...team, roster };
+          } catch (err) {
+            return { ...team, roster: [] };
+          }
+        })
+      );
+      setTeams(teamsWithRosters);
+    } catch (err) {
+      console.error("Fetch Teams Error:", err);
+    } finally {
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchTeamsAndRosters();
   }, []);
+
+  const handleSyncAll = async () => {
+    setIsSyncAll(true);
+    try {
+      const res = await fetch('/api/sync-all-teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seasonId: parseInt(currentSeason) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchTeamsAndRosters();
+      } else {
+        alert("Errore sincronizzazione: " + data.error);
+      }
+    } catch (err) {
+      console.error("Errore sincronizzazione globale:", err);
+    } finally {
+      setIsSyncAll(false);
+    }
+  };
 
   const handleSync = async (teamId: number, wtrlId?: number) => {
     if (!wtrlId) return;
@@ -159,8 +183,12 @@ export default function TeamsPage() {
                 <option value="20">WTRL 20</option>
               </select>
            </div>
-           <button className="bg-[#fc6719] hover:bg-[#e65a15] text-black px-6 rounded-2xl font-black italic uppercase transition-all flex items-center gap-2">
-              <RefreshCw size={18} /> Sync All
+           <button 
+             onClick={handleSyncAll}
+             disabled={isSyncAll}
+             className="bg-[#fc6719] hover:bg-[#e65a15] text-black px-6 rounded-2xl font-black italic uppercase transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+              <RefreshCw size={18} className={isSyncAll ? 'animate-spin' : ''} /> {isSyncAll ? 'Syncing...' : 'Sync All'}
            </button>
         </div>
       </div>

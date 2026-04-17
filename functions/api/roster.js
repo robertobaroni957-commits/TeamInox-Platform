@@ -26,16 +26,14 @@ export async function onRequestGet(context) {
         const wtrlRes = await fetch(wtrlUrl, { headers: { "accept": "application/json" } });
         if (wtrlRes.ok) {
           const wtrlData = await wtrlRes.json();
-          // Nella nuova API WTRL, i riders sono solitamente nel primo elemento del payload
-          const teamInfo = wtrlData.payload?.[0] || {};
-          const members = teamInfo.riders || [];
+          const members = wtrlData.riders || wtrlData.members || [];
 
           if (members.length > 0) {
             const athleteStatements = [];
             const memberStatements = [];
 
             for (const rider of members) {
-              const zwid = parseInt(rider.zwid);
+              const zwid = parseInt(rider.zwid || rider.profileId || rider.zwiftId);
               if (!zwid) continue;
 
               // Upsert Atleta con Avatar

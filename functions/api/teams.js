@@ -6,21 +6,11 @@ export async function onRequestGet(context) {
     let query = `SELECT id, name, category, division, division_number, captain_id, wtrl_team_id, club_id, race_pass_url FROM teams`;
     let params = [];
 
-    // Admin e Moderator vedono tutto (nessun filtro)
-    // Se non c'è user (Guest o errore auth silenziato), mostriamo comunque tutto per sbloccare la UI
-    if (!user || user.role === 'admin' || user.role === 'moderator') {
+    if (!user || user.role === 'admin' || user.role === 'moderator' || user.role === 'user') {
       // Nessun filtro
     } else if (user.role === 'captain') {
       query += ` WHERE captain_id = ?`;
       params.push(user.zwid);
-    } else if (user.role === 'user') {
-      const athlete = await env.DB.prepare(`SELECT team_id FROM team_members WHERE athlete_id = ?`).bind(user.zwid).first();
-      if (athlete?.team_id) {
-        query += ` WHERE id = ?`;
-        params.push(athlete.team_id);
-      } else {
-        return new Response(JSON.stringify({ success: true, teams: [] }), { headers: { "Content-Type": "application/json" } });
-      }
     }
 
     query += ` ORDER BY category ASC, division ASC, name ASC`;
