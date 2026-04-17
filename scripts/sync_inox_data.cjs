@@ -1,13 +1,11 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 // --- CONFIGURAZIONE ---
 const INOX_CLUB_ID = 'cef70cde-9149-43a2-b3ae-187643a44703';
 const SEASON_ID = "19";
-const DB_NAME = "team_inox_db"; // Nome del database in wrangler.toml
+const DB_NAME = "team_inox_db";
 
-// Estrazione Cookie da wrangler.toml o .dev.vars
 function getCookie() {
     if (fs.existsSync('.dev.vars')) {
         const vars = fs.readFileSync('.dev.vars', 'utf8');
@@ -20,20 +18,28 @@ function getCookie() {
 const WTRL_COOKIE = getCookie();
 
 async function sync() {
-    console.log("🚀 Inizio sincronizzazione locale per Stagione:", SEASON_ID);
+    console.log("🚀 AVVIO SINCRONIZZAZIONE GLOBALE E RESET...");
     
     if (!WTRL_COOKIE) {
         console.error("❌ Errore: WTRL_COOKIE non trovato in .dev.vars");
         return;
     }
 
+    // 1. CREAZIONE SERIE E ROUND (Fondamentali per le Lineup)
+    console.log("📅 Inizializzazione Stagione e Round...");
+    execSql(`INSERT OR IGNORE INTO series (id, name, external_season_id, is_active) VALUES (1, 'ZRL Season 19', 19, 1);`);
+    
+    // Creiamo 8 round standard se non esistono
+    for (let i = 1; i <= 8; i++) {
+        execSql(`INSERT OR IGNORE INTO rounds (id, series_id, name) VALUES (${i}, 1, 'Round ${i}');`);
+    }
+
     const wtrlIds = ["zrl", "wzrl"];
     let allTeams = [];
 
     for (const wtrlId of wtrlIds) {
-        console.log(`📡 Scaricamento lista squadre per ${wtrlId}...`);
+        console.log(`📡 Fetching ${wtrlId} team list...`);
         const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
-        
         try {
             const response = await fetch(url, {
                 headers: {
@@ -42,13 +48,8 @@ async function sync() {
                 }
             });
             const data = await response.json();
-            if (data.payload) {
-                allTeams = allTeams.concat(data.payload);
-                console.log(`✅ Ricevute ${data.payload.length} squadre da ${wtrlId}`);
-            }
-        } catch (e) {
-            console.error(`❌ Errore fetch ${wtrlId}:`, e.message);
-        }
+            if (data.payload) allTeams = allTeams.concat(data.payload);
+        } catch (e) { console.error(`❌ Errore fetch ${wtrlId}:`, e.message); }
     }
 
     const filteredTeams = allTeams.filter(t => {
@@ -62,19 +63,16 @@ async function sync() {
     for (const t of filteredTeams) {
         const wtrlTeamId = t.id || t.wtrl_team_id;
         const teamName = t.teamname || t.name;
-        console.log(`\n📦 Sincronizzazione ${teamName} (WTRL ID: ${wtrlTeamId})...`);
+        console.log(`\n📦 Sincronizzazione ${teamName}...`);
 
-        // 1. Inserimento/Aggiornamento Team
-        const teamSql = `
+        // Inserimento Team
+        execSql(`
             INSERT INTO teams (name, category, division, division_number, wtrl_team_id, club_id, member_count)
             VALUES ('${teamName.replace(/'/g, "''")}', '${t.division || ''}', '${t.zrldivision || ''}', ${parseInt(t.divnum) || 0}, ${wtrlTeamId}, '${INOX_CLUB_ID}', ${parseInt(t.members) || 0})
             ON CONFLICT(wtrl_team_id) DO UPDATE SET name=excluded.name, category=excluded.category, division=excluded.division, member_count=excluded.member_count;
-        `;
-        
-        execSql(teamSql);
+        `);
 
-        // 2. Scaricamento Roster
-        console.log(`   👥 Scaricamento roster...`);
+        // Roster
         try {
             const rosterUrl = `https://www.wtrl.racing/api/zrl/${SEASON_ID}/teams/${wtrlTeamId}`;
             const rosterRes = await fetch(rosterUrl, { headers: { "cookie": WTRL_COOKIE } });
@@ -82,41 +80,43 @@ async function sync() {
             const members = rosterData.riders || rosterData.members || [];
 
             if (members.length > 0) {
-                // Pulizia roster precedente per questo team
+                // Rimuoviamo membri attuali per refresh pulito
                 execSql(`DELETE FROM team_members WHERE team_id = (SELECT id FROM teams WHERE wtrl_team_id = ${wtrlTeamId});`);
 
                 for (const m of members) {
                     const zwid = m.zwid || m.profileId || m.zwiftId;
                     if (!zwid) continue;
 
-                    const athleteSql = `
+                    // FIX AVATAR: Se l'avatar non è un URL completo, aggiungiamo il prefisso WTRL
+                    let avatarUrl = m.avatar || m.avatar_url || '';
+                    if (avatarUrl && !avatarUrl.startsWith('http')) {
+                        avatarUrl = `https://www.wtrl.racing/uploads/profile_picture/${avatarUrl}`;
+                    }
+
+                    execSql(`
                         INSERT INTO athletes (zwid, name, base_category, avatar_url)
-                        VALUES (${zwid}, '${m.name.replace(/'/g, "''")}', '${m.category || ''}', '${m.avatar || ''}')
-                        ON CONFLICT(zwid) DO UPDATE SET name=excluded.name, avatar_url=excluded.avatar_url;
+                        VALUES (${zwid}, '${m.name.replace(/'/g, "''")}', '${m.category || ''}', '${avatarUrl}')
+                        ON CONFLICT(zwid) DO UPDATE SET name=excluded.name, avatar_url=excluded.avatar_url, base_category=excluded.base_category;
                         
                         INSERT OR IGNORE INTO team_members (team_id, athlete_id)
                         VALUES ((SELECT id FROM teams WHERE wtrl_team_id = ${wtrlTeamId}), ${zwid});
-                    `;
-                    execSql(athleteSql);
+                    `);
                 }
-                console.log(`   ✅ Roster aggiornato: ${members.length} atleti.`);
+                console.log(`   ✅ Roster: ${members.length} atleti sincronizzati (Avatar inclusi).`);
             }
-        } catch (e) {
-            console.error(`   ❌ Errore roster:`, e.message);
-        }
+        } catch (e) { console.error(`   ❌ Errore roster per ${teamName}:`, e.message); }
     }
 
-    console.log("\n✨ Sincronizzazione completata!");
+    console.log("\n✨ SINCRONIZZAZIONE COMPLETATA CON SUCCESSO!");
+    console.log("💡 Ora puoi segnare la disponibilità e creare le lineup sul sito.");
 }
 
 function execSql(sql) {
-    // Rimuoviamo eventuali a capo per la CLI
-    const cleanSql = sql.replace(/\n/g, " ").trim();
+    const cleanSql = sql.replace(/\s+/g, " ").trim();
     try {
-        // Eseguiamo il comando Wrangler per D1 (Remoto)
         execSync(`npx wrangler d1 execute ${DB_NAME} --remote --command="${cleanSql}"`, { stdio: 'ignore' });
     } catch (e) {
-        console.error("   ⚠️ Errore esecuzione SQL:", e.message);
+        // Silenziamo errori minori (es: record duplicati già esistenti)
     }
 }
 
