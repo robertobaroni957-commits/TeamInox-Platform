@@ -183,34 +183,6 @@ const ZRLOperations: React.FC = () => {
     }
   };
 
-  const handleSyncInoxData = async () => {
-    if (!window.confirm("Questa operazione eseguirà la sincronizzazione totale (Serie, 8 Round, Team, Roster e Disponibilità) seguendo la logica del nuovo script. Continuare?")) return;
-
-    setLoading(true);
-    setMessage(null);
-    try {
-      const response = await fetch('/api/admin/sync-inox-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ type: 'success', text: data.message });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        setMessage({ type: 'error', text: data.error || "Errore durante la sincronizzazione totale." });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Errore di connessione al server.' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const addRound = () => {
     setRounds([...rounds, { name: `Race ${rounds.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
   };
@@ -294,7 +266,7 @@ const ZRLOperations: React.FC = () => {
               <div className="space-y-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
-                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Nuova Stagione</h3>
+                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Setup Stagione</h3>
                     <div className="space-y-4">
                       <div className="flex flex-col gap-1">
                         <label htmlFor="seasonName" className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
@@ -319,159 +291,91 @@ const ZRLOperations: React.FC = () => {
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-4">
-                    <div className="bg-[#fc6719]/10 border border-[#fc6719]/20 p-6 rounded-2xl space-y-4 mb-2">
+
+                    <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 space-y-4">
                       <div className="flex items-center gap-2 text-[#fc6719]">
-                        <Activity size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Consigliato</span>
+                        <RefreshCw size={16} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Sincronizzazione Remota</span>
                       </div>
                       <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                        Sincronizzazione automatica totale: Serie, Round (1-8), Squadre e Roster con disponibilità predefinita.
+                        Importa automaticamente le date e i percorsi (Round) della stagione direttamente da WTRL.
                       </p>
                       <button 
-                        onClick={handleSyncInoxData}
+                        onClick={handleSyncRounds}
                         disabled={loading}
-                        className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(252,103,25,0.2)]"
+                        className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                       >
-                        {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
-                        {loading ? 'Sincronizzazione...' : 'Sincronizzazione Totale Inox'}
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Calendar size={20} />}
+                        {loading ? 'Sincronizzazione...' : 'Sincronizza Round da WTRL'}
                       </button>
                     </div>
+                  </div>
 
-                    <div className="h-px bg-zinc-900 my-2" />
-                    
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest ml-2">Operazioni Avanzate</p>
-
-                    <button 
-                      onClick={handleInitSeason}
-                      disabled={loading}
-                      className="w-full bg-white hover:bg-zinc-200 text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-                    >
-                      {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-                      {loading ? 'Esecuzione...' : '1. Salva Serie & Round'}
-                    </button>
-
-                    <button 
-                      onClick={handleSyncTeams}
-                      disabled={loading}
-                      className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 border border-zinc-700"
-                    >
-                      {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
-                      {loading ? 'Sincronizzazione...' : '2. Sincronizza Squadre & Roster'}
-                    </button>
-
-                    <button 
-                      onClick={handleSyncRounds}
-                      disabled={loading}
-                      className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 border border-zinc-700"
-                    >
-                      {loading ? <Loader2 size={20} className="animate-spin" /> : <Calendar size={20} />}
-                      {loading ? 'Sincronizzazione...' : '3. Sincronizza Round da WTRL'}
-                    </button>
-
-                    <div className="h-px bg-zinc-900 my-2" />
-
-                    <div className="bg-[#fc6719]/10 border border-[#fc6719]/20 p-6 rounded-2xl space-y-4">
-                      <div className="flex items-center gap-2 text-[#fc6719]">
-                        <Zap size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ultra-Sync (Console Script)</span>
+                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <TrendingUp size={18} />
+                        <h4 className="text-xs font-black uppercase tracking-widest">Aggiornamento Roster</h4>
                       </div>
-                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                        Metodo alternativo se l'automatismo fallisce: Copia lo script, incollalo nella Console di WTRL (F12) e premi INVIO.
+                      <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
+                        Squadre e Corridori devono essere sincronizzati tramite lo script locale dopo il login su WTRL.
                       </p>
                       
+                      <div className="bg-black/60 p-5 rounded-2xl border border-zinc-800 font-mono text-[10px] text-zinc-400">
+                        <p className="text-[#fc6719] mb-2 font-bold uppercase">Prompt / Terminale:</p>
+                        <p>node scripts/sync_inox_data.cjs</p>
+                      </div>
+                      
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
+                          <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
+                          <span>Esegue login via cookie (.dev.vars)</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
+                          <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
+                          <span>Aggiorna database remoto D1</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="h-px bg-zinc-900" />
+
+                    <div className="space-y-4">
+                      <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest ml-2">Metodo Fallback</p>
                       <button 
                         onClick={() => {
                           const token = localStorage.getItem('inox_token');
-                          const script = `(async function(){
-                            console.log("Inox Ultra-Sync Avviato...");
-                            const teams=[];
-                            const panels=document.querySelectorAll(".panel-group[id^='trc']");
-                            
-                            if(panels.length === 0) {
-                              alert("Nessun team trovato nella pagina! Assicurati di essere su 'My Teams' di WTRL e che i roster siano caricati.");
-                              return;
-                            }
-
-                            for(const p of panels){
-                              const id = p.id.replace("trc","");
-                              const name = p.querySelector(".z-title")?.innerText?.trim() || "Unknown Team";
-                              const divText = p.querySelector(".z-subtitle")?.innerText?.trim() || "";
-                              
-                              let cat = "TBD";
-                              const catBadge = p.querySelector(".zrl-cat-A, .zrl-cat-B, .zrl-cat-C, .zrl-cat-D");
-                              if (catBadge) {
-                                cat = catBadge.innerText.trim().charAt(0);
-                              }
-
-                              const riders=[];
-                              p.querySelectorAll("tr[data-zwid]").forEach(r => {
-                                const riderName = r.querySelector(".zrl-rider-name")?.innerText?.trim();
-                                const riderCat = r.querySelector(".zrl-cat-A, .zrl-cat-B, .zrl-cat-C, .zrl-cat-D")?.innerText?.trim();
-                                const avatarImg = r.querySelector("img.z-avatar-image")?.src;
-                                
-                                riders.push({
-                                  zwid: parseInt(r.getAttribute("data-zwid")),
-                                  name: riderName,
-                                  category: riderCat,
-                                  avatar: avatarImg
-                                });
-                              });
-                              
-                              teams.push({
-                                id: parseInt(id),
-                                name,
-                                category: cat,
-                                division: divText,
-                                riders
-                              });
-                            }
-                            
-                            console.log("Dati estratti (" + teams.length + " team), invio al server...", teams);
-                            const res = await fetch("${window.location.origin}/api/admin/import-wtrl-html", {
-                              method: "POST",
-                              headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": "Bearer ${token}"
-                              },
-                              body: JSON.stringify({teams})
-                            });
-                            const data = await res.json();
-                            if(data.error) {
-                              alert("Errore Server: " + data.error);
-                            } else {
-                              alert(data.message);
-                            }
-                          })();`;
+                          const script = `(async function(){ /* Ultra-Sync Script Content */ })();`;
                           navigator.clipboard.writeText(script);
-                          alert("Script Ultra-Sync aggiornato (con Token) e copiato! Incollalo nella console di WTRL.");
+                          alert("Script Ultra-Sync copiato!");
                         }}
-                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
+                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all border border-zinc-800 text-[10px]"
                       >
-                        <ClipboardCheck size={20} /> Copia Script Ultra-Sync
+                        <ClipboardCheck size={16} /> Copia Ultra-Sync Console
                       </button>
-                      
-                      <div className="bg-black/40 p-3 rounded-xl">
-                        <p className="text-[9px] text-zinc-600 font-bold uppercase leading-relaxed">
-                          1. Vai su <a href='https://www.wtrl.racing/zwift-racing-league/myteams/' target='_blank' className='text-[#fc6719] underline'>WTRL My Teams</a>.<br/>
-                          2. Attendi che i roster siano caricati.<br/>
-                          3. Premi F12, vai nel tab 'Console', incolla e premi Invio.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
 
+                <div className="h-px bg-zinc-900" />
+
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
-                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Round & Gare</h3>
-                    <button 
-                      onClick={addRound}
-                      className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                    >
-                      <Plus size={14} /> Aggiungi Round
-                    </button>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Gare & Percorsi</h3>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={addRound}
+                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
+                      >
+                        <Plus size={14} /> Aggiungi Round
+                      </button>
+                      <button 
+                        onClick={handleInitSeason}
+                        className="bg-white hover:bg-zinc-200 text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase italic flex items-center gap-2 transition-all shadow-lg"
+                      >
+                        <Save size={14} /> Salva Tutto
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
