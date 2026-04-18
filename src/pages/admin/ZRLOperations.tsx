@@ -183,6 +183,34 @@ const ZRLOperations: React.FC = () => {
     }
   };
 
+  const handleSyncInoxData = async () => {
+    if (!window.confirm("Questa operazione eseguirà la sincronizzazione totale (Serie, 8 Round, Team, Roster e Disponibilità) seguendo la logica del nuovo script. Continuare?")) return;
+
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/sync-inox-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setMessage({ type: 'error', text: data.error || "Errore durante la sincronizzazione totale." });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione al server.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addRound = () => {
     setRounds([...rounds, { name: `Race ${rounds.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
   };
@@ -293,9 +321,28 @@ const ZRLOperations: React.FC = () => {
                     </div>
                   </div>
                   <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-4">
-                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-relaxed">
-                      L'inizializzazione crea la serie e i round nel database.
-                    </p>
+                    <div className="bg-[#fc6719]/10 border border-[#fc6719]/20 p-6 rounded-2xl space-y-4 mb-2">
+                      <div className="flex items-center gap-2 text-[#fc6719]">
+                        <Activity size={18} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Consigliato</span>
+                      </div>
+                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                        Sincronizzazione automatica totale: Serie, Round (1-8), Squadre e Roster con disponibilità predefinita.
+                      </p>
+                      <button 
+                        onClick={handleSyncInoxData}
+                        disabled={loading}
+                        className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(252,103,25,0.2)]"
+                      >
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
+                        {loading ? 'Sincronizzazione...' : 'Sincronizzazione Totale Inox'}
+                      </button>
+                    </div>
+
+                    <div className="h-px bg-zinc-900 my-2" />
+                    
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest ml-2">Operazioni Avanzate</p>
+
                     <button 
                       onClick={handleInitSeason}
                       disabled={loading}

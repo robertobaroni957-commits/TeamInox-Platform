@@ -36,6 +36,7 @@ const PUBLIC_ROUTES = [
     '/api/sync-schedule',
     '/api/sync-rounds',
     '/api/sync-all-teams',
+    '/api/admin/sync-inox-data',
     '/api/setup-admin',
     '/api/availability-check'
 ];
@@ -66,7 +67,7 @@ export async function onRequest(context) {
         return handleNext(next);
     }
 
-    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-rounds', '/api/sync-all-teams'].includes(path)) {
+    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-rounds', '/api/sync-all-teams', '/api/admin/sync-inox-data'].includes(path)) {
         return handleNext(next);
     }
 
