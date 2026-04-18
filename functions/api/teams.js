@@ -30,7 +30,7 @@ export async function onRequestGet(context) {
   }
 }
 
-export async function onRequestPOST(context) {
+export async function onRequestPost(context) {
   const { request, env, data } = context;
   const user = data?.user;
 
@@ -49,7 +49,7 @@ export async function onRequestPOST(context) {
   }
 }
 
-export async function onRequestPATCH(context) {
+export async function onRequestPatch(context) {
   const { request, env, data } = context;
   const user = data?.user;
 
@@ -70,7 +70,7 @@ export async function onRequestPATCH(context) {
   }
 }
 
-export async function onRequestDELETE(context) {
+export async function onRequestDelete(context) {
   const { request, env, data } = context;
   const user = data?.user;
 

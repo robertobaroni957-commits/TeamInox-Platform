@@ -1,5 +1,5 @@
 // functions/api/ingest-zp.js
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPost({ request, env }) {
   try {
     const { round_id, race_results } = await request.json();
 

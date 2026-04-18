@@ -18,8 +18,10 @@ const RBAC_POLICY = {
         POST: ['admin', 'moderator', 'captain', 'user']
     },
     '/api/lineup': {
-        POST: ['admin', 'captain'],
-        PATCH: ['admin', 'captain']
+        GET: ['admin', 'moderator', 'captain', 'user'],
+        POST: ['admin', 'moderator', 'captain'],
+        PATCH: ['admin', 'moderator', 'captain'],
+        DELETE: ['admin', 'moderator', 'captain']
     }
 };
 
@@ -32,6 +34,7 @@ const PUBLIC_ROUTES = [
     '/api/teams',
     '/api/setup-zrl-2026',
     '/api/sync-schedule',
+    '/api/sync-rounds',
     '/api/sync-all-teams',
     '/api/setup-admin',
     '/api/availability-check'
@@ -63,7 +66,7 @@ export async function onRequest(context) {
         return handleNext(next);
     }
 
-    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-all-teams'].includes(path)) {
+    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-rounds', '/api/sync-all-teams'].includes(path)) {
         return handleNext(next);
     }
 

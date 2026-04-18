@@ -1,6 +1,6 @@
 // functions/api/ingest-sauce.js
 
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
     const { round_id, athletes: athleteList } = body;

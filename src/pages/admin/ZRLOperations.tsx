@@ -136,6 +136,53 @@ const ZRLOperations: React.FC = () => {
     }
   };
 
+  const handleSyncRounds = async () => {
+    if (!wtrlId) {
+      setMessage({ type: 'error', text: 'Inserire un ID Stagione WTRL valido.' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/sync-rounds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({ seasonId: parseInt(wtrlId) })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+        // Ricarichiamo i round locali dopo la sync
+        const seriesData = await api.getSeries();
+        const active = seriesData.find((s: any) => s.is_active);
+        if (active) {
+          const roundsData = await api.getRounds(active.id);
+          setRounds(roundsData.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            date: r.date ? r.date.split('T')[0] : '',
+            world: r.world,
+            route: r.route,
+            format: r.format || 'Scratch',
+            distance: r.distance || 0,
+            elevation: r.elevation || 0
+          })));
+        }
+      } else {
+        setMessage({ type: 'error', text: data.error || "Errore durante la sincronizzazione round." });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione al server.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addRound = () => {
     setRounds([...rounds, { name: `Race ${rounds.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
   };
@@ -265,6 +312,15 @@ const ZRLOperations: React.FC = () => {
                     >
                       {loading ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
                       {loading ? 'Sincronizzazione...' : '2. Sincronizza Squadre & Roster'}
+                    </button>
+
+                    <button 
+                      onClick={handleSyncRounds}
+                      disabled={loading}
+                      className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 border border-zinc-700"
+                    >
+                      {loading ? <Loader2 size={20} className="animate-spin" /> : <Calendar size={20} />}
+                      {loading ? 'Sincronizzazione...' : '3. Sincronizza Round da WTRL'}
                     </button>
 
                     <div className="h-px bg-zinc-900 my-2" />

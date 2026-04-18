@@ -12,7 +12,7 @@ export async function onRequestGet({ env }) {
   }
 }
 
-export async function onRequestPOST({ request, env }) {
+export async function onRequestPost({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { name, day_of_week, time, description, zwift_link, category } = await request.json();
@@ -26,7 +26,7 @@ export async function onRequestPOST({ request, env }) {
   }
 }
 
-export async function onRequestPATCH({ request, env }) {
+export async function onRequestPatch({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { id, name, day_of_week, time, description, zwift_link, category, is_active } = await request.json();
@@ -40,7 +40,7 @@ export async function onRequestPATCH({ request, env }) {
   }
 }
 
-export async function onRequestDELETE({ request, env }) {
+export async function onRequestDelete({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   const url = new URL(request.url);
   const id = url.searchParams.get("id");

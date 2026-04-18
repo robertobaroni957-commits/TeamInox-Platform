@@ -2,7 +2,7 @@
 
 // L'onRequest GET viene eseguita quando si accede all'URL /api/scores
 
-export async function onRequestGET({ env, data }) {
+export async function onRequestGet({ env, data }) {
     // 1. VERIFICA AUTORIZZAZIONE (Già eseguita dal Middleware)
     
     // Il Middleware ha aggiunto i dati decodificati del JWT (come 'userId', 'role') 
