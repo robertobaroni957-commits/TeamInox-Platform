@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync": "node scripts/sync-manager.cjs",
+    "sync:zrl": "node scripts/sync_inox_data.cjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
