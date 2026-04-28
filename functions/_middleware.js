@@ -113,24 +113,11 @@ function checkPermissions(path, method, userRole) {
 async function handleNext(next) {
     try {
         const response = await next();
-        return applyNoCache(response);
+        const newResponse = new Response(response.body, response);
+        newResponse.headers.set('Access-Control-Allow-Origin', '*');
+        newResponse.headers.set('Cache-Control', 'no-store');
+        return newResponse;
     } catch (e) {
         return jsonError(`Server Error: ${e.message}`, 500);
     }
-}
-
-function jsonError(message, status = 400) {
-    return new Response(JSON.stringify({ error: message }), {
-        status,
-        headers: { 
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        }
-    });
-}
-
-function applyNoCache(response) {
-    const newResponse = new Response(response.body, response);
-    newResponse.headers.set('Cache-Control', 'no-store');
-    return newResponse;
 }

@@ -2,18 +2,21 @@ export async function onRequestPost({ request, env }) {
   try {
     const data = await request.json();
     
-    if (!data.meta || !data.meta.team || !data.meta.trc) {
-      return new Response(JSON.stringify({ error: "Invalid WTRL payload" }), { status: 400 });
+    // Verifica struttura basica
+    if (!data.meta || !data.meta.team) {
+      return new Response(JSON.stringify({ error: "Struttura JSON non valida. Manca meta.team" }), { status: 400 });
     }
 
     const teamMeta = data.meta.team;
-    const compMeta = data.meta.competition;
-    const trc = data.meta.trc;
-    const season = data.meta.season;
+    const compMeta = data.meta.competition || {};
+    const trc = parseInt(data.meta.trc || data.meta.team.tttid); // Fallback su tttid se trc manca
     const riders = data.riders || [];
 
+    if (!trc) {
+      return new Response(JSON.stringify({ error: "ID Team (trc/tttid) non trovato nel JSON" }), { status: 400 });
+    }
+
     // 1. Upsert del TEAM
-    // Usiamo wtrl_team_id come chiave di sincronizzazione
     await env.DB.prepare(`
       INSERT INTO teams (
         wtrl_team_id, name, category, division, tttid, 
@@ -36,34 +39,31 @@ export async function onRequestPost({ request, env }) {
         member_count = excluded.member_count
     `).bind(
       trc,
-      teamMeta.name,
+      teamMeta.name || 'Unknown Team',
       data.meta.category || '',
       data.meta.division || '',
-      teamMeta.tttid || 0,
+      parseInt(teamMeta.tttid) || 0,
       compMeta.clubid || '',
       compMeta.clubname || '',
       compMeta.gender || '',
       compMeta.league || '',
-      compMeta.division || '', // ZRL division
+      compMeta.division || '', 
       compMeta.isdev ? 1 : 0,
       JSON.stringify(compMeta.registered || []),
-      data.meta.memberCount || 0
+      parseInt(data.meta.memberCount) || 0
     ).run();
 
-    // Recuperiamo l'ID interno del team appena inserito/aggiornato
+    // Recuperiamo l'ID interno
     const teamRecord = await env.DB.prepare("SELECT id FROM teams WHERE wtrl_team_id = ?").bind(trc).first();
     const internalTeamId = teamRecord.id;
 
     const statements = [];
-
-    // 2. Pulizia roster attuale per questo team per evitare duplicati o vecchi membri
     statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
     for (const r of riders) {
-      const zwid = parseInt(r.userId);
+      const zwid = parseInt(r.userId || r.zwid);
       if (!zwid) continue;
 
-      // 3. Upsert Atleta
       statements.push(env.DB.prepare(`
         INSERT INTO athletes (
           zwid, name, role, base_category, avatar_url, 
@@ -90,10 +90,9 @@ export async function onRequestPost({ request, env }) {
         parseFloat(r.zmap) || 0,
         parseInt(r.zmapw) || 0,
         parseInt(r.profileId) || null,
-        r.userId || ''
+        String(r.userId || '')
       ));
 
-      // 4. Associazione Team-Atleta
       statements.push(env.DB.prepare(`
         INSERT INTO team_members (team_id, athlete_id)
         VALUES (?, ?)
