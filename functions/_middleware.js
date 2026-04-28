@@ -63,7 +63,7 @@ export async function onRequest(context) {
         });
     }
 
-    if (PUBLIC_ROUTES.includes(path) && method === 'GET') {
+    if (PUBLIC_ROUTES.includes(path) && (method === 'GET' || path === '/api/admin/ingest-wtrl-team')) {
         return handleNext(next);
     }
 
