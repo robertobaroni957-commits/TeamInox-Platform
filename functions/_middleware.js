@@ -37,7 +37,8 @@ const PUBLIC_ROUTES = [
     '/api/sync-rounds',
     '/api/sync-all-teams',
     '/api/setup-admin',
-    '/api/availability-check'
+    '/api/availability-check',
+    '/api/admin/ingest-wtrl-team'
 ];
 
 export async function onRequest(context) {

@@ -4,7 +4,9 @@ const path = require('path');
 
 // --- CONFIGURAZIONE ---
 const INOX_CLUB_ID = 'cef70cde-9149-43a2-b3ae-187643a44703';
-const SEASON_ID = "19";
+const SEASON_ID = "19";          // WTRL Season 19
+const INTERNAL_SERIES_ID = 1;    // Season 2025
+const INTERNAL_ROUND_ID = 4;     // Mappa su Round 4 della Season 2025
 const DB_NAME = "team_inox_db";
 const SQL_TEMP_FILE = path.join(__dirname, 'temp_sync.sql');
 const VARS_PATH = path.join(__dirname, '..', '.dev.vars');
@@ -20,16 +22,15 @@ function getCookie() {
 }
 
 const WTRL_COOKIE = getCookie();
-let sqlBuffer = "BEGIN TRANSACTION;\n";
+let sqlBuffer = "";
 
 function addSql(sql) {
     sqlBuffer += sql.trim() + (sql.trim().endsWith(';') ? '' : ';') + "\n";
 }
 
 async function flushSql() {
-    if (sqlBuffer === "BEGIN TRANSACTION;\n") return;
+    if (sqlBuffer.trim() === "") return;
     
-    sqlBuffer += "COMMIT;";
     fs.writeFileSync(SQL_TEMP_FILE, sqlBuffer);
     
     console.log(`📡 Caricamento dati su D1 (${DB_NAME})...`);
@@ -42,23 +43,21 @@ async function flushSql() {
         process.exit(1);
     } finally {
         if (fs.existsSync(SQL_TEMP_FILE)) fs.unlinkSync(SQL_TEMP_FILE);
-        sqlBuffer = "BEGIN TRANSACTION;\n";
+        sqlBuffer = "";
     }
 }
 
 async function sync() {
-    console.log("🚀 AVVIO SINCRONIZZAZIONE ZRL (WTRL -> D1)...");
+    console.log(`🚀 AVVIO SINCRONIZZAZIONE ZRL (WTRL S${SEASON_ID} -> INOX Round ${INTERNAL_ROUND_ID})...`);
     
     if (!WTRL_COOKIE) {
         console.error("❌ Errore: WTRL_COOKIE non trovato in .dev.vars. Effettua il login su WTRL e aggiorna il cookie.");
         return;
     }
 
-    // 1. Inizializzazione Stagione e Round
-    addSql(`INSERT OR IGNORE INTO series (id, name, external_season_id, is_active) VALUES (1, 'ZRL Season 19', 19, 1);`);
-    for (let i = 1; i <= 8; i++) {
-        addSql(`INSERT OR IGNORE INTO rounds (id, series_id, name) VALUES (${i}, 1, 'Round ${i}');`);
-    }
+    // 1. Inizializzazione Stagione e Round specifico (Mappa WTRL S19 -> Round 4)
+    addSql(`INSERT OR IGNORE INTO series (id, name, external_season_id, is_active) VALUES (${INTERNAL_SERIES_ID}, 'Season 2025', ${SEASON_ID}, 1);`);
+    addSql(`INSERT OR IGNORE INTO rounds (id, series_id, name) VALUES (${INTERNAL_ROUND_ID}, ${INTERNAL_SERIES_ID}, 'Round 4');`);
 
     const wtrlIds = ["zrl", "wzrl"];
     let allTeams = [];
@@ -123,9 +122,8 @@ async function sync() {
                         VALUES ((SELECT id FROM teams WHERE wtrl_team_id = ${wtrlTeamId}), ${zwid});
                     `);
 
-                    for (let r = 1; r <= 8; r++) {
-                        addSql(`INSERT OR IGNORE INTO availability (athlete_id, round_id, status) VALUES (${zwid}, ${r}, 'available');`);
-                    }
+                    // Disponibilità solo per il round interno corrente (Round 4)
+                    addSql(`INSERT OR IGNORE INTO availability (athlete_id, round_id, status) VALUES (${zwid}, ${INTERNAL_ROUND_ID}, 'available');`);
                 }
                 console.log(`   ✅ Roster: ${members.length} atleti pronti.`);
             }

@@ -312,50 +312,65 @@ const ZRLOperations: React.FC = () => {
                   </div>
 
                   <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-zinc-400">
-                        <TrendingUp size={18} />
-                        <h4 className="text-xs font-black uppercase tracking-widest">Aggiornamento Roster</h4>
-                      </div>
-                      <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
-                        Squadre e Corridori devono essere sincronizzati tramite lo script locale dopo il login su WTRL.
-                      </p>
-                      
-                      <div className="bg-black/60 p-5 rounded-2xl border border-zinc-800 font-mono text-[10px] text-zinc-400">
-                        <p className="text-[#fc6719] mb-2 font-bold uppercase">Prompt / Terminale:</p>
-                        <p>node scripts/sync_inox_data.cjs</p>
-                      </div>
-                      
-                      <ul className="space-y-2">
-                        <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
-                          <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
-                          <span>Esegue login via cookie (.dev.vars)</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
-                          <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
-                          <span>Aggiorna database remoto D1</span>
-                        </li>
-                      </ul>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <Activity size={18} />
+                      <h4 className="text-xs font-black uppercase tracking-widest">Ultra-Sync Rosters</h4>
+                    </div>
+                    <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
+                      Sincronizzazione immediata via Browser. Apri WTRL My Teams, copia lo script e incollalo nella console.
+                    </p>
+
+                    <div className="bg-black/60 p-5 rounded-2xl border border-zinc-800 font-mono text-[9px] text-zinc-500 break-all overflow-hidden max-h-24">
+                      <code>(async()=>{const API=`${window.location.origin}/api/admin/ingest-wtrl-team`;...})()</code>
                     </div>
 
-                    <div className="h-px bg-zinc-900" />
-
-                    <div className="space-y-4">
-                      <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest ml-2">Metodo Fallback</p>
-                      <button 
-                        onClick={() => {
-                          const token = localStorage.getItem('inox_token');
-                          const script = `(async function(){ /* Ultra-Sync Script Content */ })();`;
-                          navigator.clipboard.writeText(script);
-                          alert("Script Ultra-Sync copiato!");
-                        }}
-                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all border border-zinc-800 text-[10px]"
-                      >
-                        <ClipboardCheck size={16} /> Copia Ultra-Sync Console
-                      </button>
-                    </div>
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
+                        <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
+                        <span>Aggiorna atleti (zFTP, zMAP, Avatar)</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
+                        <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
+                        <span>Ricostruisce i roster delle squadre</span>
+                      </li>
+                    </ul>
                   </div>
-                </div>
+
+                  <div className="h-px bg-zinc-900" />
+
+                  <div className="space-y-4">
+                    <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest ml-2">Metodo Automatico</p>
+                    <button 
+                      onClick={() => {
+                        const script = `(async () => {
+                  const TARGET_API = "${window.location.origin}/api/admin/ingest-wtrl-team"; 
+                  const panels = document.querySelectorAll('.panel-body[data-trc]');
+                  console.log("🚀 Inizio sincronizzazione...");
+                  for (const panel of panels) {
+                  const trc = panel.dataset.trc;
+                  const season = panel.dataset.season;
+                  try {
+                  const data = await callApi('team.load', {}, { season, trc });
+                  await fetch(TARGET_API, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data)
+                  });
+                  console.log("✅ Sincronizzato: " + data.meta.team.name);
+                  } catch (e) { console.error("❌ Errore: " + trc, e); }
+                  }
+                  alert("Sincronizzazione completata!");
+                  })();`;
+                        navigator.clipboard.writeText(script);
+                        alert("Script Ultra-Sync copiato negli appunti!");
+                      }}
+                      className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all text-[10px]"
+                    >
+                      <Zap size={16} /> Copia Ultra-Sync Script
+                    </button>
+                  </div>
+                  </div>                </div>
 
                 <div className="h-px bg-zinc-900" />
 
