@@ -322,7 +322,7 @@ const ZRLOperations: React.FC = () => {
                     </p>
 
                     <div className="bg-black/60 p-5 rounded-2xl border border-zinc-800 font-mono text-[9px] text-zinc-500 break-all overflow-hidden max-h-24">
-                      <code>(async()=>{const API=`${window.location.origin}/api/admin/ingest-wtrl-team`;...})()</code>
+                      <code>{`(async()=>{const API=\`\${window.location.origin}/api/admin/ingest-wtrl-team\`;...})()`}</code>
                     </div>
 
                     <ul className="space-y-2">
