@@ -291,17 +291,25 @@ const ZRLOperations: React.FC = () => {
                           const script = `(async () => {
                             const panels = document.querySelectorAll('.panel-body[data-trc]');
                             const allTeams = [];
+                            console.log("🚀 Inizio recupero...");
                             for (const panel of panels) {
+                                const trc = panel.getAttribute('data-trc');
+                                const season = panel.getAttribute('data-season') || document.body.getAttribute('wtrl-season');
                                 try {
-                                    const data = await callApi('team.load', {}, { season: panel.dataset.season, trc: panel.dataset.trc });
-                                    allTeams.push(data);
-                                } catch (e) {}
+                                    const data = await callApi('team.load', {}, { season, trc });
+                                    if (data && data.meta) {
+                                        allTeams.push(data);
+                                        console.log("✅ Recuperato: " + data.meta.team.name);
+                                    }
+                                } catch (e) { console.error("❌ Errore: " + trc, e); }
                             }
-                            const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url; a.download = 'squadre_inox.json'; a.click();
-                            alert("File scaricato!");
+                            if (allTeams.length > 0) {
+                                const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url; a.download = 'squadre_inox.json'; a.click();
+                                alert("File scaricato con " + allTeams.length + " squadre!");
+                            } else { alert("Nessun dato recuperato. Controlla la console."); }
                           })();`;
                           navigator.clipboard.writeText(script);
                           alert("Script copiato!");
