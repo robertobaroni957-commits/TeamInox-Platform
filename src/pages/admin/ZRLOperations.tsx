@@ -318,14 +318,76 @@ const ZRLOperations: React.FC = () => {
                       <h4 className="text-xs font-black uppercase tracking-widest">Ultra-Sync Rosters</h4>
                     </div>
                     <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
-                      Sincronizzazione immediata via Browser. Apri WTRL My Teams, copia lo script e incollalo nella console.
+                      1. Scarica il JSON da WTRL con lo script.<br/>
+                      2. Trascina il file qui sotto per aggiornare il database.
                     </p>
 
-                    <div className="bg-black/60 p-5 rounded-2xl border border-zinc-800 font-mono text-[9px] text-zinc-500 break-all overflow-hidden max-h-24">
-                      <code>{`(async()=>{const API=\`\${window.location.origin}/api/admin/ingest-wtrl-team\`;...})()`}</code>
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        onClick={() => {
+                          const script = `(async () => {
+    const panels = document.querySelectorAll('.panel-body[data-trc]');
+    const allTeams = [];
+    console.log("🚀 Recupero dati...");
+    for (const panel of panels) {
+        const trc = panel.dataset.trc;
+        const season = panel.dataset.season;
+        try {
+            const data = await callApi('team.load', {}, { season, trc });
+            allTeams.push(data);
+            console.log("✅ Recuperato: " + data.meta.team.name);
+        } catch (e) { console.error("❌ Errore: " + trc, e); }
+    }
+    const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'squadre_inox.json';
+    a.click();
+    alert("File squadre_inox.json scaricato!");
+})();`;
+                          navigator.clipboard.writeText(script);
+                          alert("Script per scaricare il JSON copiato!");
+                        }}
+                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all border border-zinc-800 text-[10px]"
+                      >
+                        <Zap size={16} /> 1. Copia Script WTRL
+                      </button>
+
+                      <label className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer text-xs">
+                        <Save size={20} /> 2. Carica squadre_inox.json
+                        <input 
+                          type="file" 
+                          accept=".json" 
+                          className="hidden" 
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setLoading(true);
+                            try {
+                              const text = await file.text();
+                              const teamsData = JSON.parse(text);
+                              let count = 0;
+                              for (const team of teamsData) {
+                                await fetch('/api/admin/ingest-wtrl-team', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify(team)
+                                });
+                                count++;
+                              }
+                              setMessage({ type: 'success', text: `Sincronizzate ${count} squadre con successo!` });
+                            } catch (err) {
+                              setMessage({ type: 'error', text: 'Errore nel caricamento del file.' });
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
 
-                    <ul className="space-y-2">
+                    <ul className="space-y-2 pt-2">
                       <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
                         <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
                         <span>Aggiorna atleti (zFTP, zMAP, Avatar)</span>
@@ -335,41 +397,6 @@ const ZRLOperations: React.FC = () => {
                         <span>Ricostruisce i roster delle squadre</span>
                       </li>
                     </ul>
-                  </div>
-
-                  <div className="h-px bg-zinc-900" />
-
-                  <div className="space-y-4">
-                    <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest ml-2">Metodo Automatico</p>
-                    <button 
-                      onClick={() => {
-                        const script = `(async () => {
-                  const TARGET_API = "${window.location.origin}/api/admin/ingest-wtrl-team"; 
-                  const panels = document.querySelectorAll('.panel-body[data-trc]');
-                  console.log("🚀 Inizio sincronizzazione...");
-                  for (const panel of panels) {
-                  const trc = panel.dataset.trc;
-                  const season = panel.dataset.season;
-                  try {
-                  const data = await callApi('team.load', {}, { season, trc });
-                  await fetch(TARGET_API, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(data)
-                  });
-                  console.log("✅ Sincronizzato: " + data.meta.team.name);
-                  } catch (e) { console.error("❌ Errore: " + trc, e); }
-                  }
-                  alert("Sincronizzazione completata!");
-                  })();`;
-                        navigator.clipboard.writeText(script);
-                        alert("Script Ultra-Sync copiato negli appunti!");
-                      }}
-                      className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all text-[10px]"
-                    >
-                      <Zap size={16} /> Copia Ultra-Sync Script
-                    </button>
-                  </div>
                   </div>                </div>
 
                 <div className="h-px bg-zinc-900" />
