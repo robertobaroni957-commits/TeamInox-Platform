@@ -93,7 +93,6 @@ const ZRLOperations: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         setMessage({ type: 'success', text: data.message });
-        // Ricarichiamo dopo un po' per mostrare il successo
         setTimeout(() => window.location.reload(), 1500);
       } else {
         setMessage({ type: 'error', text: data.error || "Errore durante l'inizializzazione." });
@@ -157,7 +156,6 @@ const ZRLOperations: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         setMessage({ type: 'success', text: data.message });
-        // Ricarichiamo i round locali dopo la sync
         const seriesData = await api.getSeries();
         const active = seriesData.find((s: any) => s.is_active);
         if (active) {
@@ -207,7 +205,6 @@ const ZRLOperations: React.FC = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-10">
-      {/* Header */}
       <header className="border-b border-zinc-800 pb-8">
         <div className="flex items-center gap-3 mb-2 text-[#fc6719]">
           <Settings size={20} />
@@ -218,7 +215,6 @@ const ZRLOperations: React.FC = () => {
         </h1>
       </header>
 
-      {/* Stepper */}
       <nav className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {steps.map((step) => {
           const Icon = step.icon;
@@ -269,135 +265,66 @@ const ZRLOperations: React.FC = () => {
                     <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Setup Stagione</h3>
                     <div className="space-y-4">
                       <div className="flex flex-col gap-1">
-                        <label htmlFor="seasonName" className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
-                        <input 
-                          id="seasonName"
-                          name="seasonName"
-                          type="text" 
-                          value={seasonName} 
-                          onChange={(e) => setSeasonName(e.target.value)}
-                          className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]"
-                        />
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Stagione</label>
+                        <input type="text" value={seasonName} onChange={(e) => setSeasonName(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]" />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label htmlFor="wtrlId" className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Stagione WTRL</label>
-                        <input 
-                          id="wtrlId"
-                          name="wtrlId"
-                          type="text" 
-                          value={wtrlId} 
-                          onChange={(e) => setWtrlId(e.target.value)}
-                          className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]"
-                        />
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Stagione WTRL</label>
+                        <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]" />
                       </div>
                     </div>
-
                     <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 space-y-4">
-                      <div className="flex items-center gap-2 text-[#fc6719]">
-                        <RefreshCw size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Sincronizzazione Remota</span>
-                      </div>
-                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                        Importa automaticamente le date e i percorsi (Round) della stagione direttamente da WTRL.
-                      </p>
-                      <button 
-                        onClick={handleSyncRounds}
-                        disabled={loading}
-                        className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-                      >
-                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Calendar size={20} />}
-                        {loading ? 'Sincronizzazione...' : 'Sincronizza Round da WTRL'}
+                      <div className="flex items-center gap-2 text-[#fc6719]"><RefreshCw size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Sincronizzazione Remota</span></div>
+                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Importa le date e i percorsi della stagione direttamente da WTRL.</p>
+                      <button onClick={handleSyncRounds} disabled={loading} className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50">
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Calendar size={20} />} Sincronizza Round
                       </button>
                     </div>
                   </div>
 
                   <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-zinc-400">
-                      <Activity size={18} />
-                      <h4 className="text-xs font-black uppercase tracking-widest">Ultra-Sync Rosters</h4>
-                    </div>
-                    <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
-                      1. Scarica il JSON da WTRL con lo script.<br/>
-                      2. Trascina il file qui sotto per aggiornare il database.
-                    </p>
-
-                    <div className="flex flex-col gap-3">
-                      <button 
-                        onClick={() => {
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-zinc-400"><Activity size={18} /><h4 className="text-xs font-black uppercase tracking-widest">Ultra-Sync Rosters</h4></div>
+                      <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">1. Scarica il JSON da WTRL con lo script.<br/>2. Carica il file qui sotto.</p>
+                      <div className="flex flex-col gap-3">
+                        <button onClick={() => {
                           const script = `(async () => {
-    const panels = document.querySelectorAll('.panel-body[data-trc]');
-    const allTeams = [];
-    console.log("🚀 Recupero dati...");
-    for (const panel of panels) {
-        const trc = panel.dataset.trc;
-        const season = panel.dataset.season;
-        try {
-            const data = await callApi('team.load', {}, { season, trc });
-            allTeams.push(data);
-            console.log("✅ Recuperato: " + data.meta.team.name);
-        } catch (e) { console.error("❌ Errore: " + trc, e); }
-    }
-    const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'squadre_inox.json';
-    a.click();
-    alert("File squadre_inox.json scaricato!");
-})();`;
+                            const panels = document.querySelectorAll('.panel-body[data-trc]');
+                            const allTeams = [];
+                            for (const panel of panels) {
+                                try {
+                                    const data = await callApi('team.load', {}, { season: panel.dataset.season, trc: panel.dataset.trc });
+                                    allTeams.push(data);
+                                } catch (e) {}
+                            }
+                            const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url; a.download = 'squadre_inox.json'; a.click();
+                            alert("File scaricato!");
+                          })();`;
                           navigator.clipboard.writeText(script);
-                          alert("Script per scaricare il JSON copiato!");
-                        }}
-                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all border border-zinc-800 text-[10px]"
-                      >
-                        <Zap size={16} /> 1. Copia Script WTRL
-                      </button>
-
-                      <label className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer text-xs">
-                        <Save size={20} /> 2. Carica squadre_inox.json
-                        <input 
-                          type="file" 
-                          accept=".json" 
-                          className="hidden" 
-                          onChange={async (e) => {
+                          alert("Script copiato!");
+                        }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 border border-zinc-800 text-[10px]"><Zap size={16} /> 1. Copia Script WTRL</button>
+                        <label className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer text-xs"><Save size={20} /> 2. Carica squadre_inox.json
+                          <input type="file" accept=".json" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             setLoading(true);
                             try {
-                              const text = await file.text();
-                              const teamsData = JSON.parse(text);
-                              let count = 0;
+                              const teamsData = JSON.parse(await file.text());
                               for (const team of teamsData) {
-                                await fetch('/api/admin/ingest-wtrl-team', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify(team)
-                                });
-                                count++;
+                                await fetch('/api/admin/ingest-wtrl-team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(team) });
                               }
-                              setMessage({ type: 'success', text: `Sincronizzate ${count} squadre con successo!` });
-                            } catch (err) {
-                              setMessage({ type: 'error', text: 'Errore nel caricamento del file.' });
-                            } finally {
-                              setLoading(false);
-                            }
-                          }}
-                        />
-                      </label>
+                              setMessage({ type: 'success', text: `Sincronizzate ${teamsData.length} squadre!` });
+                            } catch (err) { setMessage({ type: 'error', text: 'Errore caricamento.' }); }
+                            finally { setLoading(false); }
+                          }} />
+                        </label>
+                      </div>
                     </div>
-
-                    <ul className="space-y-2 pt-2">
-                      <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
-                        <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
-                        <span>Aggiorna atleti (zFTP, zMAP, Avatar)</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-[10px] text-zinc-600 font-bold uppercase italic">
-                        <CheckCircle2 size={12} className="text-zinc-800 mt-0.5" />
-                        <span>Ricostruisce i roster delle squadre</span>
-                      </li>
-                    </ul>
-                  </div>                </div>
+                  </div>
+                </div>
 
                 <div className="h-px bg-zinc-900" />
 
@@ -405,54 +332,19 @@ const ZRLOperations: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Gare & Percorsi</h3>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={addRound}
-                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"
-                      >
-                        <Plus size={14} /> Aggiungi Round
-                      </button>
-                      <button 
-                        onClick={handleInitSeason}
-                        className="bg-white hover:bg-zinc-200 text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase italic flex items-center gap-2 transition-all shadow-lg"
-                      >
-                        <Save size={14} /> Salva Tutto
-                      </button>
+                      <button onClick={addRound} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"><Plus size={14} /> Aggiungi Round</button>
+                      <button onClick={handleInitSeason} className="bg-white hover:bg-zinc-200 text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase italic flex items-center gap-2 transition-all shadow-lg"><Save size={14} /> Salva Tutto</button>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {rounds.map((round, idx) => (
                       <div key={idx} className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black uppercase text-[#fc6719] tracking-widest">Gara {idx + 1}</span>
-                          <button onClick={() => removeRound(idx)} className="text-zinc-700 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                        </div>
-                        <input 
-                          type="text" 
-                          placeholder="Nome Gara"
-                          value={round.name}
-                          onChange={(e) => updateRound(idx, 'name', e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
-                        />
-                        <input 
-                          type="date" 
-                          value={round.date}
-                          onChange={(e) => updateRound(idx, 'date', e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
-                        />
+                        <div className="flex justify-between items-center"><span className="text-[10px] font-black uppercase text-[#fc6719] tracking-widest">Gara {idx + 1}</span><button onClick={() => removeRound(idx)} className="text-zinc-700 hover:text-red-500 transition-colors"><Trash2 size={16}/></button></div>
+                        <input type="text" placeholder="Nome Gara" value={round.name} onChange={(e) => updateRound(idx, 'name', e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]" />
+                        <input type="date" value={round.date} onChange={(e) => updateRound(idx, 'date', e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]" />
                         <div className="grid grid-cols-2 gap-2">
-                           <input 
-                             placeholder="World" 
-                             value={round.world}
-                             onChange={(e) => updateRound(idx, 'world', e.target.value)}
-                             className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
-                           />
-                           <input 
-                             placeholder="Route" 
-                             value={round.route}
-                             onChange={(e) => updateRound(idx, 'route', e.target.value)}
-                             className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]"
-                           />
+                          <input placeholder="World" value={round.world} onChange={(e) => updateRound(idx, 'world', e.target.value)} className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]" />
+                          <input placeholder="Route" value={round.route} onChange={(e) => updateRound(idx, 'route', e.target.value)} className="bg-zinc-950 border border-zinc-800 text-white text-[10px] font-bold rounded-xl px-4 py-3 outline-none focus:border-[#fc6719]" />
                         </div>
                       </div>
                     ))}
@@ -461,27 +353,13 @@ const ZRLOperations: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 2: DISPONIBILITÀ */}
-            {activeStep === 2 && (
-              <AvailabilityManagement />
-            )}
-
-            {/* STEP 3: ROSTER STRATEGY */}
-            {activeStep === 3 && (
-              <RosterSuggestions />
-            )}
-
-            {/* STEP 4: LINEUP */}
-            {activeStep === 4 && (
-              <RosterBuilder />
-            )}
-
-            {/* STEP 5: RISULTATI */}
+            {/* STEP 2-5 */}
+            {activeStep === 2 && <AvailabilityManagement />}
+            {activeStep === 3 && <RosterSuggestions />}
+            {activeStep === 4 && <RosterBuilder />}
             {activeStep === 5 && (
               <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800">
-                  <Trophy size={48} />
-                </div>
+                <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800"><Trophy size={48} /></div>
                 <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione Risultati</h3>
                 <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Modulo per la generazione del giornalino e statistiche post-gara.</p>
               </div>
