@@ -2,19 +2,14 @@ export async function onRequestPost({ request, env }) {
   try {
     const data = await request.json();
     
-    // Verifica struttura basica
     if (!data.meta || !data.meta.team) {
-      return new Response(JSON.stringify({ error: "Struttura JSON non valida. Manca meta.team" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Struttura JSON non valida." }), { status: 400 });
     }
 
     const teamMeta = data.meta.team;
     const compMeta = data.meta.competition || {};
-    const trc = parseInt(data.meta.trc || data.meta.team.tttid); // Fallback su tttid se trc manca
+    const trc = parseInt(data.meta.trc || teamMeta.tttid);
     const riders = data.riders || [];
-
-    if (!trc) {
-      return new Response(JSON.stringify({ error: "ID Team (trc/tttid) non trovato nel JSON" }), { status: 400 });
-    }
 
     // 1. Upsert del TEAM
     await env.DB.prepare(`
@@ -39,8 +34,8 @@ export async function onRequestPost({ request, env }) {
         member_count = excluded.member_count
     `).bind(
       trc,
-      teamMeta.name || 'Unknown Team',
-      data.meta.category || '',
+      teamMeta.name,
+      data.meta.category || compMeta.division || '',
       data.meta.division || '',
       parseInt(teamMeta.tttid) || 0,
       compMeta.clubid || '',
@@ -48,12 +43,11 @@ export async function onRequestPost({ request, env }) {
       compMeta.gender || '',
       compMeta.league || '',
       compMeta.division || '', 
-      compMeta.isdev ? 1 : 0,
+      teamMeta.isdev ? 1 : 0,
       JSON.stringify(compMeta.registered || []),
       parseInt(data.meta.memberCount) || 0
     ).run();
 
-    // Recuperiamo l'ID interno
     const teamRecord = await env.DB.prepare("SELECT id FROM teams WHERE wtrl_team_id = ?").bind(trc).first();
     const internalTeamId = teamRecord.id;
 
@@ -61,7 +55,8 @@ export async function onRequestPost({ request, env }) {
     statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
     for (const r of riders) {
-      const zwid = parseInt(r.userId || r.zwid);
+      // IMPORTANTE: Su WTRL profileId è lo Zwift ID (numero), userId è il WTRL ID (UUID)
+      const zwid = parseInt(r.profileId); 
       if (!zwid) continue;
 
       statements.push(env.DB.prepare(`
@@ -89,7 +84,7 @@ export async function onRequestPost({ request, env }) {
         parseInt(r.zftpw) || 0,
         parseFloat(r.zmap) || 0,
         parseInt(r.zmapw) || 0,
-        parseInt(r.profileId) || null,
+        zwid,
         String(r.userId || '')
       ));
 
@@ -107,9 +102,7 @@ export async function onRequestPost({ request, env }) {
       success: true, 
       team: teamMeta.name,
       riders_synced: riders.length 
-    }), {
-      headers: { "Content-Type": "application/json" }
-    });
+    }));
 
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
