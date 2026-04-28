@@ -291,12 +291,13 @@ const ZRLOperations: React.FC = () => {
                           const script = `(async () => {
                             const panels = document.querySelectorAll('.panel-body[data-trc]');
                             const allTeams = [];
+                            const season = document.body.getAttribute('wtrl-season') || "19";
                             console.log("🚀 Inizio recupero...");
                             for (const panel of panels) {
                                 const trc = panel.getAttribute('data-trc');
-                                const season = panel.getAttribute('data-season') || document.body.getAttribute('wtrl-season');
                                 try {
-                                    const data = await callApi('team.load', {}, { season, trc });
+                                    const response = await fetch("https://www.wtrl.racing/api/zrl/" + season + "/teams/" + trc);
+                                    const data = await response.json();
                                     if (data && data.meta) {
                                         allTeams.push(data);
                                         console.log("✅ Recuperato: " + data.meta.team.name);
