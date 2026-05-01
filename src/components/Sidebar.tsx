@@ -83,37 +83,49 @@ const Sidebar: React.FC = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <SectionTitle>{isGuest ? 'Public' : 'Inox Hub'}</SectionTitle>
+          <SectionTitle>{isGuest ? 'Public' : 'Main Hub'}</SectionTitle>
           {isGuest ? (
             <NavItem to="/" icon={Home} label="Philosophy" />
           ) : (
             <NavItem to="/dashboard" icon={LayoutDashboard} label="War Room" />
           )}
           <NavItem to="/racing" icon={Zap} label="Gare Live" />
+          <NavItem to="/events" icon={Calendar} label="Calendario Team" />
           <NavItem to="/ranking" icon={Trophy} label="Classifiche" />
-          <NavItem to="/events" icon={Calendar} label="Calendario" />
 
-          {/* ZRL CENTRALIZED HUB */}
+          {/* LEAGUES & COMPETITIONS */}
           {!isGuest && (
             <>
-              <SectionTitle>Zwift Racing League</SectionTitle>
-              {isCaptain ? (
-                <>
+              <SectionTitle>Leagues & Racing</SectionTitle>
+              {/* ZRL Section */}
+              <div className="space-y-1 mb-4">
+                <div className="px-4 py-1.5 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">Zwift Racing League</div>
+                {isCaptain ? (
                   <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
-                  {isAdmin && <NavItem to="/zrl-round-manager" icon={Calendar} label="Round Manager" special="zrl" />}
-                </>
-              ) : (
-                <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità" />
-              )}
+                ) : (
+                  <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità ZRL" />
+                )}
+              </div>
+
+              {/* Winter Tour Section */}
+              <div className="space-y-1">
+                <div className="px-4 py-1.5 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">Master Winter Tour</div>
+                {isAdmin ? (
+                  <NavItem to="/winter-tour-management" icon={Trophy} label="Winter Management" />
+                ) : (
+                  <NavItem to="/ranking" icon={Star} label="Winter Rankings" />
+                )}
+              </div>
             </>
           )}
 
-          {/* ADMIN TOOLS */}
+          {/* ADMINISTRATION */}
           {isAdmin && (
             <>
               <SectionTitle>Administration</SectionTitle>
-              <NavItem to="/admin/users" icon={Users} label="Utenti" special="admin" />
-              <NavItem to="/admin/events" icon={Settings} label="Config Eventi" special="admin" />
+              <NavItem to="/admin" icon={Shield} label="Command Center" special="admin" />
+              <NavItem to="/admin/users" icon={Users} label="Gestione Utenti" special="admin" />
+              <NavItem to="/admin/events" icon={Settings} label="Configurazione Eventi" special="admin" />
             </>
           )}
 

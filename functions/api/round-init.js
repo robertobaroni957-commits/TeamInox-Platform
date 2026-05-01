@@ -25,22 +25,23 @@ export async function onRequestPost(context) {
         const seriesName = `ZRL ${year} Round ${round_index}`;
         const slotId = default_timeslot_id || 'EMEA_C';
 
+        // Pulizia cookie centralizzata: teniamo solo quelli WTRL essenziali
+        const cleanCookie = (env.WTRL_COOKIE || "")
+            .split(';')
+            .map(c => c.trim())
+            .filter(c => c.startsWith('wtrl_session') || c.startsWith('wtrl_settings') || c.startsWith('_ga'))
+            .join('; ');
+
         // 1. Fetch da WTRL (con cookie e gestione HTML)
         const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
         
-        // Supportiamo sia WTRL_COOKIE (stringa intera) che WTRL_SID (solo ID sessione)
-        let wtrlCookie = env.WTRL_COOKIE || "";
-        if (!wtrlCookie && env.WTRL_SID) {
-            wtrlCookie = `wtrl_sid=${env.WTRL_SID}`;
-        }
-
         console.log(`[round-init] Fetching WTRL Season ${wtrlSeasonId} for ${seriesName}`);
 
         const wtrlRes = await fetch(wtrlUrl, {
             headers: { 
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
-                "Cookie": wtrlCookie.trim()
+                "Cookie": cleanCookie
             }
         });
 

@@ -7,45 +7,32 @@ export async function onRequestPost({ request, env }) {
     const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
     if (activeSeries?.external_season_id) {
       SEASON_ID = activeSeries.external_season_id.toString();
+    } else {
+      console.warn("[SYNC] Nessuna serie attiva trovata nel DB. Utilizzo fallback SEASON_ID:", SEASON_ID);
     }
     
     // Tentiamo di sovrascrivere con seasonId dal body se presente
     try {
       const body = await request.json();
       if (body.seasonId) SEASON_ID = body.seasonId.toString();
-    } catch (e) {
-      // Se fallisce (body vuoto o non JSON), cerchiamo nella query per flessibilità
-      const url = new URL(request.url);
-      const s = url.searchParams.get("seasonId");
-      if (s) SEASON_ID = s;
-    }
+    } catch (e) {}
 
-    const WTRL_COOKIE = env.WTRL_COOKIE || "";
+    // Pulizia cookie centralizzata: teniamo solo quelli WTRL essenziali
+    const cleanCookie = (env.WTRL_COOKIE || "")
+      .split(';')
+      .map(c => c.trim())
+      .filter(c => c.startsWith('wtrl_session') || c.startsWith('wtrl_settings') || c.startsWith('_ga'))
+      .join('; ');
 
     const wtrlIds = ["zrl", "wzrl"];
 
     const fetchTeams = async (wtrlId) => {
       const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=${wtrlId}&season=${SEASON_ID}&action=teamlist&test=dGVhbWxpc3Q%3D`;
       
-      // Pulizia cookie: teniamo solo quelli WTRL, rimuoviamo quelli Cloudflare che causano blocchi IP
-      const cleanCookie = (env.WTRL_COOKIE || "")
-        .split(';')
-        .filter(c => c.trim().startsWith('wtrl_') || c.trim().startsWith('_ga'))
-        .join(';');
-
       try {
         const res = await fetch(url, {
           headers: {
             "accept": "application/json, text/plain, */*",
-            "accept-language": "en-US,en;q=0.9",
-            "cache-control": "no-cache",
-            "pragma": "no-cache",
-            "sec-ch-ua": '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
             "cookie": cleanCookie,
             "referer": "https://www.wtrl.racing/zwift-racing-league/",
@@ -55,15 +42,14 @@ export async function onRequestPost({ request, env }) {
 
         const text = await res.text();
         if (!res.ok) {
-          return { id: wtrlId, success: false, status: res.status, preview: text.substring(0, 200) };
+          return { id: wtrlId, success: false, status: res.status, preview: text.substring(0, 100) };
         }
 
         try {
           const data = JSON.parse(text);
           return { id: wtrlId, success: true, payload: data.payload || [], count: (data.payload || []).length };
         } catch (e) {
-          // Mostriamo una porzione più grande della risposta per capire il problema
-          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 500) };
+          return { id: wtrlId, success: false, error: "JSON_PARSE_ERROR", preview: text.substring(0, 200) };
         }
       } catch (err) {
         return { id: wtrlId, success: false, error: err.message };

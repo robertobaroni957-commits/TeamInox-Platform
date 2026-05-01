@@ -17,24 +17,35 @@ export async function onRequestPost(context) {
     } catch (e) {}
 
     const action = "schedule";
-    const testParam = btoa(action); 
-    const WTRL_COOKIE = env.WTRL_COOKIE || "";
-
+    
     const fetchSchedule = async (cat) => {
-        const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&category=${cat}&action=${action}&test=${testParam}`;
+        const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&category=${cat}&action=${action}`;
         
         const res = await fetch(url, {
             headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
                 "Accept": "application/json",
-                "Cookie": WTRL_COOKIE
+                "Referer": "https://www.wtrl.racing/zwift-racing-league/schedule/"
             }
         });
 
-        if (!res.ok) return [];
+        const contentType = res.headers.get("content-type") || "";
+        const text = await res.text();
 
-        const data = await res.json();
-        return data.payload || (Array.isArray(data) ? data : []);
+        if (!res.ok) {
+            throw new Error(`WTRL API error ${res.status}: ${text.substring(0, 100)}`);
+        }
+
+        if (contentType.includes("text/html") || text.trim().startsWith("<")) {
+            throw new Error("WTRL ha restituito HTML invece di JSON. L'IP del server potrebbe essere temporaneamente bloccato o l'endpoint è cambiato.");
+        }
+
+        try {
+            const data = JSON.parse(text);
+            return data.payload || (Array.isArray(data) ? data : []);
+        } catch (e) {
+            throw new Error(`Errore parsing JSON WTRL: ${e.message}`);
+        }
     };
 
     const [scheduleA, scheduleC] = await Promise.all([
@@ -63,27 +74,29 @@ export async function onRequestPost(context) {
         throw new Error(`Nessun round trovato per la stagione ${seasonId} su WTRL.`);
     }
 
-    // Upsert Serie
-    await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1) ON CONFLICT(external_season_id) DO UPDATE SET is_active = 1")
-                .bind(parseInt(seasonId), `ZRL Season ${seasonId}`).run();
+    // 1. Gestione Serie (Upsert manuale per compatibilità)
+    let series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(parseInt(seasonId)).first();
     
-    // Prendiamo l'ID interno della serie
-    const series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(parseInt(seasonId)).first();
+    if (series) {
+        await env.DB.prepare("UPDATE series SET is_active = 1 WHERE id = ?").bind(series.id).run();
+    } else {
+        const res = await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1)")
+            .bind(parseInt(seasonId), `ZRL Season ${seasonId}`).run();
+        series = { id: res.meta.lastRowId };
+    }
 
-    // Aggiorniamo i round
-    const statements = uniqueRounds.map(r => {
-        return env.DB.prepare(`
-            INSERT INTO rounds (series_id, name, date, world, route) 
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(series_id, name) DO UPDATE SET
-                date = excluded.date,
-                world = excluded.world,
-                route = excluded.route
-        `).bind(series.id, r.name, r.date, r.world, r.route);
-    });
-
-    if (statements.length > 0) {
-        await env.DB.batch(statements);
+    // 2. Aggiornamento Round
+    for (const r of uniqueRounds) {
+        const existingRound = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
+            .bind(series.id, r.name).first();
+        
+        if (existingRound) {
+            await env.DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
+                .bind(r.date, r.world, r.route, existingRound.id).run();
+        } else {
+            await env.DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
+                .bind(series.id, r.name, r.date, r.world, r.route).run();
+        }
     }
 
     return new Response(JSON.stringify({ 

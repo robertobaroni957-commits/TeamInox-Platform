@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Ranking from './pages/Ranking';
 import Events from './pages/Events';
+import StravaCallback from './pages/StravaCallback';
 import ZRLOperations from './pages/admin/ZRLOperations';
 import ZRLRoundManager from './pages/ZRLRoundManager';
 import WinterTourManagement from './pages/WinterTourManagement';
@@ -18,6 +19,7 @@ import Availability from './pages/Availability';
 import RosterBuilder from './pages/RosterBuilder';
 import UserManagement from './pages/admin/UserManagement';
 import EventManagement from './pages/admin/EventManagement';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import AvailabilityManagement from './pages/admin/AvailabilityManagement';
 import RosterSuggestions from './pages/admin/RosterSuggestions';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -41,6 +43,7 @@ const App: React.FC = () => {
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
           <Route path="events" element={<Events />} />
+          <Route path="strava-callback" element={<StravaCallback />} />
           <Route path="zrl-operations" element={
             <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
               <ZRLOperations />
@@ -77,6 +80,11 @@ const App: React.FC = () => {
           } />
           
           {/* Admin/Moderator Routes */}
+          <Route path="admin" element={
+            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="admin/users" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <UserManagement />

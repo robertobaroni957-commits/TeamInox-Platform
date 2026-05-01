@@ -84,6 +84,7 @@ export interface InoxEvent {
   time: string;
   description?: string;
   zwift_link?: string;
+  strava_segment_id?: string;
   category?: string;
   is_active?: boolean;
 }

@@ -15,10 +15,10 @@ export async function onRequestGet({ env }) {
 export async function onRequestPost({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
-    const { name, day_of_week, time, description, zwift_link, category } = await request.json();
+    const { name, day_of_week, time, description, zwift_link, strava_segment_id, category } = await request.json();
     const result = await env.DB.prepare(
-      "INSERT INTO inox_events (name, day_of_week, time, description, zwift_link, category) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(name, day_of_week, time, description, zwift_link, category).run();
+      "INSERT INTO inox_events (name, day_of_week, time, description, zwift_link, strava_segment_id, category) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).bind(name, day_of_week, time, description, zwift_link, strava_segment_id, category).run();
     
     return new Response(JSON.stringify({ success: true, id: result.meta.lastRowId }), { status: 201 });
   } catch (error) {
@@ -29,10 +29,10 @@ export async function onRequestPost({ request, env }) {
 export async function onRequestPatch({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
-    const { id, name, day_of_week, time, description, zwift_link, category, is_active } = await request.json();
+    const { id, name, day_of_week, time, description, zwift_link, strava_segment_id, category, is_active } = await request.json();
     await env.DB.prepare(
-      "UPDATE inox_events SET name = ?, day_of_week = ?, time = ?, description = ?, zwift_link = ?, category = ?, is_active = ? WHERE id = ?"
-    ).bind(name, day_of_week, time, description, zwift_link, category, is_active ? 1 : 0, id).run();
+      "UPDATE inox_events SET name = ?, day_of_week = ?, time = ?, description = ?, zwift_link = ?, strava_segment_id = ?, category = ?, is_active = ? WHERE id = ?"
+    ).bind(name, day_of_week, time, description, zwift_link, strava_segment_id, category, is_active ? 1 : 0, id).run();
     
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {

@@ -1,53 +1,39 @@
-# 🏁 Inoxteam Platform 2026 - Roadmap
+# INOXTEAM PLATFORM - STRATEGIC ROADMAP
 
-Progetto di riprogettazione del portale Inoxteam: da sito statico a Hub di gestione Team, Gare e Social.
+## Current Status: Reorganizing & Planning Phase (April 2026)
 
----
+### 🟢 1. Core Platform (90% Complete)
+- [x] Authentication & Role-based Access (Admin, Moderator, Captain, User, Guest).
+- [x] Base Database Schema (D1) for Users, Teams, Rounds.
+- [x] Main Dashboard (War Room) with Live Timing/Event feeds.
+- [x] Basic User Management.
 
-## 🏗️ Fase 1: Fondamenta & Infrastruttura (COMPLETATA)
-- [x] Inizializzazione progetto React + TypeScript + Vite.
-- [x] Configurazione Tailwind CSS per design moderno/dark mode.
-- [x] Definizione Schema SQL universale per Cloudflare D1.
-- [x] Creazione Layout Globale (Sidebar responsiva, Header, Theme).
-- [x] Setup React Router per la navigazione tra le sezioni.
+### 🟡 2. ZRL Management (60% Complete)
+- [x] RSVP / Availability Matrix (Collection).
+- [x] WTRL Roster Sync (via Script/JSON import).
+- [x] Roster Builder / Lineup Editor.
+- [ ] **TODO:** Automated Discord Webhooks for RSVP Reminders.
+- [ ] **TODO:** Automated Discord Webhooks for Lineup Announcements.
+- [ ] **TODO:** Automated Results Ingestion from WTRL (API).
+- [ ] **TODO:** Post-Race Bulletin / Reporting Generator.
 
-## 🏎️ Fase 2: Racing Engine (IN CORSO)
-- [x] Sviluppo API Worker per ricezione dati Live da Sauce4Zwift/Zenmaster.
-- [x] Visualizzazione Classifiche Dinamiche (Interattive, filtrate per categoria).
-- [x] Archivio Stagione Master Winter Tour 2025/26.
-- [x] Inizializzazione Calendario ZRL Spring 2026.
-- [x] Supporto TTT: Logica tempo sul 4° classificato implementata.
-- [ ] Sistema di Ingestione ZwiftPower (JSON/API).
+### 🔴 3. Master Winter Tour (20% Complete)
+- [x] UI Placeholder & Management Portal.
+- [ ] **TODO:** Points System Configuration (Ruleset).
+- [ ] **TODO:** Round/Stage Management (Date, Route, Results).
+- [ ] **TODO:** Automatic Standing Calculation.
+- [ ] **TODO:** Hall of Fame / Archive.
 
-## 📋 Fase 3: Logistica Team (ZRL, DRS, Ladder) - IN CORSO
-- [x] Gestione Multi-Team (Supporto per 20+ squadre simultanee).
-- [x] Sistema RSVP/Disponibilità: gli atleti segnano la presenza per i Round.
-- [x] **Roster Builder per Capitani:** Interfaccia per comporre le squadre velocemente.
-- [x] Validazione Team: Limite 4-6 atleti per gara (Regolamento ZRL).
-- [ ] Verifica automatica categorie e watt/kg per evitare squalifiche.
-- [ ] Verifica automatica categorie e watt/kg per evitare squalifiche.
-- [ ] Dashboard di Riepilogo Risultati per tutte le squadre del club.
+### 🔴 4. Inox Events & Strava Live Timing (10% Complete)
+- [x] Weekly Events Calendar.
+- [ ] **TODO:** Strava API Integration for Live Timing.
+- [ ] **TODO:** Automatic Result Processing from Strava Activities.
+- [ ] **TODO:** Leaderboard for Internal Team Events.
 
-## 📱 Fase 4: Social & Community
-- [ ] Blog/News CMS: Sistema per scrivere Race Report e iniziative del team.
-- [ ] **Athlete Profile:** Pagina personale per ogni atleta con storico gare e statistiche.
-- [ ] Integrazioni Social (Discord Webhooks, Strava Club data, YouTube Embed).
-- [ ] Medagliere e Hall of Fame del team.
-
-## 🔐 Fase 5: Admin & Security
-- [ ] Autenticazione sicura (JWT) con ruoli (Admin, Capitano, Atleta).
-- [ ] Strumenti di scheduling per le prossime stagioni.
-- [ ] Validazione dati e protezione da modifiche non autorizzate.
+### 🟢 5. UI/UX Refactoring (100% Complete)
+- [x] Admin Command Center (Central Hub).
+- [x] Sidebar categorization (ZRL, Internal, Social).
+- [x] Unified Event Creation Portal (Inox Events).
 
 ---
-
-## 🛠️ Tecnologie Scelte
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, Lucide Icons.
-- **Backend:** Cloudflare Workers (Node.js/JS).
-- **Database:** Cloudflare D1 (SQL/SQLite).
-- **Integrazioni:** Sauce4Zwift API, ZwiftPower API.
-
----
-
-## 🎯 Obiettivo Finale: Settembre 2026
-Lancio della piattaforma completa per l'inizio della nuova stagione agonistica.
+*Updated: 2026-04-30 (Phase 1 Finalized)*

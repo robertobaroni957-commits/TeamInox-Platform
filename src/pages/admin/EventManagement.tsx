@@ -20,6 +20,7 @@ const EventManagement: React.FC = () => {
     time: '18:30',
     description: '',
     zwift_link: '',
+    strava_segment_id: '',
     category: 'Race',
     is_active: true
   });
@@ -47,6 +48,7 @@ const EventManagement: React.FC = () => {
       time: event.time,
       description: event.description || '',
       zwift_link: event.zwift_link || '',
+      strava_segment_id: event.strava_segment_id || '',
       category: event.category || 'Race',
       is_active: event.is_active ?? true
     });
@@ -61,6 +63,7 @@ const EventManagement: React.FC = () => {
       time: '18:30',
       description: '',
       zwift_link: '',
+      strava_segment_id: '',
       category: 'Race',
       is_active: true
     });
@@ -180,6 +183,16 @@ const EventManagement: React.FC = () => {
                 value={formData.zwift_link}
                 onChange={e => setFormData({...formData, zwift_link: e.target.value})}
                 placeholder="https://zwift.com/events/..."
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-3.5 text-white focus:border-inox-orange outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2 ml-1">Strava Segment ID</label>
+              <input 
+                type="text"
+                value={formData.strava_segment_id}
+                onChange={e => setFormData({...formData, strava_segment_id: e.target.value})}
+                placeholder="Es: 12345678"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-3.5 text-white focus:border-inox-orange outline-none transition-all"
               />
             </div>

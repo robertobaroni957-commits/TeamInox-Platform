@@ -110,6 +110,16 @@ function checkPermissions(path, method, userRole) {
     return true;
 }
 
+function jsonError(message, status = 400) {
+    return new Response(JSON.stringify({ error: message, success: false }), {
+        status,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    });
+}
+
 async function handleNext(next) {
     try {
         const response = await next();

@@ -89,7 +89,20 @@ const UserManagement: React.FC = () => {
   const handleRoleChange = async (userId: number, newRole: string) => {
     setUpdating(userId);
     try {
-      await api.updateUserRole(userId, newRole);
+      const response = await fetch('/api/admin/update_role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({ userId, newRole })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Errore durante l\'aggiornamento');
+      }
+
       setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, role: newRole } : u));
     } catch (err: any) {
       alert('Errore aggiornamento ruolo: ' + err.message);

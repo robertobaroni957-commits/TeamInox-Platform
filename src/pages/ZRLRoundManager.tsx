@@ -145,9 +145,122 @@ const ZRLRoundManager: React.FC = () => {
         </div>
       )}
 
-      {/* Resto UI ... */}
-      {/* Form e lista gare qui (come nel tuo file originale) */}
+      {/* Init Form */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+            <PlusCircle size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-gray-800">INIZIALIZZA NUOVO ROUND</h2>
+            <p className="text-sm text-gray-500">Crea un nuovo round (campionato) e importa automaticamente le gare e le mappe da WTRL.</p>
+          </div>
+        </div>
 
+        <form onSubmit={handleInitSeason} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Anno Solare</label>
+            <select 
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none"
+            >
+              <option value={2025}>2025</option>
+              <option value={2026}>2026</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Numero Round Inox (1-4)</label>
+            <select 
+              value={selectedRoundIndex}
+              onChange={(e) => setSelectedRoundIndex(parseInt(e.target.value))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none"
+            >
+              <option value={1}>Round 1</option>
+              <option value={2}>Round 2</option>
+              <option value={3}>Round 3</option>
+              <option value={4}>Round 4</option>
+            </select>
+          </div>
+          <button 
+            type="submit"
+            disabled={actionLoading}
+            className="bg-gray-900 hover:bg-black text-white font-black italic uppercase py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {actionLoading ? <RefreshCw className="animate-spin" size={20} /> : <Zap size={20} className="text-orange-500" />}
+            GENERA ROUND
+          </button>
+        </form>
+      </div>
+
+      {/* Rounds List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">Gestione Gare del Round</h2>
+          {wtrlScheduleLink && (
+            <a href={wtrlScheduleLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-orange-500 hover:underline flex items-center gap-1">
+              WTRL Official Schedule <ExternalLink size={12} />
+            </a>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {rounds.map((round) => (
+            <div key={round.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-orange-200 transition-all group">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-orange-500 border border-gray-100 group-hover:bg-orange-50 transition-colors">
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-lg font-black text-gray-800 uppercase italic tracking-tight">{round.name}</h3>
+                      <span className="px-3 py-0.5 rounded-full bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
+                        {round.date ? new Date(round.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD'}
+                      </span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-tighter">
+                      {round.world || '---'} • <span className="text-gray-600">{round.route || '---'}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-8">
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Squadre</p>
+                    <p className="text-lg font-black text-gray-800">{round.team_count} / {totalSystemTeams}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lineup</p>
+                    <p className="text-lg font-black text-gray-800">{round.lineup_count}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">RSVP</p>
+                    <p className="text-lg font-black text-orange-500">{round.availability_count}</p>
+                  </div>
+                  <div className="h-10 w-px bg-gray-100 hidden lg:block" />
+                  <button 
+                    onClick={() => handleResetRound(round.id, round.name)}
+                    disabled={actionLoading}
+                    className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-red-100 hover:bg-red-600 hover:text-white transition-all disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                    Hard Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {rounds.length === 0 && (
+            <div className="p-20 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200 text-center">
+              <Info className="mx-auto text-gray-300 mb-4" size={48} />
+              <p className="text-gray-400 font-black italic uppercase tracking-widest text-xl">Nessun dato trovato</p>
+              <p className="text-gray-500 text-xs mt-2 uppercase font-bold">Usa il modulo sopra per inizializzare la stagione.</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

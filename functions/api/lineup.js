@@ -44,7 +44,8 @@ export async function onRequestPost(context) {
     await env.DB.prepare(`
       INSERT INTO race_lineup (round_id, team_id, athlete_id, role, status)
       VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(round_id, team_id, athlete_id) DO UPDATE SET
+      ON CONFLICT(round_id, athlete_id) DO UPDATE SET
+        team_id = excluded.team_id,
         role = excluded.role,
         status = excluded.status
     `).bind(round_id, team_id, athlete_id, role || 'starter', status || 'confirmed').run();

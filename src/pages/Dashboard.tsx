@@ -281,11 +281,11 @@ const Dashboard: React.FC = () => {
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate('/zrl-operations');
+                  navigate(user?.role === 'admin' || user?.role === 'moderator' ? '/admin' : '/zrl-operations');
                 }}
                 className="px-5 py-2.5 bg-[#fc6719]/10 border border-[#fc6719]/30 text-[#fc6719] font-black italic rounded-xl hover:bg-[#fc6719]/20 transition-all uppercase text-[9px] tracking-widest"
               >
-                Gestione Operativa
+                {user?.role === 'admin' || user?.role === 'moderator' ? 'Command Center' : 'Gestione Operativa'}
               </button>
             )}
           </div>
@@ -392,6 +392,24 @@ const Dashboard: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#fc6719]/5 to-transparent border border-zinc-900">
+            <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+              <Wind size={12} className="text-[#fc6719]" /> Strava Integration
+            </h3>
+            <p className="text-[10px] text-zinc-600 font-bold uppercase mb-4 leading-relaxed">Collega il tuo account per il cronometraggio automatico.</p>
+            <button 
+              onClick={() => {
+                const clientId = "YOUR_STRAVA_CLIENT_ID"; // TODO: Move to env
+                const redirectUri = `${window.location.origin}/strava-callback`;
+                const scope = "read,activity:read_all";
+                window.location.href = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+              }}
+              className="w-full py-3 bg-[#fc6719] text-black font-black italic rounded-xl hover:scale-105 transition-all uppercase text-[9px] tracking-widest shadow-lg flex items-center justify-center gap-2"
+            >
+              Connect Strava
+            </button>
           </div>
 
           <div className="p-6 rounded-3xl bg-gradient-to-b from-[#fc6719]/5 to-transparent border border-zinc-900">
