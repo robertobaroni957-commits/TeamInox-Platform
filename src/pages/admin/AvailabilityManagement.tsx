@@ -89,7 +89,7 @@ const AvailabilityManagement: React.FC = () => {
   // FILTER LOGIC (Memoized)
   // ---------------------------
   const filteredAthletes = useMemo(() => {
-    return athletes.filter((a) => {
+    const filtered = athletes.filter((a) => {
       const searchLower = searchTerm.toLowerCase().trim();
       const matchesSearch = searchLower === "" || 
                            a.name.toLowerCase().includes(searchLower) ||
@@ -103,6 +103,9 @@ const AvailabilityManagement: React.FC = () => {
 
       return matchesSearch && matchesCategory;
     });
+
+    // Sort alphabetically by name
+    return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
   }, [athletes, searchTerm, filterCategory]);
 
   // ---------------------------

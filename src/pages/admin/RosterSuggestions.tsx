@@ -115,7 +115,7 @@ const RosterSuggestions: React.FC = () => {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                  {team.athletes.map(athlete => (
+                  {[...team.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
                     <div key={athlete.zwid} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all">
                       <div className="flex items-center gap-2 overflow-hidden">
                         <div className="w-6 h-6 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-500 flex-shrink-0">

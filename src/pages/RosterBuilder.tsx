@@ -265,7 +265,7 @@ const RosterBuilder: React.FC = () => {
             </div>
 
             <div className="p-4 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {roster.map(athlete => {
+              {[...roster].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => {
                 const inLineup = isAthleteInLineup(athlete.zwid);
                 const status = (athlete as any).availability_status;
                 return (

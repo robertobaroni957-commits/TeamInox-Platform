@@ -55,7 +55,7 @@ const UserManagement: React.FC = () => {
   }, []);
 
   const filteredUsers = useMemo(() => {
-    return users.filter(user => {
+    const filtered = users.filter(user => {
       const matchesSearch = 
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -67,6 +67,8 @@ const UserManagement: React.FC = () => {
 
       return matchesSearch && matchesRole && matchesCategory && matchesGender;
     });
+
+    return [...filtered].sort((a, b) => a.username.localeCompare(b.username));
   }, [users, searchTerm, filterRole, filterCategory, filterGender]);
 
   const [importing, setImporting] = useState(false);
