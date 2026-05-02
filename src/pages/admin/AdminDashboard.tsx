@@ -12,7 +12,11 @@ import {
   ChevronRight,
   Zap,
   Layout,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  Lightbulb,
+  UserPlus,
+  MailWarning
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { motion } from 'framer-motion';
@@ -24,6 +28,13 @@ const AdminDashboard: React.FC = () => {
     teams: 0,
     series: 0,
     events: 0
+  });
+  const [insights, setInsights] = useState({
+    missingCategory: 0,
+    missingEmail: 0,
+    pendingRegistration: 0,
+    activeRoster: 0,
+    teamsNeedingCaptain: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -42,6 +53,13 @@ const AdminDashboard: React.FC = () => {
           series: series.length,
           events: events.length
         });
+
+        const res = await fetch('/api/admin/system-insights', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
+        });
+        const data = await res.json();
+        if (data.success) setInsights(data.insights);
+
       } catch (err) {
         console.error("Error fetching admin stats:", err);
       } finally {
@@ -165,6 +183,108 @@ const AdminDashboard: React.FC = () => {
             </div>
           </motion.div>
         ))}
+      </section>
+
+      {/* Smart Insights & Suggestions */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Lightbulb size={20} className="text-orange-500" />
+          <h3 className="text-xl font-black italic text-white uppercase tracking-tight">Admin Intelligence</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Missing Data Card */}
+          <div className="p-8 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h4 className="font-black italic text-white uppercase leading-none">Dati Mancanti</h4>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Check database integrity</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Atleti senza Categoria</span>
+                <span className={`text-sm font-black ${insights.missingCategory > 0 ? 'text-red-500' : 'text-zinc-600'}`}>{insights.missingCategory}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Atleti senza Email</span>
+                <span className={`text-sm font-black ${insights.missingEmail > 0 ? 'text-red-500' : 'text-zinc-600'}`}>{insights.missingEmail}</span>
+              </div>
+            </div>
+            
+            {insights.missingCategory > 0 && (
+              <button 
+                onClick={() => navigate('/admin/users')}
+                className="w-full py-3 bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+              >
+                Vai alla gestione utenti
+              </button>
+            )}
+          </div>
+
+          {/* Registration Status */}
+          <div className="p-8 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-inox-cyan/10 rounded-2xl text-inox-cyan">
+                <UserPlus size={24} />
+              </div>
+              <div>
+                <h4 className="font-black italic text-white uppercase leading-none">Onboarding</h4>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Registrazioni pendenti</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Profili da Completare</span>
+                <span className="text-sm font-black text-inox-cyan">{insights.pendingRegistration}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Roster Attivo (RSVP)</span>
+                <span className="text-sm font-black text-emerald-500">{insights.activeRoster}</span>
+              </div>
+            </div>
+
+            <p className="text-[9px] text-zinc-600 font-medium italic leading-tight">
+               Suggerimento: Invia una mail agli atleti "importati" per invitarli a completare il profilo.
+            </p>
+          </div>
+
+          {/* Team Health */}
+          <div className="p-8 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-yellow-500/10 rounded-2xl text-yellow-500">
+                <Zap size={24} />
+              </div>
+              <div>
+                <h4 className="font-black italic text-white uppercase leading-none">Team Health</h4>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Struttura squadre</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Squadre senza Capitano</span>
+                <span className={`text-sm font-black ${insights.teamsNeedingCaptain > 0 ? 'text-yellow-500' : 'text-zinc-600'}`}>{insights.teamsNeedingCaptain}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400">Totale Squadre ZRL</span>
+                <span className="text-sm font-black text-white">{stats.teams}</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => navigate('/zrl-operations')}
+              className="w-full py-3 bg-zinc-800 hover:bg-yellow-500/20 text-zinc-400 hover:text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+              Configura Squadre
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* Advanced Maintenance */}
