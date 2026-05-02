@@ -137,19 +137,72 @@ const AvailabilityManagement: React.FC = () => {
     </div>
   );
 
+  // Stats Calculations
+  const stats = {
+    total: athletes.length,
+    catA: athletes.filter(a => a.category === 'A' || a.category === 'APLUS').length,
+    catB: athletes.filter(a => a.category === 'B').length,
+    catC: athletes.filter(a => a.category === 'C').length,
+    catD: athletes.filter(a => a.category === 'D').length,
+    availableNow: athletes.filter(a => Object.values(a.availabilities).some(v => v === 'available')).length
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex justify-between items-center gap-4">
         <div>
           <h2 className="text-xl font-black italic text-white uppercase tracking-tight">Availability Matrix</h2>
           <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">
-            Displaying {filteredAthletes.length} of {athletes.length} athletes
+            Gestione disponibilità e reportistica ZRL
           </p>
         </div>
         <button onClick={exportData} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all">
           <Download size={14} /> Export JSON
         </button>
       </header>
+
+      {/* STATISTICS CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
+          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Athletes</div>
+          <div className="text-3xl font-black italic text-white leading-none">{stats.total}</div>
+          <div className="w-full bg-zinc-800 h-1 rounded-full mt-4 overflow-hidden">
+            <div className="bg-inox-orange h-full" style={{ width: '100%' }} />
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
+          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Category A/B</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black italic text-red-500 leading-none">{stats.catA}</span>
+            <span className="text-zinc-700 font-bold">/</span>
+            <span className="text-2xl font-black italic text-emerald-500 leading-none">{stats.catB}</span>
+          </div>
+          <div className="flex gap-1 mt-4">
+            <div className="bg-red-600 h-1 rounded-full" style={{ width: `${(stats.catA/stats.total)*100}%` }} />
+            <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${(stats.catB/stats.total)*100}%` }} />
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
+          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Category C/D</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black italic text-inox-cyan leading-none">{stats.catC}</span>
+            <span className="text-zinc-700 font-bold">/</span>
+            <span className="text-2xl font-black italic text-yellow-500 leading-none">{stats.catD}</span>
+          </div>
+          <div className="flex gap-1 mt-4">
+            <div className="bg-inox-cyan h-1 rounded-full" style={{ width: `${(stats.catC/stats.total)*100}%` }} />
+            <div className="bg-yellow-500 h-1 rounded-full" style={{ width: `${(stats.catD/stats.total)*100}%` }} />
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
+          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Active RSVPs</div>
+          <div className="text-3xl font-black italic text-emerald-500 leading-none">{stats.availableNow}</div>
+          <p className="text-[8px] text-zinc-600 font-bold uppercase mt-3 italic">Atleti con almeno una disponibilità data</p>
+        </div>
+      </div>
 
       {message && (
         <div className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-bold ${message.type === "success" ? "bg-green-500/10 border-green-500/30 text-green-500" : "bg-red-500/10 border-red-500/30 text-red-500"}`}>
@@ -176,7 +229,13 @@ const AvailabilityManagement: React.FC = () => {
               key={cat}
               onClick={() => setFilterCategory(cat)}
               className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
-                filterCategory === cat ? "bg-[#fc6719] text-black shadow-lg" : "text-zinc-600 hover:text-zinc-400"
+                filterCategory === cat 
+                  ? (cat === 'A' ? 'bg-red-600 text-white shadow-lg' :
+                     cat === 'B' ? 'bg-emerald-600 text-white shadow-lg' :
+                     cat === 'C' ? 'bg-inox-cyan text-black shadow-lg' :
+                     cat === 'D' ? 'bg-yellow-500 text-black shadow-lg' :
+                     'bg-[#fc6719] text-black shadow-lg')
+                  : 'text-zinc-600 hover:text-zinc-400'
               }`}
             >
               {cat}
@@ -209,8 +268,10 @@ const AvailabilityManagement: React.FC = () => {
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
                         a.category === 'A' || a.category === 'APLUS' ? 'bg-red-500/10 text-red-500' :
-                        a.category === 'B' ? 'bg-green-500/10 text-green-500' :
-                        a.category === 'C' ? 'bg-orange-500/10 text-orange-500' : 'bg-zinc-800 text-zinc-500'
+                        a.category === 'B' ? 'bg-emerald-500/10 text-emerald-500' :
+                        a.category === 'C' ? 'bg-inox-cyan/10 text-inox-cyan' :
+                        a.category === 'D' ? 'bg-yellow-500/10 text-yellow-500' :
+                        'bg-zinc-800 text-zinc-500'
                       }`}>Cat {a.category}</span>
                       <span className="text-[8px] text-zinc-600 font-bold uppercase truncate max-w-[100px]">{a.team}</span>
                     </div>
