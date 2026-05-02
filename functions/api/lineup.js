@@ -65,19 +65,35 @@ export async function onRequestDelete(context) {
   const user = data?.user;
 
   if (!user || (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain')) {
-    return new Response(JSON.stringify({ error: "Forbidden: Admin, Moderator, or Captain access required" }), { status: 403 });
+    return new Response(JSON.stringify({ error: "Forbidden: Admin, Moderator, or Captain access required" }), { 
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 
   try {
-    const { round_id, team_id, athlete_id } = await request.json();
-    // TODO: Se Captain, verificare che team_id appartenga a lui
-    await env.DB.prepare(`
+    const body = await request.json();
+    const { round_id, team_id, athlete_id } = body;
+    
+    if (!round_id || !team_id || !athlete_id) {
+      return new Response(JSON.stringify({ error: "Missing required fields: round_id, team_id, athlete_id" }), { 
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const result = await env.DB.prepare(`
       DELETE FROM race_lineup 
       WHERE round_id = ? AND team_id = ? AND athlete_id = ?
     `).bind(round_id, team_id, athlete_id).run();
 
-    return new Response(JSON.stringify({ success: true }));
+    return new Response(JSON.stringify({ success: true, meta: result.meta }), { 
+      headers: { "Content-Type": "application/json" } 
+    });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }

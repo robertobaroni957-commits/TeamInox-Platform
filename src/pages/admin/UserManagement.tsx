@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../services/api';
 import type { UserData } from '../../services/types'; 
-import { Users, Shield, User, Loader2, Trash2, Mail, Calendar } from 'lucide-react';
+import { Users, Shield, User, Loader2, Trash2, Mail, Calendar, Search, Filter } from 'lucide-react';
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Filters State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterGender, setFilterGender] = useState('');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -47,6 +53,21 @@ const UserManagement: React.FC = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = 
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        user.id.toString().includes(searchTerm);
+      
+      const matchesRole = !filterRole || user.role === filterRole;
+      const matchesCategory = !filterCategory || user.base_category === filterCategory;
+      const matchesGender = !filterGender || user.gender === filterGender;
+
+      return matchesSearch && matchesRole && matchesCategory && matchesGender;
+    });
+  }, [users, searchTerm, filterRole, filterCategory, filterGender]);
 
   const [importing, setImporting] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -171,19 +192,78 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
+      {/* Filters Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800 shadow-xl">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <input
+            type="text"
+            placeholder="Cerca per nome, email o ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:border-inox-orange outline-none transition-all placeholder:text-zinc-700"
+          />
+        </div>
+        
+        <div className="relative">
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-12 pr-10 py-3 text-sm text-zinc-400 focus:border-inox-orange outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Tutti i Ruoli</option>
+            <option value="admin">Admin</option>
+            <option value="moderator">Moderator</option>
+            <option value="captain">Captain</option>
+            <option value="athlete">User/Athlete</option>
+          </select>
+        </div>
+
+        <div className="relative">
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-12 pr-10 py-3 text-sm text-zinc-400 focus:border-inox-orange outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Tutte le Categorie</option>
+            <option value="A">Categoria A</option>
+            <option value="B">Categoria B</option>
+            <option value="C">Categoria C</option>
+            <option value="D">Categoria D</option>
+            <option value="E">Categoria E</option>
+          </select>
+        </div>
+
+        <div className="relative">
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <select
+            value={filterGender}
+            onChange={(e) => setFilterGender(e.target.value)}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-12 pr-10 py-3 text-sm text-zinc-400 focus:border-inox-orange outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Tutti i Sessi</option>
+            <option value="M">Uomo</option>
+            <option value="F">Donna</option>
+          </select>
+        </div>
+      </div>
+
       <div className="bg-zinc-900/30 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-black/40 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">
                 <th className="px-8 py-5">User / Rider</th>
+                <th className="px-8 py-5">Cat / Gender</th>
                 <th className="px-8 py-5">Email Address</th>
                 <th className="px-8 py-5">Current Role</th>
                 <th className="px-8 py-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {users.map((user: UserData) => (
+              {filteredUsers.map((user: UserData) => (
                 <tr key={user.id} className="hover:bg-zinc-800/20 transition-all group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -193,9 +273,25 @@ const UserManagement: React.FC = () => {
                       <div>
                         <div className="text-white font-black uppercase tracking-tight text-lg leading-none">{user.username}</div>
                         <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 italic opacity-70">
-                           {user.zwift_power_id ? `ZWID: ${user.zwift_power_id}` : 'NO ZWID'} • ID: #{user.id}
+                           {user.zwift_power_id ? `ZWID: ${user.zwift_power_id}` : `ZWID: ${user.id}`} • Registered: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                         </div>
                       </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col gap-1">
+                      <span className={`w-fit px-2 py-0.5 rounded text-[10px] font-black uppercase border ${
+                        user.base_category === 'A' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                        user.base_category === 'B' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                        user.base_category === 'C' ? 'bg-inox-orange/10 text-inox-orange border-inox-orange/20' :
+                        user.base_category === 'D' ? 'bg-inox-cyan/10 text-inox-cyan border-inox-cyan/20' :
+                        'bg-zinc-800 text-zinc-500 border-zinc-700'
+                      }`}>
+                        CAT {user.base_category || '?'}
+                      </span>
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                        {user.gender === 'M' ? 'Male' : user.gender === 'F' ? 'Female' : 'N/A'}
+                      </span>
                     </div>
                   </td>
                   <td className="px-8 py-6">

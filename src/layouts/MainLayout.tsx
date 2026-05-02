@@ -40,23 +40,23 @@ const MainLayout: React.FC = () => {
         
         {/* GLOBAL ALERT BANNER (Step 2 logic) */}
         {showWarning && (
-          <div className="bg-orange-500 text-black px-6 py-3 flex items-center justify-between gap-4 animate-in slide-in-from-top duration-500">
-            <div className="flex items-center gap-3">
-              <AlertTriangle size={20} className="fill-black/20" />
-              <p className="text-xs font-black uppercase italic tracking-tight">
-                Azione Richiesta: Non hai ancora compilato la tua disponibilità per la stagione ZRL!
+          <div className="bg-orange-500 text-black px-4 py-2 flex items-center justify-between gap-4 animate-in slide-in-from-top duration-500">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="fill-black/20" />
+              <p className="text-[10px] font-black uppercase italic tracking-tight">
+                Azione Richiesta: Compila la tua disponibilità ZRL!
               </p>
             </div>
             <Link 
               to="/availability" 
-              className="flex items-center gap-1 bg-black text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase hover:scale-105 transition-all"
+              className="flex items-center gap-1 bg-black text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-all"
             >
-              Compila Ora <ChevronRight size={14} />
+              Compila <ChevronRight size={12} />
             </Link>
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto custom-scrollbar bg-zinc-950 p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto custom-scrollbar bg-zinc-950 p-4 lg:p-6">
           {/* Dashboard/Page content injected here */}
           <div className="max-w-[1600px] mx-auto">
             <Outlet />

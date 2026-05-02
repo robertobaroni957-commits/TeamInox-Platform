@@ -233,18 +233,18 @@ const ZRLOperations: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-10">
-      <header className="border-b border-zinc-800 pb-8">
-        <div className="flex items-center gap-3 mb-2 text-[#fc6719]">
-          <Settings size={20} />
-          <span className="font-black text-xs tracking-[0.3em] uppercase italic">Inox Admin Command Center</span>
+    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
+      <header className="border-b border-zinc-900 pb-4">
+        <div className="flex items-center gap-2 mb-1 text-[#fc6719]">
+          <Settings size={16} />
+          <span className="font-black text-[9px] tracking-[0.2em] uppercase italic">Admin Command Center</span>
         </div>
-        <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-white uppercase">
+        <h1 className="text-3xl lg:text-4xl font-black italic tracking-tighter text-white uppercase">
           ZRL <span className="text-zinc-700">Operations</span>
         </h1>
       </header>
 
-      <nav className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <nav className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
@@ -252,23 +252,23 @@ const ZRLOperations: React.FC = () => {
             <button
               key={step.id}
               onClick={() => setActiveStep(step.id)}
-              className={`flex flex-col items-start p-5 rounded-3xl border transition-all text-left ${
+              className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left ${
                 isActive 
-                  ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_30px_rgba(252,103,25,0.1)]" 
-                  : "bg-zinc-950 border-zinc-800 opacity-50 hover:opacity-100"
+                  ? "bg-zinc-900 border-[#fc6719] shadow-lg" 
+                  : "bg-zinc-950 border-zinc-900 opacity-60 hover:opacity-100"
               }`}
             >
-              <div className={`p-2.5 rounded-xl mb-4 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
-                <Icon size={18} />
+              <div className={`p-1.5 rounded-lg mb-2 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
+                <Icon size={14} />
               </div>
-              <span className="text-[9px] font-black uppercase text-zinc-500 mb-1 tracking-widest">Step 0{step.id}</span>
-              <span className={`text-xs font-black uppercase italic ${isActive ? "text-white" : "text-zinc-600"}`}>{step.title}</span>
+              <span className="text-[7px] font-black uppercase text-zinc-600 mb-0.5 tracking-widest">Step 0{step.id}</span>
+              <span className={`text-[10px] font-black uppercase italic ${isActive ? "text-white" : "text-zinc-700"}`}>{step.title}</span>
             </button>
           );
         })}
       </nav>
 
-      <main className="bg-[#0A0A0A] rounded-[3rem] border border-zinc-800 shadow-2xl min-h-[600px] relative overflow-hidden">
+      <main className="bg-[#0A0A0A] rounded-[2rem] border border-zinc-900 shadow-2xl min-h-[500px] relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
@@ -288,53 +288,57 @@ const ZRLOperations: React.FC = () => {
 
             {/* STEP 1: SETUP */}
             {activeStep === 1 && (
-              <div className="space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Setup Round Corrente</h3>
-                    <div className="space-y-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-black italic text-white uppercase tracking-tighter">Round Configuration</h3>
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">Nome Round</label>
-                        <input type="text" value={roundName} onChange={(e) => setRoundName(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]" />
+                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-1 tracking-widest">Nome Round</label>
+                        <input type="text" value={roundName} onChange={(e) => setRoundName(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-2 tracking-[0.2em]">ID Round WTRL (es: 19)</label>
-                        <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-2xl px-6 py-4 outline-none focus:border-[#fc6719]" />
+                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-1 tracking-widest">ID WTRL</label>
+                        <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
                       </div>
                     </div>
-                    <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 space-y-4">
-                      <div className="flex items-center gap-2 text-[#fc6719]"><RefreshCw size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Sincronizzazione Remota</span></div>
-                      <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Importa le date e i percorsi delle gare direttamente da WTRL.</p>
-                      <div className="flex flex-col gap-2">
-                        <button onClick={handleSyncRaces} disabled={loading} className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 text-xs">
-                          <Calendar size={18} /> Sincronizza Gare (Auto)
+                    <div className="bg-zinc-900/30 p-4 rounded-xl border border-zinc-800 space-y-3">
+                      <div className="flex items-center gap-2 text-[#fc6719]"><RefreshCw size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Remote Sync</span></div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button onClick={handleSyncRaces} disabled={loading} className="bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-[9px]">
+                          <Calendar size={14} /> Auto Sync
                         </button>
-                        
-                        <div className="pt-4 border-t border-zinc-800">
-                          <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mb-3 italic">Fallback: Importazione Manuale HTML</p>
+                        <button 
+                            onClick={() => setHtmlImport('')} // Simple way to clear or toggle
+                            className="bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all text-[9px]"
+                          >
+                            <ClipboardCheck size={14} /> Manual HTML
+                        </button>
+                      </div>
+                      {htmlImport !== undefined && (
+                        <div className="pt-2">
                           <textarea 
-                            placeholder="Incolla qui il codice HTML della pagina Schedule..."
+                            placeholder="Paste HTML here..."
                             value={htmlImport}
                             onChange={(e) => setHtmlImport(e.target.value)}
-                            className="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-[10px] text-zinc-400 font-mono focus:border-[#fc6719] outline-none mb-3"
+                            className="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-[9px] text-zinc-500 font-mono focus:border-[#fc6719] outline-none mb-2"
                           />
                           <button 
                             onClick={handleHtmlImport} 
                             disabled={loading || !htmlImport} 
-                            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 text-[10px]"
+                            className="w-full bg-zinc-700 text-white font-black italic uppercase py-2 rounded-lg text-[9px]"
                           >
-                            <Save size={16} /> Importa da HTML
+                            Execute Import
                           </button>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="bg-zinc-950 p-8 rounded-[2rem] border border-zinc-900 flex flex-col justify-center space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-zinc-400"><Activity size={18} /><h4 className="text-xs font-black uppercase tracking-widest">Sincronizzazione Roster</h4></div>
-                      <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed">1. Scarica i dati da WTRL con lo script.<br/>2. Carica il file JSON qui sotto.</p>
-                      <div className="flex flex-col gap-3">
+                  <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-900 flex flex-col justify-center space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-zinc-500"><Activity size={14} /><h4 className="text-[10px] font-black uppercase tracking-widest">Roster Management</h4></div>
+                      <div className="flex flex-col gap-2">
                         <button onClick={() => {
                           const script = `(async () => {
                             const panels = document.querySelectorAll('.panel-body[data-trc]');
@@ -362,8 +366,8 @@ const ZRLOperations: React.FC = () => {
                           })();`;
                           navigator.clipboard.writeText(script);
                           alert("Script copiato!");
-                        }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-3 border border-zinc-800 text-[10px]"><Zap size={16} /> 1. Copia Script Roster</button>
-                        <label className="w-full bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer text-xs"><Save size={20} /> 2. Carica squadre_inox.json
+                        }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 border border-zinc-800 text-[9px]"><Zap size={14} /> 1. Copy Extractor</button>
+                        <label className="w-full bg-white hover:bg-zinc-200 text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer text-[10px] shadow-lg"><Save size={16} /> 2. Upload squadre_inox.json
                           <input type="file" accept=".json" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
@@ -373,8 +377,8 @@ const ZRLOperations: React.FC = () => {
                               for (const team of teamsData) {
                                 await fetch('/api/admin/ingest-wtrl-team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(team) });
                               }
-                              setMessage({ type: 'success', text: `Sincronizzate ${teamsData.length} squadre!` });
-                            } catch (err) { setMessage({ type: 'error', text: 'Errore caricamento.' }); }
+                              setMessage({ type: 'success', text: `Sync: ${teamsData.length} teams` });
+                            } catch (err) { setMessage({ type: 'error', text: 'Upload failed' }); }
                             finally { setLoading(false); }
                           }} />
                         </label>
@@ -385,27 +389,24 @@ const ZRLOperations: React.FC = () => {
 
                 <div className="h-px bg-zinc-900" />
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Elenco Gare</h3>
+                    <h3 className="text-lg font-black italic text-white uppercase tracking-tighter">Race List</h3>
                     <div className="flex gap-2">
-                      <button onClick={addRace} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"><Plus size={14} /> Aggiungi Gara</button>
-                      <button onClick={handleInitRound} className="bg-white hover:bg-zinc-200 text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase italic flex items-center gap-2 transition-all shadow-lg"><Save size={14} /> Salva Configurazione</button>
+                      <button onClick={addRace} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-white px-4 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"><Plus size={12} /> Add Race</button>
+                      <button onClick={handleInitRound} className="bg-[#fc6719] text-black px-4 py-1.5 rounded-lg text-[8px] font-black uppercase italic flex items-center gap-2 transition-all shadow-md"><Save size={12} /> Save Season</button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                     {races.map((race, idx) => (
                       <motion.div 
                         key={idx} 
                         whileHover={{ scale: 1.02 }}
                         onClick={() => setSelectedRace(race)}
-                        className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800 space-y-4 cursor-pointer hover:border-[#fc6719]/50 transition-all group relative overflow-hidden"
+                        className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60 space-y-3 cursor-pointer hover:border-[#fc6719]/40 transition-all group relative overflow-hidden"
                       >
-                        <div className="absolute right-[-10px] top-[-10px] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity rotate-12">
-                          <MapPin size={100} />
-                        </div>
                         <div className="flex justify-between items-center relative z-10">
-                          <span className="text-[10px] font-black uppercase text-[#fc6719] tracking-widest">Gara {idx + 1}</span>
+                          <span className="text-[8px] font-black uppercase text-[#fc6719] tracking-widest">G{idx + 1}</span>
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
@@ -413,21 +414,21 @@ const ZRLOperations: React.FC = () => {
                             }} 
                             className="text-zinc-700 hover:text-red-500 transition-colors"
                           >
-                            <Trash2 size={16}/>
+                            <Trash2 size={12}/>
                           </button>
                         </div>
                         <div className="relative z-10">
-                          <h4 className="text-white font-black italic uppercase truncate">{race.name}</h4>
-                          <p className="text-zinc-500 text-[10px] font-bold uppercase">{race.date || 'TBD'} • {race.world || '---'}</p>
+                          <h4 className="text-xs font-black italic uppercase truncate text-white leading-tight">{race.name}</h4>
+                          <p className="text-zinc-600 text-[8px] font-bold uppercase mt-0.5">{race.date || 'TBD'}</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 relative z-10">
-                          <div className="bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-                            <p className="text-[8px] text-zinc-600 font-black uppercase">Distanza</p>
-                            <p className="text-xs text-zinc-300 font-bold">{race.distance} km</p>
+                        <div className="grid grid-cols-2 gap-1.5 relative z-10">
+                          <div className="bg-black/20 p-1.5 rounded-lg border border-zinc-800/40">
+                            <p className="text-[6px] text-zinc-700 font-black uppercase">Dist</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">{race.distance}k</p>
                           </div>
-                          <div className="bg-zinc-950/50 p-2 rounded-lg border border-zinc-800/50">
-                            <p className="text-[8px] text-zinc-600 font-black uppercase">Elevazione</p>
-                            <p className="text-xs text-zinc-300 font-bold">{race.elevation} m</p>
+                          <div className="bg-black/20 p-1.5 rounded-lg border border-zinc-800/40">
+                            <p className="text-[6px] text-zinc-700 font-black uppercase">Elev</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">{race.elevation}m</p>
                           </div>
                         </div>
                       </motion.div>

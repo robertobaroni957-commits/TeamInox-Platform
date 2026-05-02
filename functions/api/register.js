@@ -21,19 +21,53 @@ export async function onRequestPost(context) {
             });
         }
 
-        // 1. Controllo duplicati (Email o ZWID)
-        const existing = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ? OR zwid = ?").bind(email, zwid).first();
-        if (existing) {
-            return new Response(JSON.stringify({ message: 'Email o Zwift ID già registrati.' }), { 
+        // 1. Controllo se lo ZWID esiste già
+        const existingAthlete = await env.DB.prepare("SELECT zwid, password_hash FROM athletes WHERE zwid = ?").bind(zwid).first();
+        
+        if (existingAthlete) {
+            if (existingAthlete.password_hash) {
+                return new Response(JSON.stringify({ message: 'Questo Zwift ID è già registrato.' }), { 
+                    status: 409,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            // L'atleta esiste (importato) ma non ha password. Procediamo all'aggiornamento.
+            // Prima verifichiamo che l'email non sia usata da ALTRI
+            const emailTaken = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ? AND zwid != ?").bind(email, zwid).first();
+            if (emailTaken) {
+                return new Response(JSON.stringify({ message: 'Email già in uso da un altro profilo.' }), { 
+                    status: 409,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await env.DB.prepare(
+                "UPDATE athletes SET name = ?, email = ?, password_hash = ? WHERE zwid = ?"
+            ).bind(username, email, hashedPassword, zwid).run();
+
+            return new Response(JSON.stringify({ 
+                message: 'Profilo completato! Ora puoi effettuare il login.',
+                zwid: zwid
+            }), { 
+                status: 200,
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // 2. Lo ZWID non esiste, creiamo un nuovo atleta. 
+        // Verifichiamo prima l'email
+        const emailTaken = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ?").bind(email).first();
+        if (emailTaken) {
+            return new Response(JSON.stringify({ message: 'Email già registrata.' }), { 
                 status: 409,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // 2. Hashing
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 3. Inserimento in ATHLETES
         await env.DB.prepare(
             "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
         ).bind(zwid, username, email, hashedPassword, 'athlete').run();

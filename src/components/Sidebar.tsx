@@ -41,22 +41,22 @@ const Sidebar: React.FC = () => {
       to={to}
       onClick={() => setIsOpen(false)}
       className={({ isActive }) => 
-        `flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-l-4 ${
+        `flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-l-2 ${
           isActive 
-            ? (special === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500 shadow-[inset_4px_0_15_rgba(239,68,68,0.1)]' : 
-               special === 'zrl' ? 'bg-orange-500/10 text-orange-500 border-orange-500 shadow-[inset_4px_0_15_rgba(252,103,25,0.1)]' :
-               'bg-inox-cyan/10 text-inox-cyan border-inox-cyan shadow-[inset_4px_0_15_rgba(0,240,255,0.1)]')
+            ? (special === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500 shadow-[inset_2px_0_10px_rgba(239,68,68,0.1)]' : 
+               special === 'zrl' ? 'bg-orange-500/10 text-orange-500 border-orange-500 shadow-[inset_2px_0_10px_rgba(252,103,25,0.1)]' :
+               'bg-inox-cyan/10 text-inox-cyan border-inox-cyan shadow-[inset_2px_0_10px_rgba(0,240,255,0.1)]')
             : 'text-zinc-500 border-transparent hover:bg-zinc-900/50 hover:text-zinc-300'
         }`
       }
     >
-      <Icon size={18} strokeWidth={2.5} />
+      <Icon size={16} strokeWidth={2.5} />
       <span>{label}</span>
     </NavLink>
   );
 
   const SectionTitle = ({ children }: { children: string }) => (
-    <div className="px-4 pt-8 pb-2 text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] border-b border-zinc-900/50 mb-2">
+    <div className="px-3 pt-4 pb-1.5 text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em] border-b border-zinc-900/50 mb-1.5">
       {children}
     </div>
   );
@@ -67,22 +67,23 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden fixed top-4 left-4 z-[100] p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-inox-orange">
-        <div className="flex flex-col gap-1 w-5">
-          <span className={`h-1 bg-current transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`h-1 bg-current transition-all ${isOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`h-1 bg-current transition-all ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden fixed top-3 left-3 z-[100] p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-inox-orange shadow-lg">
+        <div className="flex flex-col gap-1 w-4">
+          <span className={`h-0.5 bg-current transition-all ${isOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+          <span className={`h-0.5 bg-current transition-all ${isOpen ? 'opacity-0' : ''}`}></span>
+          <span className={`h-0.5 bg-current transition-all ${isOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
         </div>
       </button>
 
-      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] lg:hidden"></div>}
+      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] lg:hidden"></div>}
 
-      <aside className={`fixed lg:static inset-y-0 left-0 w-[300px] bg-black border-r border-zinc-900 z-[90] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-8 border-b border-zinc-900">
-          <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" className="h-8" alt="Logo" />
+      <aside className={`fixed lg:static inset-y-0 left-0 w-60 bg-black border-r border-zinc-900 z-[90] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-5 border-b border-zinc-900 flex items-center gap-3">
+          <div className="w-1.5 h-6 bg-[#fc6719] rounded-full shadow-[0_0_15px_rgba(252,103,25,0.3)]" />
+          <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">INOXTEAM</h2>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto p-3 custom-scrollbar">
           <SectionTitle>{isGuest ? 'Public' : 'Main Hub'}</SectionTitle>
           {isGuest ? (
             <NavItem to="/" icon={Home} label="Philosophy" />
@@ -98,8 +99,8 @@ const Sidebar: React.FC = () => {
             <>
               <SectionTitle>Leagues & Racing</SectionTitle>
               {/* ZRL Section */}
-              <div className="space-y-1 mb-4">
-                <div className="px-4 py-1.5 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">Zwift Racing League</div>
+              <div className="space-y-1 mb-3">
+                <div className="px-3 py-1 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em]">Zwift Racing League</div>
                 {isCaptain ? (
                   <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
                 ) : (
@@ -109,7 +110,7 @@ const Sidebar: React.FC = () => {
 
               {/* Winter Tour Section */}
               <div className="space-y-1">
-                <div className="px-4 py-1.5 text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">Master Winter Tour</div>
+                <div className="px-3 py-1 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em]">Master Winter Tour</div>
                 {isAdmin ? (
                   <NavItem to="/winter-tour-management" icon={Trophy} label="Winter Management" />
                 ) : (
@@ -129,15 +130,15 @@ const Sidebar: React.FC = () => {
             </>
           )}
 
-          <div className="mt-8 pt-4 border-t border-zinc-900">
+          <div className="mt-6 pt-4 border-t border-zinc-900">
             {isGuest ? (
-              <button onClick={() => navigate('/login')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-inox-orange hover:bg-inox-orange/10 transition-all">
-                <User size={18} strokeWidth={2.5} />
+              <button onClick={() => navigate('/login')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-inox-orange hover:bg-inox-orange/10 transition-all">
+                <User size={16} strokeWidth={2.5} />
                 <span>Login</span>
               </button>
             ) : (
-              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all">
-                <LogOut size={18} strokeWidth={2.5} />
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all">
+                <LogOut size={16} strokeWidth={2.5} />
                 <span>Logout</span>
               </button>
             )}

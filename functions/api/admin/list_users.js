@@ -7,7 +7,7 @@ export async function onRequestGet({ env, data }) {
 
     try {
         const { results } = await env.DB.prepare(
-            "SELECT zwid as id, name as username, email, role, created_at FROM athletes ORDER BY created_at DESC"
+            "SELECT zwid as id, name as username, email, role, base_category, gender, created_at FROM athletes ORDER BY created_at DESC"
         ).all();
 
         return new Response(JSON.stringify(results), { 

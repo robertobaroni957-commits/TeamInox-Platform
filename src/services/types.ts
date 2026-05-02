@@ -99,6 +99,7 @@ export interface UserData {
   role: 'admin' | 'moderator' | 'captain' | 'user' | 'guest' | string;
   team?: string;
   base_category?: string;
+  gender?: string;
   avatar_url?: string;
   created_at: string;
 }

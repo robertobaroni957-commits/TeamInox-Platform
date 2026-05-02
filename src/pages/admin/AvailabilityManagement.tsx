@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { api } from "../../services/api";
 import type { Round } from "../../services/types";
 import {
@@ -47,14 +47,14 @@ const AvailabilityManagement: React.FC = () => {
 
         const mapped: AthleteAvail[] = adminData.athletes.map((a: any) => {
           const prefs: Record<string, number> = {};
-          adminData.allPreferences
+          (adminData.allPreferences || [])
             .filter((p: any) => p.zwid === a.zwid)
             .forEach((p: any) => {
               prefs[p.time_slot_id] = p.preference_level;
             });
 
           const avails: Record<number, string> = {};
-          adminData.allAvailabilities
+          (adminData.allAvailabilities || [])
             .filter((v: any) => v.athlete_id === a.zwid)
             .forEach((v: any) => {
               avails[v.round_id] = v.status;
@@ -64,7 +64,7 @@ const AvailabilityManagement: React.FC = () => {
             zwid: a.zwid,
             name: a.name,
             team: a.team || "N/A",
-            category: a.base_category || "N/A",
+            category: (a.base_category || "N/A").trim().toUpperCase(),
             preferences: prefs,
             availabilities: avails,
           };
@@ -73,16 +73,9 @@ const AvailabilityManagement: React.FC = () => {
         setAthletes(mapped);
       } catch (e: any) {
         console.error("API ERROR:", e);
-
-        let errorMessage = "Errore durante il recupero dati";
-
-        if (typeof e?.message === "string") {
-          errorMessage = e.message;
-        }
-
         setMessage({
           type: "error",
-          text: `Errore: ${errorMessage}`,
+          text: `Errore: ${e.message || "Errore nel caricamento dei dati"}`,
         });
       } finally {
         setLoading(false);
@@ -93,141 +86,97 @@ const AvailabilityManagement: React.FC = () => {
   }, []);
 
   // ---------------------------
-  // FILTER
+  // FILTER LOGIC (Memoized)
   // ---------------------------
-  const filteredAthletes = athletes.filter((a) => {
-    const matchesSearch =
-      a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.zwid.toString().includes(searchTerm);
+  const filteredAthletes = useMemo(() => {
+    return athletes.filter((a) => {
+      const searchLower = searchTerm.toLowerCase().trim();
+      const matchesSearch = searchLower === "" || 
+                           a.name.toLowerCase().includes(searchLower) ||
+                           a.zwid.toString().includes(searchLower);
 
-    const matchesCategory =
-      filterCategory === "ALL" || a.category === filterCategory;
+      if (filterCategory === "ALL") return matchesSearch;
 
-    return matchesSearch && matchesCategory;
-  });
+      const matchesCategory = (filterCategory === "A") 
+        ? (a.category === "A" || a.category === "APLUS")
+        : (a.category === filterCategory);
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [athletes, searchTerm, filterCategory]);
 
   // ---------------------------
   // ICON STATUS
   // ---------------------------
   const getStatusIcon = (status?: string) => {
-    if (status === "available") {
-      return <CheckCircle2 className="text-emerald-500" size={18} />;
-    }
-    if (status === "unavailable") {
-      return <XCircle className="text-rose-500" size={18} />;
-    }
-    if (status === "tentative") {
-      return <HelpCircle className="text-orange-500" size={18} />;
-    }
-    return <HelpCircle className="text-zinc-700" size={18} />;
+    if (status === "available") return <CheckCircle2 className="text-emerald-500" size={16} />;
+    if (status === "unavailable") return <XCircle className="text-rose-500" size={16} />;
+    if (status === "tentative") return <HelpCircle className="text-orange-500" size={16} />;
+    return <HelpCircle className="text-zinc-800" size={16} />;
   };
 
   // ---------------------------
   // EXPORT
   // ---------------------------
   const exportData = () => {
-    const payload = {
-      generatedAt: new Date().toISOString(),
-      athletes: filteredAthletes,
-      rounds,
-    };
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-
+    const payload = { generatedAt: new Date().toISOString(), athletes: filteredAthletes, rounds };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
     link.href = url;
-    link.download = `inox_export_${new Date()
-      .toISOString()
-      .split("T")[0]}.json`;
-
+    link.download = `inox_avail_report_${new Date().toISOString().split("T")[0]}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-
     URL.revokeObjectURL(url);
   };
 
-  // ---------------------------
-  // LOADING
-  // ---------------------------
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-orange-500 font-black italic text-xl animate-pulse uppercase tracking-widest">
-          LOADING DATA...
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-[#fc6719] font-black italic animate-pulse uppercase tracking-widest">Loading availability matrix...</div>
+    </div>
+  );
 
-  // ---------------------------
-  // UI
-  // ---------------------------
   return (
-    <div className="p-6">
-      {/* HEADER */}
-      <header className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4 border-b border-zinc-800 pb-6">
+    <div className="space-y-6">
+      <header className="flex justify-between items-center gap-4">
         <div>
-          <span className="text-orange-500 text-xs uppercase font-black tracking-widest">
-            Admin Command
-          </span>
-          <h1 className="text-4xl font-black italic text-white uppercase mt-1">
-            Availability Matrix
-          </h1>
+          <h2 className="text-xl font-black italic text-white uppercase tracking-tight">Availability Matrix</h2>
+          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">
+            Displaying {filteredAthletes.length} of {athletes.length} athletes
+          </p>
         </div>
-
-        <button
-          onClick={exportData}
-          className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black font-black italic rounded-xl hover:scale-105 transition-all"
-        >
-          <Download size={18} />
-          Export
+        <button onClick={exportData} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all">
+          <Download size={14} /> Export JSON
         </button>
       </header>
 
-      {/* MESSAGE */}
       {message && (
-        <div
-          className={`mb-6 p-4 rounded-xl border flex items-center gap-3 ${
-            message.type === "success"
-              ? "bg-green-500/10 border-green-500/50 text-green-500"
-              : "bg-red-500/10 border-red-500/50 text-red-500"
-          }`}
-        >
-          <AlertCircle size={18} />
-          <p>{message.text}</p>
+        <div className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-bold ${message.type === "success" ? "bg-green-500/10 border-green-500/30 text-green-500" : "bg-red-500/10 border-red-500/30 text-red-500"}`}>
+          <AlertCircle size={16} /> {message.text}
         </div>
       )}
 
       {/* FILTERS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-            size={18}
-          />
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
           <input
             type="text"
-            placeholder="Search rider..."
+            placeholder="Search by name or ZWID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-white"
+            className="w-full bg-zinc-950 border border-zinc-900 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:border-[#fc6719] outline-none transition-all"
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 p-1 bg-zinc-950 border border-zinc-900 rounded-xl">
           {["ALL", "A", "B", "C", "D"].map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCategory(cat)}
-              className={`flex-1 py-2 rounded-xl font-bold ${
-                filterCategory === cat
-                  ? "bg-cyan-400 text-black"
-                  : "bg-zinc-900 text-zinc-500"
+              className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
+                filterCategory === cat ? "bg-[#fc6719] text-black shadow-lg" : "text-zinc-600 hover:text-zinc-400"
               }`}
             >
               {cat}
@@ -236,45 +185,51 @@ const AvailabilityManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="overflow-x-auto border border-zinc-800 rounded-xl">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-zinc-900">
-              <th className="p-3 text-left">Rider</th>
-              {rounds.map((r) => (
-                <th key={r.id} className="p-3 text-center">
-                  {r.name}
+      {/* MATRIX TABLE */}
+      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-zinc-900/50">
+                <th className="p-3 text-left border-b border-zinc-800 sticky left-0 bg-zinc-900 z-10 min-w-[200px]">
+                   <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Rider / Category</span>
                 </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredAthletes.map((a) => (
-              <tr key={a.zwid} className="border-t border-zinc-800">
-                <td className="p-3">
-                  <div className="font-bold text-white">{a.name}</div>
-                  <div className="text-xs text-zinc-500">
-                    {a.category} • {a.team}
-                  </div>
-                </td>
-
                 {rounds.map((r) => (
-                  <td key={r.id} className="text-center p-3">
-                    {getStatusIcon(a.availabilities[r.id])}
-                  </td>
+                  <th key={r.id} className="p-3 text-center border-b border-zinc-800 min-w-[100px]">
+                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-tight block">{r.name.replace('ZRL 2025 ', '')}</span>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-zinc-900">
+              {filteredAthletes.map((a) => (
+                <tr key={a.zwid} className="hover:bg-zinc-900/30 transition-colors group">
+                  <td className="p-3 sticky left-0 bg-zinc-950 group-hover:bg-zinc-900/50 z-10 transition-colors">
+                    <div className="font-bold text-xs text-white truncate">{a.name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
+                        a.category === 'A' || a.category === 'APLUS' ? 'bg-red-500/10 text-red-500' :
+                        a.category === 'B' ? 'bg-green-500/10 text-green-500' :
+                        a.category === 'C' ? 'bg-orange-500/10 text-orange-500' : 'bg-zinc-800 text-zinc-500'
+                      }`}>Cat {a.category}</span>
+                      <span className="text-[8px] text-zinc-600 font-bold uppercase truncate max-w-[100px]">{a.team}</span>
+                    </div>
+                  </td>
+                  {rounds.map((r) => (
+                    <td key={r.id} className="p-3 text-center">
+                      {getStatusIcon(a.availabilities[r.id])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* EMPTY */}
       {filteredAthletes.length === 0 && (
-        <div className="mt-6 text-center text-zinc-500">
-          Nessun risultato
+        <div className="py-20 text-center bg-zinc-950 border border-zinc-900 border-dashed rounded-2xl">
+          <p className="text-zinc-700 text-xs font-black uppercase tracking-widest">No riders match the current filters</p>
         </div>
       )}
     </div>

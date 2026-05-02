@@ -21,9 +21,7 @@ export async function onRequestGet(context) {
 
         console.log(`[DEBUG] GET Availability - zwid: ${zwid}, role: ${role}, adminRequest: ${isAdminRequest}`);
 
-        // ============================
-        // Admin / Moderator: Tutti dati
-        // ============================
+        // ============ Admin / Moderator: Tutti i dati ============
         if (isAdminRequest && (role === 'admin' || role === 'moderator')) {
             console.log("[DEBUG] Eseguo batch Admin / Moderator");
 
@@ -31,21 +29,26 @@ export async function onRequestGet(context) {
                 env.DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
                 env.DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.athlete_id = a.zwid`),
                 env.DB.prepare(`
-                    SELECT a.zwid, a.name, a.base_category, t.name as team 
+                    SELECT a.zwid, a.name, a.base_category, 
+                           GROUP_CONCAT(t.name, ', ') as team
                     FROM athletes a
                     LEFT JOIN team_members tm ON a.zwid = tm.athlete_id
                     LEFT JOIN teams t ON tm.team_id = t.id
+                    GROUP BY a.zwid
                 `)
             ]);
 
             console.log(`[DEBUG] Query risultati: Prefs=${results[0].results.length}, Avail=${results[1].results.length}, Athletes=${results[2].results.length}`);
 
             return new Response(JSON.stringify({
-                allPreferences: results[0].results,
-                allAvailabilities: results[1].results,
-                athletes: results[2].results
+                allPreferences: results[0].results || [],
+                allAvailabilities: results[1].results || [],
+                athletes: results[2].results || []
             }), {
-                headers: { "Content-Type": "application/json" }
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-store"
+                }
             });
         }
 
