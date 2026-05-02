@@ -75,6 +75,7 @@ const Login: React.FC = () => {
               onChange={(e) => setIdentifier(e.target.value)}
               required
               placeholder="es: 3252657"
+              autocomplete="username"
               className="w-full px-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
             />
           </div>
