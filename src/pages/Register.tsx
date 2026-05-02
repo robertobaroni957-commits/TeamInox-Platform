@@ -144,28 +144,30 @@ const Register: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Minimo 8 caratteri"
+                autocomplete="current-password"
                 className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
-            </div>
-          </div>
+              </div>
+              </div>
 
-          {/* CONFIRM PASSWORD */}
-          <div>
-            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
-              Conferma Password
-            </label>
-            <div className="relative">
-              <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                required
-                placeholder="Ripeti la password"
-                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
-              />
-            </div>
-          </div>
+              {/* CONFIRM PASSWORD */}
+              <div>
+              <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+                Conferma Password
+              </label>
+              <div className="relative">
+                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  required
+                  placeholder="Ripeti la password"
+                  autocomplete="new-password"
+                  className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
+                />
+              </div>
+              </div>
 
           {/* SUBMIT */}
           <button

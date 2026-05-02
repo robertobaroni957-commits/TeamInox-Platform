@@ -90,10 +90,11 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="•••••••••••••"
+              autocomplete="current-password"
               className="w-full px-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-inox-orange/50 transition-all placeholder:text-zinc-800 font-medium"
             />
           </div>
-
+          
           <button
             type="submit"
             disabled={loading}
@@ -101,7 +102,7 @@ const Login: React.FC = () => {
           >
             {loading ? 'ACCESSO IN CORSO...' : 'ENTRA NEL PORTALE'}
           </button>
-          
+
           {error && (
             <div className="text-center text-red-500 text-xs font-bold mt-4 bg-red-500/10 py-3 rounded-xl border border-red-500/20 uppercase tracking-widest">
               {error}
