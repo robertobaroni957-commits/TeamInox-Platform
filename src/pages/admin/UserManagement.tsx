@@ -134,6 +134,18 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handleCategoryChange = async (userId: number, newCategory: string) => {
+    setUpdating(userId);
+    try {
+      await api.updateAthlete(userId, { category: newCategory });
+      setUsers(prev => prev.map((u: UserData) => u.id === userId ? { ...u, base_category: newCategory } : u));
+    } catch (err: any) {
+      alert('Errore aggiornamento categoria: ' + err.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const handleDeleteUser = async (userId: number, username: string) => {
     if (window.confirm(`Sei sicuro di voler eliminare definitivamente l'utente ${username}? Questa azione non è reversibile.`)) {
       setUpdating(userId);
@@ -314,6 +326,20 @@ const UserManagement: React.FC = () => {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end items-center gap-4">
+                      <select
+                        value={user.base_category || ''}
+                        disabled={updating === user.id}
+                        onChange={(e) => handleCategoryChange(user.id, e.target.value)}
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-zinc-400 focus:border-inox-orange outline-none transition-all disabled:opacity-50"
+                      >
+                        <option value="">No Cat</option>
+                        <option value="A">Cat A</option>
+                        <option value="B">Cat B</option>
+                        <option value="C">Cat C</option>
+                        <option value="D">Cat D</option>
+                        <option value="E">Cat E</option>
+                      </select>
+
                       <select
                         value={user.role}
                         disabled={updating === user.id}

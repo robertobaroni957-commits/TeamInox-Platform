@@ -141,6 +141,15 @@ export const api = {
     return handleResponse(res);
   },
 
+  updateAthlete: async (userId: number, data: { role?: string, category?: string, gender?: string }): Promise<any> => {
+    const res = await fetch(`${API_BASE}/admin/update_athlete`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ userId, ...data }),
+    });
+    return handleResponse(res);
+  },
+
   deleteUser: async (userId: number): Promise<any> => {
     const res = await fetch(`${API_BASE}/admin/delete_user`, {
       method: 'POST',
