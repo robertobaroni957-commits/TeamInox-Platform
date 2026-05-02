@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../services/api';
 import type { UserData } from '../../services/types'; 
-import { Users, Shield, User, Loader2, Trash2, Mail, Calendar, Search, Filter } from 'lucide-react';
+import { Users, Shield, User, Loader2, Trash2, Mail, Calendar, Search, Filter, RefreshCw, X } from 'lucide-react';
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
@@ -72,7 +72,39 @@ const UserManagement: React.FC = () => {
   }, [users, searchTerm, filterRole, filterCategory, filterGender]);
 
   const [importing, setImporting] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [zpJson, setZpJson] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleZPSync = async () => {
+    if (!zpJson.trim()) return;
+    setImporting(true);
+    try {
+      let data = JSON.parse(zpJson);
+      const riders = data.data || data.riders || (Array.isArray(data) ? data : []);
+      
+      const response = await fetch('/api/admin/sync-zp-categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({ riders })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Errore sincronizzazione');
+
+      alert(result.message);
+      setShowSyncModal(false);
+      setZpJson('');
+      fetchUsers();
+    } catch (err: any) {
+      alert('Errore JSON o Sincronizzazione: ' + err.message);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -193,12 +225,61 @@ const UserManagement: React.FC = () => {
             {importing ? 'Importing...' : 'Importa Rider CSV/JSON'}
           </button>
 
+          <button
+            onClick={() => setShowSyncModal(true)}
+            className="bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 text-orange-500 px-6 py-2.5 rounded-xl flex items-center gap-3 transition-all text-[10px] font-black uppercase tracking-widest"
+          >
+            <RefreshCw size={16} />
+            Sincronizza Categorie
+          </button>
+
           <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl flex items-center gap-3">
             <Shield size={18} className="text-red-500" />
             <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Security Level: Admin</span>
           </div>
         </div>
       </header>
+
+      {/* SYNC MODAL */}
+      {showSyncModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-zinc-800 flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-black italic text-white uppercase leading-none">ZwiftPower Sync</h3>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2">Incolla il JSON di api3.php?do=team_riders</p>
+              </div>
+              <button onClick={() => setShowSyncModal(false)} className="text-zinc-500 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <textarea
+                value={zpJson}
+                onChange={(e) => setZpJson(e.target.value)}
+                placeholder='Incolla qui il JSON... (es: {"data": [...]})'
+                className="w-full h-64 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs font-mono text-zinc-400 focus:border-orange-500 outline-none resize-none"
+              />
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowSyncModal(false)}
+                  className="flex-1 py-4 bg-zinc-800 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-zinc-700 transition-all"
+                >
+                  Annulla
+                </button>
+                <button
+                  onClick={handleZPSync}
+                  disabled={importing || !zpJson.trim()}
+                  className="flex-[2] py-4 bg-orange-500 text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-orange-400 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                >
+                  {importing ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
+                  Avvia Sincronizzazione
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold italic text-center">
