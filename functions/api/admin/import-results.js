@@ -10,6 +10,28 @@ export async function onRequestPost({ request, env }) {
             return errorRes("Configurazione Database non trovata.", 500);
         }
 
+        // 0. Auto-riparazione: Assicuriamoci che la tabella esista
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS division_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                round_id INTEGER NOT NULL,
+                league_key TEXT NOT NULL,
+                team_name TEXT,
+                rider_name TEXT,
+                zwid INTEGER, 
+                position INTEGER,
+                time REAL,
+                points_finish INTEGER DEFAULT 0,
+                points_fal INTEGER DEFAULT 0,
+                points_fts INTEGER DEFAULT 0,
+                points_total INTEGER DEFAULT 0,
+                is_inox BOOLEAN DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `).run();
+        
+        await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_div_res_round_key ON division_results(round_id, league_key)`).run();
+
         const body = await request.json();
         const { round_id, results } = body;
 
