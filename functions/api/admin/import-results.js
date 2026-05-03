@@ -32,6 +32,12 @@ export async function onRequestPost({ request, env }) {
         
         await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_div_res_round_key ON division_results(round_id, league_key)`).run();
 
+        // 0b. Auto-riparazione: Assicuriamoci che la tabella results abbia le colonne di dettaglio
+        try { await env.DB.prepare(`ALTER TABLE results ADD COLUMN points_finish INTEGER DEFAULT 0`).run(); } catch(e){}
+        try { await env.DB.prepare(`ALTER TABLE results ADD COLUMN points_fal INTEGER DEFAULT 0`).run(); } catch(e){}
+        try { await env.DB.prepare(`ALTER TABLE results ADD COLUMN points_fts INTEGER DEFAULT 0`).run(); } catch(e){}
+        try { await env.DB.prepare(`ALTER TABLE results ADD COLUMN position INTEGER`).run(); } catch(e){}
+
         const body = await request.json();
         const { round_id, results } = body;
 
