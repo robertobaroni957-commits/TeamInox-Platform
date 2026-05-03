@@ -221,6 +221,30 @@ const ZRLRoundManager: React.FC = () => {
     }
   };
 
+  const handleSyncLeagues = async () => {
+    setActionLoading(true);
+    setMessage(null);
+    try {
+      const seasonId = series?.external_season_id || 19;
+      const res = await fetch('/api/admin/sync-leagues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ season_id: seasonId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+        await loadData(); // Ricarichiamo per aggiornare leagueKeysFromDB
+      } else {
+        setMessage({ type: 'error', text: data.error || "Errore sincronizzazione" });
+      }
+    } catch {
+      setMessage({ type: 'error', text: "Errore di connessione" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -256,6 +280,15 @@ const ZRLRoundManager: React.FC = () => {
           >
             <HelpCircle size={16} className="text-orange-500" />
             Guida Scraper
+          </button>
+
+          <button 
+            onClick={handleSyncLeagues}
+            disabled={actionLoading}
+            className="bg-zinc-900 text-white px-4 py-2 rounded-xl border border-zinc-800 flex items-center gap-2 hover:bg-black transition-all text-xs font-bold uppercase disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={`${actionLoading ? 'animate-spin' : ''} text-blue-400`} />
+            Sincronizza Leghe
           </button>
           <div className="bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
             <p className="text-xs text-orange-600 font-bold uppercase">Stagione Attiva</p>
