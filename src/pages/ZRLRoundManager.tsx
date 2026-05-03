@@ -9,7 +9,10 @@ import {
   CheckCircle2,
   MapPin,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Zap,
+  Upload,
+  Trophy
 } from "lucide-react";
 import { roundService } from "../services/roundService";
 import type { Round, Series } from "../services/roundService";
@@ -21,9 +24,56 @@ const ZRLRoundManager: React.FC = () => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [totalSystemTeams, setTotalSystemTeams] = useState(0);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentRoundForImport, setCurrentRoundForImport] = useState<number | null>(null);
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
+  
+  // ... resto delle funzioni ...
+
+  const handleImportResults = (roundId: number) => {
+    setCurrentRoundForImport(roundId);
+    fileInputRef.current?.click();
+  };
+
+  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentRoundForImport) return;
+
+    setActionLoading(true);
+    setMessage(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const response = await fetch('/api/admin/import-results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            round_id: currentRoundForImport,
+            results: json.results
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          setMessage({ type: 'success', text: data.message });
+          await loadData();
+        } else {
+          setMessage({ type: 'error', text: data.error || "Errore importazione" });
+        }
+      } catch {
+        setMessage({ type: 'error', text: "File non valido" });
+      } finally {
+        setActionLoading(false);
+        e.target.value = '';
+        setCurrentRoundForImport(null);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const wtrlScheduleLink = React.useMemo(() => {
     if (!series?.name) return null;
@@ -112,6 +162,15 @@ const ZRLRoundManager: React.FC = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
+      {/* Hidden File Input per Import Risultati */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={onFileSelected} 
+        accept=".json" 
+        className="hidden" 
+      />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
@@ -239,6 +298,16 @@ const ZRLRoundManager: React.FC = () => {
                     <p className="text-lg font-black text-orange-500">{round.availability_count}</p>
                   </div>
                   <div className="h-10 w-px bg-gray-100 hidden lg:block" />
+                  
+                  <button 
+                    onClick={() => handleImportResults(round.id)}
+                    disabled={actionLoading}
+                    className="flex items-center gap-2 px-6 py-3 bg-orange-50 text-orange-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-orange-100 hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50"
+                  >
+                    <Trophy size={14} />
+                    Importa Risultati
+                  </button>
+
                   <button 
                     onClick={() => handleResetRound(round.id, round.name)}
                     disabled={actionLoading}

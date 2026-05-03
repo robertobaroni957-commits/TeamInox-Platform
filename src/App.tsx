@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Ranking from './pages/Ranking';
 import Events from './pages/Events';
+import ZRLDivisionResults from './pages/ZRLDivisionResults';
 import StravaCallback from './pages/StravaCallback';
 import ZRLOperations from './pages/admin/ZRLOperations';
 import ZRLRoundManager from './pages/ZRLRoundManager';
@@ -43,6 +44,7 @@ const App: React.FC = () => {
           <Route path="racing" element={<Racing />} />
           <Route path="ranking" element={<Ranking />} />
           <Route path="events" element={<Events />} />
+          <Route path="zrl-results" element={<ZRLDivisionResults />} />
           <Route path="strava-callback" element={<StravaCallback />} />
           <Route path="zrl-operations" element={
             <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>

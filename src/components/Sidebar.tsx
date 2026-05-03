@@ -102,9 +102,15 @@ const Sidebar: React.FC = () => {
               <div className="space-y-1 mb-3">
                 <div className="px-3 py-1 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em]">Zwift Racing League</div>
                 {isCaptain ? (
-                  <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+                  <>
+                    <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+                    <NavItem to="/zrl-results" icon={Star} label="ZRL Results" special="zrl" />
+                  </>
                 ) : (
-                  <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità ZRL" />
+                  <>
+                    <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità ZRL" />
+                    <NavItem to="/zrl-results" icon={Trophy} label="Classifiche ZRL" />
+                  </>
                 )}
               </div>
 
