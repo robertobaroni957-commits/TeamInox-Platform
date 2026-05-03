@@ -16,7 +16,8 @@ import {
   Code,
   HelpCircle,
   Copy,
-  Terminal
+  Terminal,
+  Database
 } from "lucide-react";
 import { roundService } from "../services/roundService";
 import type { Round, Series } from "../services/roundService";
@@ -32,6 +33,7 @@ const ZRLRoundManager: React.FC = () => {
   const [showScraperHelp, setShowScraperHelp] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inoxTeamsFileInputRef = useRef<HTMLInputElement>(null);
   const [currentRoundForImport, setCurrentRoundForImport] = useState<number | null>(null);
 
   const loadData = async () => {
@@ -121,9 +123,6 @@ const ZRLRoundManager: React.FC = () => {
     alert("Script ottimizzato copiato! Incollalo nella console di WTRL.");
   };
 
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
-  
   const handleImportResults = (roundId: number) => {
     setCurrentRoundForImport(roundId);
     fileInputRef.current?.click();
@@ -165,6 +164,43 @@ const ZRLRoundManager: React.FC = () => {
         setActionLoading(false);
         e.target.value = '';
         setCurrentRoundForImport(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImportInoxTeams = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setActionLoading(true);
+    setMessage(null);
+
+    const token = localStorage.getItem('inox_token');
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const response = await fetch('/api/admin/import-inox-teams', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ teams: json })
+        });
+        const data = await response.json();
+        if (data.success) {
+          setMessage({ type: 'success', text: data.message });
+          await loadData();
+        } else {
+          setMessage({ type: 'error', text: data.error || "Errore durante l'importazione" });
+        }
+      } catch (err) {
+        setMessage({ type: 'error', text: "File JSON non valido" });
+      } finally {
+        setActionLoading(false);
+        e.target.value = '';
       }
     };
     reader.readAsText(file);
@@ -242,7 +278,7 @@ const ZRLRoundManager: React.FC = () => {
       const data = await res.json();
       if (data.success) {
         setMessage({ type: 'success', text: data.message });
-        await loadData(); // Ricarichiamo per aggiornare leagueKeysFromDB
+        await loadData(); 
       } else {
         setMessage({ type: 'error', text: data.error || "Errore sincronizzazione" });
       }
@@ -252,6 +288,9 @@ const ZRLRoundManager: React.FC = () => {
       setActionLoading(false);
     }
   };
+
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
 
   if (loading) {
     return (
@@ -263,11 +302,18 @@ const ZRLRoundManager: React.FC = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
-      {/* Hidden File Input per Import Risultati */}
+      {/* Hidden File Inputs */}
       <input 
         type="file" 
         ref={fileInputRef} 
         onChange={onFileSelected} 
+        accept=".json" 
+        className="hidden" 
+      />
+      <input 
+        type="file" 
+        ref={inoxTeamsFileInputRef} 
+        onChange={handleImportInoxTeams} 
         accept=".json" 
         className="hidden" 
       />
@@ -291,20 +337,26 @@ const ZRLRoundManager: React.FC = () => {
           </button>
 
           <button 
+            onClick={() => inoxTeamsFileInputRef.current?.click()}
+            disabled={actionLoading}
+            className="bg-zinc-900 text-white px-4 py-2 rounded-xl border border-zinc-800 flex items-center gap-2 hover:bg-black transition-all text-xs font-bold uppercase disabled:opacity-50"
+          >
+            <Database size={16} className="text-cyan-400" />
+            Importa Leghe JSON
+          </button>
+
+          <button 
             onClick={handleSyncLeagues}
             disabled={actionLoading}
             className="bg-zinc-900 text-white px-4 py-2 rounded-xl border border-zinc-800 flex items-center gap-2 hover:bg-black transition-all text-xs font-bold uppercase disabled:opacity-50"
           >
             <RefreshCw size={16} className={`${actionLoading ? 'animate-spin' : ''} text-blue-400`} />
-            Sincronizza Leghe
+            Sync WTRL
           </button>
+          
           <div className="bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
             <p className="text-xs text-orange-600 font-bold uppercase">Stagione Attiva</p>
             <p className="font-bold text-orange-900">{series?.name || "Nessuna"}</p>
-          </div>
-          <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 text-center">
-            <p className="text-xs text-blue-600 font-bold uppercase">ID WTRL</p>
-            <p className="font-bold text-blue-900">{series?.external_season_id || "-"}</p>
           </div>
         </div>
       </div>
