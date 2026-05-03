@@ -27,45 +27,84 @@ const ZRLRoundManager: React.FC = () => {
   const [series, setSeries] = useState<Series | null>(null);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [totalSystemTeams, setTotalSystemTeams] = useState(0);
+  const [leagueKeysFromDB, setLeagueKeysFromDB] = useState<string[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showScraperHelp, setShowScraperHelp] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentRoundForImport, setCurrentRoundForImport] = useState<number | null>(null);
 
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await roundService.getStatus();
+      if (data.success) {
+        setSeries(data.series);
+        setRounds(data.rounds);
+        setTotalSystemTeams(data.total_system_teams);
+        
+        // Recuperiamo le leghe uniche dei team INOX dal database
+        const teamsRes = await fetch('/api/teams');
+        const teamsData = await teamsRes.json();
+        if (teamsData.success) {
+          const keys = teamsData.teams
+            .filter((t: any) => (t.name.toUpperCase().includes("INOX") || t.club_id === 'cef70cde-9149-43a2-b3ae-187643a44703') && t.league)
+            .map((t: any) => {
+              const divLetter = t.category || 'A';
+              const divNum = t.division_number || 0;
+              return `${t.league}0${divLetter}${divNum}0`;
+            });
+          setLeagueKeysFromDB([...new Set(keys)] as string[]);
+        }
+      } else {
+        setMessage({ type: 'error', text: data.error || "Errore nel caricamento dati" });
+      }
+    } catch {
+      setMessage({ type: 'error', text: "Errore di connessione al server" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
   const copyScraperScript = (roundId: number, roundName: string) => {
     const season = series?.external_season_id || 19;
     const match = roundName.match(/\d+/);
     const raceNum = match ? parseInt(match[0]) : 1;
+    
+    // Se non abbiamo leghe nel DB, usiamo un fallback o un array vuoto
+    const keysArrayStr = JSON.stringify(leagueKeysFromDB.length > 0 ? leagueKeysFromDB : ["2370C30"]);
 
     const script = `(async () => {
   const season = ${season};
   const race = ${raceNum};
   const round_id = ${roundId};
+  const leagueKeys = ${keysArrayStr};
 
   console.log("%c INOX RESULTS SCRAPER ", "background: #fc6719; color: white; font-weight: bold; padding: 2px 5px;");
-  
-  const teamListRes = await fetch(\`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&action=teamlist\`);
-  const teamListData = await teamListRes.json();
-  const inoxTeams = teamListData.payload.filter(t => 
-    t.teamname.toUpperCase().includes("INOX") || 
-    t.clubId === "cef70cde-9149-43a2-b3ae-187643a44703"
-  );
-  
-  const leagueKeys = inoxTeams.map(t => {
-     const divLetter = t.division || 'A';
-     const divNum = t.divnum || 0;
-     return \`\${t.league}0\${divLetter}\${divNum}0\`;
-  });
+  console.log("Divisioni da scaricare:", leagueKeys);
 
-  const uniqueKeys = [...new Set(leagueKeys)];
   const finalResults = [];
-  for (const key of uniqueKeys) {
+  for (const key of leagueKeys) {
+    console.log(\`Scarico risultati per \${key}...\`);
     try {
       const res = await fetch(\`https://www.wtrl.racing/api/zrl/results/\${season}/\${key}/\${race}\`);
       const data = await res.json();
-      if (data.success) finalResults.push({ key, data });
-    } catch (e) { console.error(\`Errore su \${key}:\`, e); }
+      if (data.success && data.payload && data.payload.length > 0) {
+        finalResults.push({ key, data });
+        console.log(\`✅ \${key}: \${data.payload.length} team trovati\`);
+      } else {
+        console.warn(\`⚠️ \${key}: Nessun risultato trovato per Season \${season}, Race \${race}\`);
+      }
+    } catch (e) { console.error(\`❌ Errore su \${key}:\`, e); }
+  }
+
+  if (finalResults.length === 0) {
+    alert("ATTENZIONE: Nessun risultato trovato! Verifica che il numero gara (Race) e la Stagione siano corretti su WTRL.");
+    return;
   }
 
   const output = { round_id, results: finalResults };
@@ -75,18 +114,16 @@ const ZRLRoundManager: React.FC = () => {
   a.href = url;
   a.download = \`zrl_results_s\${season}_r\${race}.json\`;
   a.click();
-  console.log("%c FATTO! Carica il file scaricato.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;");
+  console.log("%c SUCCESS %c File scaricato con \${finalResults.length} divisioni.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;", "");
 })();`;
 
     navigator.clipboard.writeText(script);
-    alert("Script copiato! Incollalo nella console di WTRL.");
+    alert("Script ottimizzato copiato! Incollalo nella console di WTRL.");
   };
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
   
-  // ... resto delle funzioni ...
-
   const handleImportResults = (roundId: number) => {
     setCurrentRoundForImport(roundId);
     fileInputRef.current?.click();
@@ -137,28 +174,6 @@ const ZRLRoundManager: React.FC = () => {
     const round = roundMatch ? roundMatch[1] : '1';
     return `https://www.wtrl.racing/zwift-racing-league/schedule/${year}/r${round}/`;
   }, [series?.name]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await roundService.getStatus();
-      if (data.success) {
-        setSeries(data.series);
-        setRounds(data.rounds);
-        setTotalSystemTeams(data.total_system_teams);
-      } else {
-        setMessage({ type: 'error', text: data.error || "Errore nel caricamento dati" });
-      }
-    } catch {
-      setMessage({ type: 'error', text: "Errore di connessione al server" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const handleInitSeason = async (e: React.FormEvent) => {
     e.preventDefault();
