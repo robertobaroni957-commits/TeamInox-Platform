@@ -103,13 +103,15 @@ export async function onRequestPost({ request, env }) {
         }
 
         // 4. Sincronizzazione tabella 'results' per i nostri atleti
+        // Inseriamo solo se lo zwid esiste nella tabella athletes per evitare errori di Foreign Key
         await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(round_id).run();
         
         await env.DB.prepare(`
             INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
-            SELECT round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, 'wtrl'
-            FROM division_results
-            WHERE round_id = ? AND is_inox = 1 AND zwid > 0
+            SELECT dr.round_id, dr.zwid, dr.time, dr.points_total, dr.points_finish, dr.points_fal, dr.points_fts, dr.position, 'wtrl'
+            FROM division_results dr
+            JOIN athletes a ON dr.zwid = a.zwid
+            WHERE dr.round_id = ? AND dr.is_inox = 1 AND dr.zwid > 0
         `).bind(round_id).run();
 
         return new Response(JSON.stringify({ 
