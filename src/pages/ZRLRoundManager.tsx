@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { 
   Calendar, 
   RefreshCw, 
@@ -12,7 +12,11 @@ import {
   ExternalLink,
   Zap,
   Upload,
-  Trophy
+  Trophy,
+  Code,
+  HelpCircle,
+  Copy,
+  Terminal
 } from "lucide-react";
 import { roundService } from "../services/roundService";
 import type { Round, Series } from "../services/roundService";
@@ -24,9 +28,59 @@ const ZRLRoundManager: React.FC = () => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [totalSystemTeams, setTotalSystemTeams] = useState(0);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showScraperHelp, setShowScraperHelp] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentRoundForImport, setCurrentRoundForImport] = useState<number | null>(null);
+
+  const copyScraperScript = (roundId: number, roundName: string) => {
+    const season = series?.external_season_id || 19;
+    const match = roundName.match(/\d+/);
+    const raceNum = match ? parseInt(match[0]) : 1;
+
+    const script = `(async () => {
+  const season = ${season};
+  const race = ${raceNum};
+  const round_id = ${roundId};
+
+  console.log("%c INOX RESULTS SCRAPER ", "background: #fc6719; color: white; font-weight: bold; padding: 2px 5px;");
+  
+  const teamListRes = await fetch(\`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&action=teamlist\`);
+  const teamListData = await teamListRes.json();
+  const inoxTeams = teamListData.payload.filter(t => 
+    t.teamname.toUpperCase().includes("INOX") || 
+    t.clubId === "cef70cde-9149-43a2-b3ae-187643a44703"
+  );
+  
+  const leagueKeys = inoxTeams.map(t => {
+     const divLetter = t.division || 'A';
+     const divNum = t.divnum || 0;
+     return \`\${t.league}0\${divLetter}\${divNum}0\`;
+  });
+
+  const uniqueKeys = [...new Set(leagueKeys)];
+  const finalResults = [];
+  for (const key of uniqueKeys) {
+    try {
+      const res = await fetch(\`https://www.wtrl.racing/api/zrl/results/\${season}/\${key}/\${race}\`);
+      const data = await res.json();
+      if (data.success) finalResults.push({ key, data });
+    } catch (e) { console.error(\`Errore su \${key}:\`, e); }
+  }
+
+  const output = { round_id, results: finalResults };
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = \`zrl_results_s\${season}_r\${race}.json\`;
+  a.click();
+  console.log("%c FATTO! Carica il file scaricato.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;");
+})();`;
+
+    navigator.clipboard.writeText(script);
+    alert("Script copiato! Incollalo nella console di WTRL.");
+  };
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
@@ -181,6 +235,13 @@ const ZRLRoundManager: React.FC = () => {
           <p className="text-gray-500">Inizializza stagioni intere importando i dati ufficiali WTRL.</p>
         </div>
         <div className="flex gap-4">
+          <button 
+            onClick={() => setShowScraperHelp(!showScraperHelp)}
+            className="bg-zinc-900 text-white px-4 py-2 rounded-xl border border-zinc-800 flex items-center gap-2 hover:bg-black transition-all text-xs font-bold uppercase"
+          >
+            <HelpCircle size={16} className="text-orange-500" />
+            Guida Scraper
+          </button>
           <div className="bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
             <p className="text-xs text-orange-600 font-bold uppercase">Stagione Attiva</p>
             <p className="font-bold text-orange-900">{series?.name || "Nessuna"}</p>
@@ -201,6 +262,39 @@ const ZRLRoundManager: React.FC = () => {
         }`}>
           {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertTriangle size={20} />}
           <p className="font-medium">{message.text}</p>
+        </div>
+      )}
+
+      {/* Scraper Help Section */}
+      {showScraperHelp && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 text-white space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-500/20 rounded-lg text-orange-500">
+                <Terminal size={24} />
+              </div>
+              <h2 className="text-xl font-black italic uppercase tracking-tight">Guida Rapida Scraper WTRL</h2>
+            </div>
+            <button onClick={() => setShowScraperHelp(false)} className="text-zinc-500 hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest">Chiudi</button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <span className="text-orange-500 font-black italic text-2xl">01</span>
+              <p className="text-sm font-bold uppercase tracking-tight">Vai su WTRL</p>
+              <p className="text-xs text-zinc-400">Apri <a href="https://www.wtrl.racing" target="_blank" rel="noreferrer" className="text-orange-400 hover:underline">wtrl.racing</a> e assicurati di aver effettuato l'accesso.</p>
+            </div>
+            <div className="space-y-2">
+              <span className="text-orange-500 font-black italic text-2xl">02</span>
+              <p className="text-sm font-bold uppercase tracking-tight">Copia lo Script</p>
+              <p className="text-xs text-zinc-400">Clicca sul tasto <Code size={12} className="inline mx-1" /> <strong>Copia Script</strong> della gara che ti interessa qui sotto.</p>
+            </div>
+            <div className="space-y-2">
+              <span className="text-orange-500 font-black italic text-2xl">03</span>
+              <p className="text-sm font-bold uppercase tracking-tight">Esegui in Console</p>
+              <p className="text-xs text-zinc-400">Premi F12, vai in Console, incolla lo script e premi Invio. Scaricherai un file .json da importare qui.</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -299,6 +393,15 @@ const ZRLRoundManager: React.FC = () => {
                   </div>
                   <div className="h-10 w-px bg-gray-100 hidden lg:block" />
                   
+                  <button 
+                    onClick={() => copyScraperScript(round.id, round.name)}
+                    className="flex items-center gap-2 px-4 py-3 bg-zinc-900 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-xl border border-zinc-800 hover:text-orange-500 hover:border-orange-500/50 transition-all"
+                    title="Copia Script Scraper per Console"
+                  >
+                    <Code size={14} />
+                    Copia Script
+                  </button>
+
                   <button 
                     onClick={() => handleImportResults(round.id)}
                     disabled={actionLoading}
