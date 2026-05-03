@@ -136,13 +136,17 @@ const ZRLRoundManager: React.FC = () => {
     setActionLoading(true);
     setMessage(null);
 
+    const token = localStorage.getItem('inox_token');
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
         const response = await fetch('/api/admin/import-results', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             round_id: currentRoundForImport,
             results: json.results
@@ -225,10 +229,14 @@ const ZRLRoundManager: React.FC = () => {
     setActionLoading(true);
     setMessage(null);
     try {
+      const token = localStorage.getItem('inox_token');
       const seasonId = series?.external_season_id || 19;
       const res = await fetch('/api/admin/sync-leagues', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ season_id: seasonId })
       });
       const data = await res.json();
