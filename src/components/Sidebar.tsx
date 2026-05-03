@@ -101,6 +101,9 @@ const Sidebar: React.FC = () => {
               {/* ZRL Section */}
               <div className="space-y-1 mb-3">
                 <div className="px-3 py-1 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em]">Zwift Racing League</div>
+                {isAdmin && (
+                  <NavItem to="/zrl-round-manager" icon={Settings} label="ZRL Season Manager" special="zrl" />
+                )}
                 {isCaptain ? (
                   <>
                     <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
