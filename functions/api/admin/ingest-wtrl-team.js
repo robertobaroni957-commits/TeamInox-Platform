@@ -30,15 +30,20 @@ export async function onRequestPost({ request, env }) {
 
     const category = data.meta.category || compMeta.division || '';
     const division = data.meta.division || '';
+    
+    // Estrazione Capitano
+    const administrators = data.meta.administrators || {};
+    const captain = administrators.captain || {};
+    const captain_id = captain.profileId ? parseInt(captain.profileId) : null;
 
     // 1. Upsert del TEAM
     await env.DB.prepare(`
       INSERT INTO teams (
         wtrl_team_id, name, category, division, division_number, tttid, 
         club_id, club_name, gender, league, zrldivision, 
-        is_dev, rounds, member_count
+        is_dev, rounds, member_count, captain_id
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(wtrl_team_id) DO UPDATE SET
         name = excluded.name,
         category = excluded.category,
@@ -52,7 +57,8 @@ export async function onRequestPost({ request, env }) {
         zrldivision = excluded.zrldivision,
         is_dev = excluded.is_dev,
         rounds = excluded.rounds,
-        member_count = excluded.member_count
+        member_count = excluded.member_count,
+        captain_id = excluded.captain_id
     `).bind(
       trc,
       teamMeta.name,
@@ -67,7 +73,8 @@ export async function onRequestPost({ request, env }) {
       compMeta.division || '', 
       teamMeta.isdev ? 1 : 0,
       JSON.stringify(compMeta.registered || []),
-      parseInt(data.meta.memberCount) || 0
+      parseInt(data.meta.memberCount) || 0,
+      captain_id
     ).run();
 
     // Recuperiamo l'ID interno per il collegamento dei membri
@@ -75,6 +82,22 @@ export async function onRequestPost({ request, env }) {
     const internalTeamId = teamRecord.id;
 
     const statements = [];
+    
+    // Se c'è un capitano, assicuriamoci che sia nella tabella athletes
+    if (captain_id) {
+      statements.push(env.DB.prepare(`
+        INSERT INTO athletes (zwid, name, role, profile_id, wtrl_user_id)
+        VALUES (?, ?, 'captain', ?, ?)
+        ON CONFLICT(zwid) DO UPDATE SET
+          name = CASE WHEN athletes.name = '' OR athletes.name IS NULL THEN excluded.name ELSE athletes.name END,
+          role = CASE WHEN athletes.role = 'athlete' THEN 'captain' ELSE athletes.role END
+      `).bind(
+        captain_id, 
+        `${captain.firstName || ''} ${captain.lastName || ''}`.trim() || 'Captain',
+        captain_id,
+        captain.userId || ''
+      ));
+    }
     // Pulizia membri esistenti per questo team per evitare duplicati o residui
     statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
