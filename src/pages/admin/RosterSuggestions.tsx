@@ -19,12 +19,23 @@ const RosterSuggestions: React.FC = () => {
   const [confirmedProposals, setConfirmedProposals] = useState<SuggestedTeam[]>([]); // State for confirmed proposals
   const [validationErrors, setValidationErrors] = useState<string[]>([]); // State for validation errors
 
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSlot, setSelectedSlot] = useState<string>('');
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await api.getRosterSuggestions();
         if (data.success) {
           setSuggestions(data.viableTeams);
+          // Populate filter options
+          const uniqueCategories = [...new Set(data.viableTeams.map(s => s.category))].sort();
+          const uniqueSlots = [...new Set(data.viableTeams.map(s => s.slot_name))].sort();
+          setAvailableCategories(uniqueCategories);
+          setAvailableSlots(uniqueSlots);
         } else {
           setError(data.error || 'Errore durante il recupero dei suggerimenti');
         }
@@ -122,6 +133,12 @@ const RosterSuggestions: React.FC = () => {
     </div>
   );
 
+  // Apply filters to suggestions
+  const filteredSuggestions = suggestions.filter(suggestion =>
+    (selectedCategory === '' || suggestion.category === selectedCategory) &&
+    (selectedSlot === '' || suggestion.slot_name === selectedSlot)
+  );
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-8 gap-6">
@@ -143,6 +160,37 @@ const RosterSuggestions: React.FC = () => {
         </div>
       </header>
 
+      {/* Filter Controls */}
+      <div className="flex flex-wrap gap-6 mb-8 items-center p-4 bg-zinc-900/50 rounded-3xl border border-zinc-800">
+        {/* Category Filter */}
+        <div className="flex flex-col">
+            <label htmlFor="categoryFilter" className="text-xs font-bold text-zinc-400 uppercase mb-1">Filtra per Categoria</label>
+            <select 
+                id="categoryFilter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-zinc-950 text-white px-3 py-2 rounded-lg border border-zinc-800 focus:ring-orange-500 focus:border-orange-500 shadow-md"
+            >
+                <option value="">Tutte le Categorie</option>
+                {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+        </div>
+
+        {/* Slot Filter */}
+        <div className="flex flex-col">
+            <label htmlFor="slotFilter" className="text-xs font-bold text-zinc-400 uppercase mb-1">Filtra per Slot Orario</label>
+            <select 
+                id="slotFilter"
+                value={selectedSlot}
+                onChange={(e) => setSelectedSlot(e.target.value)}
+                className="bg-zinc-950 text-white px-3 py-2 rounded-lg border border-zinc-800 focus:ring-orange-500 focus:border-orange-500 shadow-md"
+            >
+                <option value="">Tutti gli Slot</option>
+                {availableSlots.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+            </select>
+        </div>
+      </div>
+
       {error && (
         <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex items-center gap-3">
           <AlertCircle size={20} />
@@ -150,7 +198,7 @@ const RosterSuggestions: React.FC = () => {
         </div>
       )}
 
-      {suggestions.length === 0 ? (
+      {filteredSuggestions.length === 0 ? (
         <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 p-20 text-center">
           <Users className="mx-auto text-zinc-800 mb-4" size={48} />
           <p className="text-zinc-600 font-black uppercase italic tracking-widest text-xl">Nessun dato disponibile</p>
@@ -158,7 +206,7 @@ const RosterSuggestions: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {suggestions.map((team, idx) => (
+          {filteredSuggestions.map((team, idx) => (
             <section key={idx} className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden hover:border-orange-500/50 transition-all group">
               <div className="p-6 bg-zinc-800/50 border-b border-zinc-700 flex justify-between items-center">
                 <div className="flex items-center gap-4">
