@@ -29,6 +29,7 @@ const AdminDashboard: React.FC = () => {
     series: 0,
     events: 0
   });
+  const [series, setSeries] = useState<any[]>([]);
   const [insights, setInsights] = useState({
     missingCategory: 0,
     missingEmail: 0,
@@ -41,16 +42,18 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [users, teams, series, events] = await Promise.all([
+        const [users, teams, seriesData, events] = await Promise.all([
           api.listUsers(),
           api.getTeams(),
           api.getSeries(),
           api.getEvents()
         ]);
+        
+        setSeries(seriesData);
         setStats({
           users: users.length,
           teams: teams.length,
-          series: series.length,
+          series: seriesData.length,
           events: events.length
         });
 
