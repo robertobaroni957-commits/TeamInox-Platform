@@ -231,8 +231,16 @@ const ZRLOperations: React.FC = () => {
   const highlightedIndices = categoriesPresent.map(cat => {
     const nextIdx = races.findIndex(r => r.category === cat && r.date && new Date(r.date + 'T23:59:59') >= new Date());
     if (nextIdx !== -1) return nextIdx;
-    // DEMO: se il round è finito, evidenziamo la prima gara di quella categoria per mostrare la grafica
-    return races.findIndex(r => r.category === cat);
+    
+    // Se il round è terminato, evidenziamo l'ULTIMA gara di quella categoria
+    let lastIdx = -1;
+    for (let i = races.length - 1; i >= 0; i--) {
+      if (races[i].category === cat) {
+        lastIdx = i;
+        break;
+      }
+    }
+    return lastIdx;
   }).filter(idx => idx !== -1);
 
   const steps = [
