@@ -24,6 +24,9 @@ const RosterSuggestions: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  
+  // State for total preferences
+  const [totalPreferences, setTotalPreferences] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +39,11 @@ const RosterSuggestions: React.FC = () => {
           const uniqueSlots = [...new Set(data.viableTeams.map(s => s.slot_name))].sort();
           setAvailableCategories(uniqueCategories);
           setAvailableSlots(uniqueSlots);
+          
+          // Capture total_expressed_preferences from the API response
+          if (data.total_expressed_preferences !== undefined) {
+            setTotalPreferences(data.total_expressed_preferences);
+          }
         } else {
           setError(data.error || 'Errore durante il recupero dei suggerimenti');
         }
@@ -156,7 +164,8 @@ const RosterSuggestions: React.FC = () => {
         </div>
         <div className="bg-zinc-900 px-6 py-4 rounded-2xl border border-zinc-800">
            <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Totale Preferenze</span>
-           <span className="text-2xl font-black italic text-orange-500">{(suggestions as any).total_expressed_preferences || 0}</span>
+           {/* Correctly display total preferences from the new state variable */}
+           <span className="text-2xl font-black italic text-orange-500">{totalPreferences}</span>
         </div>
       </header>
 
