@@ -305,8 +305,56 @@ const ZRLOperations: React.FC = () => {
                     <div className="bg-zinc-900/30 p-4 rounded-xl border border-zinc-800 space-y-3">
                       <div className="flex items-center gap-2 text-[#fc6719]"><RefreshCw size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Remote Sync</span></div>
                       <div className="grid grid-cols-2 gap-2">
-                        <button onClick={handleSyncRaces} disabled={loading} className="bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-[9px]">
-                          <Calendar size={14} /> Auto Sync
+                        <button 
+                          onClick={() => {
+                            const script = `(async () => {
+  const season = prompt("Inserisci ID Stagione WTRL (es. 19):", "${wtrlId || '19'}");
+  if (!season) return;
+  
+  const config = [
+    { label: 'A', url: \`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&category=A&action=schedule\` },
+    { label: 'C', url: \`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&category=C&action=schedule\` }
+  ];
+  
+  const unifiedData = {
+    version: "2.0",
+    seasonId: season,
+    categories: {}
+  };
+  
+  console.log("%c--- INIZIO DOWNLOAD MULTI-CATEGORIA ---", "color: #00ff00; font-weight: bold;");
+  
+  for (const item of config) {
+    console.log(\`Recupero dati per Categoria \${item.label}...\`);
+    try {
+      const res = await fetch(item.url);
+      const data = await res.json();
+      unifiedData.categories[item.label] = data.payload || (Array.isArray(data) ? data : []);
+      console.log(\`✅ Categoria \${item.label} scaricata con successo.\`);
+    } catch (e) {
+      console.error(\`❌ Errore per Categoria \${item.label}:\`, e);
+    }
+  }
+  
+  const finalJson = JSON.stringify(unifiedData, null, 2);
+  const blob = new Blob([finalJson], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = \`zrl_UNIFIED_schedule_season_\${season}.json\`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  console.log("%c--- OPERAZIONE COMPLETATA ---", "color: #00ff00; font-weight: bold;");
+  alert("File JSON unificato scaricato! Ora incollane il contenuto nell'app.");
+})();`;
+                            navigator.clipboard.writeText(script);
+                            setMessage({ type: 'success', text: "Script 'Race Schedule' copiato! Incollalo nella console WTRL." });
+                          }} 
+                          className="bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all text-[9px]"
+                        >
+                          <Calendar size={14} /> Race Schedule
                         </button>
                         <button 
                             onClick={() => setHtmlImport('')} // Simple way to clear or toggle
