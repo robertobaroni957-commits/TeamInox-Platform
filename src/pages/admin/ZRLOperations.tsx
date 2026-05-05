@@ -226,10 +226,14 @@ const ZRLOperations: React.FC = () => {
     setRaces(races.filter((_, i) => i !== index));
   };
 
-  // Calcolo della prossima gara
-  const nextRaceIndex = races.findIndex(r => r.date && new Date(r.date + 'T23:59:59') >= new Date());
-  // Se non ci sono gare future (round terminato), evidenziamo la prima per scopi grafici (DEMO)
-  const highlightedIdx = nextRaceIndex !== -1 ? nextRaceIndex : (races.length > 0 ? 0 : -1);
+  // Calcolo della prossima gara per ogni categoria presente (es. A e C)
+  const categoriesPresent = [...new Set(races.map(r => r.category))];
+  const highlightedIndices = categoriesPresent.map(cat => {
+    const nextIdx = races.findIndex(r => r.category === cat && r.date && new Date(r.date + 'T23:59:59') >= new Date());
+    if (nextIdx !== -1) return nextIdx;
+    // DEMO: se il round è finito, evidenziamo la prima gara di quella categoria per mostrare la grafica
+    return races.findIndex(r => r.category === cat);
+  }).filter(idx => idx !== -1);
 
   const steps = [
     { id: 1, title: 'Setup Round', icon: Settings, desc: 'ID Round WTRL' },
@@ -454,7 +458,7 @@ const ZRLOperations: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                     {races.map((race, idx) => {
-                      const isNext = idx === highlightedIdx;
+                      const isNext = highlightedIndices.includes(idx);
                       return (
                         <motion.div 
                           key={idx} 
@@ -462,13 +466,13 @@ const ZRLOperations: React.FC = () => {
                           onClick={() => setSelectedRace(race)}
                           className={`p-4 rounded-2xl border transition-all group relative overflow-hidden cursor-pointer ${
                             isNext 
-                              ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_20px_rgba(252,103,25,0.15)] ring-1 ring-[#fc6719]/50" 
+                              ? "bg-zinc-900 border-[#22c55e] shadow-[0_0_20px_rgba(34,197,94,0.15)] ring-1 ring-[#22c55e]/50" 
                               : "bg-zinc-900/40 border-zinc-800/60 hover:border-[#fc6719]/40"
                           }`}
                         >
                           {/* Glow effect for Next Race */}
                           {isNext && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#fc6719]/10 to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#22c55e]/10 to-transparent pointer-events-none" />
                           )}
 
                           <div className="flex justify-between items-center relative z-10">
@@ -481,7 +485,7 @@ const ZRLOperations: React.FC = () => {
                                 <motion.span 
                                   animate={{ opacity: [0.7, 1, 0.7] }}
                                   transition={{ duration: 1.5, repeat: Infinity }}
-                                  className="bg-white text-black px-2 py-0.5 rounded-md text-[9px] font-black uppercase shadow-lg border-2 border-[#fc6719]"
+                                  className="bg-white text-black px-2 py-0.5 rounded-md text-[9px] font-black uppercase shadow-lg border-2 border-[#22c55e]"
                                 >
                                   Next
                                 </motion.span>
@@ -502,11 +506,11 @@ const ZRLOperations: React.FC = () => {
                             <p className="text-zinc-500 text-[9px] font-bold uppercase mt-1">{race.date || 'TBD'}</p>
                           </div>
                           <div className="grid grid-cols-2 gap-1.5 relative z-10 mt-4">
-                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#fc6719]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
                               <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Dist</p>
                               <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.distance}k</p>
                             </div>
-                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#fc6719]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
                               <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Elev</p>
                               <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.elevation}m</p>
                             </div>
