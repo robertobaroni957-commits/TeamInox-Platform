@@ -226,6 +226,11 @@ const ZRLOperations: React.FC = () => {
     setRaces(races.filter((_, i) => i !== index));
   };
 
+  // Calcolo della prossima gara
+  const nextRaceIndex = races.findIndex(r => r.date && new Date(r.date + 'T23:59:59') >= new Date());
+  // Se non ci sono gare future (round terminato), evidenziamo la prima per scopi grafici (DEMO)
+  const highlightedIdx = nextRaceIndex !== -1 ? nextRaceIndex : (races.length > 0 ? 0 : -1);
+
   const steps = [
     { id: 1, title: 'Setup Round', icon: Settings, desc: 'ID Round WTRL' },
     { id: 2, title: 'Disponibilità', icon: ClipboardCheck, desc: 'Monitoraggio RSVP' },
@@ -448,44 +453,67 @@ const ZRLOperations: React.FC = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {races.map((race, idx) => (
-                      <motion.div 
-                        key={idx} 
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => setSelectedRace(race)}
-                        className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60 space-y-3 cursor-pointer hover:border-[#fc6719]/40 transition-all group relative overflow-hidden"
-                      >
-                        <div className="flex justify-between items-center relative z-10">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[8px] font-black uppercase text-[#fc6719] tracking-widest">G{idx + 1}</span>
-                            <span className="bg-[#fc6719]/10 text-[#fc6719] px-1.5 py-0.5 rounded text-[7px] font-black uppercase border border-[#fc6719]/20">Cat {race.category}</span>
+                    {races.map((race, idx) => {
+                      const isNext = idx === highlightedIdx;
+                      return (
+                        <motion.div 
+                          key={idx} 
+                          whileHover={{ scale: 1.02 }}
+                          onClick={() => setSelectedRace(race)}
+                          className={`p-4 rounded-2xl border transition-all group relative overflow-hidden cursor-pointer ${
+                            isNext 
+                              ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_20px_rgba(252,103,25,0.15)] ring-1 ring-[#fc6719]/50" 
+                              : "bg-zinc-900/40 border-zinc-800/60 hover:border-[#fc6719]/40"
+                          }`}
+                        >
+                          {/* Glow effect for Next Race */}
+                          {isNext && (
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#fc6719]/10 to-transparent pointer-events-none" />
+                          )}
+
+                          <div className="flex justify-between items-center relative z-10">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[11px] font-black uppercase tracking-widest ${isNext ? "text-white" : "text-[#fc6719]"}`}>G{idx + 1}</span>
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border-2 shadow-md ${
+                                isNext ? "bg-white text-black border-white" : "bg-[#fc6719] text-black border-[#fc6719]"
+                              }`}>Cat {race.category}</span>
+                              {isNext && (
+                                <motion.span 
+                                  animate={{ opacity: [0.7, 1, 0.7] }}
+                                  transition={{ duration: 1.5, repeat: Infinity }}
+                                  className="bg-white text-black px-2 py-0.5 rounded-md text-[9px] font-black uppercase shadow-lg border-2 border-[#fc6719]"
+                                >
+                                  Next
+                                </motion.span>
+                              )}
+                            </div>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeRace(idx);
+                              }} 
+                              className="text-zinc-700 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={12}/>
+                            </button>
                           </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeRace(idx);
-                            }} 
-                            className="text-zinc-700 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 size={12}/>
-                          </button>
-                        </div>
-                        <div className="relative z-10">
-                          <h4 className="text-xs font-black italic uppercase truncate text-white leading-tight">{race.name}</h4>
-                          <p className="text-zinc-600 text-[8px] font-bold uppercase mt-0.5">{race.date || 'TBD'}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5 relative z-10">
-                          <div className="bg-black/20 p-1.5 rounded-lg border border-zinc-800/40">
-                            <p className="text-[6px] text-zinc-700 font-black uppercase">Dist</p>
-                            <p className="text-[10px] text-zinc-400 font-bold">{race.distance}k</p>
+                          <div className="relative z-10 mt-3">
+                            <h4 className="text-sm font-black italic uppercase truncate text-white leading-tight">{race.name}</h4>
+                            <p className="text-zinc-500 text-[9px] font-bold uppercase mt-1">{race.date || 'TBD'}</p>
                           </div>
-                          <div className="bg-black/20 p-1.5 rounded-lg border border-zinc-800/40">
-                            <p className="text-[6px] text-zinc-700 font-black uppercase">Elev</p>
-                            <p className="text-[10px] text-zinc-400 font-bold">{race.elevation}m</p>
+                          <div className="grid grid-cols-2 gap-1.5 relative z-10 mt-4">
+                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#fc6719]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                              <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Dist</p>
+                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.distance}k</p>
+                            </div>
+                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#fc6719]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                              <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Elev</p>
+                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.elevation}m</p>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
