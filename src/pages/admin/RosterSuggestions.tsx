@@ -16,6 +16,8 @@ const RosterSuggestions: React.FC = () => {
   const [suggestions, setSuggestions] = useState<SuggestedTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmedProposals, setConfirmedProposals] = useState<SuggestedTeam[]>([]); // State for confirmed proposals
+  const [validationErrors, setValidationErrors] = useState<string[]>([]); // State for validation errors
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,6 +36,83 @@ const RosterSuggestions: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  // Handler to add a selected team proposal to the confirmed list, allowing up to 2 per slot/category
+  const handleConfigureTeam = (selectedTeam: SuggestedTeam) => {
+    // Count how many confirmed proposals already exist for the same slot and category.
+    const countForSlotAndCategory = confirmedProposals.filter(
+      (proposal) => proposal.slot_id === selectedTeam.slot_id && proposal.category === selectedTeam.category
+    ).length;
+
+    // If we can still add another team for this slot/category (up to 2)
+    if (countForSlotAndCategory < 2) {
+      setConfirmedProposals([...confirmedProposals, selectedTeam]);
+      console.log(`Proposal confirmed for Slot: ${selectedTeam.slot_name}, Category: ${selectedTeam.category}. Total confirmed for this slot/cat: ${countForSlotAndCategory + 1}`);
+      // Optionally, provide user feedback here, e.g., a toast notification
+    } else {
+      console.log(`Cannot add more than 2 teams for Slot: ${selectedTeam.slot_name}, Category: ${selectedTeam.category}. Already have ${countForSlotAndCategory} confirmed.`);
+      // Optionally, provide user feedback here, e.g., a toast notification indicating the limit has been reached.
+    }
+  };
+
+  // Function to validate all confirmed proposals against the rules
+  const validateRosters = (): string[] => {
+    const errors: string[] = [];
+    // Map to track runner assignments: Map<runnerId, Map<category, count>>
+    const runnerCategoryAssignments = new Map<number, Map<string, number>>(); 
+
+    // Rule 1: Min/Max runners per team (4-12)
+    confirmedProposals.forEach((proposal, index) => {
+      const teamIdentifier = `Proposta ${index + 1} (Slot: ${proposal.slot_name}, Cat: ${proposal.category})`;
+      if (proposal.athletes.length < 4) {
+        errors.push(`${teamIdentifier}: Minimo 4 corridori richiesti, trovati ${proposal.athletes.length}.`);
+      }
+      if (proposal.athletes.length > 12) {
+        errors.push(`${teamIdentifier}: Massimo 12 corridori permessi, trovati ${proposal.athletes.length}.`);
+      }
+    });
+
+    // Rule 2: Runner max 2 teams of their own category
+    confirmedProposals.forEach((proposal) => {
+      const teamCategory = proposal.category; // Category of the slot/team being proposed
+
+      proposal.athletes.forEach(athlete => {
+        const runnerId = athlete.zwid;
+        // Assuming athlete.level is the runner's primary category. Convert to string for consistent map keys.
+        const runnerPrimaryCategory = String(athlete.level); 
+
+        // Initialize map for runner if not present
+        if (!runnerCategoryAssignments.has(runnerId)) {
+          runnerCategoryAssignments.set(runnerId, new Map<string, number>());
+        }
+        const assignmentsForRunner = runnerCategoryAssignments.get(runnerId)!;
+
+        // Only count assignments if the proposal's category matches the runner's primary category
+        if (teamCategory === runnerPrimaryCategory) {
+          const currentCount = assignmentsForRunner.get(runnerPrimaryCategory) || 0;
+          const newCount = currentCount + 1;
+          assignmentsForRunner.set(runnerPrimaryCategory, newCount);
+
+          if (newCount > 2) {
+            errors.push(`Corridore "${athlete.name}" (ID: ${runnerId}) eccede il limite di 2 team nella categoria ${runnerPrimaryCategory}. Assegnato a ${newCount} team.`);
+          }
+        }
+      });
+    });
+
+    return errors;
+  };
+
+  // Handler for the validation button click
+  const handleValidationClick = () => {
+    const errors = validateRosters();
+    setValidationErrors(errors);
+    // If no errors, you might proceed to generate the final report or save.
+    if (errors.length === 0) {
+      console.log("Validation successful. Ready to generate report.");
+      // Potentially trigger report generation or save action here
+    }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -128,13 +207,97 @@ const RosterSuggestions: React.FC = () => {
                   ))}
                 </div>
 
-                <button className="w-full mt-6 py-4 bg-zinc-800 hover:bg-orange-500 text-zinc-400 hover:text-black rounded-2xl font-black italic uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 group/btn">
+                <button
+                  onClick={() => handleConfigureTeam(team)} // Added onClick handler
+                  className="w-full mt-6 py-4 bg-zinc-800 hover:bg-orange-500 text-zinc-400 hover:text-black rounded-2xl font-black italic uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 group/btn"
+                >
                   Configura Team <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </section>
           ))}
         </div>
+      )}
+
+      {/* Section to display confirmed proposals */}
+      {confirmedProposals.length > 0 && (
+        <section className="mt-12 pt-8 border-t border-zinc-800">
+          <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-8">
+            Proposte Confermate
+            <span className="text-zinc-600"> (Draft Report)</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {confirmedProposals.map((proposal, idx) => (
+              <div key={idx} className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden hover:border-orange-500/50 transition-all group p-6">
+                <div className="flex items-center justify-between mb-4 border-b border-zinc-800/50 pb-2">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-orange-500/30 transition-all">
+                      <span className="text-3xl font-black italic text-orange-500">{proposal.category}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black italic text-white uppercase leading-tight">Proposta Selezionata</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock size={12} className="text-zinc-500" />
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{proposal.slot_name}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-3xl font-black italic text-white leading-none">{proposal.count}</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                  {[...proposal.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
+                    <div key={athlete.zwid} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <div className="w-6 h-6 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-500 flex-shrink-0">
+                          {athlete.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span className="text-[11px] font-bold text-zinc-300 uppercase truncate">{athlete.name}</span>
+                      </div>
+                      <Heart size={10} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Validation Section */}
+          <div className="mt-12 pt-8 border-t border-zinc-800">
+            <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-8">
+              Validazione Regolamento
+            </h2>
+            <button 
+              onClick={handleValidationClick}
+              className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-black rounded-2xl font-black italic uppercase text-xs tracking-widest transition-all mr-4"
+            >
+              Valida & Genera Report
+            </button>
+
+            {validationErrors.length > 0 && (
+              <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <AlertCircle size={20} />
+                  <h3 className="text-lg font-bold uppercase">Errori di Validazione:</h3>
+                </div>
+                <ul className="list-disc pl-6">
+                  {validationErrors.map((error, idx) => (
+                    <li key={idx}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {validationErrors.length === 0 && confirmedProposals.length > 0 && (
+              <div className="mt-8 p-4 bg-green-500/10 border border-green-500/20 text-green-500 rounded-xl font-bold flex items-center gap-3">
+                <CheckCircle2 size={20} />
+                <h3 className="text-lg font-bold uppercase">Validazione Completata con Successo!</h3>
+              </div>
+            )}
+          </div>
+        </section>
       )}
     </div>
   );
