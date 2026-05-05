@@ -29,7 +29,7 @@ export async function onRequestGet({ env, data }) {
     // 5. Squadre senza capitano assegnato
     const teamsNoCaptain = await env.DB.prepare(`
       SELECT count(*) as count FROM teams t 
-      WHERE t.id NOT IN (SELECT team_id FROM team_members tm JOIN athletes a ON tm.athlete_id = a.zwid WHERE a.role = 'captain')
+      WHERE t.wtrl_team_id NOT IN (SELECT team_id FROM team_members tm JOIN athletes a ON tm.athlete_id = a.zwid WHERE a.role = 'captain')
     `).first();
 
     return new Response(JSON.stringify({

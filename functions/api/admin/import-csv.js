@@ -51,37 +51,32 @@ export async function onRequestPost({ request, env }) {
         // 1. Upsert Teams
         for (const [key, t] of teamsMap) {
             // Poiché 'name' non è UNIQUE nello schema, usiamo un approccio diverso o aggiorniamo se esiste
-            const existing = await env.DB.prepare("SELECT id FROM teams WHERE name = ?").bind(t.name).first();
-            if (existing) {
-                statements.push(env.DB.prepare(`
-                    UPDATE teams SET category = ? WHERE id = ?
-                `).bind(t.category, existing.id));
-            } else {
-                statements.push(env.DB.prepare(`
-                    INSERT INTO teams (name, category, club_id)
-                    VALUES (?, ?, ?)
-                `).bind(t.name, t.category, INOX_CLUB_ID));
-            }
-        }
+            const existingTeam = await env.DB.prepare("SELECT wtrl_team_id FROM teams WHERE name = ?").bind(teamName).first();
+            const teamWtrlId = existingTeam ? existingTeam.wtrl_team_id : null;
 
-        // 2. Upsert Athletes & Team Members
-        for (const a of athletes) {
-            statements.push(env.DB.prepare(`
-                INSERT INTO athletes (zwid, name, base_category)
-                VALUES (?, ?, ?)
-                ON CONFLICT(zwid) DO UPDATE SET 
-                    name = excluded.name,
-                    base_category = excluded.base_category
-            `).bind(a.zwid, a.name, a.category));
+            if (teamWtrlId) {
+                // Aggiorna il team esistente (se necessario)
+                statements.push(env.DB.prepare(`
+                    UPDATE teams SET category = ?, club_id = ?
+                    WHERE wtrl_team_id = ?
+                `).bind(a.category, INOX_CLUB_ID, teamWtrlId));
+            } else {
+                // Crea un nuovo team se non esiste (dovrebbe essere gestito dall'import-wtrl-team, ma per sicurezza)
+                // Questo caso è meno probabile se si usa prima il CSV per popolare i team
+                // Potrebbe essere necessario un approccio diverso per creare nuovi team tramite CSV
+                console.warn(`Team ${teamName} non trovato con wtrl_team_id. Inserimento come nuovo team.`);
+                statements.push(env.DB.prepare(`
+                    INSERT INTO teams (name, category, club_id, wtrl_team_id)
+                    VALUES (?, ?, ?, ?)
+                `).bind(teamName, a.category, INOX_CLUB_ID, null)); // wtrl_team_id è null qui, gestione da rivedere
+            }
 
             // Relazione Team
             statements.push(env.DB.prepare(`
-                INSERT OR REPLACE INTO team_members (team_id, athlete_id)
-                SELECT id, ? FROM teams WHERE name = ? OR name = ?
-            `).bind(a.zwid, a.teamName, `Team INOX ${a.teamName}`));
-        }
-
-        await env.DB.batch(statements);
+                INSERT OR IGNORE INTO team_members (team_id, athlete_id)
+                SELECT t.wtrl_team_id, ? FROM teams t WHERE t.name = ?
+            `).bind(a.zwid, teamName));
+            }
 
         return new Response(JSON.stringify({ 
             success: true, 

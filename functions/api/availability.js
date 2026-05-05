@@ -33,7 +33,7 @@ export async function onRequestGet(context) {
                            GROUP_CONCAT(t.name, ', ') as team
                     FROM athletes a
                     LEFT JOIN team_members tm ON a.zwid = tm.athlete_id
-                    LEFT JOIN teams t ON tm.team_id = t.id
+                    LEFT JOIN teams t ON tm.team_id = t.wtrl_team_id
                     GROUP BY a.zwid
                 `)
             ]);

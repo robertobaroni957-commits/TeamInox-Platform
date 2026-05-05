@@ -61,8 +61,8 @@ export async function onRequestPost({ request, env }) {
 
                         statements.push(env.DB.prepare(`
                             INSERT OR IGNORE INTO team_members (team_id, athlete_id)
-                            SELECT id, ? FROM teams WHERE wtrl_team_id = ?
-                        `).bind(r.zwid, t.id));
+                            VALUES (?, ?)
+                        `).bind(wtrlId, r.zwid));
                     }
                 }
                 count++;
