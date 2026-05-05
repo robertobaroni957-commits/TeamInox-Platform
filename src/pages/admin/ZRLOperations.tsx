@@ -22,6 +22,7 @@ interface RoundInput {
   format: string;
   distance: number;
   elevation: number;
+  category: string;
 }
 
 const ZRLOperations: React.FC = () => {
@@ -86,7 +87,8 @@ const ZRLOperations: React.FC = () => {
               route: r.route,
               format: r.format || 'Scratch',
               distance: r.distance || 0,
-              elevation: r.elevation || 0
+              elevation: r.elevation || 0,
+              category: r.category || 'ALL'
             })));
           }
         }
@@ -454,7 +456,10 @@ const ZRLOperations: React.FC = () => {
                         className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60 space-y-3 cursor-pointer hover:border-[#fc6719]/40 transition-all group relative overflow-hidden"
                       >
                         <div className="flex justify-between items-center relative z-10">
-                          <span className="text-[8px] font-black uppercase text-[#fc6719] tracking-widest">G{idx + 1}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-black uppercase text-[#fc6719] tracking-widest">G{idx + 1}</span>
+                            <span className="bg-[#fc6719]/10 text-[#fc6719] px-1.5 py-0.5 rounded text-[7px] font-black uppercase border border-[#fc6719]/20">Cat {race.category}</span>
+                          </div>
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
