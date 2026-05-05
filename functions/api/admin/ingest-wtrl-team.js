@@ -8,21 +8,42 @@ export async function onRequestPost({ request, env }) {
 
     const teamMeta = data.meta.team;
     const compMeta = data.meta.competition || {};
-    const trc = parseInt(data.meta.trc || teamMeta.tttid);
+    const trc = parseInt(data.meta.trc || teamMeta.teamid || teamMeta.tttid);
     const riders = data.riders || [];
+
+    // Parsing avanzato della classe (es: 2370C30 -> League 23, Div 3)
+    const leagueKey = compMeta.class || '';
+    let league = compMeta.league || '';
+    let divNum = null;
+
+    const match = leagueKey.match(/^(\d+)0([A-D])(\d+)0$/);
+    if (match) {
+        league = match[1];
+        divNum = parseInt(match[3]);
+    } else {
+        const simpleMatch = leagueKey.match(/^(\d+)0([A-D])(\d*)$/);
+        if (simpleMatch) {
+            league = simpleMatch[1];
+            divNum = simpleMatch[3] ? parseInt(simpleMatch[3]) : null;
+        }
+    }
+
+    const category = data.meta.category || compMeta.division || '';
+    const division = data.meta.division || '';
 
     // 1. Upsert del TEAM
     await env.DB.prepare(`
       INSERT INTO teams (
-        wtrl_team_id, name, category, division, tttid, 
+        wtrl_team_id, name, category, division, division_number, tttid, 
         club_id, club_name, gender, league, zrldivision, 
         is_dev, rounds, member_count
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(wtrl_team_id) DO UPDATE SET
         name = excluded.name,
         category = excluded.category,
         division = excluded.division,
+        division_number = excluded.division_number,
         tttid = excluded.tttid,
         club_id = excluded.club_id,
         club_name = excluded.club_name,
@@ -35,27 +56,29 @@ export async function onRequestPost({ request, env }) {
     `).bind(
       trc,
       teamMeta.name,
-      data.meta.category || compMeta.division || '',
-      data.meta.division || '',
+      category,
+      division,
+      divNum,
       parseInt(teamMeta.tttid) || 0,
       compMeta.clubid || '',
       compMeta.clubname || '',
       compMeta.gender || '',
-      compMeta.league || '',
+      league,
       compMeta.division || '', 
       teamMeta.isdev ? 1 : 0,
       JSON.stringify(compMeta.registered || []),
       parseInt(data.meta.memberCount) || 0
     ).run();
 
+    // Recuperiamo l'ID interno per il collegamento dei membri
     const teamRecord = await env.DB.prepare("SELECT id FROM teams WHERE wtrl_team_id = ?").bind(trc).first();
     const internalTeamId = teamRecord.id;
 
     const statements = [];
+    // Pulizia membri esistenti per questo team per evitare duplicati o residui
     statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
     for (const r of riders) {
-      // IMPORTANTE: Su WTRL profileId è lo Zwift ID (numero), userId è il WTRL ID (UUID)
       const zwid = parseInt(r.profileId); 
       if (!zwid) continue;
 
@@ -105,6 +128,7 @@ export async function onRequestPost({ request, env }) {
     }));
 
   } catch (error) {
+    console.error("Errore importazione team:", error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
