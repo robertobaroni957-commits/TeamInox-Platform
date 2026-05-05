@@ -3,7 +3,7 @@ export async function onRequestGet(context) {
   const user = data?.user;
 
   try {
-    let query = `SELECT id, name, category, division, division_number, captain_id, wtrl_team_id, club_id, race_pass_url, league FROM teams`;
+    let query = `SELECT wtrl_team_id as id, name, category, division, division_number, captain_id, wtrl_team_id, club_id, league FROM teams`;
     let params = [];
 
     if (!user || user.role === 'admin' || user.role === 'moderator' || user.role === 'user') {
@@ -40,10 +40,10 @@ export async function onRequestPost(context) {
 
   try {
     const { name, category, division, wtrl_team_id, captain_id, club_id } = await request.json();
-    const result = await env.DB.prepare(
+    await env.DB.prepare(
       "INSERT INTO teams (name, category, division, wtrl_team_id, captain_id, club_id) VALUES (?, ?, ?, ?, ?, ?)"
     ).bind(name, category, division, wtrl_team_id, captain_id, club_id).run();
-    return new Response(JSON.stringify({ success: true, id: result.meta.lastRowId }), { status: 201 });
+    return new Response(JSON.stringify({ success: true, id: wtrl_team_id }), { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
@@ -53,17 +53,16 @@ export async function onRequestPatch(context) {
   const { request, env, data } = context;
   const user = data?.user;
 
-  // Un capitano può modificare solo le sue squadre (es. cambiare nome se permesso o altre info minori)
-  // Per ora limitiamo la modifica strutturale a Admin/Moderator
   if (user?.role !== 'admin' && user?.role !== 'moderator') {
     return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
   }
 
   try {
-    const { id, name, category, division, wtrl_team_id, captain_id, club_id } = await request.json();
+    const { id, name, category, division, captain_id, club_id } = await request.json();
+    // 'id' qui è il wtrl_team_id
     await env.DB.prepare(
-      "UPDATE teams SET name = ?, category = ?, division = ?, wtrl_team_id = ?, captain_id = ?, club_id = ? WHERE id = ?"
-    ).bind(name, category, division, wtrl_team_id, captain_id, club_id, id).run();
+      "UPDATE teams SET name = ?, category = ?, division = ?, captain_id = ?, club_id = ? WHERE wtrl_team_id = ?"
+    ).bind(name, category, division, captain_id, club_id, id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -79,10 +78,10 @@ export async function onRequestDelete(context) {
   }
 
   const url = new URL(request.url);
-  const id = url.searchParams.get("id");
+  const id = url.searchParams.get("id"); // wtrl_team_id
 
   try {
-    await env.DB.prepare("DELETE FROM teams WHERE id = ?").bind(id).run();
+    await env.DB.prepare("DELETE FROM teams WHERE wtrl_team_id = ?").bind(id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });

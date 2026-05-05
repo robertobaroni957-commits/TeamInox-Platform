@@ -12,7 +12,7 @@ export async function onRequestGet(context) {
   try {
     // 1. Recuperiamo i dettagli della serie attiva e del team
     const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
-    const targetTeam = await env.DB.prepare("SELECT wtrl_team_id FROM teams WHERE id = ?").bind(team_id).first();
+    const targetTeam = await env.DB.prepare("SELECT name, wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(team_id).first();
 
     // 2. SYNC REAL-TIME CON WTRL (se abbiamo i dati necessari)
     if (activeSeries?.external_season_id && targetTeam?.wtrl_team_id) {
@@ -110,7 +110,7 @@ export async function onRequestPost(context) {
     }
 
     if (user.role === 'captain') {
-      const team = await env.DB.prepare(`SELECT captain_id FROM teams WHERE id = ?`).bind(team_id).first();
+      const team = await env.DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(team_id).first();
       if (!team || team.captain_id !== user.zwid) {
         return new Response(JSON.stringify({ error: "Forbidden: You can only manage your own teams" }), { status: 403 });
       }

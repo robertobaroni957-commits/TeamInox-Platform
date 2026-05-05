@@ -38,7 +38,8 @@ const PUBLIC_ROUTES = [
     '/api/sync-all-teams',
     '/api/setup-admin',
     '/api/availability-check',
-    '/api/admin/ingest-wtrl-team'
+    '/api/admin/ingest-wtrl-team',
+    '/api/admin/import-inox-teams'
 ];
 
 export async function onRequest(context) {
@@ -63,7 +64,7 @@ export async function onRequest(context) {
         });
     }
 
-    if (PUBLIC_ROUTES.includes(path) && (method === 'GET' || path === '/api/admin/ingest-wtrl-team')) {
+    if (PUBLIC_ROUTES.includes(path) && (method === 'GET' || path === '/api/admin/ingest-wtrl-team' || path === '/api/admin/import-inox-teams')) {
         return handleNext(next);
     }
 

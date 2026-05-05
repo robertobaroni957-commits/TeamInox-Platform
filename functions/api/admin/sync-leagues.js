@@ -14,10 +14,28 @@ export async function onRequestPost({ request, env }) {
         console.log(`Avvio sincronizzazione leghe per la stagione ${season}...`);
 
         // 1. Recupero lista team da WTRL
-        const wtrlRes = await fetch(`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${season}&action=teamlist`);
-        if (!wtrlRes.ok) return errorRes("Errore nella risposta da WTRL", 502);
+        const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${season}&action=teamlist`;
+        const wtrlRes = await fetch(wtrlUrl, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+        });
+
+        if (!wtrlRes.ok) {
+            return errorRes(`WTRL ha risposto con errore HTTP ${wtrlRes.status}`, 502);
+        }
+
+        const contentType = wtrlRes.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const text = await wtrlRes.text();
+            console.error("WTRL non ha restituito JSON:", text.substring(0, 200));
+            return errorRes("WTRL ha restituito una pagina HTML invece di dati. Probabile blocco temporaneo o manutenzione sul sito WTRL.", 502);
+        }
         
         const data = await wtrlRes.json();
+        if (!data.success || !data.payload) {
+            return errorRes("WTRL ha restituito un formato dati non previsto.", 502);
+        }
         const wtrlTeams = data.payload || [];
 
         // 2. Filtriamo solo i team INOX

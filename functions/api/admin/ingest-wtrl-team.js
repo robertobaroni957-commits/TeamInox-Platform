@@ -37,7 +37,7 @@ export async function onRequestPost({ request, env }) {
     const captain_id = captain.profileId ? parseInt(captain.profileId) : null;
 
     // 0. PULIZIA: Rimuoviamo eventuali team "fantasma" con lo stesso nome ma senza ID WTRL
-    // Questo evita di avere duplicati (uno con dati e uno vuoto) nel database.
+    // Questo è meno necessario con la PK su wtrl_team_id, ma utile per rimuovere record sporchi pre-migrazione
     await env.DB.prepare(`
         DELETE FROM teams 
         WHERE name = ? AND (wtrl_team_id IS NULL OR wtrl_team_id = 0)
@@ -84,10 +84,6 @@ export async function onRequestPost({ request, env }) {
       captain_id
     ).run();
 
-    // Recuperiamo l'ID interno per il collegamento dei membri
-    const teamRecord = await env.DB.prepare("SELECT id FROM teams WHERE wtrl_team_id = ?").bind(trc).first();
-    const internalTeamId = teamRecord.id;
-
     const statements = [];
     
     // Se c'è un capitano, assicuriamoci che sia nella tabella athletes
@@ -106,7 +102,7 @@ export async function onRequestPost({ request, env }) {
       ));
     }
     // Pulizia membri esistenti per questo team per evitare duplicati o residui
-    statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
+    statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(trc));
 
     for (const r of riders) {
       const zwid = parseInt(r.profileId); 
@@ -144,7 +140,7 @@ export async function onRequestPost({ request, env }) {
       statements.push(env.DB.prepare(`
         INSERT INTO team_members (team_id, athlete_id)
         VALUES (?, ?)
-      `).bind(internalTeamId, zwid));
+      `).bind(trc, zwid));
     }
 
     if (statements.length > 0) {

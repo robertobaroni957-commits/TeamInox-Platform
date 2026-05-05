@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env }) {
       SELECT rl.*, ath.name as athlete_name, t.name as team_name
       FROM race_lineup rl
       JOIN athletes ath ON rl.athlete_id = ath.zwid
-      JOIN teams t ON rl.team_id = t.id
+      JOIN teams t ON rl.team_id = t.wtrl_team_id
       WHERE 1=1
     `;
     let params = [];

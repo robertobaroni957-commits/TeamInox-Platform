@@ -42,13 +42,12 @@ CREATE TABLE IF NOT EXISTS rounds (
 
 -- 3. GESTIONE SQUADRE (Le tue 20 squadre)
 CREATE TABLE IF NOT EXISTS teams (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    wtrl_team_id INTEGER PRIMARY KEY, -- ID per sync (es: 75150)
     name TEXT NOT NULL,
     category TEXT,                   -- A, B, C, D
     division TEXT,                   -- Division 1, 2, 3...
     division_number INTEGER,
     captain_id INTEGER REFERENCES athletes(zwid),
-    wtrl_team_id INTEGER UNIQUE,     -- ID per sync (es: 75150)
     club_id TEXT,
     tttid INTEGER,
     club_name TEXT,
@@ -66,14 +65,14 @@ CREATE TABLE IF NOT EXISTS teams (
 -- Tabella di associazione Round-Teams (per definire quali team corrono in quale round e in che slot)
 CREATE TABLE IF NOT EXISTS round_teams (
     round_id INTEGER REFERENCES rounds(id),
-    team_id INTEGER REFERENCES teams(id),
+    team_id INTEGER REFERENCES teams(wtrl_team_id),
     timeslot_id TEXT REFERENCES league_times(id),
     PRIMARY KEY (round_id, team_id)
 );
 
 -- 3b. ROSTER DEI TEAM (Membri effettivi dei team - Relazione Molti-a-Molti)
 CREATE TABLE IF NOT EXISTS team_members (
-    team_id INTEGER REFERENCES teams(id),
+    team_id INTEGER REFERENCES teams(wtrl_team_id),
     athlete_id INTEGER REFERENCES athletes(zwid),
     PRIMARY KEY (team_id, athlete_id)
 );
@@ -82,7 +81,7 @@ CREATE TABLE IF NOT EXISTS team_members (
 CREATE TABLE IF NOT EXISTS race_lineup (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     round_id INTEGER REFERENCES rounds(id),
-    team_id INTEGER REFERENCES teams(id),
+    team_id INTEGER REFERENCES teams(wtrl_team_id),
     athlete_id INTEGER REFERENCES athletes(zwid),
     role TEXT DEFAULT 'starter',     -- 'starter', 'reserve'
     status TEXT DEFAULT 'pending',   -- 'pending', 'confirmed', 'rejected'

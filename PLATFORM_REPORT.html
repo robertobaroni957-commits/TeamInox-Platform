@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Progetto: INOXTEAM UNIFIED</title>
+    <style>
+        :root {
+            --primary: #f59e0b; /* Orange */
+            --secondary: #3b82f6; /* Blue */
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #10b981; /* Green */
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--secondary);
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            background: var(--primary);
+            color: var(--bg);
+            margin-right: 5px;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .status {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container { margin: 10px; padding: 10px; }
+            h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>INOXTEAM UNIFIED</h1>
+        <div class="subtitle">Documento Tecnico di Visione e Sviluppo Piattaforma</div>
+    </header>
+
+    <div class="section">
+        <h2>1. Visione del Progetto</h2>
+        <p>Sviluppare un ecosistema digitale centralizzato per il <strong>Team INOX</strong>, volto a gestire l'attività ciclistica virtuale (Zwift) e reale (Strava). La piattaforma automatizzerà la gestione delle squadre, il calcolo delle classifiche e la reportistica avanzata.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Gestione Eventi Core</h2>
+        
+        <h3>A. ZRL (Zwift Racing League)</h3>
+        <p>Gestita da WTRL, è la competizione principale su Zwift.</p>
+        <ul>
+            <li><strong>Roster Management:</strong> Strumento per i capitani per creare le lineup settimanali.</li>
+            <li><strong>Availability:</strong> Sistema di dichiarazione disponibilità per gli atleti.</li>
+            <li><strong>Sync Risultati:</strong> Importazione automatica dati da WTRL/ZwiftPower.</li>
+            <li><strong>Reportistica:</strong> Analisi performance team vs divisione e grafici punti intermedi.</li>
+        </ul>
+
+        <h3>B. WINTER TOUR (Proprietario INOX)</h3>
+        <p>Campionato interno di alto profilo articolato su circa 20 tappe.</p>
+        <ul>
+            <li><strong>Engine Classifiche:</strong> Calcolo automatico punti basato su categorie (A, B, C, D).</li>
+            <li><strong>Gestione Gare:</strong> Supporto per iTT, TTT, Scratch e Points Race.</li>
+            <li><strong>Archivio Storico:</strong> Evoluzione dei piazzamenti tappa dopo tappa.</li>
+        </ul>
+
+        <h3>C. Integrazione Strava & Outdoor</h3>
+        <p>Espansione delle attività oltre il mondo virtuale.</p>
+        <ul>
+            <li><strong>Strava API:</strong> Recupero automatico attività e segmenti.</li>
+            <li><strong>Segment Challenges:</strong> Creazione di sfide su segmenti reali con classifiche dedicate.</li>
+            <li><strong>Eventi Secondari:</strong> Gestione flessibile per piccoli tornei o eventi spot.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. Funzionalità di Sistema</h2>
+        <ul>
+            <li><strong>Report & Grafici:</strong> Dashboard interattive con analisi wattaggio, W/Kg e trend stagionali.</li>
+            <li><strong>Database Maintenance:</strong> Gestione tramite Cloudflare D1 con migrazioni SQL strutturate.</li>
+            <li><strong>Ruoli (RBAC):</strong> Accesso differenziato per Admin, Moderator, Captain e User.</li>
+            <li><strong>Update Logic:</strong> Pipeline di aggiornamento dati tramite script Node.js e API esterne.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. Stack Tecnologico</h2>
+        <div class="tech-grid">
+            <div class="tech-item"><strong>Frontend</strong><br>React + TypeScript</div>
+            <div class="tech-item"><strong>Styling</strong><br>Tailwind CSS</div>
+            <div class="tech-item"><strong>Backend</strong><br>Cloudflare Workers</div>
+            <div class="tech-item"><strong>Database</strong><br>Cloudflare D1 (SQLite)</div>
+            <div class="tech-item"><strong>Auth</strong><br>JWT + Bcrypt</div>
+            <div class="tech-item"><strong>Integrazioni</strong><br>Strava API</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>5. Stato dell'Arte (Status Attuale)</h2>
+        <p>Il progetto è in una fase avanzata di prototipazione funzionale con i seguenti moduli già operativi:</p>
+        <ul>
+            <li><strong>Infrastructure & Auth:</strong> Sistema di autenticazione JWT e gestione ruoli (RBAC) completamente integrato con Cloudflare Workers e D1.</li>
+            <li><strong>ZRL Module:</strong> Funzionalità di sincronizzazione automatica per risultati, calendari e divisioni da WTRL.</li>
+            <li><strong>Database Schema:</strong> Architettura relazionale consolidata con migrazioni attive per atleti, team e risultati storici.</li>
+            <li><strong>Core UI:</strong> Dashboard dinamica, gestione "Availability" e Sidebar intelligente pronta per l'uso.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. Prossime Tappe</h2>
+        <ul>
+            <li><strong>Ranking Engine 2.0:</strong> Perfezionamento dell'algoritmo di calcolo per le 20 tappe del Winter Tour con gestione scarti.</li>
+            <li><strong>Strava Deep Integration:</strong> Automazione completa delle "Segment Challenges" e sincronizzazione profili atletici via API.</li>
+            <li><strong>Advanced Analytics:</strong> Integrazione di librerie grafiche per visualizzare i trend di performance e i distacchi in classifica.</li>
+            <li><strong>Reporting Tool:</strong> Generazione automatica di report post-gara in formato PDF o immagini per la condivisione sui social/canali team.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. Roadmap di Sviluppo</h2>
+        <ul>
+            <li><span class="badge">Fase 1</span> <strong>Core:</strong> Auth, Ruoli, Database Atleti.</li>
+            <li><span class="badge">Fase 2</span> <strong>ZRL Module:</strong> Availability e Lineup builder.</li>
+            <li><span class="badge">Fase 3</span> <strong>Ranking Engine:</strong> Automazione Winter Tour.</li>
+            <li><span class="badge">Fase 4</span> <strong>Strava Sync:</strong> Sfide sui segmenti e attività outdoor.</li>
+            <li><span class="badge">Fase 5</span> <strong>Advanced Analytics:</strong> Grafici comparativi e report PDF.</li>
+        </ul>
+    </div>
+
+    <footer>
+        Documento generato per il team di sviluppo INOXTEAM UNIFIED<br>
+        &copy; 2026 - Piattaforma in fase di sviluppo attivo.
+    </footer>
+</div>
+
+</body>
+</html>
