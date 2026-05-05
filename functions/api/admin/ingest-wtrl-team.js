@@ -36,6 +36,13 @@ export async function onRequestPost({ request, env }) {
     const captain = administrators.captain || {};
     const captain_id = captain.profileId ? parseInt(captain.profileId) : null;
 
+    // 0. PULIZIA: Rimuoviamo eventuali team "fantasma" con lo stesso nome ma senza ID WTRL
+    // Questo evita di avere duplicati (uno con dati e uno vuoto) nel database.
+    await env.DB.prepare(`
+        DELETE FROM teams 
+        WHERE name = ? AND (wtrl_team_id IS NULL OR wtrl_team_id = 0)
+    `).bind(teamMeta.name).run();
+
     // 1. Upsert del TEAM
     await env.DB.prepare(`
       INSERT INTO teams (
