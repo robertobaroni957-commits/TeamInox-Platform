@@ -8,18 +8,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../services/api';
 
 interface DivisionResult {
-  id: number;
-  rider_name: string;
+  id?: number;
+  rider_name?: string;
   team_name: string;
-  position: number;
-  time: number;
+  position?: number;
+  time?: number;
   points_finish: number;
   points_fal: number;
   points_fts: number;
   points_total: number;
   is_inox: number;
   league_key: string;
-  zwid: number;
+  zwid?: number;
+  riders_count?: number;
+  rounds_played?: number;
 }
 
 interface FilterOption {
@@ -37,6 +39,10 @@ const ZRLDivisionResults: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Nuovi stati per le visualizzazioni
+  const [view, setView] = useState<'riders' | 'teams'>('riders');
+  const [scope, setScope] = useState<'race' | 'season'>('race');
 
   useEffect(() => {
     const token = localStorage.getItem('inox_token');
@@ -51,6 +57,13 @@ const ZRLDivisionResults: React.FC = () => {
     fetchOptions();
   }, []);
 
+  useEffect(() => {
+    if (selectedOption) {
+      const [rid, lk] = selectedOption.split('|');
+      fetchResults(parseInt(rid), lk, view, scope);
+    }
+  }, [view, scope]);
+
   const fetchOptions = async () => {
     try {
       const res = await fetch('/api/division-results');
@@ -61,7 +74,7 @@ const ZRLDivisionResults: React.FC = () => {
           const first = data.options[0];
           const val = `${first.round_id}|${first.league_key}`;
           setSelectedOption(val);
-          fetchResults(first.round_id, first.league_key);
+          fetchResults(first.round_id, first.league_key, view, scope);
         } else {
           setLoading(false);
         }
@@ -72,10 +85,15 @@ const ZRLDivisionResults: React.FC = () => {
     }
   };
 
-  const fetchResults = async (roundId: number, leagueKey: string) => {
+  const fetchResults = async (roundId: number, leagueKey: string, currentView: string, currentScope: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/division-results?round_id=${roundId}&league_key=${leagueKey}`);
+      let url = `/api/division-results?league_key=${leagueKey}&view=${currentView}`;
+      if (currentScope === 'race' || currentView === 'riders') {
+        url += `&round_id=${roundId}`;
+      }
+      
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setResults(data.results);
@@ -103,7 +121,7 @@ const ZRLDivisionResults: React.FC = () => {
       const data = await res.json();
       if (data.success) {
         const [rid, lk] = selectedOption.split('|');
-        fetchResults(parseInt(rid), lk);
+        fetchResults(parseInt(rid), lk, view, scope);
       } else {
         alert("Errore Sync: " + data.error);
       }
@@ -117,7 +135,7 @@ const ZRLDivisionResults: React.FC = () => {
   const handleFilterChange = (rid: number, lk: string) => {
     const val = `${rid}|${lk}`;
     setSelectedOption(val);
-    fetchResults(rid, lk);
+    fetchResults(rid, lk, view, scope);
     setShowFilters(false);
   };
 
@@ -132,9 +150,11 @@ const ZRLDivisionResults: React.FC = () => {
     return `${m}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
   };
 
-  const inoxRiders = results.filter(r => r.is_inox === 1);
-  const bestPosition = inoxRiders.length > 0 ? Math.min(...inoxRiders.map(r => r.position || 999)) : null;
-  const totalInoxPoints = inoxRiders.reduce((acc, r) => acc + (r.points_total || 0), 0);
+  const inoxResults = results.filter(r => r.is_inox === 1);
+  const bestPosition = view === 'riders' 
+    ? (inoxResults.length > 0 ? Math.min(...inoxResults.map(r => r.position || 999)) : null)
+    : null;
+  const totalInoxPoints = inoxResults.reduce((acc, r) => acc + (r.points_total || 0), 0);
 
   const isAdmin = userRole === 'admin' || userRole === 'moderator';
 
@@ -142,7 +162,7 @@ const ZRLDivisionResults: React.FC = () => {
     <div className="h-[calc(100vh-140px)] flex flex-col gap-6 overflow-hidden animate-in fade-in duration-700">
       
       {/* TOP HEADER & ACTIONS */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-shrink-0">
+      <section className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 flex-shrink-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
@@ -156,11 +176,44 @@ const ZRLDivisionResults: React.FC = () => {
             )}
           </div>
           <h1 className="text-4xl lg:text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
-            ZRL <span className="text-zinc-800">RESULTS</span>
+            ZRL <span className="text-zinc-800">{view === 'riders' ? 'RESULTS' : 'STANDINGS'}</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full xl:w-auto">
+          {/* Toggles View/Scope */}
+          <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
+            <button 
+              onClick={() => setView('riders')}
+              className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${view === 'riders' ? 'bg-[#fc6719] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Atleti
+            </button>
+            <button 
+              onClick={() => setView('teams')}
+              className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${view === 'teams' ? 'bg-[#fc6719] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              Squadre
+            </button>
+          </div>
+
+          {view === 'teams' && (
+            <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
+              <button 
+                onClick={() => setScope('race')}
+                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${scope === 'race' ? 'bg-white text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Gara
+              </button>
+              <button 
+                onClick={() => setScope('season')}
+                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${scope === 'season' ? 'bg-white text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Stagione
+              </button>
+            </div>
+          )}
+
           {/* Custom Dropdown Filter */}
           <div className="relative flex-1 md:flex-none">
             <button 
@@ -216,7 +269,7 @@ const ZRLDivisionResults: React.FC = () => {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-shrink-0">
          <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
             <Users size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Division Riders</p>
+            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{view === 'riders' ? 'Division Riders' : 'Division Teams'}</p>
             <p className="text-3xl font-black italic text-white">{results.length}</p>
             <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
               <Hash size={60} />
@@ -225,15 +278,19 @@ const ZRLDivisionResults: React.FC = () => {
          <div className="p-6 rounded-[2rem] bg-orange-500/5 border border-orange-500/10 flex flex-col gap-2 relative overflow-hidden group">
             <Star size={14} className="text-orange-500 mb-2" />
             <p className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Inox Squad</p>
-            <p className="text-3xl font-black italic text-orange-500">{inoxRiders.length}</p>
+            <p className="text-3xl font-black italic text-orange-500">{inoxResults.length}</p>
             <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
               <Zap size={60} className="text-orange-500" />
             </div>
          </div>
          <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
             <Award size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Best Position</p>
-            <p className="text-3xl font-black italic text-white">{bestPosition ? `#${bestPosition}` : 'N/A'}</p>
+            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{view === 'riders' ? 'Best Position' : 'Average Score'}</p>
+            <p className="text-3xl font-black italic text-white">
+              {view === 'riders' 
+                ? (bestPosition ? `#${bestPosition}` : 'N/A')
+                : (results.length > 0 ? Math.round(totalInoxPoints / Math.max(1, results.length)) : '0')}
+            </p>
             <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
               <Trophy size={60} />
             </div>
@@ -274,8 +331,10 @@ const ZRLDivisionResults: React.FC = () => {
               <thead className="sticky top-0 z-10 bg-black/90 backdrop-blur-md">
                 <tr className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 border-b border-zinc-900">
                   <th className="px-8 py-6 text-center w-24">#</th>
-                  <th className="px-8 py-6">Rider / Team</th>
-                  <th className="px-8 py-6 text-center">Time</th>
+                  <th className="px-8 py-6">{view === 'riders' ? 'Rider / Team' : 'Team Name'}</th>
+                  {view === 'riders' && <th className="px-8 py-6 text-center">Time</th>}
+                  {view === 'teams' && scope === 'race' && <th className="px-8 py-6 text-center">Riders</th>}
+                  {view === 'teams' && scope === 'season' && <th className="px-8 py-6 text-center">Rounds</th>}
                   <th className="px-8 py-6 text-center">FIN</th>
                   <th className="px-8 py-6 text-center">FAL</th>
                   <th className="px-8 py-6 text-center">FTS</th>
@@ -283,15 +342,16 @@ const ZRLDivisionResults: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-900/30">
-                {results.map((rider) => {
-                  const isFirst = rider.position === 1;
+                {results.map((item, index) => {
+                  const position = view === 'riders' ? item.position : (index + 1);
+                  const isFirst = position === 1;
                   return (
                     <motion.tr 
-                      key={rider.id}
+                      key={view === 'riders' ? item.id : item.team_name}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className={`group transition-all ${
-                        rider.is_inox 
+                        item.is_inox 
                           ? 'bg-orange-500/5 hover:bg-orange-500/10' 
                           : 'hover:bg-zinc-900/40'
                       }`}
@@ -300,40 +360,47 @@ const ZRLDivisionResults: React.FC = () => {
                         <span className={`text-2xl font-black italic ${
                           isFirst ? 'text-orange-500 shadow-orange-500/20 drop-shadow-lg' : 'text-zinc-800 group-hover:text-zinc-600'
                         }`}>
-                          {rider.position ? `#${rider.position}` : '-'}
+                          {position ? `#${position}` : '-'}
                         </span>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex flex-col">
                           <span className={`font-black uppercase tracking-tight text-lg leading-none ${
-                            rider.is_inox ? 'text-orange-400' : 'text-zinc-200'
+                            item.is_inox ? 'text-orange-400' : 'text-zinc-200'
                           }`}>
-                            {rider.rider_name}
+                            {view === 'riders' ? item.rider_name : item.team_name}
                           </span>
                           <span className="text-zinc-600 text-[9px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-2 truncate max-w-xs">
-                            {rider.team_name}
-                            {rider.is_inox === 1 && (
+                            {view === 'riders' ? item.team_name : `ZRL Division ${item.league_key}`}
+                            {item.is_inox === 1 && (
                               <span className="bg-orange-500 text-black px-1.5 py-0.5 rounded-[4px] text-[7px] font-black">SQUADRON</span>
                             )}
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-6 text-center font-mono text-xs text-zinc-500">
-                        {formatTime(rider.time)}
+                      {view === 'riders' && (
+                        <td className="px-8 py-6 text-center font-mono text-xs text-zinc-500">
+                          {formatTime(item.time || 0)}
+                        </td>
+                      )}
+                      {view === 'teams' && (
+                        <td className="px-8 py-6 text-center font-bold text-zinc-500">
+                          {scope === 'race' ? item.riders_count : item.rounds_played}
+                        </td>
+                      )}
+                      <td className="px-8 py-6 text-center">
+                        <span className="text-[11px] font-black text-zinc-400">{item.points_finish}</span>
                       </td>
                       <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{rider.points_finish}</span>
+                        <span className="text-[11px] font-black text-zinc-400">{item.points_fal}</span>
                       </td>
                       <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{rider.points_fal}</span>
-                      </td>
-                      <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{rider.points_fts}</span>
+                        <span className="text-[11px] font-black text-zinc-400">{item.points_fts}</span>
                       </td>
                       <td className="px-8 py-6 text-center">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-zinc-900/50 border border-zinc-800 group-hover:border-orange-500/40 transition-all">
                           <span className="text-lg font-black italic text-orange-500 group-hover:scale-110 transition-transform">
-                            {rider.points_total}
+                            {item.points_total}
                           </span>
                         </div>
                       </td>
@@ -345,7 +412,6 @@ const ZRLDivisionResults: React.FC = () => {
           </div>
         )}
       </section>
-
     </div>
   );
 };
