@@ -1,39 +1,58 @@
-// functions/api/setup-zrl-2026.js
-export async function onRequestGet({ env }) {
-    if (!env.DB) {
-        return new Response("DB binding missing", { status: 500 });
-    }
 
-    const officialTimes = [
-        "06:00", "07:00", "07:30", "09:30", "10:30", "11:30", "12:00", "13:00", "14:00", 
-        "18:00", "18:30", "19:00", "19:15", "19:30", "19:45", "20:00", "20:15", "20:30", "20:45"
+export async function onRequestGet({ env }) {
+    if (!env.DB) return new Response("DB non trovato", { status: 500 });
+
+    const sql = [
+        `CREATE TABLE IF NOT EXISTS zrl_seasons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS zrl_round_groups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            series_id INTEGER NOT NULL,
+            round_index INTEGER NOT NULL,
+            external_season_id INTEGER,
+            description TEXT,
+            is_closed BOOLEAN DEFAULT 0,
+            FOREIGN KEY (series_id) REFERENCES zrl_seasons(id),
+            UNIQUE(series_id, round_index)
+        )`,
+        `CREATE TABLE IF NOT EXISTS zrl_team_standings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            round_group_id INTEGER NOT NULL,
+            league_key TEXT NOT NULL,
+            team_name TEXT NOT NULL,
+            rank INTEGER,
+            league_points INTEGER,
+            pts_fal INTEGER,
+            pts_fts INTEGER,
+            pts_finish INTEGER,
+            r1 TEXT, r2 TEXT, r3 TEXT, r4 TEXT, r5 TEXT, r6 TEXT, r7 TEXT, r8 TEXT,
+            is_inox BOOLEAN DEFAULT 0,
+            FOREIGN KEY (round_group_id) REFERENCES zrl_round_groups(id),
+            UNIQUE(round_group_id, league_key, team_name)
+        )`,
+        `CREATE TABLE IF NOT EXISTS zrl_races (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            zrl_round_group_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            date DATETIME,
+            world TEXT,
+            route TEXT,
+            FOREIGN KEY (zrl_round_group_id) REFERENCES zrl_round_groups(id)
+        )`
     ];
 
     try {
-        // 1. Pulizia tabelle legate agli orari (per evitare duplicati e orfani)
-        await env.DB.batch([
-            env.DB.prepare("DELETE FROM user_time_preferences"),
-            env.DB.prepare("DELETE FROM league_times")
-        ]);
-
-        // 2. Popolamento nuovi slot ufficiali
-        const statements = officialTimes.map((time, index) => {
-            return env.DB.prepare(
-                "INSERT INTO league_times (id, region, start_time_utc, display_name, slot_order) VALUES (?, ?, ?, ?, ?)"
-            ).bind(`T_${time.replace(':', '')}`, 'Europe', time, `${time} (CET)`, index + 1);
-        });
-
-        await env.DB.batch(statements);
-
+        for (const query of sql) {
+            await env.DB.prepare(query).run();
+        }
         return new Response(JSON.stringify({ 
             success: true, 
-            message: "Database bonificato con gli orari ufficiali TEAM INFO.json",
-            count: officialTimes.length
-        }), {
-            headers: { "Content-Type": "application/json" }
-        });
-
-    } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+            message: "Struttura database ZRL 2026 creata con successo in remoto." 
+        }), { headers: { "Content-Type": "application/json" } });
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
