@@ -86,10 +86,10 @@ const Dashboard: React.FC = () => {
       size: "sm"
     },
     {
-      title: "Hall of Fame",
-      subtitle: "Risultati Storici",
-      desc: "Archivio delle stagioni passate e record del team.",
-      icon: Compass,
+      title: "Classifiche ZRL",
+      subtitle: "Risultati & Ranking",
+      desc: "Consulta i piazzamenti ufficiali di tutte le divisioni InoxTeam.",
+      icon: Trophy,
       path: "/zrl-results",
       color: "from-zinc-700 to-zinc-900",
       size: "sm"

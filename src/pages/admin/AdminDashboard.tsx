@@ -97,7 +97,16 @@ const AdminDashboard: React.FC = () => {
       path: "/admin/users",
       color: "from-blue-500 to-indigo-600",
       size: "md",
-      alert: (insights.missingCategory + insights.missingEmail) > 0 ? `\${insights.missingCategory + insights.missingEmail} Errors` : null
+      alert: (insights.missingCategory + insights.missingEmail) > 0 ? `${insights.missingCategory + insights.missingEmail} Errors` : null
+    },
+    {
+      title: "Rankings View",
+      subtitle: "Live Results",
+      desc: "Viewport per la consultazione rapida delle classifiche di divisione.",
+      icon: LayoutGrid,
+      path: "/zrl-results",
+      color: "from-zinc-700 to-zinc-900",
+      size: "sm"
     },
     {
       title: "Events Lab",
