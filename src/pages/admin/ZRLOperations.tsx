@@ -290,36 +290,48 @@ const ZRLOperations: React.FC = () => {
   };
 
   const copyGCExtractor = () => {
+    // Generiamo l'elenco delle chiavi lega uniche dai team caricati
+    const leagueKeys = [...new Set(teams
+      .filter(t => t.zrldivision && t.category && t.division_number !== null)
+      .map(t => `${t.league}0${t.zrldivision}${t.division_number}0`)
+    )];
+
     const script = `(async () => {
-  const getContext = () => {
-    const path = window.location.pathname;
-    const search = new URLSearchParams(window.location.search);
-    const parts = path.split('/').filter(p => p.length > 0);
-    let league = parts.find(p => p.length === 7 && p.startsWith('2')) || search.get('league');
-    let season = parts.find(p => !isNaN(p) && p.length >= 2 && p.length <= 3) || search.get('id') || document.body.getAttribute('wtrl-season');
-    return { season, league };
+  const season = "${wtrlId || '19'}";
+  const keys = ${JSON.stringify(leagueKeys)};
+  console.log("%c🚀 INIZIO ESTRAZIONE MASSIVA GC SQUADRE", "color: #fc6719; font-weight: bold; font-size: 14px;");
+  
+  const multiGC = {
+    externalSeasonId: parseInt(season),
+    timestamp: new Date().toISOString(),
+    leagues: []
   };
-  let { season, league } = getContext();
-  if (!season) season = prompt("ID Stagione non trovato. Confermi 19?", "19");
-  if (!league) league = prompt("Codice Lega non trovato. Inseriscilo (es: 2350C20):");
-  if (!season || !league) return;
-  const apiUrl = 'https://www.wtrl.racing/api/zrl/league/' + season + '/' + league;
-  try {
-    const res = await fetch(apiUrl);
-    const data = await res.json();
-    if (data.success) {
-      const bundle = { externalSeasonId: parseInt(season), leagueKey: league, payload: data.payload };
-      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'zrl_gc_' + league + '.json';
-      a.click();
-      alert("✅ Classifica SQUADRE scaricata!");
-    }
-  } catch (e) { alert("Errore: " + e.message); }
+
+  for (const key of keys) {
+    try {
+      console.log("Fetching GC for: " + key);
+      const res = await fetch('https://www.wtrl.racing/api/zrl/league/' + season + '/' + key);
+      const data = await res.json();
+      if (data.success && data.payload) {
+        multiGC.leagues.push({ leagueKey: key, payload: data.payload });
+        console.log("%c✅ Scaricata lega: " + key, "color: #4caf50");
+      }
+    } catch (e) { console.error("❌ Errore per " + key, e); }
+  }
+
+  if (multiGC.leagues.length > 0) {
+    const blob = new Blob([JSON.stringify(multiGC, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'zrl_multi_gc_full.json';
+    a.click();
+    alert("Scaricate " + multiGC.leagues.length + " classifiche in un unico file!");
+  } else {
+    alert("Nessuna classifica scaricata. Controlla la console.");
+  }
 })();`;
     navigator.clipboard.writeText(script);
-    setMessage({ type: 'success', text: "Script GC (Interattivo) copiato!" });
+    setMessage({ type: 'success', text: "Script GC MASSIVO copiato!" });
   };
 
   const addRace = () => {
