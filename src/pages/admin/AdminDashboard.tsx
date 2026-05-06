@@ -16,7 +16,8 @@ import {
   Crosshair,
   TrendingUp,
   MailWarning,
-  LayoutGrid
+  LayoutGrid,
+  BarChart3
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { motion } from 'framer-motion';
