@@ -62,7 +62,7 @@ const ZRLDivisionResults: React.FC = () => {
       const [rid, lk] = selectedOption.split('|');
       fetchResults(parseInt(rid), lk, view, scope);
     }
-  }, [view, scope]);
+  }, [view, scope, selectedOption]);
 
   const fetchOptions = async () => {
     try {
