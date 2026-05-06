@@ -291,31 +291,35 @@ const ZRLOperations: React.FC = () => {
 
   const copyGCExtractor = () => {
     const script = `(async () => {
-  const parts = window.location.pathname.split('/');
-  const externalSeasonId = parts[3]; 
-  const leagueKey = parts[4];
-  if (!externalSeasonId || !leagueKey) {
-    alert("Vai su una pagina di classifica WTRL valida!");
-    return;
-  }
-  const apiUrl = 'https://www.wtrl.racing/api/zrl/league/' + externalSeasonId + '/' + leagueKey;
-  const res = await fetch(apiUrl);
-  const data = await res.json();
-  if (data.success) {
-    const bundle = { externalSeasonId: parseInt(externalSeasonId), leagueKey, payload: data.payload };
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'zrl_gc_' + leagueKey + '.json';
-    a.click();
-    console.log("✅ GC Extracted!");
-  } else {
-    alert("Errore WTRL: dati non trovati.");
-  }
+  const getContext = () => {
+    const path = window.location.pathname;
+    const search = new URLSearchParams(window.location.search);
+    const parts = path.split('/').filter(p => p.length > 0);
+    let league = parts.find(p => p.length === 7 && p.startsWith('2')) || search.get('league');
+    let season = parts.find(p => !isNaN(p) && p.length >= 2 && p.length <= 3) || search.get('id') || document.body.getAttribute('wtrl-season');
+    return { season, league };
+  };
+  let { season, league } = getContext();
+  if (!season) season = prompt("ID Stagione non trovato. Confermi 19?", "19");
+  if (!league) league = prompt("Codice Lega non trovato. Inseriscilo (es: 2350C20):");
+  if (!season || !league) return;
+  const apiUrl = 'https://www.wtrl.racing/api/zrl/league/' + season + '/' + league;
+  try {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    if (data.success) {
+      const bundle = { externalSeasonId: parseInt(season), leagueKey: league, payload: data.payload };
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'zrl_gc_' + league + '.json';
+      a.click();
+      alert("✅ Classifica SQUADRE scaricata!");
+    }
+  } catch (e) { alert("Errore: " + e.message); }
 })();`;
     navigator.clipboard.writeText(script);
-    setMessage({ type: 'success', text: "Script GC Squadre copiato! Incollalo nella console di WTRL." });
+    setMessage({ type: 'success', text: "Script GC (Interattivo) copiato!" });
   };
 
   const addRace = () => {
