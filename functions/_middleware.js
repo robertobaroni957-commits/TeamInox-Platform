@@ -65,11 +65,8 @@ export async function onRequest(context) {
         });
     }
 
-    if (PUBLIC_ROUTES.includes(path) && (method === 'GET' || path === '/api/admin/ingest-wtrl-team' || path === '/api/admin/import-inox-teams')) {
-        return handleNext(next);
-    }
-
-    if (['/api/login_auth', '/api/register', '/api/sync-schedule', '/api/sync-rounds', '/api/sync-all-teams'].includes(path)) {
+    // --- PUBBLICHE ---
+    if (PUBLIC_ROUTES.includes(path)) {
         return handleNext(next);
     }
 
