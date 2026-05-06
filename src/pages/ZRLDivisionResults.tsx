@@ -1,68 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Trophy, Users, Timer, Target, ChevronRight, Hash, 
-  RefreshCw, Filter, Search, Award, Star, Zap, Activity,
-  ChevronDown, LayoutGrid
+  Trophy, Users, Target, RefreshCw, Filter, Award, Star, Zap, Activity,
+  ChevronDown, LayoutGrid, BarChart3, Clock, MapPin, Hash, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { api } from '../services/api';
 
-interface DivisionResult {
-  id?: number;
-  rider_name?: string;
+interface TeamStanding {
+  id: number;
   team_name: string;
-  position?: number;
-  time?: number;
-  points_finish: number;
-  points_fal: number;
-  points_fts: number;
-  points_total: number;
+  rank: number;
+  league_points: number;
+  pts_fal: number;
+  pts_fts: number;
+  pts_finish: number;
+  r1: string;
+  r2: string;
+  r3: string;
+  r4: string;
+  r5: string;
+  r6: string;
   is_inox: number;
   league_key: string;
-  zwid?: number;
-  riders_count?: number;
-  rounds_played?: number;
 }
 
 interface FilterOption {
-  round_id: number;
-  league_key: string;
+  round_group_id: number;
   round_name: string;
+  season_name: string;
+  league_key: string;
 }
 
 const ZRLDivisionResults: React.FC = () => {
   const [options, setOptions] = useState<FilterOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>('');
-  const [results, setResults] = useState<DivisionResult[]>([]);
+  const [results, setResults] = useState<TeamStanding[]>([]);
   const [loading, setLoading] = useState(true);
-  const [syncLoading, setSyncLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  
-  // Nuovi stati per le visualizzazioni
-  const [view, setView] = useState<'riders' | 'teams'>('riders');
-  const [scope, setScope] = useState<'race' | 'season'>('race');
 
   useEffect(() => {
-    const token = localStorage.getItem('inox_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserRole(payload.role);
-      } catch (e) {
-        console.error("Auth error");
-      }
-    }
     fetchOptions();
   }, []);
-
-  useEffect(() => {
-    if (selectedOption) {
-      const [rid, lk] = selectedOption.split('|');
-      fetchResults(parseInt(rid), lk, view, scope);
-    }
-  }, [view, scope, selectedOption]);
 
   const fetchOptions = async () => {
     try {
@@ -72,9 +50,9 @@ const ZRLDivisionResults: React.FC = () => {
         setOptions(data.options);
         if (data.options.length > 0) {
           const first = data.options[0];
-          const val = `${first.round_id}|${first.league_key}`;
+          const val = `${first.round_group_id}|${first.league_key}`;
           setSelectedOption(val);
-          fetchResults(first.round_id, first.league_key, view, scope);
+          fetchResults(first.round_group_id, first.league_key);
         } else {
           setLoading(false);
         }
@@ -85,15 +63,10 @@ const ZRLDivisionResults: React.FC = () => {
     }
   };
 
-  const fetchResults = async (roundId: number, leagueKey: string, currentView: string, currentScope: string) => {
+  const fetchResults = async (roundGroupId: number, leagueKey: string) => {
     setLoading(true);
     try {
-      let url = `/api/division-results?league_key=${leagueKey}&view=${currentView}`;
-      if (currentScope === 'race' || currentView === 'riders') {
-        url += `&round_id=${roundId}`;
-      }
-      
-      const res = await fetch(url);
+      const res = await fetch(`/api/division-results?round_group_id=${roundGroupId}&league_key=${leagueKey}`);
       const data = await res.json();
       if (data.success) {
         setResults(data.results);
@@ -105,203 +78,101 @@ const ZRLDivisionResults: React.FC = () => {
     }
   };
 
-  const handleSync = async () => {
-    if (!selectedOption) return;
-    const [roundId] = selectedOption.split('|');
-    setSyncLoading(true);
-    try {
-      const res = await fetch('/api/admin/sync-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
-        },
-        body: JSON.stringify({ round_id: parseInt(roundId) })
-      });
-      const data = await res.json();
-      if (data.success) {
-        const [rid, lk] = selectedOption.split('|');
-        fetchResults(parseInt(rid), lk, view, scope);
-      } else {
-        alert("Errore Sync: " + data.error);
-      }
-    } catch (err) {
-      alert("Errore di connessione.");
-    } finally {
-      setSyncLoading(false);
-    }
-  };
-
-  const handleFilterChange = (rid: number, lk: string) => {
-    const val = `${rid}|${lk}`;
+  const handleFilterChange = (rgid: number, lk: string) => {
+    const val = `${rgid}|${lk}`;
     setSelectedOption(val);
-    fetchResults(rid, lk, view, scope);
+    fetchResults(rgid, lk);
     setShowFilters(false);
   };
 
-  const formatTime = (seconds: number) => {
-    if (!seconds) return "--:--";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    const ms = Math.round((seconds - Math.floor(seconds)) * 100);
-    
-    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    return `${m}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
-  };
-
-  const inoxResults = results.filter(r => r.is_inox === 1);
-  const bestPosition = view === 'riders' 
-    ? (inoxResults.length > 0 ? Math.min(...inoxResults.map(r => r.position || 999)) : null)
-    : null;
-  const totalInoxPoints = inoxResults.reduce((acc, r) => acc + (r.points_total || 0), 0);
-
-  const isAdmin = userRole === 'admin' || userRole === 'moderator';
+  const currentFilter = options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption);
+  const inoxTeam = results.find(r => r.is_inox === 1);
 
   return (
     <div className="h-[calc(100vh-140px)] flex flex-col gap-6 overflow-hidden animate-in fade-in duration-700">
       
-      {/* TOP HEADER & ACTIONS */}
+      {/* HEADER SECTION */}
       <section className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 flex-shrink-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
-               <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest">Division Archives</span>
+            <div className="px-2 py-0.5 bg-inox-orange/10 border border-inox-orange/20 rounded-full">
+               <span className="text-[8px] font-black text-inox-orange uppercase tracking-widest">WTRL GC Engine</span>
             </div>
-            {syncLoading && (
-              <div className="flex items-center gap-2 px-2 py-0.5 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full animate-pulse">
-                <RefreshCw size={10} className="animate-spin text-inox-cyan" />
-                <span className="text-[8px] font-black text-inox-cyan uppercase tracking-widest">Syncing WTRL...</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 px-2 py-0.5 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full">
+              <span className="text-[8px] font-black text-inox-cyan uppercase tracking-widest">Official Standings</span>
+            </div>
           </div>
           <h1 className="text-4xl lg:text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
-            ZRL <span className="text-zinc-800">{view === 'riders' ? 'RESULTS' : 'STANDINGS'}</span>
+            ZRL <span className="text-zinc-800">LEAGUE GC</span>
           </h1>
         </div>
 
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full xl:w-auto">
-          {/* Toggles View/Scope */}
-          <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
-            <button 
-              onClick={() => setView('riders')}
-              className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${view === 'riders' ? 'bg-[#fc6719] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              Atleti
-            </button>
-            <button 
-              onClick={() => setView('teams')}
-              className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${view === 'teams' ? 'bg-[#fc6719] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              Squadre
-            </button>
-          </div>
-
-          {view === 'teams' && (
-            <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
-              <button 
-                onClick={() => setScope('race')}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${scope === 'race' ? 'bg-white text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                Gara
-              </button>
-              <button 
-                onClick={() => setScope('season')}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${scope === 'season' ? 'bg-white text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                Stagione
-              </button>
-            </div>
-          )}
-
-          {/* Custom Dropdown Filter */}
-          <div className="relative flex-1 md:flex-none">
-            <button 
-              onClick={() => setShowFilters(!showFilters)}
-              className="w-full md:w-[280px] px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-between text-left group hover:border-[#fc6719]/50 transition-all shadow-xl"
-            >
-              <div className="flex items-center gap-3">
-                <Filter size={14} className="text-zinc-500" />
-                <span className="text-[10px] font-black uppercase text-white truncate max-w-[180px]">
-                  {options.find(o => `${o.round_id}|${o.league_key}` === selectedOption)?.round_name || 'Seleziona Round'}
+        {/* CUSTOM DROPDOWN FILTER */}
+        <div className="relative w-full md:w-[320px]">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="w-full px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-xl"
+          >
+            <div className="flex items-center gap-3">
+              <Filter size={16} className="text-zinc-500" />
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none mb-1">Active Viewport</span>
+                <span className="text-[10px] font-black uppercase text-white truncate">
+                  {currentFilter ? `${currentFilter.round_name} - ${currentFilter.league_key}` : 'Seleziona Round'}
                 </span>
               </div>
-              <ChevronDown size={14} className={`text-zinc-500 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-            </button>
+            </div>
+            <ChevronDown size={14} className={`text-zinc-500 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+          </button>
 
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar"
-                >
-                   {options.map((opt, i) => (
-                     <button
-                       key={i}
-                       onClick={() => handleFilterChange(opt.round_id, opt.league_key)}
-                       className="w-full px-6 py-4 text-left hover:bg-[#fc6719]/10 border-b border-zinc-800/50 last:border-0 transition-colors"
-                     >
-                       <p className="text-[10px] font-black uppercase text-white">{opt.round_name}</p>
-                       <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{opt.league_key}</p>
-                     </button>
-                   ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {isAdmin && (
-            <button 
-              onClick={handleSync}
-              disabled={syncLoading}
-              className="p-3.5 bg-white text-black rounded-2xl hover:bg-orange-500 hover:text-white transition-all shadow-xl disabled:opacity-50"
-              title="Sincronizza Classifica"
-            >
-              <RefreshCw size={18} className={syncLoading ? 'animate-spin' : ''} />
-            </button>
-          )}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute top-full left-0 right-0 mt-2 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar"
+              >
+                 {options.map((opt, i) => (
+                   <button
+                     key={i}
+                     onClick={() => handleFilterChange(opt.round_group_id, opt.league_key)}
+                     className="w-full px-6 py-4 text-left hover:bg-inox-orange/10 border-b border-zinc-800/50 last:border-0 transition-colors group"
+                   >
+                     <p className="text-[10px] font-black uppercase text-white group-hover:text-inox-orange transition-colors">{opt.round_name}</p>
+                     <div className="flex justify-between items-center mt-1">
+                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{opt.league_key}</p>
+                        <p className="text-[8px] font-black text-zinc-700 uppercase">{opt.season_name}</p>
+                     </div>
+                   </button>
+                 ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
       {/* QUICK STATS BENTO */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-shrink-0">
          <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
-            <Users size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{view === 'riders' ? 'Division Riders' : 'Division Teams'}</p>
-            <p className="text-3xl font-black italic text-white">{results.length}</p>
-            <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-              <Hash size={60} />
-            </div>
+            <Hash size={14} className="text-zinc-600 mb-2" />
+            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>
+            <p className="text-3xl font-black italic text-white">{results.length} Teams</p>
          </div>
-         <div className="p-6 rounded-[2rem] bg-orange-500/5 border border-orange-500/10 flex flex-col gap-2 relative overflow-hidden group">
-            <Star size={14} className="text-orange-500 mb-2" />
-            <p className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Inox Squad</p>
-            <p className="text-3xl font-black italic text-orange-500">{inoxResults.length}</p>
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
-              <Zap size={60} className="text-orange-500" />
-            </div>
+         <div className="p-6 rounded-[2rem] bg-inox-orange/5 border border-inox-orange/10 flex flex-col gap-2 relative overflow-hidden group">
+            <Star size={14} className="text-inox-orange mb-2" />
+            <p className="text-[8px] font-black text-inox-orange/60 uppercase tracking-widest">INOX Position</p>
+            <p className="text-3xl font-black italic text-inox-orange">{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
          </div>
          <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
-            <Award size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{view === 'riders' ? 'Best Position' : 'Average Score'}</p>
-            <p className="text-3xl font-black italic text-white">
-              {view === 'riders' 
-                ? (bestPosition ? `#${bestPosition}` : 'N/A')
-                : (results.length > 0 ? Math.round(totalInoxPoints / Math.max(1, results.length)) : '0')}
-            </p>
-            <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-              <Trophy size={60} />
-            </div>
+            <Trophy size={14} className="text-zinc-600 mb-2" />
+            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">League Points (j)</p>
+            <p className="text-3xl font-black italic text-white">{inoxTeam ? inoxTeam.league_points : '0'}</p>
          </div>
          <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
             <Activity size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Total Inox Points</p>
-            <p className="text-3xl font-black italic text-white">{totalInoxPoints}</p>
-            <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-              <Target size={60} />
-            </div>
+            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Total Race Pts (e+k+i)</p>
+            <p className="text-3xl font-black italic text-white">{inoxTeam ? inoxTeam.total_race_points : '0'}</p>
          </div>
       </section>
 
@@ -309,99 +180,94 @@ const ZRLDivisionResults: React.FC = () => {
       <section className="flex-1 bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden shadow-2xl relative">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <RefreshCw size={40} className="text-orange-500 animate-spin mb-4" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Recalculating Ranks...</p>
-          </div>
-        ) : error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-             <AlertCircle size={48} className="text-red-500 mb-4" />
-             <p className="text-red-500 font-black uppercase italic tracking-widest">{error}</p>
+            <RefreshCw size={40} className="text-inox-orange animate-spin mb-4" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Retrieving official GC...</p>
           </div>
         ) : results.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
              <div className="p-8 rounded-full bg-zinc-900/50 border border-zinc-800 mb-6">
-                <Database size={48} className="text-zinc-700" />
+                <AlertCircle size={48} className="text-zinc-700" />
              </div>
-             <p className="text-xl font-black italic text-zinc-500 uppercase tracking-tighter">No Data Synchronized</p>
-             <p className="text-zinc-700 text-[10px] font-bold uppercase mt-2 tracking-widest">Please initiate sync from the Command Center</p>
+             <p className="text-xl font-black italic text-zinc-500 uppercase tracking-tighter">No GC Data Sync</p>
+             <p className="text-zinc-700 text-[10px] font-bold uppercase mt-2 tracking-widest">Please upload official WTRL JSON from Admin Panel</p>
           </div>
         ) : (
           <div className="h-full overflow-y-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-separate border-spacing-0">
               <thead className="sticky top-0 z-10 bg-black/90 backdrop-blur-md">
                 <tr className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 border-b border-zinc-900">
-                  <th className="px-8 py-6 text-center w-24">#</th>
-                  <th className="px-8 py-6">{view === 'riders' ? 'Rider / Team' : 'Team Name'}</th>
-                  {view === 'riders' && <th className="px-8 py-6 text-center">Time</th>}
-                  {view === 'teams' && scope === 'race' && <th className="px-8 py-6 text-center">Riders</th>}
-                  {view === 'teams' && scope === 'season' && <th className="px-8 py-6 text-center">Rounds</th>}
-                  <th className="px-8 py-6 text-center">FIN</th>
-                  <th className="px-8 py-6 text-center">FAL</th>
-                  <th className="px-8 py-6 text-center">FTS</th>
-                  <th className="px-8 py-6 text-center text-orange-500">POINTS</th>
+                  <th className="px-8 py-6 text-center w-24 bg-black/20">RANK</th>
+                  <th className="px-8 py-6">TEAM NAME</th>
+                  <th className="px-6 py-6 text-center text-inox-orange">LP (J)</th>
+                  <th className="px-6 py-6 text-center">FAL (E)</th>
+                  <th className="px-6 py-6 text-center">FTS (K)</th>
+                  <th className="px-6 py-6 text-center">POS (I)</th>
+                  <th className="px-8 py-6 text-center">RACE HISTORY</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-900/30">
-                {results.map((item, index) => {
-                  const position = view === 'riders' ? item.position : (index + 1);
-                  const isFirst = position === 1;
+                {results.map((team) => {
+                  const isFirst = team.rank === 1;
                   return (
                     <motion.tr 
-                      key={view === 'riders' ? item.id : item.team_name}
+                      key={team.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className={`group transition-all ${
-                        item.is_inox 
-                          ? 'bg-orange-500/5 hover:bg-orange-500/10' 
+                        team.is_inox 
+                          ? 'bg-inox-orange/5 hover:bg-inox-orange/10' 
                           : 'hover:bg-zinc-900/40'
                       }`}
                     >
-                      <td className="px-8 py-6 text-center">
-                        <span className={`text-2xl font-black italic ${
-                          isFirst ? 'text-orange-500 shadow-orange-500/20 drop-shadow-lg' : 'text-zinc-800 group-hover:text-zinc-600'
+                      <td className="px-8 py-8 text-center">
+                        <span className={`text-3xl font-black italic ${
+                          isFirst ? 'text-inox-orange drop-shadow-[0_0_10px_rgba(252,103,25,0.4)]' : 'text-zinc-800 group-hover:text-zinc-600'
                         }`}>
-                          {position ? `#${position}` : '-'}
+                          #{team.rank}
                         </span>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-8 py-8">
                         <div className="flex flex-col">
-                          <span className={`font-black uppercase tracking-tight text-lg leading-none ${
-                            item.is_inox ? 'text-orange-400' : 'text-zinc-200'
+                          <span className={`font-black uppercase tracking-tight text-xl leading-none ${
+                            team.is_inox ? 'text-white' : 'text-zinc-300 group-hover:text-white'
                           }`}>
-                            {view === 'riders' ? item.rider_name : item.team_name}
+                            {team.team_name}
                           </span>
-                          <span className="text-zinc-600 text-[9px] font-bold uppercase tracking-widest mt-1.5 flex items-center gap-2 truncate max-w-xs">
-                            {view === 'riders' ? item.team_name : `ZRL Division ${item.league_key}`}
-                            {item.is_inox === 1 && (
-                              <span className="bg-orange-500 text-black px-1.5 py-0.5 rounded-[4px] text-[7px] font-black">SQUADRON</span>
-                            )}
-                          </span>
+                          {team.is_inox === 1 && (
+                            <div className="flex items-center gap-2 mt-2">
+                               <span className="bg-inox-orange text-black px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-tighter italic">Official INOX Squadron</span>
+                            </div>
+                          )}
                         </div>
                       </td>
-                      {view === 'riders' && (
-                        <td className="px-8 py-6 text-center font-mono text-xs text-zinc-500">
-                          {formatTime(item.time || 0)}
-                        </td>
-                      )}
-                      {view === 'teams' && (
-                        <td className="px-8 py-6 text-center font-bold text-zinc-500">
-                          {scope === 'race' ? item.riders_count : item.rounds_played}
-                        </td>
-                      )}
-                      <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{item.points_finish}</span>
+                      <td className="px-6 py-8 text-center">
+                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-black border border-zinc-800 group-hover:border-inox-orange/40 transition-all">
+                           <span className="text-xl font-black italic text-inox-orange">
+                             {team.league_points}
+                           </span>
+                         </div>
                       </td>
-                      <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{item.points_fal}</span>
+                      <td className="px-6 py-8 text-center">
+                        <span className="text-xs font-black text-zinc-400">{team.pts_fal}</span>
                       </td>
-                      <td className="px-8 py-6 text-center">
-                        <span className="text-[11px] font-black text-zinc-400">{item.points_fts}</span>
+                      <td className="px-6 py-8 text-center">
+                        <span className="text-xs font-black text-zinc-400">{team.pts_fts}</span>
                       </td>
-                      <td className="px-8 py-6 text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-zinc-900/50 border border-zinc-800 group-hover:border-orange-500/40 transition-all">
-                          <span className="text-lg font-black italic text-orange-500 group-hover:scale-110 transition-transform">
-                            {item.points_total}
-                          </span>
+                      <td className="px-6 py-8 text-center">
+                        <span className="text-xs font-black text-zinc-400">{team.pts_finish}</span>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex justify-center items-center gap-1.5">
+                          {[team.r1, team.r2, team.r3, team.r4, team.r5, team.r6].map((pts, i) => (
+                            pts !== "0" && pts !== null && (
+                              <div key={i} className="flex flex-col items-center gap-1">
+                                <span className="text-[6px] font-black text-zinc-700 uppercase tracking-tighter">R{i+1}</span>
+                                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                  <span className="text-[10px] font-black text-zinc-500">{pts}</span>
+                                </div>
+                              </div>
+                            )
+                          ))}
                         </div>
                       </td>
                     </motion.tr>
@@ -412,45 +278,9 @@ const ZRLDivisionResults: React.FC = () => {
           </div>
         )}
       </section>
+
     </div>
   );
 };
-
-// Simple AlertCircle fallback if lucide-react version is old or missing it
-const AlertCircle = ({ size, className }: { size: number, className: string }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
-
-const Database = ({ size, className }: { size: number, className: string }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <ellipse cx="12" cy="5" rx="9" ry="3" />
-    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-  </svg>
-);
 
 export default ZRLDivisionResults;
