@@ -110,6 +110,15 @@ const AdminDashboard: React.FC = () => {
       size: "sm"
     },
     {
+      title: "Strat Map",
+      subtitle: "Deep Analytics",
+      desc: "Analisi tattica DNA e generazione Social Cards per i risultati.",
+      icon: BarChart3,
+      path: "/zrl-analytics",
+      color: "from-cyan-600 to-blue-800",
+      size: "sm"
+    },
+    {
       title: "Events Lab",
       subtitle: "Configuration",
       desc: "Gestione calendario corse sociali e allenamenti di gruppo.",

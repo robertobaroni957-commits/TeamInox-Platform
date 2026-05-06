@@ -91,9 +91,25 @@ const ZRLAnalytics: React.FC = () => {
   const currentTeamData = data?.analytics.find(t => t.team_name === selectedTeam);
   const inoxTeams = data?.analytics.filter(t => t.is_inox === 1) || [];
 
-  if (loading && !data) return (
+  if (loading && options.length === 0) return (
     <div className="min-h-screen flex items-center justify-center bg-black">
-      <RefreshCw size={40} className="text-inox-orange animate-spin" />
+      <div className="flex flex-col items-center gap-4">
+        <RefreshCw size={40} className="text-inox-orange animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Initializing Tactical Data...</p>
+      </div>
+    </div>
+  );
+
+  if (!loading && options.length === 0) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-8 text-center">
+       <div className="p-10 rounded-full bg-zinc-900/50 border border-zinc-800 mb-8">
+          <BarChart3 size={64} className="text-zinc-700" />
+       </div>
+       <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-4">Strat Map Offline</h2>
+       <p className="text-zinc-500 text-sm max-w-md mx-auto uppercase font-bold tracking-widest leading-relaxed">
+          Nessuna classifica ufficiale (GC) rilevata nel sistema. <br/>
+          <span className="text-inox-orange">Sincronizza i dati a squadre</span> dallo Step 5 delle Operations per attivare l'analisi DNA.
+       </p>
     </div>
   );
 
