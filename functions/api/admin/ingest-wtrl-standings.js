@@ -26,16 +26,15 @@ export async function onRequestPost({ request, env }) {
         for (const currentLega of leaguesToProcess) {
             if (!currentLega.leagueKey || !currentLega.payload) continue;
 
-            // Recupero nome lega dalla tabella teams (se esistente)
+            // Recupero nome lega dalla tabella teams con logica di matching robusta
             const leagueInfo = await env.DB.prepare(`
                 SELECT division FROM teams 
-                WHERE league = SUBSTR(?, 1, 3) 
-                AND (zrldivision = SUBSTR(?, 5, 1) OR category = SUBSTR(?, 5, 1))
-                AND division_number = CAST(SUBSTR(?, 6, 1) AS INTEGER)
+                WHERE (league || '0' || category || division_number || '0') = ?
+                OR (league || '0' || zrldivision || division_number || '0') = ?
                 LIMIT 1
-            `).bind(currentLega.leagueKey, currentLega.leagueKey, currentLega.leagueKey, currentLega.leagueKey).first();
+            `).bind(currentLega.leagueKey, currentLega.leagueKey).first();
 
-            const leagueName = leagueInfo?.division || `Division ${currentLega.leagueKey}`;
+            const leagueName = leagueInfo?.division || null; // Salviamo NULL se non trovato per usare il fallback nel frontend
 
             // Pulizia per questa specifica lega
             insertStmts.push(env.DB.prepare(`DELETE FROM zrl_team_standings WHERE round_group_id = ? AND league_key = ?`).bind(roundGroupId, currentLega.leagueKey));

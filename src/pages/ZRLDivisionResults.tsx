@@ -91,6 +91,20 @@ const ZRLDivisionResults: React.FC = () => {
   const currentFilter = options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption);
   const inoxTeam = results.find(r => r.is_inox === 1);
 
+  const formatLeagueName = (opt: FilterOption) => {
+    if (opt.league_display_name && opt.league_display_name !== 'NULL') return opt.league_display_name;
+    
+    // Fallback: Traduciamo il codice tecnico 2350C20 -> League 235 - C2
+    const key = opt.league_key;
+    if (key.length >= 7) {
+      const l = key.substring(0, 3);
+      const c = key.substring(4, 5);
+      const n = key.substring(5, 6);
+      return `League ${l} - ${c}${n}`;
+    }
+    return key;
+  };
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in duration-700">
       
@@ -124,7 +138,7 @@ const ZRLDivisionResults: React.FC = () => {
               <div className="flex flex-col">
                 <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none mb-1">Active Viewport</span>
                 <span className="text-[10px] font-black uppercase text-white truncate">
-                  {currentFilter ? `${currentFilter.round_name} - ${currentFilter.league_display_name || currentFilter.league_key}` : 'Seleziona Round'}
+                  {currentFilter ? `${currentFilter.round_name} - ${formatLeagueName(currentFilter)}` : 'Seleziona Round'}
                 </span>
               </div>
             </div>
@@ -147,7 +161,7 @@ const ZRLDivisionResults: React.FC = () => {
                    >
                      <p className="text-[10px] font-black uppercase text-white group-hover:text-inox-orange transition-colors">{opt.round_name}</p>
                      <div className="flex justify-between items-center mt-1">
-                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{opt.league_display_name || opt.league_key}</p>
+                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{formatLeagueName(opt)}</p>
                         <p className="text-[8px] font-black text-zinc-700 uppercase">{opt.season_name}</p>
                      </div>
                    </button>
