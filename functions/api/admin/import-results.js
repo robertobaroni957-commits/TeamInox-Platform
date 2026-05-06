@@ -6,74 +6,68 @@ export async function onRequestPost({ request, env }) {
     );
 
     try {
-        if (!env.DB) return errorRes("Database binding not found", 500);
+        if (!env.DB) return errorRes("DB connection lost", 500);
 
         const data = await request.json();
         const { seasonId, raceNumber, divisions } = data;
 
         if (!seasonId || !raceNumber || !divisions) {
-            return errorRes("Dati non completi nel JSON unificato.", 400);
+            return errorRes("JSON malformato: mancano seasonId, raceNumber o divisions.", 400);
         }
 
-        // 1. Recuperiamo la stagione (series)
+        // 1. Trova la stagione reale
         const season = await env.DB.prepare(`
-            SELECT id FROM zrl_seasons WHERE external_season_id = ? LIMIT 1
-        `).bind(seasonId).first();
+            SELECT id FROM zrl_seasons WHERE external_season_id = ? OR name LIKE ? LIMIT 1
+        `).bind(seasonId, `%${seasonId}%`).first();
 
-        if (!season) {
-            return errorRes(`Stagione con ID WTRL ${seasonId} non trovata nel sistema.`, 404);
-        }
+        if (!season) return errorRes(`Stagione ${seasonId} non censita.`, 404);
 
-        const season_id = season.id;
+        let totalRidersImported = 0;
         const insertStmts = [];
-        let totalRiders = 0;
-        const processedRounds = new Set();
+        const affectedRaceIds = new Set();
+
+        // Prepariamo una cache dei round per questa stagione per non interrogare il DB ad ogni riga
+        const allSeasonRaces = await env.DB.prepare(`
+            SELECT id, name, category FROM zrl_races WHERE series_id = ? AND name LIKE ?
+        `).bind(season.id, `%Race ${raceNumber}%`).all();
+
+        const raceMap = allSeasonRaces.results || [];
+
+        if (raceMap.length === 0) {
+            return errorRes(`Nessuna gara 'Race ${raceNumber}' trovata per questa stagione nel DB.`, 404);
+        }
 
         for (const div of divisions) {
             const leagueKey = div.league_key;
+            // Estrazione categoria (B da 2410B20)
+            const catChar = leagueKey.charAt(4).toUpperCase();
             
-            // Estraiamo la categoria dalla league_key (es: 2410B20 -> B)
-            // Di solito è il 5° carattere (indice 4)
-            let category = leagueKey.charAt(4).toUpperCase();
-            if (!['A', 'B', 'C', 'D'].includes(category)) category = 'ALL';
+            // Trova la gara corretta: 
+            // 1. Cerca per categoria specifica (A, B, C...)
+            // 2. Fallback su 'ALL'
+            // 3. Fallback sulla prima gara trovata per quel numero
+            let targetRace = raceMap.find(r => r.category === catChar) || 
+                             raceMap.find(r => r.category === 'ALL') || 
+                             raceMap[0];
 
-            // 2. Troviamo la gara (race) specifica per questa categoria
-            const race = await env.DB.prepare(`
-                SELECT id FROM zrl_races 
-                WHERE series_id = ? 
-                AND name LIKE ? 
-                AND (category = ? OR category = 'ALL')
-                ORDER BY (category = ?) DESC
-                LIMIT 1
-            `).bind(season_id, `%Race ${raceNumber}%`, category, category).first();
+            const raceId = targetRace.id;
+            affectedRaceIds.add(raceId);
 
-            if (!race) {
-                console.warn(`Gara non trovata per Categoria ${category}, Race ${raceNumber}. Salto divisione ${leagueKey}.`);
-                continue;
-            }
-
-            const raceId = race.id;
-
-            // Pulizia preventiva per questa divisione in questo specifico round/gara
+            // Pulizia mirata per questa divisione
             insertStmts.push(env.DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(raceId, leagueKey));
-            processedRounds.add(raceId);
 
             for (const team of div.payload) {
                 const teamName = team.teamname || "Unknown Team";
-                const isInoxTeam = teamName.toUpperCase().includes("INOX");
+                const isInox = teamName.toUpperCase().includes("INOX");
                 const riders = team.a || [];
 
                 for (const r of riders) {
-                    totalRiders++;
+                    totalRidersImported++;
                     const zwid = parseInt(r.zid || r.zwid || 0);
-                    const riderName = r.name || "Unknown Rider";
+                    const riderName = r.name || "Unknown";
                     const position = parseInt(r.p1) || null;
                     const time = parseFloat(r.timeResult) || 0;
-                    const pts_finish = parseInt(r.finrp) || 0;
-                    const pts_fal = parseInt(r.falrp) || 0;
-                    const pts_fts = parseInt(r.ftsrp) || 0;
-                    const pts_total = parseInt(r.totrp) || 0;
-
+                    
                     insertStmts.push(env.DB.prepare(`
                         INSERT INTO division_results (
                             round_id, league_key, team_name, rider_name, zwid, 
@@ -83,19 +77,24 @@ export async function onRequestPost({ request, env }) {
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
                         raceId, leagueKey, teamName, riderName, zwid,
-                        position, time, pts_finish, pts_fal, pts_fts,
-                        pts_total, isInoxTeam ? 1 : 0
+                        position, time, 
+                        parseInt(r.finrp || 0), parseInt(r.falrp || 0), parseInt(r.ftsrp || 0), 
+                        parseInt(r.totrp || 0), isInox ? 1 : 0
                     ));
                 }
             }
         }
 
+        // Esecuzione batch
         if (insertStmts.length > 0) {
-            await env.DB.batch(insertStmts);
+            // Dividiamo in blocchi da 100 per sicurezza
+            for (let i = 0; i < insertStmts.length; i += 100) {
+                await env.DB.batch(insertStmts.slice(i, i + 100));
+            }
         }
 
-        // 3. Aggiornamento tabella 'results' (solo per atleti INOX anagrafati)
-        for (const rid of processedRounds) {
+        // Aggiornamento tabella 'results' per gli atleti INOX (Sincronizzazione finale)
+        for (const rid of affectedRaceIds) {
             await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(rid).run();
             await env.DB.prepare(`
                 INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
@@ -108,11 +107,11 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            count: totalRiders,
-            message: `Importati risultati per ${totalRiders} atleti in ${divisions.length} divisioni, distribuiti su ${processedRounds.size} gare per categoria.`
+            message: `Processo completato: ${totalRidersImported} atleti caricati con successo.`,
+            stats: { riders: totalRidersImported, races: affectedRaceIds.size }
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
-        return errorRes(err.message, 500);
+        return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
