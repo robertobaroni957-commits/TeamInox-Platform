@@ -128,21 +128,21 @@ const ZRLDivisionResults: React.FC = () => {
         </div>
 
         {/* CUSTOM DROPDOWN FILTER */}
-        <div className="relative w-full md:w-[320px]">
+        <div className="relative w-full md:w-[380px]">
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="w-full px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-xl"
+            className="w-full px-5 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-xl"
           >
-            <div className="flex items-center gap-3">
-              <Filter size={16} className="text-zinc-500" />
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none mb-1">Active Viewport</span>
-                <span className="text-[10px] font-black uppercase text-white truncate">
-                  {currentFilter ? `${currentFilter.round_name} - ${formatLeagueName(currentFilter)}` : 'Seleziona Round'}
+            <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+              <Filter size={16} className="text-zinc-500 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em] leading-none mb-1">Active Viewport</span>
+                <span className="text-[10px] font-black uppercase text-white truncate pr-2">
+                  {currentFilter ? `${currentFilter.round_name} • ${formatLeagueName(currentFilter)}` : 'Seleziona Round'}
                 </span>
               </div>
             </div>
-            <ChevronDown size={14} className={`text-zinc-500 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`text-zinc-500 shrink-0 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </button>
 
           <AnimatePresence>

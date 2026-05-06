@@ -73,11 +73,11 @@ export async function onRequestGet({ env }) {
         
         for (const q of createSql) await env.DB.prepare(q).run();
 
-        // 3. SEED DATI INIZIALI
-        await env.DB.prepare(`INSERT INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025/26', 1)`).run();
+        // 3. SEED DATI INIZIALI (Corretti per Season 2025 Round 4)
+        await env.DB.prepare(`INSERT OR REPLACE INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025', 1)`).run();
         await env.DB.prepare(`
-            INSERT INTO zrl_round_groups (id, series_id, round_index, external_season_id, description) 
-            VALUES (1, 1, 1, 19, 'ZRL Round 1 (Spring)')
+            INSERT OR REPLACE INTO zrl_round_groups (id, series_id, round_index, external_season_id, description) 
+            VALUES (1, 1, 4, 19, 'ZRL Round 4 (Season 2025)')
         `).run();
 
         const check = await env.DB.prepare(`SELECT * FROM zrl_round_groups WHERE external_season_id = 19`).first();
