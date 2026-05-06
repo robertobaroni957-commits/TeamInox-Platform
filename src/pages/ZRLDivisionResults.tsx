@@ -13,6 +13,8 @@ interface TeamStanding {
   pts_fal: number;
   pts_fts: number;
   pts_finish: number;
+  total_race_points: number;
+  league_name: string;
   r1: string;
   r2: string;
   r3: string;
@@ -28,6 +30,7 @@ interface FilterOption {
   round_name: string;
   season_name: string;
   league_key: string;
+  league_display_name: string;
 }
 
 const ZRLDivisionResults: React.FC = () => {
@@ -121,7 +124,7 @@ const ZRLDivisionResults: React.FC = () => {
               <div className="flex flex-col">
                 <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none mb-1">Active Viewport</span>
                 <span className="text-[10px] font-black uppercase text-white truncate">
-                  {currentFilter ? `${currentFilter.round_name} - ${currentFilter.league_key}` : 'Seleziona Round'}
+                  {currentFilter ? `${currentFilter.round_name} - ${currentFilter.league_display_name || currentFilter.league_key}` : 'Seleziona Round'}
                 </span>
               </div>
             </div>
@@ -144,7 +147,7 @@ const ZRLDivisionResults: React.FC = () => {
                    >
                      <p className="text-[10px] font-black uppercase text-white group-hover:text-inox-orange transition-colors">{opt.round_name}</p>
                      <div className="flex justify-between items-center mt-1">
-                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{opt.league_key}</p>
+                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{opt.league_display_name || opt.league_key}</p>
                         <p className="text-[8px] font-black text-zinc-700 uppercase">{opt.season_name}</p>
                      </div>
                    </button>
@@ -202,9 +205,10 @@ const ZRLDivisionResults: React.FC = () => {
                   <th className="px-8 py-6 text-center w-24 bg-black/20">RANK</th>
                   <th className="px-8 py-6">TEAM NAME</th>
                   <th className="px-6 py-6 text-center text-inox-orange">LP (J)</th>
-                  <th className="px-6 py-6 text-center">FAL (E)</th>
-                  <th className="px-6 py-6 text-center">FTS (K)</th>
-                  <th className="px-6 py-6 text-center">POS (I)</th>
+                  <th className="px-6 py-6 text-center">TRP (Σ)</th>
+                  <th className="px-4 py-6 text-center">FAL (E)</th>
+                  <th className="px-4 py-6 text-center">FTS (K)</th>
+                  <th className="px-4 py-6 text-center">POS (I)</th>
                   <th className="px-8 py-6 text-center">RACE HISTORY</th>
                 </tr>
               </thead>
@@ -251,13 +255,16 @@ const ZRLDivisionResults: React.FC = () => {
                          </div>
                       </td>
                       <td className="px-6 py-8 text-center">
-                        <span className="text-xs font-black text-zinc-400">{team.pts_fal}</span>
+                        <span className="text-sm font-black text-white">{team.total_race_points}</span>
                       </td>
-                      <td className="px-6 py-8 text-center">
-                        <span className="text-xs font-black text-zinc-400">{team.pts_fts}</span>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fal}</span>
                       </td>
-                      <td className="px-6 py-8 text-center">
-                        <span className="text-xs font-black text-zinc-400">{team.pts_finish}</span>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fts}</span>
+                      </td>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_finish}</span>
                       </td>
                       <td className="px-8 py-8">
                         <div className="flex justify-center items-center gap-1.5">
