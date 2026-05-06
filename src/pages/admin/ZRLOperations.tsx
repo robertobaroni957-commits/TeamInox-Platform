@@ -262,7 +262,9 @@ const ZRLOperations: React.FC = () => {
       const resultsData = JSON.parse(await file.text());
       
       // Rilevamento automatico del tipo di JSON
-      const isGC = resultsData.payload && resultsData.externalSeasonId && resultsData.leagueKey;
+      const isGC = (resultsData.payload && resultsData.externalSeasonId && resultsData.leagueKey) || 
+                   (resultsData.leagues && resultsData.externalSeasonId);
+      
       const endpoint = isGC ? '/api/admin/ingest-wtrl-standings' : '/api/admin/import-results';
       
       const response = await fetch(endpoint, {
