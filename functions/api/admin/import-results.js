@@ -16,17 +16,16 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Recuperiamo il round_id corrispondente nel nostro DB basandoci su season e race number
-        // Assumiamo che il nome del round contenga il numero gara
         const round = await env.DB.prepare(`
             SELECT r.id 
             FROM rounds r
             JOIN series s ON r.series_id = s.id
             WHERE s.external_season_id = ? AND r.name LIKE ?
             LIMIT 1
-        `).bind(seasonId, `%Race \${raceNumber}%`).first();
+        `).bind(seasonId, `%Race ${raceNumber}%`).first();
 
         if (!round) {
-            return errorRes(`Round per Stagione \${seasonId} Gara \${raceNumber} non trovato nel DB locale.`, 404);
+            return errorRes(`Round per Stagione ${seasonId} Gara ${raceNumber} non trovato nel DB locale.`, 404);
         }
 
         const roundId = round.id;
@@ -87,7 +86,7 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ 
             success: true, 
             count: totalRiders,
-            message: `Importati risultati per \${totalRiders} atleti in \${divisions.length} divisioni.`
+            message: `Importati risultati per ${totalRiders} atleti in ${divisions.length} divisioni.`
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
