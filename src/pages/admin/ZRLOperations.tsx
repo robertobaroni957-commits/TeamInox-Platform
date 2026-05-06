@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Users, RefreshCw, Zap, ClipboardCheck, 
   Trophy, ChevronRight, AlertCircle, Calendar, CheckCircle2,
-  Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp
+  Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp,
+  LayoutGrid
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
