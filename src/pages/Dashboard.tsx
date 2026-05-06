@@ -17,7 +17,8 @@ import {
   LayoutGrid,
   MapPin,
   Clock,
-  Compass
+  Compass,
+  BarChart3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
