@@ -1,41 +1,24 @@
-export async function onRequestGet(context) {
-  const { env, request } = context;
+
+export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
-  const seriesId = url.searchParams.get("series_id");
+  const series_id = url.searchParams.get("series_id");
+
+  if (!env.DB) return new Response("DB non trovato", { status: 500 });
 
   try {
-    let query = `
-      SELECT r.*, s.name as series_name 
-      FROM rounds r
-      LEFT JOIN series s ON r.series_id = s.id
-    `;
-    
+    let query = "SELECT * FROM zrl_races";
     let params = [];
 
-    if (seriesId) {
-      query += ` WHERE r.series_id = ? `;
-      params.push(seriesId);
-    } else {
-      // Se non specificato, restituiamo solo i round della serie ATTIVA
-      query += ` WHERE s.is_active = 1 `;
+    if (series_id) {
+      query += " WHERE series_id = ?";
+      params.push(series_id);
     }
-
-    query += ` ORDER BY r.date ASC `;
+    
+    query += " ORDER BY date ASC, id ASC";
 
     const { results } = await env.DB.prepare(query).bind(...params).all();
-
-    return new Response(JSON.stringify({ 
-        success: true, 
-        rounds: results 
-    }), {
-      headers: { 
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store, no-cache, must-revalidate" 
-      }
-    });
-
-  } catch (err) {
-    console.error("ERRORE API rounds:", err.message);
-    return new Response(JSON.stringify({ error: err.message, rounds: [] }), { status: 500 });
+    return new Response(JSON.stringify({ rounds: results }), { headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
