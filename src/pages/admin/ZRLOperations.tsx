@@ -222,7 +222,8 @@ const ZRLOperations: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
-        }
+        },
+        body: JSON.stringify({ round_id: races.find(r => highlightedIndices.includes(races.indexOf(r)))?.id })
       });
       const data = await response.json();
       if (data.success) {
@@ -232,6 +233,33 @@ const ZRLOperations: React.FC = () => {
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: "Errore Sync: " + err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResultsUpload = async (file: File) => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const resultsData = JSON.parse(await file.text());
+      // L'unificato contiene round_id e l'array di tutti i team/rider
+      const response = await fetch('/api/admin/import-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify(resultsData)
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: `Importati risultati per \${data.count} atleti.` });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: "Errore Caricamento: " + err.message });
     } finally {
       setLoading(false);
     }
@@ -561,68 +589,161 @@ const ZRLOperations: React.FC = () => {
             {activeStep === 3 && <RosterSuggestions />}
             {/* STEP 5: RESULTS */}
             {activeStep === 5 && (
-              <div className="space-y-12 py-10">
-                <div className="text-center space-y-4">
-                  <div className="inline-flex p-8 bg-zinc-950 rounded-[2.5rem] border border-zinc-900 text-[#fc6719] shadow-2xl">
-                    <Trophy size={64} strokeWidth={1.5} />
-                  </div>
+              <div className="space-y-10 py-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-zinc-900/30 p-8 rounded-[2.5rem] border border-zinc-800">
                   <div className="space-y-2">
-                    <h3 className="text-4xl font-black italic text-white uppercase tracking-tighter">Results Engine</h3>
-                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">
-                      Sincronizza le classifiche ufficiali WTRL e genera i report di gara per la community.
+                    <div className="flex items-center gap-2">
+                      <Trophy size={20} className="text-[#fc6719]" />
+                      <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">Results Engine</h3>
+                    </div>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-md">
+                      Sincronizzazione classifiche WTRL tramite estrazione client-side (Console) e caricamento JSON unificato.
                     </p>
                   </div>
+                  <button 
+                    onClick={() => navigate('/zrl-results')}
+                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all border border-zinc-700"
+                  >
+                    <LayoutGrid size={14} /> Open Viewport
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                  {/* Sync Card */}
-                  <div className="p-10 rounded-[3rem] bg-zinc-900/30 border border-zinc-800 space-y-8 flex flex-col justify-between group hover:border-[#fc6719]/30 transition-all">
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Step A: Extractor */}
+                  <div className="p-8 rounded-[3rem] bg-zinc-950 border border-zinc-900 space-y-6 flex flex-col justify-between group hover:border-[#fc6719]/30 transition-all relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                       <RefreshCw size={120} />
+                    </div>
+                    <div className="space-y-4 relative z-10">
                       <div className="flex items-center gap-3">
                          <div className="p-3 bg-[#fc6719]/10 rounded-2xl text-[#fc6719]">
-                            <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />
+                            <RefreshCw size={24} />
                          </div>
-                         <h4 className="text-xl font-black italic text-white uppercase">WTRL Sync</h4>
+                         <h4 className="text-xl font-black italic text-white uppercase">1. Get Results Script</h4>
                       </div>
                       <p className="text-zinc-500 text-xs font-medium italic leading-relaxed">
-                        Scarica i risultati dell'ultimo round da WTRL e aggiorna il database InoxTeam.
+                        Copia lo script estrattore. Incollalo nella console della pagina classifiche WTRL per scaricare il file <span className="text-white font-bold">zrl_unified_results.json</span>.
                       </p>
                     </div>
                     <button 
-                      onClick={handleSyncResults}
-                      disabled={loading}
-                      className="w-full py-4 bg-white text-black font-black italic rounded-2xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-xs tracking-widest shadow-xl disabled:opacity-50"
+                      onClick={() => {
+                        const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
+                        const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
+                        const script = `(async () => {
+  const season = "${wtrlId || '19'}";
+  const race = prompt("Inserisci il Numero Gara (1-6):", "${raceNum}");
+  if (!race) return;
+
+  console.log("%c🚀 INIZIO ESTRAZIONE RISULTATI ZRL - SEASON " + season + " RACE " + race, "color: #fc6719; font-weight: bold; font-size: 14px;");
+  
+  // 1. Recuperiamo i TRC delle squadre INOX presenti nella pagina
+  const panels = document.querySelectorAll('.panel-body[data-trc]');
+  const divisionKeys = new Set();
+  
+  panels.forEach(p => {
+    const trc = p.getAttribute('data-trc');
+    // Le chiavi di divisione sono spesso deducibili dal context o presenti nei link
+    // Per sicurezza, recuperiamo i dati della squadra per avere la divisione corretta
+    divisionKeys.add(trc);
+  });
+
+  if (divisionKeys.size === 0) {
+    alert("Nessun pannello squadra trovato. Assicurati di essere nella pagina 'ZRL Results' di WTRL.");
+    return;
+  }
+
+  const unifiedData = {
+    seasonId: season,
+    raceNumber: race,
+    timestamp: new Date().toISOString(),
+    divisions: []
+  };
+
+  for (const trc of divisionKeys) {
+    try {
+      console.log("Fetching team context for: " + trc);
+      const teamRes = await fetch("https://www.wtrl.racing/api/zrl/" + season + "/teams/" + trc);
+      const teamData = await teamRes.json();
+      
+      if (teamData && teamData.meta && teamData.meta.division) {
+        const divKey = teamData.meta.division.url_key;
+        console.log("%c✅ Divisione individuata: " + divKey, "color: #00ff00");
+        
+        console.log("Downloading results for division: " + divKey);
+        const resUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
+        const res = await fetch(resUrl);
+        const data = await res.json();
+        
+        if (data && data.payload) {
+          unifiedData.divisions.push({
+            league_key: divKey,
+            payload: data.payload
+          });
+          console.log("📊 Risultati scaricati: " + data.payload.length + " squadre.");
+        }
+      }
+    } catch (e) {
+      console.error("❌ Errore per TRC " + trc + ":", e);
+    }
+  }
+
+  const blob = new Blob([JSON.stringify(unifiedData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "zrl_unified_results_R" + race + ".json";
+  a.click();
+  
+  console.log("%c✅ OPERAZIONE COMPLETATA", "color: #fc6719; font-weight: bold;");
+  alert("File unificato scaricato con " + unifiedData.divisions.length + " divisioni!");
+})();`;
+                        navigator.clipboard.writeText(script);
+                        setMessage({ type: 'success', text: "Script Estrattore Copiato! Incollalo su WTRL." });
+                      }}
+                      className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-black italic rounded-2xl border border-zinc-800 transition-all uppercase text-[10px] tracking-[0.2em] shadow-xl"
                     >
-                      {loading ? 'Sincronizzazione...' : 'Esegui Sync Globale'}
+                      Copy Extractor
                     </button>
                   </div>
 
-                  {/* View Card */}
-                  <div className="p-10 rounded-[3rem] bg-zinc-900/30 border border-zinc-800 space-y-8 flex flex-col justify-between group hover:border-inox-cyan/30 transition-all">
-                    <div className="space-y-4">
+                  {/* Step B: Ingest */}
+                  <div className="p-8 rounded-[3rem] bg-zinc-950 border border-zinc-900 space-y-6 flex flex-col justify-between group hover:border-inox-cyan/30 transition-all relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                       <Save size={120} />
+                    </div>
+                    <div className="space-y-4 relative z-10">
                       <div className="flex items-center gap-3">
                          <div className="p-3 bg-inox-cyan/10 rounded-2xl text-inox-cyan">
-                            <LayoutGrid size={24} />
+                            <Save size={24} />
                          </div>
-                         <h4 className="text-xl font-black italic text-white uppercase">Visualizza</h4>
+                         <h4 className="text-xl font-black italic text-white uppercase">2. Upload Unified JSON</h4>
                       </div>
                       <p className="text-zinc-500 text-xs font-medium italic leading-relaxed">
-                        Esplora le classifiche di divisione e controlla i piazzamenti degli atleti Inox.
+                        Seleziona il file scaricato da WTRL. Il sistema analizzerà i dati e aggiornerà le classifiche di tutte le divisioni interessate.
                       </p>
                     </div>
-                    <button 
-                      onClick={() => navigate('/zrl-results')}
-                      className="w-full py-4 bg-zinc-800 text-white font-black italic rounded-2xl hover:bg-inox-cyan hover:text-black transition-all uppercase text-xs tracking-widest shadow-xl"
-                    >
-                      Apri Classifiche
-                    </button>
+                    <label className="w-full py-4 bg-white text-black font-black italic rounded-2xl hover:bg-inox-cyan hover:text-black transition-all uppercase text-[10px] tracking-[0.2em] shadow-xl cursor-pointer text-center">
+                      {loading ? 'Processing...' : 'Upload Results'}
+                      <input 
+                        type="file" 
+                        accept=".json" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleResultsUpload(file);
+                        }} 
+                      />
+                    </label>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-4 text-zinc-700">
-                   <div className="h-px w-20 bg-zinc-900" />
-                   <span className="text-[9px] font-black uppercase tracking-[0.4em]">Post-Race Operations</span>
-                   <div className="h-px w-20 bg-zinc-900" />
+                <div className="bg-zinc-900/10 border border-zinc-900/50 p-6 rounded-3xl flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500">
+                      <AlertCircle size={20} />
+                   </div>
+                   <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-relaxed">
+                      Nota: Lo script richiede che tu sia autenticato su WTRL. Assicurati di caricare il file relativo al <span className="text-white">Round Corretto</span> per non sovrascrivere dati storici.
+                   </p>
                 </div>
               </div>
             )}
