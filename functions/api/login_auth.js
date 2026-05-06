@@ -75,16 +75,19 @@ export async function onRequestPost({ request, env, data }) {
         if (!env.JWT_SECRET || env.JWT_SECRET.length === 0) {
             throw new Error("Configurazione server incompleta: JWT_SECRET mancante.");
         }
-
+    
+        const secret = new TextEncoder().encode(env.JWT_SECRET);
+  
+        // Assicuriamoci che il ruolo sia gestito correttamente, evitando null/undefined in modo esplicito
+        const userRole = user.role ? user.role.toString().trim().toLowerCase() : 'user';
+   
         const payload = {
             zwid: user.zwid,
             username: user.name,
-            role: user.role || 'user',
+            role: userRole, // Usiamo il ruolo pulito e standardizzato
             exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS
         };
-
-        const secret = new TextEncoder().encode(env.JWT_SECRET);
-
+   
         const token = await new jose.SignJWT(payload)
             .setProtectedHeader({ alg: ALG })
             .setIssuedAt()
