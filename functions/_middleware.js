@@ -5,7 +5,7 @@
 import { jwtVerify } from 'jose';
 
 const RBAC_POLICY = {
-    '/api/admin': ['admin'],
+    '/api/admin': ['admin', 'moderator'],
     '/api/create-admin': ['admin'],
     '/api/events': {
         GET: ['admin', 'moderator', 'captain', 'user'],
