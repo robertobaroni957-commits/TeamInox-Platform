@@ -89,22 +89,25 @@ const ZRLDivisionResults: React.FC = () => {
   const inoxTeam = results.find(r => r.is_inox === 1);
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col gap-6 overflow-hidden animate-in fade-in duration-700">
+    <div className="space-y-8 pb-20 animate-in fade-in duration-700">
       
       {/* HEADER SECTION */}
-      <section className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 flex-shrink-0">
-        <div className="space-y-1">
+      <section className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="px-2 py-0.5 bg-inox-orange/10 border border-inox-orange/20 rounded-full">
-               <span className="text-[8px] font-black text-inox-orange uppercase tracking-widest">WTRL GC Engine</span>
+            <div className="px-3 py-1 bg-inox-orange/10 border border-inox-orange/20 rounded-full">
+               <span className="text-[9px] font-black text-inox-orange uppercase tracking-[0.2em]">WTRL GC Engine</span>
             </div>
-            <div className="flex items-center gap-2 px-2 py-0.5 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full">
-              <span className="text-[8px] font-black text-inox-cyan uppercase tracking-widest">Official Standings</span>
+            <div className="px-3 py-1 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full">
+              <span className="text-[9px] font-black text-inox-cyan uppercase tracking-[0.2em]">Official Standings</span>
             </div>
           </div>
-          <h1 className="text-4xl lg:text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
+          <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
             ZRL <span className="text-zinc-800">LEAGUE GC</span>
           </h1>
+          <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest">
+             Classifica Generale ufficiale aggiornata all'ultimo Round.
+          </p>
         </div>
 
         {/* CUSTOM DROPDOWN FILTER */}
