@@ -3,16 +3,23 @@ export async function onRequestGet({ env }) {
     if (!env.DB) return new Response("DB non trovato", { status: 500 });
 
     try {
-        // 1. Reset e Creazione Pulita (per evitare colonne mancanti)
-        // Creiamo le tabelle con la struttura definitiva
-        const initSql = [
-            `CREATE TABLE IF NOT EXISTS zrl_seasons (
+        // 1. OPZIONE NUCLEARE: Eliminiamo le tabelle per resettare i vincoli corrotti
+        const dropSql = [
+            `DROP TABLE IF EXISTS zrl_team_standings`,
+            `DROP TABLE IF EXISTS zrl_round_groups`,
+            `DROP TABLE IF EXISTS zrl_seasons`
+        ];
+        for (const q of dropSql) await env.DB.prepare(q).run();
+
+        // 2. CREAZIONE PULITA (Struttura Unificata 2026)
+        const createSql = [
+            `CREATE TABLE zrl_seasons (
                 id INTEGER PRIMARY KEY, 
                 name TEXT NOT NULL, 
                 external_season_id INTEGER, 
                 is_active BOOLEAN DEFAULT 0
             )`,
-            `CREATE TABLE IF NOT EXISTS zrl_round_groups (
+            `CREATE TABLE zrl_round_groups (
                 id INTEGER PRIMARY KEY, 
                 series_id INTEGER, 
                 round_index INTEGER, 
@@ -20,7 +27,7 @@ export async function onRequestGet({ env }) {
                 description TEXT, 
                 is_closed BOOLEAN DEFAULT 0
             )`,
-            `CREATE TABLE IF NOT EXISTS zrl_team_standings (
+            `CREATE TABLE zrl_team_standings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 round_group_id INTEGER NOT NULL, 
                 league_key TEXT NOT NULL, 
@@ -31,28 +38,25 @@ export async function onRequestGet({ env }) {
                 pts_fts INTEGER, 
                 pts_finish INTEGER, 
                 r1 TEXT, r2 TEXT, r3 TEXT, r4 TEXT, r5 TEXT, r6 TEXT, r7 TEXT, r8 TEXT, 
-                is_inox BOOLEAN DEFAULT 0
+                is_inox BOOLEAN DEFAULT 0,
+                FOREIGN KEY (round_group_id) REFERENCES zrl_round_groups(id)
             )`
         ];
+        for (const q of createSql) await env.DB.prepare(q).run();
 
-        for (const q of initSql) await env.DB.prepare(q).run();
-
-        // 2. Inserimento Stagione
-        await env.DB.prepare(`INSERT OR IGNORE INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025/26', 1)`).run();
-
-        // 3. Forziamo l'inserimento del Round Group 19 (GC)
-        // Usiamo REPLACE per essere sicuri che esista esattamente con questi dati
+        // 3. INSERIMENTO DATI INIZIALI
+        await env.DB.prepare(`INSERT INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025/26', 1)`).run();
         await env.DB.prepare(`
-            INSERT OR REPLACE INTO zrl_round_groups (id, series_id, round_index, external_season_id, description) 
-            VALUES (1, 1, 1, 19, 'ZRL Round 1 (Official GC)')
+            INSERT INTO zrl_round_groups (id, series_id, round_index, external_season_id, description) 
+            VALUES (1, 1, 1, 19, 'ZRL Round 1 (Spring)')
         `).run();
 
         const check = await env.DB.prepare(`SELECT * FROM zrl_round_groups WHERE external_season_id = 19`).first();
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: "Reset Database completato.",
-            verified_round_19: check ? "ESISTE" : "NON TROVATO"
+            message: "Database resettato e ricreato con successo.",
+            verified_round_19: check ? "ESISTE" : "ERRORE"
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
