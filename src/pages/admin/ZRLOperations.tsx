@@ -38,40 +38,19 @@ const ZRLOperations: React.FC = () => {
   const [races, setRaces] = useState<RoundInput[]>([]);
   const [htmlImport, setHtmlImport] = useState('');
   const [selectedRace, setSelectedRace] = useState<RoundInput | null>(null);
-
-  const handleHtmlImport = async () => {
-    if (!htmlImport) return;
-    setLoading(true);
-    setMessage(null);
-    try {
-      const response = await fetch('/api/admin/import-wtrl-schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
-        },
-        body: JSON.stringify({ html: htmlImport, seasonId: wtrlId })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ type: 'success', text: data.message });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (err: any) {
-      setMessage({ type: 'error', text: "Errore Import: " + err.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [teams, setTeams] = useState<any[]>([]);
 
   // Caricamento dati iniziali dal database
   useEffect(() => {
     const fetchCurrentRound = async () => {
       setLoading(true);
       try {
-        const seriesData = await api.getSeries();
+        const [seriesData, teamsData] = await Promise.all([
+          api.getSeries(),
+          api.getTeams()
+        ]);
+        
+        setTeams(teamsData);
         const active = seriesData.find((s: any) => s.is_active);
         
         if (active) {
@@ -103,6 +82,33 @@ const ZRLOperations: React.FC = () => {
     fetchCurrentRound();
   }, []);
 
+  const handleHtmlImport = async () => {
+    if (!htmlImport) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/import-wtrl-schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({ html: htmlImport, seasonId: wtrlId })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: "Errore Import: " + err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInitRound = async () => {
     if (!window.confirm("Attenzione: Questa operazione archivierà il round attuale e creerà un nuovo round nel database. Procedere?")) return;
     
@@ -113,7 +119,7 @@ const ZRLOperations: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
         },
         body: JSON.stringify({
           name: roundName,
@@ -149,7 +155,7 @@ const ZRLOperations: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
         },
         body: JSON.stringify({ seasonId: parseInt(wtrlId) })
       });
@@ -180,7 +186,7 @@ const ZRLOperations: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
         },
         body: JSON.stringify({ seasonId: parseInt(wtrlId) })
       });
@@ -243,7 +249,6 @@ const ZRLOperations: React.FC = () => {
     setMessage(null);
     try {
       const resultsData = JSON.parse(await file.text());
-      // L'unificato contiene round_id e l'array di tutti i team/rider
       const response = await fetch('/api/admin/import-results', {
         method: 'POST',
         headers: {
@@ -266,7 +271,7 @@ const ZRLOperations: React.FC = () => {
   };
 
   const addRace = () => {
-    setRaces([...races, { name: `Race ${races.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
+    setRaces([...races, { name: `Race \${races.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0, category: 'ALL' }]);
   };
 
   const updateRace = (index: number, field: keyof RoundInput, value: any) => {
@@ -279,13 +284,12 @@ const ZRLOperations: React.FC = () => {
     setRaces(races.filter((_, i) => i !== index));
   };
 
-  // Calcolo della prossima gara per ogni categoria presente (es. A e C)
+  // Calcolo della prossima gara per ogni categoria presente
   const categoriesPresent = [...new Set(races.map(r => r.category))];
   const highlightedIndices = categoriesPresent.map(cat => {
     const nextIdx = races.findIndex(r => r.category === cat && r.date && new Date(r.date + 'T23:59:59') >= new Date());
     if (nextIdx !== -1) return nextIdx;
     
-    // Se il round è terminato, evidenziamo l'ULTIMA gara di quella categoria
     let lastIdx = -1;
     for (let i = races.length - 1; i >= 0; i--) {
       if (races[i].category === cat) {
@@ -324,17 +328,17 @@ const ZRLOperations: React.FC = () => {
             <button
               key={step.id}
               onClick={() => setActiveStep(step.id)}
-              className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left ${
+              className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left \${
                 isActive 
                   ? "bg-zinc-900 border-[#fc6719] shadow-lg" 
                   : "bg-zinc-950 border-zinc-900 opacity-60 hover:opacity-100"
               }`}
             >
-              <div className={`p-1.5 rounded-lg mb-2 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
+              <div className={`p-1.5 rounded-lg mb-2 \${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
                 <Icon size={14} />
               </div>
               <span className="text-[7px] font-black uppercase text-zinc-600 mb-0.5 tracking-widest">Step 0{step.id}</span>
-              <span className={`text-[10px] font-black uppercase italic ${isActive ? "text-white" : "text-zinc-700"}`}>{step.title}</span>
+              <span className={`text-[10px] font-black uppercase italic \${isActive ? "text-white" : "text-zinc-700"}`}>{step.title}</span>
             </button>
           );
         })}
@@ -350,7 +354,7 @@ const ZRLOperations: React.FC = () => {
             className="p-8 lg:p-12"
           >
             {message && (
-              <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 ${
+              <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 \${
                 message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-500' : 'bg-red-500/10 border-red-500/50 text-red-500'
               }`}>
                 {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
@@ -373,85 +377,6 @@ const ZRLOperations: React.FC = () => {
                         <label className="text-[9px] font-black uppercase text-zinc-600 ml-1 tracking-widest">ID WTRL</label>
                         <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
                       </div>
-                    </div>
-                    <div className="bg-zinc-900/30 p-4 rounded-xl border border-zinc-800 space-y-3">
-                      <div className="flex items-center gap-2 text-[#fc6719]"><RefreshCw size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Remote Sync</span></div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button 
-                          onClick={() => {
-                            const script = `(async () => {
-  const season = prompt("Inserisci ID Stagione WTRL (es. 19):", "${wtrlId || '19'}");
-  if (!season) return;
-  
-  const config = [
-    { label: 'A', url: \`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&category=A&action=schedule\` },
-    { label: 'C', url: \`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&category=C&action=schedule\` }
-  ];
-  
-  const unifiedData = {
-    version: "2.0",
-    seasonId: season,
-    categories: {}
-  };
-  
-  console.log("%c--- INIZIO DOWNLOAD MULTI-CATEGORIA ---", "color: #00ff00; font-weight: bold;");
-  
-  for (const item of config) {
-    console.log(\`Recupero dati per Categoria \${item.label}...\`);
-    try {
-      const res = await fetch(item.url);
-      const data = await res.json();
-      unifiedData.categories[item.label] = data.payload || (Array.isArray(data) ? data : []);
-      console.log(\`✅ Categoria \${item.label} scaricata con successo.\`);
-    } catch (e) {
-      console.error(\`❌ Errore per Categoria \${item.label}:\`, e);
-    }
-  }
-  
-  const finalJson = JSON.stringify(unifiedData, null, 2);
-  const blob = new Blob([finalJson], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = \`zrl_UNIFIED_schedule_season_\${season}.json\`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  
-  console.log("%c--- OPERAZIONE COMPLETATA ---", "color: #00ff00; font-weight: bold;");
-  alert("File JSON unificato scaricato! Ora incollane il contenuto nell'app.");
-})();`;
-                            navigator.clipboard.writeText(script);
-                            setMessage({ type: 'success', text: "Script 'Race Schedule' copiato! Incollalo nella console WTRL." });
-                          }} 
-                          className="bg-[#fc6719] hover:bg-[#e55a16] text-black font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all text-[9px]"
-                        >
-                          <Calendar size={14} /> Race Schedule
-                        </button>
-                        <button 
-                            onClick={() => setHtmlImport('')} // Simple way to clear or toggle
-                            className="bg-zinc-800 hover:bg-zinc-700 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 transition-all text-[9px]"
-                          >
-                            <ClipboardCheck size={14} /> Manual HTML
-                        </button>
-                      </div>
-                      {htmlImport !== undefined && (
-                        <div className="pt-2">
-                          <textarea 
-                            placeholder="Paste HTML here..."
-                            value={htmlImport}
-                            onChange={(e) => setHtmlImport(e.target.value)}
-                            className="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-[9px] text-zinc-500 font-mono focus:border-[#fc6719] outline-none mb-2"
-                          />
-                          <button 
-                            onClick={handleHtmlImport} 
-                            disabled={loading || !htmlImport} 
-                            className="w-full bg-zinc-700 text-white font-black italic uppercase py-2 rounded-lg text-[9px]"
-                          >
-                            Execute Import
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -497,7 +422,7 @@ const ZRLOperations: React.FC = () => {
                               for (const team of teamsData) {
                                 await fetch('/api/admin/ingest-wtrl-team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(team) });
                               }
-                              setMessage({ type: 'success', text: `Sync: ${teamsData.length} teams` });
+                              setMessage({ type: 'success', text: `Sync: \${teamsData.length} teams` });
                             } catch (err) { setMessage({ type: 'error', text: 'Upload failed' }); }
                             finally { setLoading(false); }
                           }} />
@@ -525,21 +450,20 @@ const ZRLOperations: React.FC = () => {
                           key={idx} 
                           whileHover={{ scale: 1.02 }}
                           onClick={() => setSelectedRace(race)}
-                          className={`p-4 rounded-2xl border transition-all group relative overflow-hidden cursor-pointer ${
+                          className={`p-4 rounded-2xl border transition-all group relative overflow-hidden cursor-pointer \${
                             isNext 
                               ? "bg-zinc-900 border-[#22c55e] shadow-[0_0_20px_rgba(34,197,94,0.15)] ring-1 ring-[#22c55e]/50" 
                               : "bg-zinc-900/40 border-zinc-800/60 hover:border-[#fc6719]/40"
                           }`}
                         >
-                          {/* Glow effect for Next Race */}
                           {isNext && (
                             <div className="absolute inset-0 bg-gradient-to-br from-[#22c55e]/10 to-transparent pointer-events-none" />
                           )}
 
                           <div className="flex justify-between items-center relative z-10">
                             <div className="flex items-center gap-2">
-                              <span className={`text-[11px] font-black uppercase tracking-widest ${isNext ? "text-white" : "text-[#fc6719]"}`}>G{idx + 1}</span>
-                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border-2 shadow-md ${
+                              <span className={`text-[11px] font-black uppercase tracking-widest \${isNext ? "text-white" : "text-[#fc6719]"}`}>G{idx + 1}</span>
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border-2 shadow-md \${
                                 isNext ? "bg-white text-black border-white" : "bg-[#fc6719] text-black border-[#fc6719]"
                               }`}>Cat {race.category}</span>
                               {isNext && (
@@ -567,13 +491,13 @@ const ZRLOperations: React.FC = () => {
                             <p className="text-zinc-500 text-[9px] font-bold uppercase mt-1">{race.date || 'TBD'}</p>
                           </div>
                           <div className="grid grid-cols-2 gap-1.5 relative z-10 mt-4">
-                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
-                              <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Dist</p>
-                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.distance}k</p>
+                            <div className={`p-2 rounded-lg border \${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                              <p className={`text-[7px] font-black uppercase \${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Dist</p>
+                              <p className={`text-[11px] font-bold \${isNext ? "text-white" : "text-zinc-400"}`}>{race.distance}k</p>
                             </div>
-                            <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
-                              <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Elev</p>
-                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.elevation}m</p>
+                            <div className={`p-2 rounded-lg border \${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
+                              <p className={`text-[7px] font-black uppercase \${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Elev</p>
+                              <p className={`text-[11px] font-bold \${isNext ? "text-white" : "text-zinc-400"}`}>{race.elevation}m</p>
                             </div>
                           </div>
                         </motion.div>
@@ -584,9 +508,10 @@ const ZRLOperations: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 2-5 */}
+            {/* STEP 2-4 */}
             {activeStep === 2 && <AvailabilityManagement />}
             {activeStep === 3 && <RosterSuggestions />}
+            
             {/* STEP 5: RESULTS */}
             {activeStep === 5 && (
               <div className="space-y-10 py-4">
@@ -629,29 +554,23 @@ const ZRLOperations: React.FC = () => {
                       onClick={() => {
                         const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
                         const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
+                        
+                        // Generiamo i codici lega unici basati sulla logica dell'utente
+                        // Struttura: {league}0{zrldivision}{division_number}0
+                        const leagueKeys = [...new Set(teams
+                          .filter(t => t.league && t.zrldivision && t.division_number !== undefined)
+                          .map(t => `\${t.league}0\${t.zrldivision}\${t.division_number}0`)
+                        )];
+
                         const script = `(async () => {
-  const season = "${wtrlId || '19'}";
-  const race = prompt("Inserisci il Numero Gara (1-6):", "${raceNum}");
+  const season = "\${wtrlId || '19'}";
+  const race = prompt("Inserisci il Numero Gara (1-6):", "\${raceNum}");
+  const keys = \${JSON.stringify(leagueKeys)};
+  
   if (!race) return;
 
   console.log("%c🚀 INIZIO ESTRAZIONE RISULTATI ZRL - SEASON " + season + " RACE " + race, "color: #fc6719; font-weight: bold; font-size: 14px;");
   
-  // 1. Recuperiamo i TRC delle squadre INOX presenti nella pagina
-  const panels = document.querySelectorAll('.panel-body[data-trc]');
-  const divisionKeys = new Set();
-  
-  panels.forEach(p => {
-    const trc = p.getAttribute('data-trc');
-    // Le chiavi di divisione sono spesso deducibili dal context o presenti nei link
-    // Per sicurezza, recuperiamo i dati della squadra per avere la divisione corretta
-    divisionKeys.add(trc);
-  });
-
-  if (divisionKeys.size === 0) {
-    alert("Nessun pannello squadra trovato. Assicurati di essere nella pagina 'ZRL Results' di WTRL.");
-    return;
-  }
-
   const unifiedData = {
     seasonId: season,
     raceNumber: race,
@@ -659,31 +578,22 @@ const ZRLOperations: React.FC = () => {
     divisions: []
   };
 
-  for (const trc of divisionKeys) {
+  for (const divKey of keys) {
     try {
-      console.log("Fetching team context for: " + trc);
-      const teamRes = await fetch("https://www.wtrl.racing/api/zrl/" + season + "/teams/" + trc);
-      const teamData = await teamRes.json();
+      console.log("%cDownloading results for division: " + divKey, "color: #inox-cyan");
+      const resUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
+      const res = await fetch(resUrl);
+      const data = await res.json();
       
-      if (teamData && teamData.meta && teamData.meta.division) {
-        const divKey = teamData.meta.division.url_key;
-        console.log("%c✅ Divisione individuata: " + divKey, "color: #00ff00");
-        
-        console.log("Downloading results for division: " + divKey);
-        const resUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
-        const res = await fetch(resUrl);
-        const data = await res.json();
-        
-        if (data && data.payload) {
-          unifiedData.divisions.push({
-            league_key: divKey,
-            payload: data.payload
-          });
-          console.log("📊 Risultati scaricati: " + data.payload.length + " squadre.");
-        }
+      if (data && data.payload) {
+        unifiedData.divisions.push({
+          league_key: divKey,
+          payload: data.payload
+        });
+        console.log("✅ Risultati scaricati: " + data.payload.length + " squadre.");
       }
     } catch (e) {
-      console.error("❌ Errore per TRC " + trc + ":", e);
+      console.error("❌ Errore per Divisione " + divKey + ":", e);
     }
   }
 
