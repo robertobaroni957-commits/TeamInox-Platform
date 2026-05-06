@@ -45,12 +45,7 @@ const ZRLOperations: React.FC = () => {
     const fetchCurrentRound = async () => {
       setLoading(true);
       try {
-        const [seriesData, teamsData] = await Promise.all([
-          api.getSeries(),
-          api.getTeams()
-        ]);
-        
-        setTeams(teamsData);
+        const seriesData = await api.getSeries();
         const active = seriesData.find((s: any) => s.is_active);
         
         if (active) {
@@ -81,6 +76,22 @@ const ZRLOperations: React.FC = () => {
 
     fetchCurrentRound();
   }, []);
+
+  // Refetch teams when entering Step 5 or Step 1
+  useEffect(() => {
+    if (activeStep === 1 || activeStep === 5) {
+       const loadTeams = async () => {
+         try {
+           const teamsData = await api.getTeams();
+           console.log("Teams Loaded:", teamsData);
+           setTeams(teamsData);
+         } catch (e) {
+           console.error("Error loading teams:", e);
+         }
+       };
+       loadTeams();
+    }
+  }, [activeStep]);
 
   const handleHtmlImport = async () => {
     if (!htmlImport) return;
@@ -555,12 +566,21 @@ const ZRLOperations: React.FC = () => {
                         const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
                         const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
                         
+                        // DEBUG: Vediamo cosa contiene teams
+                        console.log("Team data for keys:", teams);
+
                         // Generiamo i codici lega unici basati sulla logica dell'utente
                         // Struttura: {league}0{zrldivision}{division_number}0
                         const leagueKeys = [...new Set(teams
-                          .filter(t => t.league && t.zrldivision && t.division_number !== undefined)
+                          .filter(t => t.league && t.zrldivision && t.division_number !== undefined && t.division_number !== null)
                           .map(t => `${t.league}0${t.zrldivision}${t.division_number}0`)
                         )];
+
+                        console.log("Calculated League Keys:", leagueKeys);
+
+                        if (leagueKeys.length === 0) {
+                          alert("ERRORE: Nessuna chiave di divisione generata. Controlla che i team abbiano Lega, Divisione e Numero impostati nel database.");
+                        }
 
                         const script = `(async () => {
   const season = "${wtrlId || '19'}";
