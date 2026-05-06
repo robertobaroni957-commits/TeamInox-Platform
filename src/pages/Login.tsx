@@ -34,7 +34,19 @@ const Login: React.FC = () => {
 
       if (response.ok) {
         localStorage.setItem('inox_token', data.token);
-        navigate('/dashboard');
+        
+        // Redirect based on role
+        try {
+          const payload = JSON.parse(atob(data.token.split('.')[1]));
+          const role = payload.role;
+          if (role === 'admin' || role === 'moderator') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch (e) {
+          navigate('/dashboard');
+        }
       } else {
         setError(data.message || 'Credenziali non valide.');
       }

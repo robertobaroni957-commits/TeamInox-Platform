@@ -132,9 +132,10 @@ const Sidebar: React.FC = () => {
           {/* ADMINISTRATION */}
           {isAdmin && (
             <>
-              <SectionTitle>Administration</SectionTitle>
+              <SectionTitle>Tactical Command</SectionTitle>
               <NavItem to="/admin" icon={Shield} label="Command Center" special="admin" />
-              <NavItem to="/admin/users" icon={Users} label="Gestione Utenti" special="admin" />
+              <SectionTitle>Global Management</SectionTitle>
+              <NavItem to="/admin/users" icon={Users} label="Database Atleti" special="admin" />
               <NavItem to="/admin/events" icon={Settings} label="Configurazione Eventi" special="admin" />
             </>
           )}
