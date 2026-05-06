@@ -570,6 +570,7 @@ const ZRLOperations: React.FC = () => {
   if (!race) return;
 
   console.log("%c🚀 INIZIO ESTRAZIONE RISULTATI ZRL - SEASON " + season + " RACE " + race, "color: #fc6719; font-weight: bold; font-size: 14px;");
+  console.log("Divisioni da elaborare (" + keys.length + "):", keys);
   
   const unifiedData = {
     seasonId: season,
@@ -580,36 +581,44 @@ const ZRLOperations: React.FC = () => {
 
   for (const divKey of keys) {
     try {
-      console.log("%cDownloading results for division: " + divKey, "color: #00bcd4");
-      const resUrl = "https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=" + season + "&category=" + divKey + "&action=results&race=" + race;
-      // Nota: Uso l'URL fornita dall'utente ma strutturata come visto precedentemente se necessario.
-      // Se l'utente dice https://www.wtrl.racing/api/zrl/results/19/2350A10/4
+      // URL fornita dall'utente: https://www.wtrl.racing/api/zrl/results/19/2350A10/4
       const directUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
+      console.log("%cFetching division: " + divKey, "color: #00bcd4");
+      console.log("URL: " + directUrl);
       
       const res = await fetch(directUrl);
       const data = await res.json();
       
-      if (data && data.payload) {
+      // Verifichiamo la struttura della risposta WTRL (payload o array diretto)
+      const resultsArray = data.payload || (Array.isArray(data) ? data : null);
+      
+      if (resultsArray && resultsArray.length > 0) {
         unifiedData.divisions.push({
           league_key: divKey,
-          payload: data.payload
+          payload: resultsArray
         });
-        console.log("✅ Risultati scaricati: " + data.payload.length + " squadre.");
+        console.log("%c✅ Risultati scaricati: " + resultsArray.length + " squadre.", "color: #4caf50");
+      } else {
+        console.warn("⚠️ Nessun dato per divisione: " + divKey, data);
       }
     } catch (e) {
-      console.error("❌ Errore per Divisione " + divKey + ":", e);
+      console.error("❌ Errore critico per " + divKey + ":", e);
     }
   }
 
-  const blob = new Blob([JSON.stringify(unifiedData, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = "zrl_unified_results_R" + race + ".json";
-  a.click();
-  
-  console.log("%c✅ OPERAZIONE COMPLETATA", "color: #fc6719; font-weight: bold;");
-  alert("File unificato scaricato con " + unifiedData.divisions.length + " divisioni!");
+  if (unifiedData.divisions.length === 0) {
+    console.error("❌ ERRORE: Nessuna divisione ha restituito dati. Controlla le chiavi o i permessi.");
+    alert("ERRORE: Nessun dato scaricato. Controlla la console del browser (F12).");
+  } else {
+    const blob = new Blob([JSON.stringify(unifiedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "zrl_unified_results_R" + race + ".json";
+    a.click();
+    console.log("%c✅ FILE GENERATO CON SUCCESSO", "color: #fc6719; font-weight: bold;");
+    alert("File scaricato con " + unifiedData.divisions.length + " divisioni!");
+  }
 })();`;
                         navigator.clipboard.writeText(script);
                         setMessage({ type: 'success', text: "Script Estrattore Copiato! Incollalo su WTRL." });
