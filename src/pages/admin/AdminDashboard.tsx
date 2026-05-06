@@ -56,7 +56,7 @@ const AdminDashboard: React.FC = () => {
         });
 
         const res = await fetch('/api/admin/system-insights', {
-          headers: { 'Authorization': `Bearer \${localStorage.getItem('inox_token')}` }
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
         });
         const data = await res.json();
         if (data.success) setInsights(data.insights);
@@ -79,7 +79,7 @@ const AdminDashboard: React.FC = () => {
       path: "/zrl-operations",
       color: "from-orange-500 to-red-600",
       size: "lg",
-      alert: insights.activeRoster > 0 ? `\${insights.activeRoster} RSVP` : null
+      alert: insights.activeRoster > 0 ? `${insights.activeRoster} RSVP` : null
     },
     {
       title: "Winter Tour",
