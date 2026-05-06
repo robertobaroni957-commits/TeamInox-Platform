@@ -32,6 +32,7 @@ const PUBLIC_ROUTES = [
     '/api/rounds',
     '/api/results',
     '/api/teams',
+    '/api/division-results',
     '/api/setup-zrl-2026',
     '/api/sync-schedule',
     '/api/sync-rounds',
