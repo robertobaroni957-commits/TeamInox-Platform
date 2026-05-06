@@ -566,20 +566,36 @@ const ZRLOperations: React.FC = () => {
                         const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
                         const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
                         
-                        // DEBUG: Vediamo cosa contiene teams
-                        console.log("Team data for keys:", teams);
-
-                        // Generiamo i codici lega unici basati sulla logica dell'utente
-                        // Struttura: {league}0{zrldivision}{division_number}0
+                        // DIAGNOSTICA: Vediamo cosa arriva dal DB
+                        console.log("Teams in state:", teams);
+                        
+                        // Generiamo i codici lega unici
                         const leagueKeys = [...new Set(teams
-                          .filter(t => t.league && t.zrldivision && t.division_number !== undefined && t.division_number !== null)
-                          .map(t => `${t.league}0${t.zrldivision}${t.division_number}0`)
+                          .filter(t => {
+                            const l = t.league ? String(t.league).trim() : "";
+                            const d = t.zrldivision ? String(t.zrldivision).trim() : (t.category ? String(t.category).trim() : "");
+                            const n = t.division_number !== undefined && t.division_number !== null ? String(t.division_number).trim() : "";
+                            
+                            const isValid = l !== "" && l !== "NULL" && d !== "" && d !== "NULL" && n !== "" && n !== "NULL";
+                            
+                            if (!isValid) {
+                              console.warn(`Team scartato (${t.name}):`, { league: l, zrldivision: d, division_number: n });
+                            }
+                            return isValid;
+                          })
+                          .map(t => {
+                            const l = String(t.league).trim();
+                            const d = t.zrldivision ? String(t.zrldivision).trim() : String(t.category).trim();
+                            const n = String(t.division_number).trim();
+                            return `${l}0${d}${n}0`;
+                          })
                         )];
 
                         console.log("Calculated League Keys:", leagueKeys);
 
                         if (leagueKeys.length === 0) {
-                          alert("ERRORE: Nessuna chiave di divisione generata. Controlla che i team abbiano Lega, Divisione e Numero impostati nel database.");
+                          alert("⚠️ ATTENZIONE: Nessuna chiave di divisione generata. Controlla i log in console (F12).");
+                          return;
                         }
 
                         const script = `(async () => {

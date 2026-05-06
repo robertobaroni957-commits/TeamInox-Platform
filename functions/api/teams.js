@@ -3,7 +3,17 @@ export async function onRequestGet(context) {
   const user = data?.user;
 
   try {
-    let query = `SELECT wtrl_team_id as id, name, category, division, division_number, captain_id, wtrl_team_id, club_id, league FROM teams`;
+    let query = `SELECT 
+      wtrl_team_id as id, 
+      name, 
+      category, 
+      division, 
+      division_number, 
+      captain_id, 
+      club_id, 
+      league, 
+      zrldivision 
+    FROM teams`;
     let params = [];
 
     if (!user || user.role === 'admin' || user.role === 'moderator' || user.role === 'user') {
