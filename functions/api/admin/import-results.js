@@ -75,12 +75,14 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Aggiornamento automatico della tabella 'results' per i nostri atleti
+        // Usiamo una JOIN con la tabella athletes per evitare errori di Foreign Key se un atleta non è in anagrafica
         await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(roundId).run();
         await env.DB.prepare(`
             INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
-            SELECT round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, 'wtrl'
-            FROM division_results
-            WHERE round_id = ? AND is_inox = 1 AND zwid > 0
+            SELECT dr.round_id, dr.zwid, dr.time, dr.points_total, dr.points_finish, dr.points_fal, dr.points_fts, dr.position, 'wtrl'
+            FROM division_results dr
+            INNER JOIN athletes a ON dr.zwid = a.zwid
+            WHERE dr.round_id = ? AND dr.is_inox = 1 AND dr.zwid > 0
         `).bind(roundId).run();
 
         return new Response(JSON.stringify({ 
