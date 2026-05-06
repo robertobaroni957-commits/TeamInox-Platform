@@ -6,28 +6,22 @@ export async function onRequestPost({ request, env }) {
     );
 
     try {
-        if (!env.DB) {
-            return errorRes("Configurazione Server Errata: Database Binding 'DB' non trovato.", 500);
-        }
+        if (!env.DB) return errorRes("Database binding 'DB' not found.", 500);
 
         const body = await request.json();
         const { round_id, season_id, race_number } = body;
 
-        if (!round_id) {
-            return errorRes("Parametro round_id obbligatorio.", 400);
-        }
+        if (!round_id) return errorRes("Parametro round_id obbligatorio.", 400);
 
-        // 1. Recuperiamo i dati del Round e della Serie
+        // 1. Recuperiamo i dati del Round e della Serie usando le nuove tabelle
         const roundData = await env.DB.prepare(`
             SELECT r.*, s.external_season_id 
-            FROM rounds r
-            JOIN series s ON r.series_id = s.id
+            FROM zrl_races r
+            JOIN zrl_seasons s ON r.series_id = s.id
             WHERE r.id = ?
         `).bind(round_id).first();
 
-        if (!roundData) {
-            return errorRes("Round non trovato.", 404);
-        }
+        if (!roundData) return errorRes("Gara non trovata.", 404);
 
         const season = season_id || roundData.external_season_id || 19;
         let race = race_number;
@@ -45,10 +39,7 @@ export async function onRequestPost({ request, env }) {
         `).all();
 
         const teamsResults = teamsQuery.results || [];
-
-        if (teamsResults.length === 0) {
-            return errorRes("Nessun team INOX con dati di lega trovati nel DB.", 404);
-        }
+        if (teamsResults.length === 0) return errorRes("Nessun team INOX con dati di lega trovato.", 404);
 
         const leagueKeys = [...new Set(teamsResults.map(t => {
             const league = t.league;
@@ -61,7 +52,7 @@ export async function onRequestPost({ request, env }) {
         const syncLog = [];
         const insertStmts = [];
 
-        // Pulizia preliminare per i leagueKeys che stiamo per aggiornare
+        // Pulizia preliminare
         for (const key of leagueKeys) {
             insertStmts.push(env.DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(round_id, key));
         }
@@ -69,13 +60,12 @@ export async function onRequestPost({ request, env }) {
         // 3. Interroghiamo WTRL per ogni chiave di lega
         for (const key of leagueKeys) {
             const url = `https://www.wtrl.racing/api/zrl/results/${season}/${key}/${race}`;
-            
             try {
                 const response = await fetch(url, {
                     headers: {
                         "accept": "application/json",
                         "cookie": WTRL_COOKIE,
-                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                        "user-agent": "Mozilla/5.0"
                     }
                 });
 
@@ -86,8 +76,8 @@ export async function onRequestPost({ request, env }) {
 
                 const data = await response.json();
                 const teamPayload = data.payload || [];
-                
                 let riderCount = 0;
+
                 for (const team of teamPayload) {
                     const teamName = team.teamname || "Unknown Team";
                     const isInoxTeam = teamName.toUpperCase().includes("INOX");
@@ -95,8 +85,7 @@ export async function onRequestPost({ request, env }) {
 
                     for (const r of riders) {
                         riderCount++;
-                        // Mapping campi basato su result.json
-                        const zwid = parseInt(r.zid || r.zwid || 0); // WTRL usa zid come profile id spesso
+                        const zwid = parseInt(r.zid || r.zwid || 0);
                         const riderName = r.name || "Unknown Rider";
                         const position = parseInt(r.p1) || null;
                         const time = parseFloat(r.timeResult) || 0;
@@ -120,25 +109,15 @@ export async function onRequestPost({ request, env }) {
                     }
                 }
                 syncLog.push({ key, success: true, count: riderCount });
-
             } catch (err) {
                 syncLog.push({ key, success: false, error: err.message });
             }
         }
 
-        // 4. Esecuzione batch degli inserimenti in division_results
-        if (insertStmts.length > 0) {
-            // Dividiamo in blocchi per evitare limiti di batch se necessario, 
-            // ma D1 regge bene diverse centinaia di righe.
-            await env.DB.batch(insertStmts);
-        }
+        if (insertStmts.length > 0) await env.DB.batch(insertStmts);
 
-        // 5. Aggiornamento automatico della tabella 'results' per i nostri atleti
-        // Svuotiamo i risultati WTRL attuali per questo round
+        // 4. Aggiornamento tabella 'results'
         await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(round_id).run();
-
-        // Inseriamo i risultati degli atleti INOX trovati in division_results
-        // Cerchiamo il match per zwid se presente (>0), altrimenti (opzionale) potremmo fare per nome ma è rischioso.
         await env.DB.prepare(`
             INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
             SELECT round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, 'wtrl'
@@ -148,10 +127,7 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sincronizzazione completata per ${leagueKeys.length} divisioni.`,
-            round_id,
-            season,
-            race,
+            message: `Sync completato per ${leagueKeys.length} divisioni.`,
             log: syncLog
         }), { headers: { "Content-Type": "application/json" } });
 

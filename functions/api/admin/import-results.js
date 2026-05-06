@@ -15,28 +15,48 @@ export async function onRequestPost({ request, env }) {
             return errorRes("Dati non completi nel JSON unificato.", 400);
         }
 
-        // Recuperiamo il round_id corrispondente nel nostro DB basandoci su season e race number
-        const round = await env.DB.prepare(`
-            SELECT r.id 
-            FROM rounds r
-            JOIN series s ON r.series_id = s.id
-            WHERE s.external_season_id = ? AND r.name LIKE ?
-            LIMIT 1
-        `).bind(seasonId, `%Race ${raceNumber}%`).first();
+        // 1. Recuperiamo la stagione (series)
+        const season = await env.DB.prepare(`
+            SELECT id FROM zrl_seasons WHERE external_season_id = ? LIMIT 1
+        `).bind(seasonId).first();
 
-        if (!round) {
-            return errorRes(`Round per Stagione ${seasonId} Gara ${raceNumber} non trovato nel DB locale.`, 404);
+        if (!season) {
+            return errorRes(`Stagione con ID WTRL ${seasonId} non trovata nel sistema.`, 404);
         }
 
-        const roundId = round.id;
+        const season_id = season.id;
         const insertStmts = [];
         let totalRiders = 0;
+        const processedRounds = new Set();
 
         for (const div of divisions) {
             const leagueKey = div.league_key;
             
-            // Pulizia preventiva per questa divisione in questo round
-            insertStmts.push(env.DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(roundId, leagueKey));
+            // Estraiamo la categoria dalla league_key (es: 2410B20 -> B)
+            // Di solito è il 5° carattere (indice 4)
+            let category = leagueKey.charAt(4).toUpperCase();
+            if (!['A', 'B', 'C', 'D'].includes(category)) category = 'ALL';
+
+            // 2. Troviamo la gara (race) specifica per questa categoria
+            const race = await env.DB.prepare(`
+                SELECT id FROM zrl_races 
+                WHERE series_id = ? 
+                AND name LIKE ? 
+                AND (category = ? OR category = 'ALL')
+                ORDER BY (category = ?) DESC
+                LIMIT 1
+            `).bind(season_id, `%Race ${raceNumber}%`, category, category).first();
+
+            if (!race) {
+                console.warn(`Gara non trovata per Categoria ${category}, Race ${raceNumber}. Salto divisione ${leagueKey}.`);
+                continue;
+            }
+
+            const raceId = race.id;
+
+            // Pulizia preventiva per questa divisione in questo specifico round/gara
+            insertStmts.push(env.DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(raceId, leagueKey));
+            processedRounds.add(raceId);
 
             for (const team of div.payload) {
                 const teamName = team.teamname || "Unknown Team";
@@ -62,7 +82,7 @@ export async function onRequestPost({ request, env }) {
                         )
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
-                        roundId, leagueKey, teamName, riderName, zwid,
+                        raceId, leagueKey, teamName, riderName, zwid,
                         position, time, pts_finish, pts_fal, pts_fts,
                         pts_total, isInoxTeam ? 1 : 0
                     ));
@@ -74,21 +94,22 @@ export async function onRequestPost({ request, env }) {
             await env.DB.batch(insertStmts);
         }
 
-        // Aggiornamento automatico della tabella 'results' per i nostri atleti
-        // Usiamo una JOIN con la tabella athletes per evitare errori di Foreign Key se un atleta non è in anagrafica
-        await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(roundId).run();
-        await env.DB.prepare(`
-            INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
-            SELECT dr.round_id, dr.zwid, dr.time, dr.points_total, dr.points_finish, dr.points_fal, dr.points_fts, dr.position, 'wtrl'
-            FROM division_results dr
-            INNER JOIN athletes a ON dr.zwid = a.zwid
-            WHERE dr.round_id = ? AND dr.is_inox = 1 AND dr.zwid > 0
-        `).bind(roundId).run();
+        // 3. Aggiornamento tabella 'results' (solo per atleti INOX anagrafati)
+        for (const rid of processedRounds) {
+            await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(rid).run();
+            await env.DB.prepare(`
+                INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
+                SELECT dr.round_id, dr.zwid, dr.time, dr.points_total, dr.points_finish, dr.points_fal, dr.points_fts, dr.position, 'wtrl'
+                FROM division_results dr
+                INNER JOIN athletes a ON dr.zwid = a.zwid
+                WHERE dr.round_id = ? AND dr.is_inox = 1 AND dr.zwid > 0
+            `).bind(rid).run();
+        }
 
         return new Response(JSON.stringify({ 
             success: true, 
             count: totalRiders,
-            message: `Importati risultati per ${totalRiders} atleti in ${divisions.length} divisioni.`
+            message: `Importati risultati per ${totalRiders} atleti in ${divisions.length} divisioni, distribuiti su ${processedRounds.size} gare per categoria.`
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {

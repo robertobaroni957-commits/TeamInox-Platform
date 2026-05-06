@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
             const { results: options } = await env.DB.prepare(`
                 SELECT DISTINCT round_id, league_key, r.name as round_name
                 FROM division_results dr
-                JOIN rounds r ON dr.round_id = r.id
+                JOIN zrl_races r ON dr.round_id = r.id
                 ORDER BY round_id DESC, league_key ASC
             `).all();
             
@@ -47,7 +47,6 @@ export async function onRequestGet({ request, env }) {
                 params = [round_id, league_key];
             } else {
                 // Classifica Generale del Round (GC)
-                // Nota: Calcoliamo il totale dei punti accumulati in tutte le gare caricate
                 query = `
                     SELECT 
                         team_name,
