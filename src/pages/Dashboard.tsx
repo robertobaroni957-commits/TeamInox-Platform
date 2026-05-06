@@ -93,6 +93,15 @@ const Dashboard: React.FC = () => {
       path: "/zrl-results",
       color: "from-zinc-700 to-zinc-900",
       size: "sm"
+    },
+    {
+      title: "Strat Map",
+      subtitle: "Tactical DNA",
+      desc: "Analisi avanzata delle performance e Social Cards per i media.",
+      icon: BarChart3,
+      path: "/zrl-analytics",
+      color: "from-cyan-500 to-blue-600",
+      size: "sm"
     }
   ];
 
