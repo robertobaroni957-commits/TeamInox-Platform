@@ -212,6 +212,30 @@ const ZRLOperations: React.FC = () => {
     }
   };
 
+  const handleSyncResults = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/sync-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer \${localStorage.getItem('inox_token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: "Risultati sincronizzati con successo!" });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: "Errore Sync: " + err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addRace = () => {
     setRaces([...races, { name: `Race ${races.length + 1}`, date: '', world: '', route: '', format: 'Scratch', distance: 0, elevation: 0 }]);
   };
@@ -534,12 +558,71 @@ const ZRLOperations: React.FC = () => {
             {/* STEP 2-5 */}
             {activeStep === 2 && <AvailabilityManagement />}
             {activeStep === 3 && <RosterSuggestions />}
-            {activeStep === 4 && <RosterBuilder />}
+            {/* STEP 5: RESULTS */}
             {activeStep === 5 && (
-              <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                <div className="p-8 bg-zinc-950 rounded-full border border-zinc-900 text-zinc-800"><Trophy size={48} /></div>
-                <h3 className="text-2xl font-black italic text-zinc-700 uppercase">Sezione Risultati</h3>
-                <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Modulo per la generazione del giornalino e statistiche post-gara.</p>
+              <div className="space-y-12 py-10">
+                <div className="text-center space-y-4">
+                  <div className="inline-flex p-8 bg-zinc-950 rounded-[2.5rem] border border-zinc-900 text-[#fc6719] shadow-2xl">
+                    <Trophy size={64} strokeWidth={1.5} />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-4xl font-black italic text-white uppercase tracking-tighter">Results Engine</h3>
+                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">
+                      Sincronizza le classifiche ufficiali WTRL e genera i report di gara per la community.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                  {/* Sync Card */}
+                  <div className="p-10 rounded-[3rem] bg-zinc-900/30 border border-zinc-800 space-y-8 flex flex-col justify-between group hover:border-[#fc6719]/30 transition-all">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                         <div className="p-3 bg-[#fc6719]/10 rounded-2xl text-[#fc6719]">
+                            <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />
+                         </div>
+                         <h4 className="text-xl font-black italic text-white uppercase">WTRL Sync</h4>
+                      </div>
+                      <p className="text-zinc-500 text-xs font-medium italic leading-relaxed">
+                        Scarica i risultati dell'ultimo round da WTRL e aggiorna il database InoxTeam.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleSyncResults}
+                      disabled={loading}
+                      className="w-full py-4 bg-white text-black font-black italic rounded-2xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-xs tracking-widest shadow-xl disabled:opacity-50"
+                    >
+                      {loading ? 'Sincronizzazione...' : 'Esegui Sync Globale'}
+                    </button>
+                  </div>
+
+                  {/* View Card */}
+                  <div className="p-10 rounded-[3rem] bg-zinc-900/30 border border-zinc-800 space-y-8 flex flex-col justify-between group hover:border-inox-cyan/30 transition-all">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                         <div className="p-3 bg-inox-cyan/10 rounded-2xl text-inox-cyan">
+                            <LayoutGrid size={24} />
+                         </div>
+                         <h4 className="text-xl font-black italic text-white uppercase">Visualizza</h4>
+                      </div>
+                      <p className="text-zinc-500 text-xs font-medium italic leading-relaxed">
+                        Esplora le classifiche di divisione e controlla i piazzamenti degli atleti Inox.
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => navigate('/zrl-results')}
+                      className="w-full py-4 bg-zinc-800 text-white font-black italic rounded-2xl hover:bg-inox-cyan hover:text-black transition-all uppercase text-xs tracking-widest shadow-xl"
+                    >
+                      Apri Classifiche
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 text-zinc-700">
+                   <div className="h-px w-20 bg-zinc-900" />
+                   <span className="text-[9px] font-black uppercase tracking-[0.4em]">Post-Race Operations</span>
+                   <div className="h-px w-20 bg-zinc-900" />
+                </div>
               </div>
             )}
           </motion.div>

@@ -36,30 +36,6 @@ const AdminDashboard: React.FC = () => {
     teamsNeedingCaptain: 0
   });
   const [loading, setLoading] = useState(true);
-  const [syncLoading, setSyncLoading] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-
-  const handleSyncResults = async () => {
-    setSyncLoading(true);
-    setSyncMessage(null);
-    try {
-      const res = await fetch('/api/admin/sync-results', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer \${localStorage.getItem('inox_token')}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSyncMessage("Classifiche aggiornate con successo!");
-        setTimeout(() => setSyncMessage(null), 3000);
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (err: any) {
-      setSyncMessage("Errore Sync: " + err.message);
-    } finally {
-      setSyncLoading(false);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,17 +79,6 @@ const AdminDashboard: React.FC = () => {
       color: "from-orange-500 to-red-600",
       size: "lg",
       alert: insights.activeRoster > 0 ? `\${insights.activeRoster} RSVP` : null
-    },
-    {
-      title: "Results Engine",
-      subtitle: "Data & Sync",
-      desc: "Sincronizza le classifiche ufficiali WTRL e genera i report di gara.",
-      icon: Trophy,
-      path: "/zrl-results",
-      color: "from-blue-600 to-cyan-500",
-      size: "md",
-      onAction: handleSyncResults,
-      actionLabel: syncLoading ? "SYNCING..." : "TRIGGER SYNC"
     },
     {
       title: "Winter Tour",
@@ -186,18 +151,6 @@ const AdminDashboard: React.FC = () => {
              Cockpit di amministrazione globale. Gestisci le missioni e monitora l'integrità del sistema.
           </p>
         </div>
-        
-        {syncMessage && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`px-6 py-3 rounded-2xl border font-black text-[10px] uppercase tracking-widest \${
-              syncMessage.includes('Errore') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-green-500/10 border-green-500/20 text-green-500'
-            }`}
-          >
-            {syncMessage}
-          </motion.div>
-        )}
       </section>
 
       {/* ADMIN PORTAL GRID */}
@@ -218,25 +171,11 @@ const AdminDashboard: React.FC = () => {
                 <div className="p-5 rounded-3xl bg-black border border-zinc-800 shadow-2xl group-hover:border-white/20 transition-colors">
                   <item.icon size={28} className="text-white" />
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  {item.alert && (
-                    <div className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest animate-pulse">
-                        {item.alert}
-                    </div>
-                  )}
-                  {item.onAction && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        item.onAction?.();
-                      }}
-                      disabled={syncLoading}
-                      className="px-4 py-2 bg-white text-black font-black italic rounded-xl text-[9px] tracking-widest hover:bg-inox-cyan hover:text-black transition-all shadow-lg disabled:opacity-50"
-                    >
-                      {item.actionLabel}
-                    </button>
-                  )}
-                </div>
+                {item.alert && (
+                  <div className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest animate-pulse">
+                      {item.alert}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
