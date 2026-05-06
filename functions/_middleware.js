@@ -49,11 +49,12 @@ export async function onRequest(context) {
     const path = url.pathname.toLowerCase().replace(/\/$/, '');
     const method = request.method;
 
+    // 1. Pass-through per file statici
     if (!path.startsWith('/api')) {
         return next();
     }
 
-    // --- GESTIONE CORS PREFLIGHT (Per Ultra-Sync) ---
+    // 2. GESTIONE CORS PREFLIGHT
     if (method === 'OPTIONS') {
         return new Response(null, {
             headers: {
@@ -65,11 +66,14 @@ export async function onRequest(context) {
         });
     }
 
-    // --- PUBBLICHE ---
-    if (PUBLIC_ROUTES.includes(path)) {
+    // 3. IDENTIFICAZIONE ROTTE PUBBLICHE (Sempre accessibili)
+    const isPublic = PUBLIC_ROUTES.includes(path);
+    
+    if (isPublic) {
         return handleNext(next);
     }
 
+    // 4. VERIFICA AUTENTICAZIONE (Solo per rotte non pubbliche)
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return jsonError('Authentication required', 401);
@@ -77,8 +81,8 @@ export async function onRequest(context) {
 
     try {
         const token = authHeader.split(' ')[1];
-        if (!env.JWT_SECRET || env.JWT_SECRET.length === 0) {
-            throw new Error("JWT_SECRET mancante nella configurazione server.");
+        if (!env.JWT_SECRET) {
+            throw new Error("JWT_SECRET missing");
         }
         const secret = new TextEncoder().encode(env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
@@ -93,6 +97,7 @@ export async function onRequest(context) {
         return handleNext(next);
 
     } catch (err) {
+        // Se il token è presente ma non valido, restituiamo 401
         return jsonError('Unauthorized: Session expired or invalid', 401);
     }
 }
