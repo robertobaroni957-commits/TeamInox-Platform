@@ -260,7 +260,12 @@ const ZRLOperations: React.FC = () => {
     setMessage(null);
     try {
       const resultsData = JSON.parse(await file.text());
-      const response = await fetch('/api/admin/import-results', {
+      
+      // Rilevamento automatico del tipo di JSON
+      const isGC = resultsData.payload && resultsData.externalSeasonId && resultsData.leagueKey;
+      const endpoint = isGC ? '/api/admin/ingest-wtrl-standings' : '/api/admin/import-results';
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -270,7 +275,10 @@ const ZRLOperations: React.FC = () => {
       });
       const data = await response.json();
       if (data.success) {
-        setMessage({ type: 'success', text: `Importati risultati per ${data.count} atleti.` });
+        setMessage({ 
+          type: 'success', 
+          text: isGC ? `Classifica GC Squadre aggiornata!` : `Importati risultati per ${data.count} atleti.` 
+        });
       } else {
         throw new Error(data.error);
       }
@@ -279,6 +287,35 @@ const ZRLOperations: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyGCExtractor = () => {
+    const script = `(async () => {
+  const parts = window.location.pathname.split('/');
+  const externalSeasonId = parts[3]; 
+  const leagueKey = parts[4];
+  if (!externalSeasonId || !leagueKey) {
+    alert("Vai su una pagina di classifica WTRL valida!");
+    return;
+  }
+  const apiUrl = 'https://www.wtrl.racing/api/zrl/league/' + externalSeasonId + '/' + leagueKey;
+  const res = await fetch(apiUrl);
+  const data = await res.json();
+  if (data.success) {
+    const bundle = { externalSeasonId: parseInt(externalSeasonId), leagueKey, payload: data.payload };
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'zrl_gc_' + leagueKey + '.json';
+    a.click();
+    console.log("✅ GC Extracted!");
+  } else {
+    alert("Errore WTRL: dati non trovati.");
+  }
+})();`;
+    navigator.clipboard.writeText(script);
+    setMessage({ type: 'success', text: "Script GC Squadre copiato! Incollalo nella console di WTRL." });
   };
 
   const addRace = () => {
@@ -561,108 +598,109 @@ const ZRLOperations: React.FC = () => {
                         Copia lo script estrattore. Incollalo nella console della pagina classifiche WTRL per scaricare il file <span className="text-white font-bold">zrl_unified_results.json</span>.
                       </p>
                     </div>
-                    <button 
-                      onClick={() => {
-                        const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
-                        const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
-                        
-                        // DIAGNOSTICA: Vediamo cosa arriva dal DB
-                        console.log("Teams in state:", teams);
-                        
-                        // Generiamo i codici lega unici
-                        const leagueKeys = [...new Set(teams
-                          .filter(t => {
-                            const l = t.league ? String(t.league).trim() : "";
-                            const d = t.zrldivision ? String(t.zrldivision).trim() : (t.category ? String(t.category).trim() : "");
-                            const n = t.division_number !== undefined && t.division_number !== null ? String(t.division_number).trim() : "";
-                            
-                            const isValid = l !== "" && l !== "NULL" && d !== "" && d !== "NULL" && n !== "" && n !== "NULL";
-                            
-                            if (!isValid) {
-                              console.warn(`Team scartato (${t.name}):`, { league: l, zrldivision: d, division_number: n });
-                            }
-                            return isValid;
-                          })
-                          .map(t => {
-                            const l = String(t.league).trim();
-                            const d = t.zrldivision ? String(t.zrldivision).trim() : String(t.category).trim();
-                            const n = String(t.division_number).trim();
-                            return `${l}0${d}${n}0`;
-                          })
-                        )];
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        onClick={() => {
+                          const nextRace = races.find(r => highlightedIndices.includes(races.indexOf(r)));
+                          const raceNum = nextRace ? races.indexOf(nextRace) + 1 : 1;
+                          
+                          // DIAGNOSTICA: Vediamo cosa arriva dal DB
+                          console.log("Teams in state:", teams);
+                          
+                          // Generiamo i codici lega unici
+                          const leagueKeys = [...new Set(teams
+                            .filter(t => {
+                              const l = t.league ? String(t.league).trim() : "";
+                              const d = t.zrldivision ? String(t.zrldivision).trim() : (t.category ? String(t.category).trim() : "");
+                              const n = t.division_number !== undefined && t.division_number !== null ? String(t.division_number).trim() : "";
+                              
+                              const isValid = l !== "" && l !== "NULL" && d !== "" && d !== "NULL" && n !== "" && n !== "NULL";
+                              
+                              if (!isValid) {
+                                console.warn(`Team scartato (${t.name}):`, { league: l, zrldivision: d, division_number: n });
+                              }
+                              return isValid;
+                            })
+                            .map(t => {
+                              const l = String(t.league).trim();
+                              const d = t.zrldivision ? String(t.zrldivision).trim() : String(t.category).trim();
+                              const n = String(t.division_number).trim();
+                              return `${l}0${d}${n}0`;
+                            })
+                          )];
 
-                        console.log("Calculated League Keys:", leagueKeys);
+                          console.log("Calculated League Keys:", leagueKeys);
 
-                        if (leagueKeys.length === 0) {
-                          alert("⚠️ ATTENZIONE: Nessuna chiave di divisione generata. Controlla i log in console (F12).");
-                          return;
-                        }
+                          if (leagueKeys.length === 0) {
+                            alert("⚠️ ATTENZIONE: Nessuna chiave di divisione generata. Controlla i log in console (F12).");
+                            return;
+                          }
 
-                        const script = `(async () => {
-  const season = "${wtrlId || '19'}";
-  const race = prompt("Inserisci il Numero Gara (1-6):", "${raceNum}");
-  const keys = ${JSON.stringify(leagueKeys)};
-  
-  if (!race) return;
+                          const script = `(async () => {
+    const season = "${wtrlId || '19'}";
+    const race = prompt("Inserisci il Numero Gara (1-6):", "${raceNum}");
+    const keys = ${JSON.stringify(leagueKeys)};
+    
+    if (!race) return;
 
-  console.log("%c🚀 INIZIO ESTRAZIONE RISULTATI ZRL - SEASON " + season + " RACE " + race, "color: #fc6719; font-weight: bold; font-size: 14px;");
-  console.log("Divisioni da elaborare (" + keys.length + "):", keys);
-  
-  const unifiedData = {
-    seasonId: season,
-    raceNumber: race,
-    timestamp: new Date().toISOString(),
-    divisions: []
-  };
+    console.log("%c🚀 INIZIO ESTRAZIONE RISULTATI ZRL - SEASON " + season + " RACE " + race, "color: #fc6719; font-weight: bold; font-size: 14px;");
+    console.log("Divisioni da elaborare (" + keys.length + "):", keys);
+    
+    const unifiedData = {
+      seasonId: season,
+      raceNumber: race,
+      timestamp: new Date().toISOString(),
+      divisions: []
+    };
 
-  for (const divKey of keys) {
-    try {
-      // URL fornita dall'utente: https://www.wtrl.racing/api/zrl/results/19/2350A10/4
-      const directUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
-      console.log("%cFetching division: " + divKey, "color: #00bcd4");
-      console.log("URL: " + directUrl);
-      
-      const res = await fetch(directUrl);
-      const data = await res.json();
-      
-      // Verifichiamo la struttura della risposta WTRL (payload o array diretto)
-      const resultsArray = data.payload || (Array.isArray(data) ? data : null);
-      
-      if (resultsArray && resultsArray.length > 0) {
-        unifiedData.divisions.push({
-          league_key: divKey,
-          payload: resultsArray
-        });
-        console.log("%c✅ Risultati scaricati: " + resultsArray.length + " squadre.", "color: #4caf50");
-      } else {
-        console.warn("⚠️ Nessun dato per divisione: " + divKey, data);
+    for (const divKey of keys) {
+      try {
+        const directUrl = "https://www.wtrl.racing/api/zrl/results/" + season + "/" + divKey + "/" + race;
+        console.log("%cFetching division: " + divKey, "color: #00bcd4");
+        
+        const res = await fetch(directUrl);
+        const data = await res.json();
+        
+        const resultsArray = data.payload || (Array.isArray(data) ? data : null);
+        
+        if (resultsArray && resultsArray.length > 0) {
+          unifiedData.divisions.push({
+            league_key: divKey,
+            payload: resultsArray
+          });
+          console.log("%c✅ Risultati scaricati: " + resultsArray.length + " squadre.", "color: #4caf50");
+        }
+      } catch (e) {
+        console.error("❌ Errore critico per " + divKey + ":", e);
       }
-    } catch (e) {
-      console.error("❌ Errore critico per " + divKey + ":", e);
     }
-  }
 
-  if (unifiedData.divisions.length === 0) {
-    console.error("❌ ERRORE: Nessuna divisione ha restituito dati. Controlla le chiavi o i permessi.");
-    alert("ERRORE: Nessun dato scaricato. Controlla la console del browser (F12).");
-  } else {
-    const blob = new Blob([JSON.stringify(unifiedData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "zrl_unified_results_R" + race + ".json";
-    a.click();
-    console.log("%c✅ FILE GENERATO CON SUCCESSO", "color: #fc6719; font-weight: bold;");
-    alert("File scaricato con " + unifiedData.divisions.length + " divisioni!");
-  }
-})();`;
-                        navigator.clipboard.writeText(script);
-                        setMessage({ type: 'success', text: "Script Estrattore Copiato! Incollalo su WTRL." });
-                      }}
-                      className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-black italic rounded-2xl border border-zinc-800 transition-all uppercase text-[10px] tracking-[0.2em] shadow-xl"
-                    >
-                      Copy Extractor
-                    </button>
+    if (unifiedData.divisions.length === 0) {
+      alert("ERRORE: Nessun dato scaricato. Controlla la console.");
+    } else {
+      const blob = new Blob([JSON.stringify(unifiedData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "zrl_results_R" + race + ".json";
+      a.click();
+      alert("File scaricato!");
+    }
+  })();`;
+                          navigator.clipboard.writeText(script);
+                          setMessage({ type: 'success', text: "Script Rider Estrattore Copiato!" });
+                        }}
+                        className="w-full py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-black italic rounded-xl border border-zinc-800 transition-all uppercase text-[9px] tracking-[0.2em]"
+                      >
+                        Copy Rider Extractor
+                      </button>
+
+                      <button 
+                        onClick={copyGCExtractor}
+                        className="w-full py-3 bg-inox-orange text-black font-black italic rounded-xl hover:bg-white transition-all uppercase text-[9px] tracking-[0.2em] shadow-lg"
+                      >
+                        Copy GC (Teams) Extractor
+                      </button>
+                    </div>
                   </div>
 
                   {/* Step B: Ingest */}
