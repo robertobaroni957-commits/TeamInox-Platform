@@ -15,7 +15,8 @@ import {
   Database,
   Crosshair,
   TrendingUp,
-  MailWarning
+  MailWarning,
+  LayoutGrid
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { motion } from 'framer-motion';
