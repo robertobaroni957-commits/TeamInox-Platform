@@ -42,7 +42,7 @@ export async function onRequestPost({ request, env }) {
             for (const team of currentLega.payload) {
                 const teamName = team.d;
                 const isInox = teamName.toUpperCase().includes("INOX");
-                const totalRacePoints = (parseInt(team.e) || 0) + (parseInt(team.k) || 0) + (parseInt(team.i) || 0);
+                const totalRacePoints = parseInt(team.e) || 0;
 
                 insertStmts.push(env.DB.prepare(`
                     INSERT INTO zrl_team_standings (

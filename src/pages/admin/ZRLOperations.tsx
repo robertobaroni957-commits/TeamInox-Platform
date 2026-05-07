@@ -24,6 +24,7 @@ interface RoundInput {
   distance: number;
   elevation: number;
   category: string;
+  powerups?: string;
 }
 
 const ZRLOperations: React.FC = () => {
@@ -217,7 +218,8 @@ const ZRLOperations: React.FC = () => {
             route: r.route,
             format: r.format || 'Scratch',
             distance: r.distance || 0,
-            elevation: r.elevation || 0
+            elevation: r.elevation || 0,
+            category: r.category || 'ALL'
           })));
         }
       } else {
@@ -259,11 +261,12 @@ const ZRLOperations: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      const resultsData = JSON.parse(await file.text());
+      const text = await file.text();
+      const resultsData = JSON.parse(text); // Corretto: rimosso JSON.JSON
       
-      // Rilevamento automatico del tipo di JSON
-      const isGC = (resultsData.payload && resultsData.externalSeasonId && resultsData.leagueKey) || 
-                   (resultsData.leagues && resultsData.externalSeasonId);
+      // Rilevamento se è un file Classifica Generale (GC) o Gara Singola
+      const isGC = (resultsData.leagues && resultsData.externalSeasonId) || 
+                   (resultsData.payload && resultsData.externalSeasonId && resultsData.leagueKey);
       
       const endpoint = isGC ? '/api/admin/ingest-wtrl-standings' : '/api/admin/import-results';
       
@@ -275,17 +278,19 @@ const ZRLOperations: React.FC = () => {
         },
         body: JSON.stringify(resultsData)
       });
+      
       const data = await response.json();
       if (data.success) {
         setMessage({ 
           type: 'success', 
-          text: isGC ? `Classifica GC Squadre aggiornata!` : `Importati risultati per ${data.count} atleti.` 
+          text: isGC ? `Classifica GC Squadre aggiornata!` : `Risultati importati con successo!` 
         });
       } else {
         throw new Error(data.error);
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: "Errore Caricamento: " + err.message });
+      console.error("Errore upload:", err);
+      setMessage({ type: 'error', text: "Errore: " + err.message });
     } finally {
       setLoading(false);
     }

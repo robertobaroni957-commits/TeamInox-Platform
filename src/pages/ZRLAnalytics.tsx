@@ -144,6 +144,56 @@ const ZRLAnalytics: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+            {/* Division Selector */}
+            <div className="relative group">
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-3 px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-white hover:border-inox-orange transition-all"
+              >
+                <Filter size={16} className={showFilters ? 'text-inox-orange' : 'text-zinc-500'} />
+                <span className="text-xs font-black uppercase tracking-widest">
+                  {options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption)?.league_display_name || 'Seleziona Divisione'}
+                </span>
+                <ChevronDown size={16} className={`transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-80 bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden z-[100]"
+                  >
+                    <div className="p-4 border-b border-zinc-800 bg-zinc-950/50">
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Disponibili</p>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto p-2 custom-scrollbar">
+                      {options.map((opt) => (
+                        <button
+                          key={`${opt.round_group_id}|${opt.league_key}`}
+                          onClick={() => {
+                            const val = `${opt.round_group_id}|${opt.league_key}`;
+                            setSelectedOption(val);
+                            fetchAnalytics(opt.round_group_id, opt.league_key);
+                            setShowFilters(false);
+                          }}
+                          className={`w-full text-left p-4 rounded-2xl transition-all ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'bg-inox-orange/10 border border-inox-orange/20' : 'hover:bg-zinc-800/50'}`}
+                        >
+                          <p className={`text-xs font-black uppercase ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'text-inox-orange' : 'text-white'}`}>
+                            {opt.league_display_name}
+                          </p>
+                          <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter mt-1">
+                            {opt.season_name} • {opt.round_name}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Team Selector */}
             <div className="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800">
               {inoxTeams.map(t => (
@@ -232,7 +282,10 @@ const ZRLAnalytics: React.FC = () => {
                  </div>
                  <div className="flex-1 min-w-0 text-left">
                     <p className="text-lg font-black italic text-white uppercase truncate">{mvp.rider_name}</p>
-                    <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{mvp.team_name}</p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{mvp.team_name}</p>
+                      <p className="text-[11px] font-black text-inox-orange">{mvp.points_total} <span className="text-[7px] text-zinc-600">PTS</span></p>
+                    </div>
                  </div>
               </div>
             </div>

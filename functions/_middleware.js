@@ -39,6 +39,7 @@ const PUBLIC_ROUTES = [
     '/api/sync-all-teams',
     '/api/setup-admin',
     '/api/availability-check',
+    '/api/zrl-analytics',
     '/api/admin/ingest-wtrl-team',
     '/api/admin/import-inox-teams'
 ];

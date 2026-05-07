@@ -9,7 +9,36 @@ export async function onRequestPost({ request, env }) {
         if (!env.DB) return errorRes("DB connection lost", 500);
 
         const data = await request.json();
-        const { seasonId, raceNumber, divisions } = data;
+        
+        // RILEVAMENTO TIPO FILE E REDIREZIONE INTERNA
+        const isGC = (data.leagues && data.externalSeasonId) || (data.payload && data.externalSeasonId && data.leagueKey);
+        
+        if (isGC) {
+            // Se è un file GC, lo passiamo all'endpoint dedicato (ingest-wtrl-standings)
+            // Nota: in un worker non possiamo fare fetch interna facilmente verso noi stessi senza l'URL completo,
+            // quindi per ora segnaliamo all'utente che il frontend ha sbagliato endpoint o gestiamo qui.
+            // Ma la soluzione più pulita è che il frontend scelga l'endpoint giusto.
+            // Tuttavia, per robustezza, aggiungiamo un controllo qui.
+            return errorRes("Questo sembra un file di Classifica Generale (GC). Caricalo usando l'endpoint corretto o verifica il file.", 400);
+        }
+
+        let seasonId, raceNumber, divisions;
+
+        // NORMALIZZAZIONE FORMATO
+        if (data.divisions && data.seasonId && data.raceNumber) {
+            // Formato Unificato (Massivo)
+            seasonId = data.seasonId;
+            raceNumber = data.raceNumber;
+            divisions = data.divisions;
+        } else if (data.args && data.payload) {
+            // Formato Singolo (WTRL Native - come result.json)
+            seasonId = data.args.season;
+            raceNumber = data.args.race;
+            divisions = [{
+                league_key: data.args.class,
+                payload: data.payload
+            }];
+        }
 
         if (!seasonId || !raceNumber || !divisions) {
             return errorRes("JSON malformato: mancano seasonId, raceNumber o divisions.", 400);
@@ -20,15 +49,18 @@ export async function onRequestPost({ request, env }) {
             SELECT id FROM zrl_seasons WHERE external_season_id = ? OR name LIKE ? LIMIT 1
         `).bind(seasonId, `%${seasonId}%`).first();
 
-        if (!season) return errorRes(`Stagione ${seasonId} non censita.`, 404);
+        if (!season) return errorRes(`Stagione ${seasonId} non censita nel database.`, 404);
 
         let totalRidersImported = 0;
         const insertStmts = [];
         const affectedRaceIds = new Set();
 
-        // Prepariamo una cache dei round per questa stagione per non interrogare il DB ad ogni riga
+        // Prepariamo una cache dei round per questa stagione
         const allSeasonRaces = await env.DB.prepare(`
-            SELECT id, name, category FROM zrl_races WHERE series_id = ? AND name LIKE ?
+            SELECT r.id, r.name, r.category 
+            FROM zrl_races r
+            JOIN zrl_round_groups rg ON r.zrl_round_group_id = rg.id
+            WHERE rg.series_id = ? AND r.name LIKE ?
         `).bind(season.id, `%Race ${raceNumber}%`).all();
 
         const raceMap = allSeasonRaces.results || [];
@@ -78,8 +110,11 @@ export async function onRequestPost({ request, env }) {
                     `).bind(
                         raceId, leagueKey, teamName, riderName, zwid,
                         position, time, 
-                        parseInt(r.finrp || 0), parseInt(r.falrp || 0), parseInt(r.ftsrp || 0), 
-                        parseInt(r.totrp || 0), isInox ? 1 : 0
+                        parseInt(r.finrp || r.finp || 0), 
+                        parseInt(r.falrp || r.falp || 0), 
+                        parseInt(r.ftsrp || r.ftsp || 0), 
+                        parseInt(r.totrp || r.totp || 0), 
+                        isInox ? 1 : 0
                     ));
                 }
             }
