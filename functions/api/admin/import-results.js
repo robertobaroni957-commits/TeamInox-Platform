@@ -46,7 +46,7 @@ export async function onRequestPost({ request, env }) {
 
         // 1. Trova la stagione reale
         const season = await env.DB.prepare(`
-            SELECT id FROM zrl_seasons WHERE external_season_id = ? OR name LIKE ? LIMIT 1
+            SELECT id FROM series WHERE external_season_id = ? OR name LIKE ? LIMIT 1
         `).bind(seasonId, `%${seasonId}%`).first();
 
         if (!season) return errorRes(`Stagione ${seasonId} non censita nel database.`, 404);
@@ -57,14 +57,12 @@ export async function onRequestPost({ request, env }) {
 
         // Prepariamo una cache dei round per questa stagione
         const allSeasonRaces = await env.DB.prepare(`
-            SELECT r.id, r.name, r.category 
-            FROM zrl_races r
-            JOIN zrl_round_groups rg ON r.zrl_round_group_id = rg.id
-            WHERE rg.series_id = ? AND r.name LIKE ?
+            SELECT id, name, category
+            FROM rounds
+            WHERE series_id = ? AND name LIKE ?
         `).bind(season.id, `%Race ${raceNumber}%`).all();
 
         const raceMap = allSeasonRaces.results || [];
-
         if (raceMap.length === 0) {
             return errorRes(`Nessuna gara 'Race ${raceNumber}' trovata per questa stagione nel DB.`, 404);
         }
