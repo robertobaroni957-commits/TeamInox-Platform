@@ -126,6 +126,33 @@ export async function onRequestPost({ request, env }) {
         series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(sId).first();
     }
 
+    // --- AGGIORNAMENTO COMPATIBILITÀ ANALYTICS ---
+    // Assicuriamoci che esista un round_group per questa serie (necessario per Analytics e Standings)
+    // E che sia collegato alla serie CORRETTA (ID attivo)
+    const activeSeriesId = series.id; // Otteniamo l'ID della serie attiva
+    
+    // Qui dobbiamo assicurarci che zrl_round_groups venga popolato con la series_id CORRETTA.
+    // Il problema era che zrl_round_groups.id=1 puntava a series_id=1, non alla serie attiva 57.
+    // Dobbiamo creare/aggiornare un entry in zrl_round_groups che corrisponda alla serie ATTIVA.
+    // Potrebbe essere necessario associare più round_group_id se il frontend li gestisce come distinti,
+    // ma per ora, assumiamo che esista una mappatura primaria corretta per la stagione attiva.
+
+    // Cerchiamo se esiste già un round group collegato alla serie ATTIVA
+    let roundGroup = await env.DB.prepare("SELECT id FROM zrl_round_groups WHERE series_id = ?").bind(activeSeriesId).first();
+
+    if (!roundGroup) {
+        // Se non esiste, creane uno nuovo per la serie attiva.
+        // Potremmo aver bisogno di un modo più intelligente per impostare round_index e description
+        // ma per ora, assicuriamoci che esista il collegamento alla serie ATTIVA.
+        await env.DB.prepare("INSERT INTO zrl_round_groups (series_id, round_index, external_season_id, description) VALUES (?, ?, ?, ?)")
+            .bind(activeSeriesId, 1, sId, seasonName).run(); // round_index=1 è un placeholder, potrebbe necessitare miglioramento
+    } else {
+        // Se esiste, aggiorniamolo per assicurarci che sia legato alla serie attiva corretta
+        await env.DB.prepare("UPDATE zrl_round_groups SET external_season_id = ?, description = ? WHERE series_id = ?")
+            .bind(sId, seasonName, activeSeriesId).run();
+    }
+    // ---------------------------------------------
+
     // 3. PULIZIA TOTALE (Surgical Clean)
     const roundIdsResult = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ?").bind(series.id).all();
     const roundIds = (roundIdsResult.results || []).map(r => r.id);
