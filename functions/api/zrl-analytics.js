@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
         const avgFinish = teamData.reduce((acc, t) => acc + (t.pts_finish || 0), 0) / teamData.length;
         const maxLP = Math.max(...teamData.map(t => t.league_points || 1));
 
-        const analytics = teamData.map(team => {
+        const analytics = await Promise.all(teamData.map(async (team) => {
             // Calcolo Consistenza (Deviazione dai punti medi per gara)
             const races = [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6]
                 .map(r => parseInt(r))
@@ -63,35 +63,53 @@ export async function onRequestGet({ request, env }) {
                 else if (topMetric.subject.includes('Consistency')) archetype = "Steady Machines";
             }
 
+            // Recupero Roster del Team per questo round group
+            // Colleghiamo i risultati tramite la tabella 'rounds' e filtriamo per la serie attiva
+            const { results: roster } = await env.DB.prepare(`
+                SELECT dr.rider_name, dr.zwid, SUM(dr.points_total) as points_total
+                FROM division_results dr
+                JOIN rounds r ON dr.round_id = r.id
+                JOIN series s ON r.series_id = s.id
+                WHERE s.is_active = 1 AND r.id = ? AND dr.league_key = ? AND dr.team_name = ?
+                GROUP BY dr.zwid, dr.rider_name
+                ORDER BY points_total DESC
+            `).bind(round_group_id, league_key, team.team_name).all();
+
             return {
                 team_name: team.team_name,
                 rank: team.rank,
                 is_inox: team.is_inox,
                 archetype,
                 dna,
+                roster: roster || [],
                 stats: {
                     total_lp: team.league_points,
                     total_trp: team.total_race_points,
                     races_completed: races.length
                 }
             };
-        });
+        }));
 
-        // 3. Recupero MVP (Top 3 Rider Inox nella divisione per punti totali)
+        // 3. Recupero MVP (Top 5 Rider Inox nella divisione per punti totali)
         const { results: mvps } = await env.DB.prepare(`
-            SELECT rider_name, team_name, points_total, position
-            FROM division_results
-            WHERE round_id IN (SELECT id FROM zrl_races WHERE zrl_round_group_id = ?)
-            AND league_key = ?
-            AND is_inox = 1
+            SELECT dr.rider_name, dr.team_name, SUM(dr.points_total) as points_total, 0 as position
+            FROM division_results dr
+            JOIN rounds r ON dr.round_id = r.id
+            JOIN series s ON r.series_id = s.id
+            WHERE s.is_active = 1 AND r.id = ? AND dr.league_key = ?
+            AND dr.is_inox = 1
+            GROUP BY dr.zwid, dr.rider_name, dr.team_name
             ORDER BY points_total DESC
             LIMIT 5
         `).bind(round_group_id, league_key).all();
 
+        // Assegnazione posizione post-query
+        const rankedMvps = (mvps || []).map((m, i) => ({ ...m, position: i + 1 }));
+
         return new Response(JSON.stringify({ 
             success: true, 
             analytics,
-            mvps
+            mvps: rankedMvps
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
