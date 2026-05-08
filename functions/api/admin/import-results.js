@@ -45,31 +45,41 @@ export async function onRequestPost({ request, env }) {
         }
 
         // 1. Trova la stagione reale
+        // Cerchiamo la serie attiva che corrisponde alla seasonId (es: 19)
         const season = await env.DB.prepare(`
-            SELECT id FROM series WHERE external_season_id = ? OR name LIKE ? LIMIT 1
-        `).bind(seasonId, `%${seasonId}%`).first();
+            SELECT id FROM series 
+            WHERE external_season_id = ? 
+            ORDER BY is_active DESC, id DESC 
+            LIMIT 1
+        `).bind(seasonId).first();
 
-        if (!season) return errorRes(`Stagione ${seasonId} non censita nel database.`, 404);
+        if (!season) {
+            console.error(`[IMPORT] Stagione ${seasonId} non trovata.`);
+            return errorRes(`Stagione ${seasonId} non censita nel database.`, 404);
+        }
+
+        console.log(`[IMPORT] Trovata stagione ID: ${season.id} per seasonId: ${seasonId}`);
 
         let totalRidersImported = 0;
         const insertStmts = [];
         const affectedRaceIds = new Set();
 
         // Prepariamo una cache dei round per questa stagione
-        // Usiamo un pattern più flessibile per beccare "Race 4", "Race 4 - Route", "Race 4 (Cat A)" ecc.
         const raceSearchPattern = `%Race ${raceNumber}%`;
-        const allSeasonRaces = await env.DB.prepare(`
+        const { results: raceResults } = await env.DB.prepare(`
             SELECT id, name, category
             FROM rounds
             WHERE series_id = ? AND (name LIKE ? OR name LIKE ?)
         `).bind(season.id, raceSearchPattern, `%R${raceNumber}%`).all();
 
-        const raceMap = allSeasonRaces.results || [];
+        const raceMap = raceResults || [];
         if (raceMap.length === 0) {
-            // Debug: vediamo cosa c'è nel DB per questa stagione
-            const existingRaces = await env.DB.prepare("SELECT name FROM rounds WHERE series_id = ? LIMIT 5").bind(season.id).all();
-            const names = (existingRaces.results || []).map(r => r.name).join(", ");
-            return errorRes(`Nessuna gara 'Race ${raceNumber}' trovata. Nel DB per questa stagione ci sono: ${names || 'nessuna gara'}`, 404);
+            // Debug approfondito: vediamo cosa c'è nel DB per questa stagione specifica
+            const checkRaces = await env.DB.prepare("SELECT id, name, category FROM rounds WHERE series_id = ?").bind(season.id).all();
+            console.error(`[IMPORT] Nessuna gara trovata per serie ${season.id}. Disponibili:`, checkRaces.results);
+            
+            const names = (checkRaces.results || []).map(r => `${r.name} (${r.category})`).join(", ");
+            return errorRes(`Gara 'Race ${raceNumber}' non trovata per la stagione ID ${season.id}. Gare presenti: ${names || 'Nessuna'}`, 404);
         }
 
         for (const div of divisions) {
