@@ -18,6 +18,7 @@ interface AnalyticsData {
   is_inox: number;
   archetype: string;
   dna: { subject: string; A: number }[];
+  roster: { rider_name: string; zwid: number; points_total: number }[];
   stats: {
     total_lp: number;
     total_trp: number;
@@ -152,9 +153,8 @@ const ZRLAnalytics: React.FC = () => {
               >
                 <Filter size={16} className={showFilters ? 'text-inox-orange' : 'text-zinc-500'} />
                 <span className="text-xs font-black uppercase tracking-widest">
-                  {options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption)?.league_display_name || 'Seleziona Divisione'}
-                </span>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
+                  {opt.league_display_name || opt.league_key || 'Seleziona Divisione'}
+                </span>                <ChevronDown size={16} className={`transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
               </button>
 
               <AnimatePresence>
@@ -272,24 +272,54 @@ const ZRLAnalytics: React.FC = () => {
            </div>
         </div>
 
-        {/* MVP CARDS */}
+        {/* MVP & ROSTER CARDS */}
         <div className={`${snapshotMode ? 'w-full flex justify-center gap-6 mt-12 px-6' : 'xl:col-span-5 flex flex-col gap-6'}`}>
-          {data?.mvps.slice(0, snapshotMode ? 3 : 5).map((mvp, i) => (
-            <div key={i} className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2rem] flex-1 min-w-0">
-              <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 bg-black rounded-2xl flex flex-col items-center justify-center border border-zinc-800">
-                    <span className="text-xl font-black italic text-inox-orange">#{mvp.position}</span>
-                 </div>
-                 <div className="flex-1 min-w-0 text-left">
-                    <p className="text-lg font-black italic text-white uppercase truncate">{mvp.rider_name}</p>
-                    <div className="flex justify-between items-center">
-                      <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{mvp.team_name}</p>
-                      <p className="text-[11px] font-black text-inox-orange">{mvp.points_total} <span className="text-[7px] text-zinc-600">PTS</span></p>
+          {/* TEAM ROSTER SECTION */}
+          {!snapshotMode && currentTeamData && (
+            <div className="bg-zinc-950 border border-zinc-900 rounded-[2rem] p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-6">
+                <Users size={20} className="text-inox-orange" />
+                <h4 className="text-sm font-black uppercase tracking-widest text-white">Team Roster & Points</h4>
+              </div>
+              <div className="space-y-3">
+                {currentTeamData.roster.length > 0 ? (
+                  currentTeamData.roster.map((rider, i) => (
+                    <div key={i} className="flex justify-between items-center p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                      <p className="text-xs font-bold text-zinc-300 uppercase">{rider.rider_name}</p>
+                      <p className="text-xs font-black text-inox-orange">{rider.points_total} <span className="text-[8px] text-zinc-600">PTS</span></p>
                     </div>
-                 </div>
+                  ))
+                ) : (
+                  <p className="text-center py-4 text-xs font-bold text-zinc-600 uppercase tracking-tighter">Nessun dato corridore trovato</p>
+                )}
               </div>
             </div>
-          ))}
+          )}
+
+          {/* GLOBAL MVPs SECTION */}
+          <div className={`${snapshotMode ? 'flex gap-6 w-full' : 'space-y-4'}`}>
+            <div className={snapshotMode ? 'hidden' : 'flex items-center gap-3 mb-2 px-2'}>
+              <Star size={18} className="text-inox-orange fill-inox-orange" />
+              <h4 className="text-sm font-black uppercase tracking-widest text-white">Division MVPs (Inox)</h4>
+            </div>
+            
+            {data?.mvps.slice(0, snapshotMode ? 3 : 5).map((mvp, i) => (
+              <div key={i} className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2rem] flex-1 min-w-0">
+                <div className="flex items-center gap-4">
+                   <div className="w-14 h-14 bg-black rounded-2xl flex flex-col items-center justify-center border border-zinc-800">
+                      <span className="text-xl font-black italic text-inox-orange">#{mvp.position}</span>
+                   </div>
+                   <div className="flex-1 min-w-0 text-left">
+                      <p className="text-lg font-black italic text-white uppercase truncate">{mvp.rider_name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{mvp.team_name}</p>
+                        <p className="text-[11px] font-black text-inox-orange">{mvp.points_total} <span className="text-[7px] text-zinc-600">PTS</span></p>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* AGGREGATE SCORE (Solo in Snapshot) */}

@@ -18,7 +18,7 @@ export async function onRequestGet({ request, env }) {
                     MAX(ts.league_name) as league_display_name
                 FROM zrl_team_standings ts
                 JOIN zrl_round_groups rg ON ts.round_group_id = rg.id
-                JOIN zrl_seasons s ON rg.series_id = s.id
+                JOIN series s ON rg.series_id = s.id
                 GROUP BY rg.id, ts.league_key
                 ORDER BY s.id DESC, rg.round_index DESC
             `).all();
