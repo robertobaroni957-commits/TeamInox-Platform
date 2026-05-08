@@ -449,55 +449,138 @@ const ZRLOperations: React.FC = () => {
                         <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
                       </div>
                     </div>
+
+                    <div className="bg-zinc-900/20 p-4 rounded-xl border border-zinc-800/50">
+                       <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                         <AlertCircle size={10} /> Quick Actions
+                       </p>
+                       <div className="flex gap-2">
+                          <button onClick={handleSyncRaces} className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2">
+                            <RefreshCw size={10} /> Sync Rounds
+                          </button>
+                          <button onClick={handleSyncTeams} className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2">
+                            <Users size={10} /> Sync Teams (D1)
+                          </button>
+                       </div>
+                    </div>
                   </div>
 
-                  <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-900 flex flex-col justify-center space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-zinc-500"><Activity size={14} /><h4 className="text-[10px] font-black uppercase tracking-widest">Roster Management</h4></div>
-                      <div className="flex flex-col gap-2">
-                        <button onClick={() => {
-                          const script = `(async () => {
-                            const panels = document.querySelectorAll('.panel-body[data-trc]');
-                            const allTeams = [];
-                            const season = document.body.getAttribute('wtrl-season') || "19";
-                            console.log("🚀 Inizio recupero...");
-                            for (const panel of panels) {
-                                const trc = panel.getAttribute('data-trc');
-                                try {
-                                    const response = await fetch("https://www.wtrl.racing/api/zrl/" + season + "/teams/" + trc);
-                                    const data = await response.json();
-                                    if (data && data.meta) {
-                                        allTeams.push(data);
-                                        console.log("✅ Recuperato: " + data.meta.team.name);
-                                    }
-                                } catch (e) { console.error("❌ Errore: " + trc, e); }
-                            }
-                            if (allTeams.length > 0) {
-                                const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url; a.download = 'squadre_inox.json'; a.click();
-                                alert("File scaricato con " + allTeams.length + " squadre!");
-                            } else { alert("Nessun dato recuperato. Controlla la console."); }
-                          })();`;
-                          navigator.clipboard.writeText(script);
-                          alert("Script copiato!");
-                        }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 border border-zinc-800 text-[9px]"><Zap size={14} /> 1. Copy Extractor</button>
-                        <label className="w-full bg-white hover:bg-zinc-200 text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer text-[10px] shadow-lg"><Save size={16} /> 2. Upload squadre_inox.json
-                          <input type="file" accept=".json" className="hidden" onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            setLoading(true);
-                            try {
-                              const teamsData = JSON.parse(await file.text());
-                              for (const team of teamsData) {
-                                await fetch('/api/admin/ingest-wtrl-team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(team) });
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                    {/* Roster Management */}
+                    <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-900 flex flex-col justify-center space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-zinc-500"><Activity size={14} /><h4 className="text-[10px] font-black uppercase tracking-widest">Roster Management</h4></div>
+                        <div className="flex flex-col gap-2">
+                          <button onClick={() => {
+                            const script = `(async () => {
+                              const panels = document.querySelectorAll('.panel-body[data-trc]');
+                              const allTeams = [];
+                              const season = document.body.getAttribute('wtrl-season') || "19";
+                              console.log("🚀 Inizio recupero...");
+                              for (const panel of panels) {
+                                  const trc = panel.getAttribute('data-trc');
+                                  try {
+                                      const response = await fetch("https://www.wtrl.racing/api/zrl/" + season + "/teams/" + trc);
+                                      const data = await response.json();
+                                      if (data && data.meta) {
+                                          allTeams.push(data);
+                                          console.log("✅ Recuperato: " + data.meta.team.name);
+                                      }
+                                  } catch (e) { console.error("❌ Errore: " + trc, e); }
                               }
-                              setMessage({ type: 'success', text: `Sync: ${teamsData.length} teams` });
-                            } catch (err) { setMessage({ type: 'error', text: 'Upload failed' }); }
-                            finally { setLoading(false); }
-                          }} />
-                        </label>
+                              if (allTeams.length > 0) {
+                                  const blob = new Blob([JSON.stringify(allTeams)], { type: 'application/json' });
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url; a.download = 'squadre_inox.json'; a.click();
+                                  alert("File scaricato con " + allTeams.length + " squadre!");
+                              } else { alert("Nessun dato recuperato. Controlla la console."); }
+                            })();`;
+                            navigator.clipboard.writeText(script);
+                            alert("Script copiato!");
+                          }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 border border-zinc-800 text-[9px]"><Zap size={14} /> 1. Copy Extractor</button>
+                          <label className="w-full bg-white hover:bg-zinc-200 text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer text-[10px] shadow-lg"><Save size={16} /> 2. Upload squadre_inox.json
+                            <input type="file" accept=".json" className="hidden" onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setLoading(true);
+                              try {
+                                const teamsData = JSON.parse(await file.text());
+                                for (const team of teamsData) {
+                                  await fetch('/api/admin/ingest-wtrl-team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(team) });
+                                }
+                                setMessage({ type: 'success', text: `Sync: ${teamsData.length} teams` });
+                              } catch (err) { setMessage({ type: 'error', text: 'Upload failed' }); }
+                              finally { setLoading(false); }
+                            }} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Schedule Management */}
+                    <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-900 flex flex-col justify-center space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-zinc-500"><Calendar size={14} /><h4 className="text-[10px] font-black uppercase tracking-widest">Schedule Management</h4></div>
+                        <div className="flex flex-col gap-2">
+                          <button onClick={() => {
+                            const script = `(async () => {
+    const season = "${wtrlId || '19'}";
+    const categories = ['A', 'C'];
+    const result = { categories: {} };
+    console.log("%c🚀 STARTING SCHEDULE EXTRACTION", "color: #fc6719; font-weight: bold; font-size: 14px;");
+    for (const cat of categories) {
+      try {
+        console.log("Fetching schedule for category: " + cat);
+        const res = await fetch("https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=" + season + "&category=" + cat + "&action=schedule");
+        const data = await res.json();
+        result.categories[cat] = data.payload || (Array.isArray(data) ? data : []);
+        console.log("%c✅ Downloaded category: " + cat, "color: #4caf50");
+      } catch (e) {
+        console.error("❌ Error for " + cat, e);
+      }
+    }
+    if (Object.keys(result.categories).length > 0) {
+      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "zrl_schedule_S" + season + ".json";
+      a.click();
+      alert("Downloaded schedule for " + Object.keys(result.categories).join(", ") + " categories!");
+    } else {
+      alert("No data downloaded. Check console.");
+    }
+  })();`;
+                            navigator.clipboard.writeText(script);
+                            alert("Script Schedule Copiato!");
+                          }} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black italic uppercase py-2 rounded-lg flex items-center justify-center gap-2 border border-zinc-800 text-[9px]"><Zap size={14} /> 1. Copy Extractor</button>
+                          <label className="w-full bg-[#fc6719] hover:bg-zinc-200 text-black font-black italic uppercase py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer text-[10px] shadow-lg"><Save size={16} /> 2. Upload zrl_schedule.json
+                            <input type="file" accept=".json" className="hidden" onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setLoading(true);
+                              try {
+                                const content = await file.text();
+                                const response = await fetch('/api/admin/import-wtrl-schedule', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+                                  },
+                                  body: JSON.stringify({ html: content, seasonId: wtrlId })
+                                });
+                                const data = await response.json();
+                                if (data.success) {
+                                  setMessage({ type: 'success', text: data.message });
+                                  setTimeout(() => window.location.reload(), 1500);
+                                } else {
+                                  throw new Error(data.error);
+                                }
+                              } catch (err: any) { setMessage({ type: 'error', text: 'Upload failed: ' + err.message }); }
+                              finally { setLoading(false); }
+                            }} />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -582,6 +665,7 @@ const ZRLOperations: React.FC = () => {
             {/* STEP 2-4 */}
             {activeStep === 2 && <AvailabilityManagement />}
             {activeStep === 3 && <RosterSuggestions />}
+            {activeStep === 4 && <RosterBuilder />}
             
             {/* STEP 5: RESULTS */}
             {activeStep === 5 && (

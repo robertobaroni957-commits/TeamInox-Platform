@@ -62,13 +62,26 @@ export async function onRequestPost({ request, env }) {
         if (data.categories) {
             console.log("[IMPORT] Rilevato formato multi-categoria.");
             for (const [cat, payload] of Object.entries(data.categories)) {
-                const mappedRounds = payload.map((r, index) => mapWtrlRound(r, index, cat));
+                // Filtriamo i placeholder inutili come "1.0", "2.0" che a volte WTRL manda
+                const validRounds = (payload || []).filter(r => {
+                    const name = (r.name || r.roundName || r.race || "").toString();
+                    return name && !name.match(/^\d+\.0$/);
+                });
+                
+                const mappedRounds = validRounds.map((r, index) => mapWtrlRound(r, index, cat));
                 roundsData.push(...mappedRounds);
             }
         } else {
             const payload = data.payload || (Array.isArray(data) ? data : []);
             console.log(`[IMPORT] Analisi JSON: trovati ${payload.length} elementi.`);
-            roundsData = payload.map((r, index) => mapWtrlRound(r, index, "ALL"));
+            
+            // Filtro anche per il formato standard
+            const filteredPayload = payload.filter(r => {
+                const name = (r.name || r.roundName || r.race || "").toString();
+                return name && !name.match(/^\d+\.0$/);
+            });
+
+            roundsData = filteredPayload.map((r, index) => mapWtrlRound(r, index, "ALL"));
         }
       } catch (e) {
         console.error("[IMPORT] Errore Parsing JSON:", e.message);
@@ -108,24 +121,31 @@ export async function onRequestPost({ request, env }) {
     if (series) {
         await env.DB.prepare("UPDATE series SET is_active = 1, name = ? WHERE id = ?").bind(seasonName, series.id).run();
     } else {
-        const res = await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1)")
+        await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1)")
             .bind(sId, seasonName).run();
-        series = { id: res.meta.lastRowId };
+        series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(sId).first();
     }
 
-    // 3. PULIZIA TOTALE
+    // 3. PULIZIA TOTALE (Surgical Clean)
     const roundIdsResult = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ?").bind(series.id).all();
-    const roundIds = roundIdsResult.results.map(r => r.id);
+    const roundIds = (roundIdsResult.results || []).map(r => r.id);
 
     if (roundIds.length > 0) {
         const placeholders = roundIds.map(() => "?").join(",");
-        await env.DB.prepare(`DELETE FROM race_lineup WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
-        await env.DB.prepare(`DELETE FROM round_teams WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
-        await env.DB.prepare(`DELETE FROM availability WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
-        await env.DB.prepare(`DELETE FROM results WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
         try {
-            await env.DB.prepare(`DELETE FROM division_results WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
-        } catch (e) {}
+            await env.DB.prepare(`DELETE FROM race_lineup WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+            await env.DB.prepare(`DELETE FROM round_teams WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+            await env.DB.prepare(`DELETE FROM availability WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+            await env.DB.prepare(`DELETE FROM results WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+            // division_results potrebbe non esistere ancora nel database remoto o locale
+            try {
+                await env.DB.prepare(`DELETE FROM division_results WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+            } catch (e) {
+                console.log("Tabella division_results non presente, salto pulizia.");
+            }
+        } catch (cleanErr) {
+            console.error("Errore durante la pulizia dei round esistenti:", cleanErr.message);
+        }
     }
 
     await env.DB.prepare("DELETE FROM rounds WHERE series_id = ?").bind(series.id).run();
