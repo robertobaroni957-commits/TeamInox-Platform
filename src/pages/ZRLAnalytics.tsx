@@ -169,25 +169,36 @@ const ZRLAnalytics: React.FC = () => {
                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Disponibili</p>
                     </div>
                     <div className="max-h-96 overflow-y-auto p-2 custom-scrollbar">
-                      {options.map((opt) => (
-                        <button
-                          key={`${opt.round_group_id}|${opt.league_key}`}
-                          onClick={() => {
-                            const val = `${opt.round_group_id}|${opt.league_key}`;
-                            setSelectedOption(val);
-                            fetchAnalytics(opt.round_group_id, opt.league_key);
-                            setShowFilters(false);
-                          }}
-                          className={`w-full text-left p-4 rounded-2xl transition-all ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'bg-inox-orange/10 border border-inox-orange/20' : 'hover:bg-zinc-800/50'}`}
-                        >
-                          <p className={`text-xs font-black uppercase ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'text-inox-orange' : 'text-white'}`}>
-                            {opt.league_display_name}
-                          </p>
-                          <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter mt-1">
-                            {opt.season_name} • {opt.round_name}
-                          </p>
-                        </button>
-                      ))}
+                      {options && options.length > 0 ? (
+                        options.map((opt) => {
+                          // Ensure opt and its essential properties are valid before using them
+                          if (!opt || opt.round_group_id === undefined || opt.league_key === undefined || opt.season_name === undefined || opt.round_name === undefined || opt.league_display_name === undefined) {
+                            console.warn("Skipping invalid option object:", opt);
+                            return null; // Skip rendering this item if essential data is missing
+                          }
+                          const optionValue = `${opt.round_group_id}|${opt.league_key}`;
+                          return (
+                            <button
+                              key={optionValue}
+                              onClick={() => {
+                                setSelectedOption(optionValue);
+                                fetchAnalytics(opt.round_group_id, opt.league_key);
+                                setShowFilters(false);
+                              }}
+                              className={`w-full text-left p-4 rounded-2xl transition-all ${selectedOption === optionValue ? 'bg-inox-orange/10 border border-inox-orange/20' : 'hover:bg-zinc-800/50'}`}
+                            >
+                              <p className={`text-xs font-black uppercase ${selectedOption === optionValue ? 'text-inox-orange' : 'text-white'}`}>
+                                {opt.league_display_name}
+                              </p>
+                              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter mt-1">
+                                {opt.season_name} • {opt.round_name}
+                              </p>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <p className="text-center py-4 text-xs font-bold text-zinc-600 uppercase tracking-tighter">Nessuna opzione disponibile</p>
+                      )}
                     </div>
                   </motion.div>
                 )}
