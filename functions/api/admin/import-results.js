@@ -56,28 +56,35 @@ export async function onRequestPost({ request, env }) {
         const affectedRaceIds = new Set();
 
         // Prepariamo una cache dei round per questa stagione
+        // Usiamo un pattern più flessibile per beccare "Race 4", "Race 4 - Route", "Race 4 (Cat A)" ecc.
+        const raceSearchPattern = `%Race ${raceNumber}%`;
         const allSeasonRaces = await env.DB.prepare(`
             SELECT id, name, category
             FROM rounds
-            WHERE series_id = ? AND name LIKE ?
-        `).bind(season.id, `%Race ${raceNumber}%`).all();
+            WHERE series_id = ? AND (name LIKE ? OR name LIKE ?)
+        `).bind(season.id, raceSearchPattern, `%R${raceNumber}%`).all();
 
         const raceMap = allSeasonRaces.results || [];
         if (raceMap.length === 0) {
-            return errorRes(`Nessuna gara 'Race ${raceNumber}' trovata per questa stagione nel DB.`, 404);
+            // Debug: vediamo cosa c'è nel DB per questa stagione
+            const existingRaces = await env.DB.prepare("SELECT name FROM rounds WHERE series_id = ? LIMIT 5").bind(season.id).all();
+            const names = (existingRaces.results || []).map(r => r.name).join(", ");
+            return errorRes(`Nessuna gara 'Race ${raceNumber}' trovata. Nel DB per questa stagione ci sono: ${names || 'nessuna gara'}`, 404);
         }
 
         for (const div of divisions) {
             const leagueKey = div.league_key;
             // Estrazione categoria (B da 2410B20)
             const catChar = leagueKey.charAt(4).toUpperCase();
-            
+
             // Trova la gara corretta: 
             // 1. Cerca per categoria specifica (A, B, C...)
             // 2. Fallback su 'ALL'
-            // 3. Fallback sulla prima gara trovata per quel numero
+            // 3. Fallback su gara che contiene la categoria nel nome
+            // 4. Fallback sulla prima gara trovata per quel numero
             let targetRace = raceMap.find(r => r.category === catChar) || 
                              raceMap.find(r => r.category === 'ALL') || 
+                             raceMap.find(r => r.name.includes(`Cat ${catChar}`)) ||
                              raceMap[0];
 
             const raceId = targetRace.id;
