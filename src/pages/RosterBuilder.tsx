@@ -221,29 +221,29 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
 
       {/* EMBEDDED CONTROLS (Only if embedded and not snapshot) */}
       {isEmbedded && !snapshotMode && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-zinc-900/30 p-4 rounded-3xl border border-zinc-800/50 mx-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-zinc-900/30 p-4 rounded-3xl border border-zinc-800/50 mx-6 backdrop-blur-sm shadow-xl">
            <div className="flex gap-4 w-full sm:w-auto">
               <div className="flex flex-col gap-1">
-                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest ml-1">Select Team</span>
-                <select value={selectedTeam || ''} onChange={(e) => setSelectedTeam(Number(e.target.value))} className="bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500">
+                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest ml-1">Select Team</span>
+                <select value={selectedTeam || ''} onChange={(e) => setSelectedTeam(Number(e.target.value))} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500 shadow-inner">
                    {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest ml-1">Select Round</span>
-                <select value={selectedRound || ''} onChange={(e) => setSelectedRound(Number(e.target.value))} className="bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500">
+                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest ml-1">Select Round</span>
+                <select value={selectedRound || ''} onChange={(e) => setSelectedRound(Number(e.target.value))} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500 shadow-inner">
                    {rounds.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </div>
            </div>
-           <button onClick={() => setSnapshotMode(true)} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-black italic rounded-xl hover:bg-orange-500 transition-all text-xs uppercase shadow-lg">
+           <button onClick={() => setSnapshotMode(true)} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-black italic rounded-xl hover:bg-orange-500 transition-all text-xs uppercase shadow-xl">
              <Camera size={14} /> Snapshot Mode
            </button>
         </div>
       )}
 
       {error && !snapshotMode && (
-        <div className="mx-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex items-center gap-3">
+        <div className="mx-6 p-5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-4">
           <AlertTriangle size={20} />
           {error}
         </div>
@@ -266,20 +266,20 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
 
         {/* LINEUP SECTION (TACTICAL CARD) */}
         <div className={`${snapshotMode ? 'w-full' : 'lg:col-span-7'}`}>
-          <section className={`bg-zinc-950 rounded-[3rem] border border-zinc-900 overflow-hidden shadow-2xl h-full flex flex-col`}>
-            <div className="p-10 bg-zinc-900/50 border-b border-zinc-900 flex justify-between items-start">
+          <section className={`bg-zinc-900/40 rounded-[3rem] border border-zinc-800 overflow-hidden shadow-2xl h-full flex flex-col backdrop-blur-sm hover:border-zinc-700/50 transition-all`}>
+            <div className="p-10 bg-zinc-800/30 border-b border-zinc-800 flex justify-between items-start">
               <div>
                 <p className="text-orange-500 font-black text-[10px] tracking-[0.3em] uppercase mb-2">Starting Roster</p>
                 <h2 className="text-4xl font-black italic text-white uppercase leading-none tracking-tighter">
                   {currentTeam?.name || 'Squadra'}
                 </h2>
-                <div className="flex items-center gap-4 mt-4 text-zinc-500">
-                   <div className="flex items-center gap-1.5 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
-                      <MapPin size={12} className="text-zinc-600" />
+                <div className="flex items-center gap-4 mt-4 text-zinc-400">
+                   <div className="flex items-center gap-1.5 bg-zinc-900/50 px-3 py-1.5 rounded-lg border border-zinc-800 shadow-inner">
+                      <MapPin size={12} className="text-zinc-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest">{currentRound?.world || 'Watopia'}</span>
                    </div>
-                   <div className="flex items-center gap-1.5 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
-                      <Calendar size={12} className="text-zinc-600" />
+                   <div className="flex items-center gap-1.5 bg-zinc-900/50 px-3 py-1.5 rounded-lg border border-zinc-800 shadow-inner">
+                      <Calendar size={12} className="text-zinc-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest">{currentRound ? new Date(currentRound.date).toLocaleDateString('it-IT') : 'TBD'}</span>
                    </div>
                 </div>
@@ -287,8 +287,8 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
               <div className="flex flex-col items-end gap-2">
                  <div className={`px-5 py-2 rounded-2xl text-xs font-black uppercase border-2 ${
                   lineup.length >= 4 && lineup.length <= 6 
-                  ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]" 
-                  : "bg-orange-500/10 text-orange-500 border-orange-500/20 shadow-[0_0_20px_rgba(252,103,25,0.1)]"
+                  ? "bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.15)]" 
+                  : "bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_20px_rgba(252,103,25,0.15)]"
                 }`}>
                   {lineup.length}/6 Riders
                 </div>
@@ -306,21 +306,21 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className="flex items-center justify-between p-6 bg-zinc-900 border border-zinc-800 rounded-[2.5rem] group hover:border-orange-500 transition-all relative overflow-hidden"
+                    className="flex items-center justify-between p-6 bg-zinc-900/60 border border-zinc-800 rounded-[2.5rem] group hover:border-orange-500 transition-all relative overflow-hidden shadow-xl"
                   >
-                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity">
                        <Zap size={60} />
                     </div>
                     
                     <div className="flex items-center gap-5 relative z-10">
-                      <div className="w-16 h-16 rounded-[1.5rem] bg-black border border-zinc-800 flex items-center justify-center text-orange-500 font-black text-2xl shadow-xl overflow-hidden">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-black border border-zinc-800 flex items-center justify-center text-orange-500 font-black text-2xl shadow-xl overflow-hidden group-hover:border-orange-500/30 transition-all">
                         {entry.athlete_name?.substring(0, 2).toUpperCase()}
                       </div>
                       <div className="space-y-1">
                         <span className="text-xl font-black text-white uppercase italic tracking-tighter block group-hover:text-orange-500 transition-colors leading-none">{entry.athlete_name}</span>
                         <div className="flex items-center gap-2">
-                           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Confirmed Starter</span>
+                           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
+                           <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Confirmed Starter</span>
                         </div>
                       </div>
                     </div>
@@ -328,7 +328,7 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                     {!snapshotMode && (
                       <button 
                         onClick={() => removeFromLineup(entry)}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 hover:border-red-500 transition-all z-20"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-600 hover:text-red-500 hover:border-red-500 transition-all z-20 shadow-md"
                         disabled={saving}
                       >
                         ✕
@@ -338,9 +338,9 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                 ))}
                 
                 {!snapshotMode && Array.from({ length: Math.max(0, 6 - lineup.length) }).map((_, i) => (
-                  <div key={`empty-${i}`} className="border-2 border-dashed border-zinc-900 rounded-[2.5rem] p-6 flex flex-col items-center justify-center opacity-30 gap-2">
-                    <UserCheck size={24} className="text-zinc-700" />
-                    <span className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em]">Add Rider</span>
+                  <div key={`empty-${i}`} className="border-2 border-dashed border-zinc-800 rounded-[2.5rem] p-6 flex flex-col items-center justify-center opacity-40 gap-2 hover:opacity-100 hover:border-zinc-700 transition-all group cursor-default">
+                    <UserCheck size={24} className="text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+                    <span className="text-[10px] font-black text-zinc-600 group-hover:text-zinc-400 uppercase tracking-[0.2em] transition-colors">Add Rider</span>
                   </div>
                 ))}
 
@@ -354,17 +354,17 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
 
             {/* ROUTE INFO (Snapshot only) */}
             {snapshotMode && currentRound && (
-              <div className="px-10 py-8 bg-zinc-900/30 border-t border-zinc-900 grid grid-cols-3 gap-8">
+              <div className="px-10 py-8 bg-zinc-800/30 border-t border-zinc-800 grid grid-cols-3 gap-8">
                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Route</span>
+                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Route</span>
                     <span className="text-base font-black text-white uppercase italic truncate">{currentRound.route}</span>
                  </div>
                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Distance</span>
+                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Distance</span>
                     <span className="text-base font-black text-white italic">{currentRound.distance}km</span>
                  </div>
                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Elevation</span>
+                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Elevation</span>
                     <span className="text-base font-black text-white italic">{currentRound.elevation}m</span>
                  </div>
               </div>
@@ -375,17 +375,17 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
         {/* ROSTER SECTION (Hidden in snapshot) */}
         {!snapshotMode && (
           <div className="lg:col-span-5">
-            <section className="bg-zinc-950/50 rounded-[3rem] border border-zinc-900 overflow-hidden sticky top-6">
-              <div className="p-8 border-b border-zinc-900 flex justify-between items-center bg-zinc-900/20">
+            <section className="bg-zinc-900/40 rounded-[3rem] border border-zinc-800 overflow-hidden sticky top-6 shadow-2xl backdrop-blur-sm">
+              <div className="p-8 border-b border-zinc-800 flex justify-between items-center bg-zinc-800/30">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-zinc-800 rounded-xl text-zinc-400">
+                  <div className="p-2 bg-zinc-900 rounded-xl text-zinc-400 border border-zinc-800 shadow-inner">
                     <Users size={20} />
                   </div>
                   <h2 className="text-xl font-black italic text-white uppercase tracking-tighter">
                     Team Pool
                   </h2>
                 </div>
-                <span className="bg-zinc-900 text-zinc-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                <span className="bg-zinc-950 border border-zinc-800 text-zinc-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-inner">
                   {roster.length} Available
                 </span>
               </div>
@@ -400,16 +400,16 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                       disabled={inLineup || saving}
                       whileHover={!inLineup ? { x: 4 } : {}}
                       onClick={() => addToLineup(athlete)}
-                      className={`w-full flex items-center justify-between p-5 rounded-[2rem] border transition-all text-left ${
+                      className={`w-full flex items-center justify-between p-5 rounded-[2.5rem] border transition-all text-left ${
                         inLineup 
-                          ? "bg-zinc-950 border-zinc-900 opacity-40 grayscale cursor-not-allowed" 
-                          : "bg-zinc-900 border-zinc-800 hover:border-orange-500/50 active:scale-95 shadow-xl group"
+                          ? "bg-zinc-950/50 border-zinc-900 opacity-40 grayscale cursor-not-allowed" 
+                          : "bg-zinc-900/60 border-zinc-800 hover:border-orange-500/50 active:scale-95 shadow-xl group"
                       }`}
                     >
                       <div className="flex items-center gap-4">
                         <div className="relative">
-                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-colors ${
-                            inLineup ? "bg-zinc-800 text-zinc-600" : "bg-zinc-800 text-orange-500 group-hover:bg-orange-500 group-hover:text-black"
+                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-all shadow-lg ${
+                            inLineup ? "bg-zinc-900 text-zinc-700" : "bg-zinc-800 text-orange-500 group-hover:bg-orange-500 group-hover:text-black border border-zinc-700 group-hover:border-orange-600"
                           }`}>
                             {athlete.name.substring(0, 2).toUpperCase()}
                           </div>
@@ -418,13 +418,13 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                           </div>
                         </div>
                         <div>
-                          <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1.5">{athlete.name}</p>
+                          <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1.5 group-hover:text-orange-500 transition-colors">{athlete.name}</p>
                           <div className="flex items-center gap-2.5">
-                             <span className="px-2 py-0.5 bg-zinc-950 rounded text-[8px] font-black text-zinc-500 border border-zinc-800 uppercase tracking-widest">CAT {athlete.category || 'N/A'}</span>
+                             <span className="px-2 py-0.5 bg-zinc-950 rounded-md text-[8px] font-black text-zinc-500 border border-zinc-800 uppercase tracking-widest shadow-inner">CAT {athlete.category || 'N/A'}</span>
                              <span className={`text-[9px] font-black uppercase tracking-widest ${
                                status === 'available' ? 'text-green-500' : 
                                status === 'unavailable' ? 'text-red-500' : 
-                               status === 'tentative' ? 'text-orange-500' : 'text-zinc-700'
+                               status === 'tentative' ? 'text-orange-500' : 'text-zinc-600'
                              }`}>
                                {status || 'No RSVP'}
                              </span>
@@ -432,11 +432,11 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
                         </div>
                       </div>
                       
-                      <div className="w-10 h-10 rounded-2xl bg-zinc-950 border border-zinc-900 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center shadow-inner transition-colors group-hover:border-orange-500/30">
                         {inLineup ? (
                           <CheckCircle2 size={16} className="text-green-500" />
                         ) : (
-                          <ChevronRight size={18} className="text-zinc-700 group-hover:text-orange-500" />
+                          <ChevronRight size={18} className="text-zinc-600 group-hover:text-orange-500" />
                         )}
                       </div>
                     </motion.button>
@@ -450,10 +450,10 @@ const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => 
         {/* SNAPSHOT FOOTER */}
         {snapshotMode && (
           <div className="absolute bottom-12 left-12 flex items-center gap-3">
-             <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center border border-zinc-800">
+             <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center border border-zinc-800 shadow-inner">
                 <Info size={16} className="text-orange-500" />
              </div>
-             <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Strategy developed by Inoxteam Command Center</p>
+             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Strategy developed by Inoxteam Command Center</p>
           </div>
         )}
       </div>

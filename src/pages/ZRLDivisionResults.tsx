@@ -120,29 +120,29 @@ const ZRLDivisionResults: React.FC = () => {
             </div>
           </div>
           <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
-            ZRL <span className="text-zinc-800">LEAGUE GC</span>
+            ZRL <span className="text-zinc-700">LEAGUE GC</span>
           </h1>
-          <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest">
-             Classifica Generale ufficiale aggiornata all'ultimo Round.
+          <p className="text-zinc-400 font-bold italic text-sm uppercase tracking-widest italic">
+             Classifica Generale ufficiale aggiornata all'ultimo Round operativo.
           </p>
         </div>
 
         {/* CUSTOM DROPDOWN FILTER */}
-        <div className="relative w-full md:w-[380px]">
+        <div className="relative w-full md:w-[400px]">
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="w-full px-5 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-xl"
+            className="w-full px-6 py-5 bg-zinc-900/60 border border-zinc-800 rounded-[1.5rem] flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-2xl backdrop-blur-sm"
           >
-            <div className="flex items-center gap-3 min-w-0 overflow-hidden">
-              <Filter size={16} className="text-zinc-500 shrink-0" />
+            <div className="flex items-center gap-4 min-w-0 overflow-hidden">
+              <Filter size={18} className="text-zinc-500 shrink-0 group-hover:text-inox-orange transition-colors" />
               <div className="flex flex-col min-w-0">
-                <span className="text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em] leading-none mb-1">Active Viewport</span>
-                <span className="text-[10px] font-black uppercase text-white truncate pr-2">
+                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.3em] leading-none mb-1.5">Active Viewport</span>
+                <span className="text-[11px] font-black uppercase text-white truncate pr-2 tracking-widest">
                   {currentFilter ? `${currentFilter.round_name} • ${formatLeagueName(currentFilter)}` : 'Seleziona Round'}
                 </span>
               </div>
             </div>
-            <ChevronDown size={14} className={`text-zinc-500 shrink-0 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`text-zinc-500 shrink-0 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
           </button>
 
           <AnimatePresence>
@@ -151,17 +151,20 @@ const ZRLDivisionResults: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute top-full left-0 right-0 mt-2 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar"
+                className="absolute top-full left-0 right-0 mt-3 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden max-h-[450px] overflow-y-auto custom-scrollbar backdrop-blur-md"
               >
+                 <div className="p-4 border-b border-zinc-800 bg-black/20">
+                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Seleziona Divisione</p>
+                 </div>
                  {options.map((opt, i) => (
                    <button
                      key={i}
                      onClick={() => handleFilterChange(opt.round_group_id, opt.league_key)}
-                     className="w-full px-6 py-4 text-left hover:bg-inox-orange/10 border-b border-zinc-800/50 last:border-0 transition-colors group"
+                     className="w-full px-6 py-4 text-left hover:bg-inox-orange/10 border-b border-zinc-800/50 last:border-0 transition-all group"
                    >
-                     <p className="text-[10px] font-black uppercase text-white group-hover:text-inox-orange transition-colors">{opt.round_name}</p>
-                     <div className="flex justify-between items-center mt-1">
-                        <p className="text-[8px] font-bold uppercase text-zinc-500 tracking-widest">{formatLeagueName(opt)}</p>
+                     <p className="text-xs font-black uppercase text-white group-hover:text-inox-orange transition-colors tracking-tight">{opt.round_name}</p>
+                     <div className="flex justify-between items-center mt-1.5">
+                        <p className="text-[9px] font-bold uppercase text-zinc-500 tracking-widest">{formatLeagueName(opt)}</p>
                         <p className="text-[8px] font-black text-zinc-700 uppercase">{opt.season_name}</p>
                      </div>
                    </button>
@@ -174,59 +177,62 @@ const ZRLDivisionResults: React.FC = () => {
 
       {/* QUICK STATS BENTO */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-shrink-0">
-         <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
-            <Hash size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>
-            <p className="text-3xl font-black italic text-white">{results.length} Teams</p>
+         <div className="p-6 rounded-[2.5rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-xl">
+            <Hash size={16} className="text-zinc-600 mb-2" />
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>
+            <p className="text-4xl font-black italic text-white tracking-tighter">{results.length} Teams</p>
          </div>
-         <div className="p-6 rounded-[2rem] bg-inox-orange/5 border border-inox-orange/10 flex flex-col gap-2 relative overflow-hidden group">
-            <Star size={14} className="text-inox-orange mb-2" />
-            <p className="text-[8px] font-black text-inox-orange/60 uppercase tracking-widest">INOX Position</p>
-            <p className="text-3xl font-black italic text-inox-orange">{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
+         <div className="p-6 rounded-[2.5rem] bg-inox-orange/10 border border-inox-orange/20 flex flex-col gap-2 relative overflow-hidden group hover:border-inox-orange/40 transition-all shadow-2xl">
+            <div className="absolute -top-2 -right-2 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+               <Star size={80} />
+            </div>
+            <Star size={16} className="text-inox-orange mb-2" />
+            <p className="text-[9px] font-black text-inox-orange/70 uppercase tracking-widest">INOX Position</p>
+            <p className="text-4xl font-black italic text-inox-orange tracking-tighter">{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
          </div>
-         <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
-            <Trophy size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">League Points (j)</p>
-            <p className="text-3xl font-black italic text-white">{inoxTeam ? inoxTeam.league_points : '0'}</p>
+         <div className="p-6 rounded-[2.5rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-xl">
+            <Trophy size={16} className="text-zinc-600 mb-2" />
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">League Points (j)</p>
+            <p className="text-4xl font-black italic text-white tracking-tighter">{inoxTeam ? inoxTeam.league_points : '0'}</p>
          </div>
-         <div className="p-6 rounded-[2rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group">
-            <Activity size={14} className="text-zinc-600 mb-2" />
-            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Total Race Pts (e+k+i)</p>
-            <p className="text-3xl font-black italic text-white">{inoxTeam ? inoxTeam.total_race_points : '0'}</p>
+         <div className="p-6 rounded-[2.5rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-2 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-xl">
+            <Activity size={16} className="text-zinc-600 mb-2" />
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total Race Pts (Σ)</p>
+            <p className="text-4xl font-black italic text-white tracking-tighter">{inoxTeam ? inoxTeam.total_race_points : '0'}</p>
          </div>
       </section>
 
       {/* DATA VIEWPORT */}
-      <section className="flex-1 bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden shadow-2xl relative">
+      <section className="flex-1 bg-zinc-900/30 border border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl relative backdrop-blur-sm">
         {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <RefreshCw size={40} className="text-inox-orange animate-spin mb-4" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Retrieving official GC...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md z-50">
+            <RefreshCw size={48} className="text-inox-orange animate-spin mb-6 shadow-[0_0_20px_rgba(252,103,25,0.3)]" />
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400 italic">Retrieving official GC Intel...</p>
           </div>
         ) : results.length === 0 ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-             <div className="p-8 rounded-full bg-zinc-900/50 border border-zinc-800 mb-6">
-                <AlertCircle size={48} className="text-zinc-700" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
+             <div className="p-10 rounded-full bg-zinc-900 border border-zinc-800 mb-8 shadow-inner">
+                <AlertCircle size={64} className="text-zinc-700" />
              </div>
-             <p className="text-xl font-black italic text-zinc-500 uppercase tracking-tighter">No GC Data Sync</p>
-             <p className="text-zinc-700 text-[10px] font-bold uppercase mt-2 tracking-widest">Please upload official WTRL JSON from Admin Panel</p>
+             <p className="text-2xl font-black italic text-zinc-500 uppercase tracking-tighter leading-none">No GC Data Sync Detected</p>
+             <p className="text-zinc-600 text-[11px] font-bold uppercase mt-4 tracking-[0.2em] max-w-xs mx-auto">Please upload official WTRL JSON from Admin Panel to initialize the viewport.</p>
           </div>
         ) : (
           <div className="h-full overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-separate border-spacing-0">
-              <thead className="sticky top-0 z-10 bg-black/90 backdrop-blur-md">
-                <tr className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 border-b border-zinc-900">
-                  <th className="px-8 py-6 text-center w-24 bg-black/20">RANK</th>
-                  <th className="px-8 py-6">TEAM NAME</th>
-                  <th className="px-6 py-6 text-center text-inox-orange">LP (J)</th>
-                  <th className="px-6 py-6 text-center">TRP (Σ)</th>
-                  <th className="px-4 py-6 text-center">FAL (E)</th>
-                  <th className="px-4 py-6 text-center">FTS (K)</th>
-                  <th className="px-4 py-6 text-center">POS (I)</th>
-                  <th className="px-8 py-6 text-center">RACE HISTORY</th>
+              <thead className="sticky top-0 z-10 bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-800">
+                <tr className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                  <th className="px-10 py-8 text-center w-32 bg-black/20">RANK</th>
+                  <th className="px-10 py-8">SQUADRON NAME</th>
+                  <th className="px-8 py-8 text-center text-inox-orange">LP (J)</th>
+                  <th className="px-8 py-8 text-center">TRP (Σ)</th>
+                  <th className="px-6 py-8 text-center opacity-60">FAL</th>
+                  <th className="px-6 py-8 text-center opacity-60">FTS</th>
+                  <th className="px-6 py-8 text-center opacity-60">FIN</th>
+                  <th className="px-10 py-8 text-center">MISSION HISTORY</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-900/30">
+              <tbody className="divide-y divide-zinc-800/40">
                 {results.map((team) => {
                   const isFirst = team.rank === 1;
                   return (
@@ -237,57 +243,57 @@ const ZRLDivisionResults: React.FC = () => {
                       className={`group transition-all ${
                         team.is_inox 
                           ? 'bg-inox-orange/5 hover:bg-inox-orange/10' 
-                          : 'hover:bg-zinc-900/40'
+                          : 'hover:bg-zinc-800/40'
                       }`}
                     >
-                      <td className="px-8 py-8 text-center">
-                        <span className={`text-3xl font-black italic ${
-                          isFirst ? 'text-inox-orange drop-shadow-[0_0_10px_rgba(252,103,25,0.4)]' : 'text-zinc-800 group-hover:text-zinc-600'
+                      <td className="px-10 py-10 text-center">
+                        <span className={`text-4xl font-black italic ${
+                          isFirst ? 'text-inox-orange drop-shadow-[0_0_15px_rgba(252,103,25,0.4)]' : 'text-zinc-800 group-hover:text-zinc-500'
                         }`}>
                           #{team.rank}
                         </span>
                       </td>
-                      <td className="px-8 py-8">
+                      <td className="px-10 py-10">
                         <div className="flex flex-col">
-                          <span className={`font-black uppercase tracking-tight text-xl leading-none ${
+                          <span className={`font-black uppercase tracking-tight text-2xl leading-none ${
                             team.is_inox ? 'text-white' : 'text-zinc-300 group-hover:text-white'
                           }`}>
                             {team.team_name}
                           </span>
                           {team.is_inox === 1 && (
-                            <div className="flex items-center gap-2 mt-2">
-                               <span className="bg-inox-orange text-black px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-tighter italic">Official INOX Squadron</span>
+                            <div className="flex items-center gap-2 mt-3">
+                               <span className="bg-inox-orange text-black px-3 py-1 rounded-[6px] text-[9px] font-black uppercase tracking-widest italic shadow-lg">Official Squadron</span>
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-8 text-center">
-                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-black border border-zinc-800 group-hover:border-inox-orange/40 transition-all">
-                           <span className="text-xl font-black italic text-inox-orange">
+                      <td className="px-8 py-10 text-center">
+                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-[1.5rem] bg-zinc-950 border border-zinc-800 group-hover:border-inox-orange/40 transition-all shadow-inner">
+                           <span className="text-2xl font-black italic text-inox-orange">
                              {team.league_points}
                            </span>
                          </div>
                       </td>
-                      <td className="px-6 py-8 text-center">
-                        <span className="text-sm font-black text-white">{team.total_race_points}</span>
+                      <td className="px-8 py-10 text-center">
+                        <span className="text-lg font-black text-white group-hover:scale-110 transition-transform inline-block">{team.total_race_points}</span>
                       </td>
-                      <td className="px-4 py-8 text-center">
-                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fal}</span>
+                      <td className="px-6 py-10 text-center">
+                        <span className="text-xs font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">{team.pts_fal}</span>
                       </td>
-                      <td className="px-4 py-8 text-center">
-                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fts}</span>
+                      <td className="px-6 py-10 text-center">
+                        <span className="text-xs font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">{team.pts_fts}</span>
                       </td>
-                      <td className="px-4 py-8 text-center">
-                        <span className="text-[10px] font-black text-zinc-500">{team.pts_finish}</span>
+                      <td className="px-6 py-10 text-center">
+                        <span className="text-xs font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">{team.pts_finish}</span>
                       </td>
-                      <td className="px-8 py-8">
-                        <div className="flex justify-center items-center gap-1.5">
+                      <td className="px-10 py-10">
+                        <div className="flex justify-center items-center gap-2">
                           {[team.r1, team.r2, team.r3, team.r4, team.r5, team.r6].map((pts, i) => (
                             pts !== "0" && pts !== null && (
-                              <div key={i} className="flex flex-col items-center gap-1">
-                                <span className="text-[6px] font-black text-zinc-700 uppercase tracking-tighter">R{i+1}</span>
-                                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                                  <span className="text-[10px] font-black text-zinc-500">{pts}</span>
+                              <div key={i} className="flex flex-col items-center gap-1.5 group/race">
+                                <span className="text-[7px] font-black text-zinc-700 uppercase tracking-tighter group-hover/race:text-zinc-500 transition-colors">R{i+1}</span>
+                                <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center shadow-md group-hover/race:border-inox-orange/30 transition-all">
+                                  <span className="text-xs font-black text-zinc-500 group-hover/race:text-white transition-colors">{pts}</span>
                                 </div>
                               </div>
                             )

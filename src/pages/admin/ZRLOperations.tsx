@@ -3,7 +3,7 @@ import {
   Settings, Users, RefreshCw, Zap, ClipboardCheck, 
   Trophy, ChevronRight, AlertCircle, Calendar, CheckCircle2,
   Trash2, Plus, Save, Loader2, MapPin, Activity, TrendingUp,
-  LayoutGrid
+  LayoutGrid, BarChart3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,8 @@ import { api } from '../../services/api';
 import AvailabilityManagement from './AvailabilityManagement';
 import RosterSuggestions from './RosterSuggestions';
 import RosterBuilder from '../RosterBuilder';
+import ZRLDivisionResults from '../ZRLDivisionResults';
+import ZRLAnalytics from '../ZRLAnalytics';
 
 interface RoundInput {
   id?: number;
@@ -29,7 +31,7 @@ interface RoundInput {
 
 const ZRLOperations: React.FC = () => {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
@@ -401,6 +403,8 @@ const ZRLOperations: React.FC = () => {
     { id: 3, title: 'Roster Strategy', icon: Zap, desc: 'Optimizer & Teams' },
     { id: 4, title: 'Gare & Lineup', icon: Users, desc: 'Composizione Squadre' },
     { id: 5, title: 'Risultati & Media', icon: Trophy, desc: 'Recap Gara' },
+    { id: 6, title: 'Rankings View', icon: LayoutGrid, desc: 'Classifiche Live' },
+    { id: 7, title: 'Strat Map', icon: BarChart3, desc: 'Analisi Tattica' },
   ];
 
   return (
@@ -415,7 +419,7 @@ const ZRLOperations: React.FC = () => {
         </h1>
       </header>
 
-      <nav className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
@@ -425,8 +429,8 @@ const ZRLOperations: React.FC = () => {
               onClick={() => setActiveStep(step.id)}
               className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left ${
                 isActive 
-                  ? "bg-zinc-900 border-[#fc6719] shadow-lg" 
-                  : "bg-zinc-950 border-zinc-900 opacity-60 hover:opacity-100"
+                  ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_20px_rgba(252,103,25,0.15)]" 
+                  : "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 opacity-80 hover:opacity-100"
               }`}
             >
               <div className={`p-1.5 rounded-lg mb-2 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
@@ -439,51 +443,72 @@ const ZRLOperations: React.FC = () => {
         })}
       </nav>
 
-      <main className="bg-[#0A0A0A] rounded-[2rem] border border-zinc-900 shadow-2xl min-h-[500px] relative overflow-hidden">
+      <main className="bg-zinc-900/20 rounded-[2rem] border border-zinc-800 shadow-2xl min-h-[500px] relative overflow-hidden backdrop-blur-sm group/main hover:border-zinc-700/50 transition-all">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-8 lg:p-12"
+            className="p-8 lg:p-12 h-full relative z-10"
           >
             {message && (
               <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-3 ${
-                message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-500' : 'bg-red-500/10 border-red-500/50 text-red-500'
+                message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-400' : 'bg-red-500/10 border-red-500/50 text-red-400'
               }`}>
                 {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                 <p className="font-bold uppercase text-[10px] tracking-widest">{message.text}</p>
               </div>
             )}
 
+            {/* STEP 0: WELCOME/SELECTION */}
+            {activeStep === 0 && (
+              <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-6">
+                <div className="p-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 shadow-[0_0_40px_rgba(252,103,25,0.05)]">
+                  <Activity size={56} className="animate-pulse text-inox-orange" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter">Mission Selection Required</h3>
+                  <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed italic">
+                    Inizia la gestione tattica del round selezionando un modulo operativo dal centro di comando.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* STEP 1: SETUP */}
             {activeStep === 1 && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-black italic text-white uppercase tracking-tighter">Round Configuration</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-1 tracking-widest">Nome Round</label>
-                        <input type="text" value={roundName} onChange={(e) => setRoundName(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-xl bg-inox-orange/10 border border-inox-orange/20 flex items-center justify-center text-inox-orange">
+                          <Settings size={20} />
+                       </div>
+                       <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Round Configuration</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Nome Round</label>
+                        <input type="text" value={roundName} onChange={(e) => setRoundName(e.target.value)} className="bg-zinc-900/50 border border-zinc-800 text-white font-bold rounded-xl px-5 py-3.5 text-xs outline-none focus:border-[#fc6719] focus:bg-zinc-900 transition-all shadow-inner" />
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[9px] font-black uppercase text-zinc-600 ml-1 tracking-widest">ID WTRL</label>
-                        <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 text-xs outline-none focus:border-[#fc6719]" />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">ID WTRL</label>
+                        <input type="text" value={wtrlId} onChange={(e) => setWtrlId(e.target.value)} className="bg-zinc-900/50 border border-zinc-800 text-white font-bold rounded-xl px-5 py-3.5 text-xs outline-none focus:border-[#fc6719] focus:bg-zinc-900 transition-all shadow-inner" />
                       </div>
                     </div>
 
-                    <div className="bg-zinc-900/20 p-4 rounded-xl border border-zinc-800/50">
-                       <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                         <AlertCircle size={10} /> Quick Actions
+                    <div className="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800/50">
+                       <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                         <Zap size={10} className="text-inox-orange" /> Real-time System Sync
                        </p>
-                       <div className="flex gap-2">
-                          <button onClick={handleSyncRaces} className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2">
-                            <RefreshCw size={10} /> Sync Rounds
+                       <div className="flex gap-3">
+                          <button onClick={handleSyncRaces} className="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-[9px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2 shadow-lg">
+                            <RefreshCw size={12} className="text-inox-orange" /> Sync Rounds
                           </button>
-                          <button onClick={handleSyncTeams} className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2">
-                            <Users size={10} /> Sync Teams (D1)
+                          <button onClick={handleSyncTeams} className="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-[9px] font-black uppercase tracking-widest border border-zinc-800 transition-all flex items-center justify-center gap-2 shadow-lg">
+                            <Users size={12} className="text-inox-orange" /> Sync Teams (D1)
                           </button>
                        </div>
                     </div>
@@ -873,6 +898,20 @@ const ZRLOperations: React.FC = () => {
                       Nota: Lo script richiede che tu sia autenticato su WTRL. Assicurati di caricare il file relativo al <span className="text-white">Round Corretto</span> per non sovrascrivere dati storici.
                    </p>
                 </div>
+              </div>
+            )}
+
+            {/* STEP 6: RANKINGS */}
+            {activeStep === 6 && (
+              <div className="-m-8 lg:-m-12">
+                <ZRLDivisionResults />
+              </div>
+            )}
+
+            {/* STEP 7: ANALYTICS */}
+            {activeStep === 7 && (
+              <div className="-m-8 lg:-m-12">
+                <ZRLAnalytics />
               </div>
             )}
           </motion.div>

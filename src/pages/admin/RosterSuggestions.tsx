@@ -158,27 +158,26 @@ const RosterSuggestions: React.FC = () => {
           <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter leading-none text-white uppercase">
             Roster <span className="text-zinc-600">Optimizer</span>
           </h1>
-          <p className="text-zinc-500 font-bold uppercase text-xs mt-4 tracking-widest">
-            Distribuzione atleti per Categoria e Slot Orario espressi nel CSV / App
+          <p className="text-zinc-400 font-bold uppercase text-xs mt-4 tracking-widest italic">
+            Distribuzione atleti per Categoria e Slot Orario espressi nel sistema.
           </p>
         </div>
-        <div className="bg-zinc-900 px-6 py-4 rounded-2xl border border-zinc-800">
-           <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Totale Preferenze</span>
-           {/* Correctly display total preferences from the new state variable */}
-           <span className="text-2xl font-black italic text-orange-500">{totalPreferences}</span>
+        <div className="bg-zinc-900/60 px-8 py-5 rounded-[2rem] border border-zinc-800 shadow-2xl">
+           <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">Totale Preferenze</span>
+           <span className="text-3xl font-black italic text-orange-500">{totalPreferences}</span>
         </div>
       </header>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap gap-6 mb-8 items-center p-4 bg-zinc-900/50 rounded-3xl border border-zinc-800">
+      <div className="flex flex-wrap gap-6 mb-10 items-center p-6 bg-zinc-900/40 rounded-[2.5rem] border border-zinc-800 shadow-xl backdrop-blur-sm">
         {/* Category Filter */}
-        <div className="flex flex-col">
-            <label htmlFor="categoryFilter" className="text-xs font-bold text-zinc-400 uppercase mb-1">Filtra per Categoria</label>
+        <div className="flex flex-col gap-1.5">
+            <label htmlFor="categoryFilter" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Filtra per Categoria</label>
             <select 
                 id="categoryFilter"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-zinc-950 text-white px-3 py-2 rounded-lg border border-zinc-800 focus:ring-orange-500 focus:border-orange-500 shadow-md"
+                className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-5 py-2.5 text-xs outline-none focus:border-orange-500 transition-all shadow-inner"
             >
                 <option value="">Tutte le Categorie</option>
                 {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -186,13 +185,13 @@ const RosterSuggestions: React.FC = () => {
         </div>
 
         {/* Slot Filter */}
-        <div className="flex flex-col">
-            <label htmlFor="slotFilter" className="text-xs font-bold text-zinc-400 uppercase mb-1">Filtra per Slot Orario</label>
+        <div className="flex flex-col gap-1.5">
+            <label htmlFor="slotFilter" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Filtra per Slot Orario</label>
             <select 
                 id="slotFilter"
                 value={selectedSlot}
                 onChange={(e) => setSelectedSlot(e.target.value)}
-                className="bg-zinc-950 text-white px-3 py-2 rounded-lg border border-zinc-800 focus:ring-orange-500 focus:border-orange-500 shadow-md"
+                className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-5 py-2.5 text-xs outline-none focus:border-orange-500 transition-all shadow-inner"
             >
                 <option value="">Tutti gli Slot</option>
                 {availableSlots.map(slot => <option key={slot} value={slot}>{slot}</option>)}
@@ -201,74 +200,74 @@ const RosterSuggestions: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex items-center gap-3">
+        <div className="mb-8 p-5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-4">
           <AlertCircle size={20} />
           {error}
         </div>
       )}
 
       {filteredSuggestions.length === 0 ? (
-        <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 p-20 text-center">
-          <Users className="mx-auto text-zinc-800 mb-4" size={48} />
-          <p className="text-zinc-600 font-black uppercase italic tracking-widest text-xl">Nessun dato disponibile</p>
-          <p className="text-zinc-700 text-sm mt-2 uppercase font-bold tracking-tighter">Gli atleti devono inserire almeno una preferenza positiva (💚 o 💛)</p>
+        <div className="bg-zinc-900/30 rounded-[3rem] border border-zinc-800 border-dashed p-24 text-center">
+          <Users className="mx-auto text-zinc-800 mb-6" size={64} />
+          <p className="text-zinc-600 font-black uppercase italic tracking-widest text-2xl">Nessun dato disponibile</p>
+          <p className="text-zinc-700 text-xs mt-3 uppercase font-bold tracking-[0.2em] max-w-sm mx-auto">Gli atleti devono inserire almeno una preferenza positiva (💚 o 💛) per attivare l'ottimizzatore.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {filteredSuggestions.map((team, idx) => (
-            <section key={idx} className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden hover:border-orange-500/50 transition-all group">
-              <div className="p-6 bg-zinc-800/50 border-b border-zinc-700 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-orange-500/30 transition-all">
-                    <span className="text-3xl font-black italic text-orange-500">{team.category}</span>
+            <section key={idx} className="bg-zinc-900/40 rounded-[3rem] border border-zinc-800 overflow-hidden hover:border-orange-500/40 transition-all group shadow-2xl backdrop-blur-sm">
+              <div className="p-8 bg-zinc-800/30 border-b border-zinc-800 flex justify-between items-center">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-orange-500/30 transition-all shadow-inner">
+                    <span className="text-4xl font-black italic text-orange-500">{team.category}</span>
                   </div>
                   <div>
-                    <h2 className="text-xl font-black italic text-white uppercase leading-tight">Pool Suggerito</h2>
-                    <div className="flex items-center gap-2 mt-1">
+                    <h2 className="text-2xl font-black italic text-white uppercase leading-tight tracking-tighter">Pool Suggerito</h2>
+                    <div className="flex items-center gap-2 mt-1.5">
                       <Clock size={12} className="text-zinc-500" />
                       <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{team.slot_name}</span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="block text-3xl font-black italic text-white leading-none">{team.count}</span>
+                  <span className="block text-4xl font-black italic text-white leading-none">{team.count}</span>
                   <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti Totali</span>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4 border-b border-zinc-800/50 pb-2">
-                  <div className="flex gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <Heart size={10} className="fill-green-500 text-green-500" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase">{team.favorite_count} Favorite</span>
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6 border-b border-zinc-800/50 pb-4">
+                  <div className="flex gap-5">
+                    <div className="flex items-center gap-2">
+                      <Heart size={12} className="fill-green-500 text-green-500" />
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{team.favorite_count} Favorite</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Heart size={10} className="fill-yellow-500 text-yellow-500" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase">{team.acceptable_count} Acceptable</span>
+                    <div className="flex items-center gap-2">
+                      <Heart size={12} className="fill-yellow-500 text-yellow-500" />
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{team.acceptable_count} Acceptable</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar">
                   {[...team.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
-                    <div key={athlete.zwid} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-6 h-6 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-500 flex-shrink-0">
+                    <div key={athlete.zwid} className="flex items-center justify-between p-4 bg-zinc-900/60 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md group/rider">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-400 flex-shrink-0 group-hover/rider:text-orange-500 transition-colors">
                           {athlete.name.substring(0, 2).toUpperCase()}
                         </div>
-                        <span className="text-[11px] font-bold text-zinc-300 uppercase truncate">{athlete.name}</span>
+                        <span className="text-xs font-black text-zinc-200 uppercase truncate italic tracking-tight">{athlete.name}</span>
                       </div>
-                      <Heart size={10} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
+                      <Heart size={12} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
                     </div>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => handleConfigureTeam(team)} // Added onClick handler
-                  className="w-full mt-6 py-4 bg-zinc-800 hover:bg-orange-500 text-zinc-400 hover:text-black rounded-2xl font-black italic uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 group/btn"
+                  onClick={() => handleConfigureTeam(team)} 
+                  className="w-full mt-8 py-5 bg-zinc-800 hover:bg-orange-500 text-zinc-300 hover:text-black rounded-[1.5rem] font-black italic uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-3 group/btn shadow-xl border border-zinc-700 hover:border-orange-600"
                 >
-                  Configura Team <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                  Configura Team <ChevronRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </section>
@@ -278,43 +277,42 @@ const RosterSuggestions: React.FC = () => {
 
       {/* Section to display confirmed proposals */}
       {confirmedProposals.length > 0 && (
-        <section className="mt-12 pt-8 border-t border-zinc-800">
-          <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-8">
-            Proposte Confermate
-            <span className="text-zinc-600"> (Draft Report)</span>
+        <section className="mt-16 pt-10 border-t border-zinc-900">
+          <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-10">
+            Proposte <span className="text-zinc-700">Confermate</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {confirmedProposals.map((proposal, idx) => (
-              <div key={idx} className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden hover:border-orange-500/50 transition-all group p-6">
-                <div className="flex items-center justify-between mb-4 border-b border-zinc-800/50 pb-2">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-zinc-950 flex items-center justify-center border border-zinc-800 group-hover:border-orange-500/30 transition-all">
-                      <span className="text-3xl font-black italic text-orange-500">{proposal.category}</span>
+              <div key={idx} className="bg-zinc-900/50 rounded-[3rem] border border-zinc-800 overflow-hidden hover:border-orange-500/50 transition-all group p-8 shadow-2xl backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-6 border-b border-zinc-800/50 pb-4">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-orange-500/30 transition-all shadow-inner">
+                      <span className="text-4xl font-black italic text-orange-500">{proposal.category}</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-black italic text-white uppercase leading-tight">Proposta Selezionata</h3>
-                      <div className="flex items-center gap-2 mt-1">
+                      <h3 className="text-2xl font-black italic text-white uppercase leading-tight tracking-tighter">Proposta Selezionata</h3>
+                      <div className="flex items-center gap-2 mt-1.5">
                         <Clock size={12} className="text-zinc-500" />
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{proposal.slot_name}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="block text-3xl font-black italic text-white leading-none">{proposal.count}</span>
+                    <span className="block text-4xl font-black italic text-white leading-none">{proposal.count}</span>
                     <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti</span>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="grid grid-cols-1 gap-3 max-h-[250px] overflow-y-auto pr-3 custom-scrollbar">
                   {[...proposal.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
-                    <div key={athlete.zwid} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-6 h-6 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-500 flex-shrink-0">
+                    <div key={athlete.zwid} className="flex items-center justify-between p-4 bg-zinc-950/60 rounded-2xl border border-zinc-900 hover:border-zinc-800 transition-all shadow-md">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-[10px] font-black text-zinc-500 flex-shrink-0">
                           {athlete.name.substring(0, 2).toUpperCase()}
                         </div>
-                        <span className="text-[11px] font-bold text-zinc-300 uppercase truncate">{athlete.name}</span>
+                        <span className="text-xs font-black text-zinc-300 uppercase truncate italic tracking-tight">{athlete.name}</span>
                       </div>
-                      <Heart size={10} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
+                      <Heart size={12} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
                     </div>
                   ))}
                 </div>
@@ -323,35 +321,40 @@ const RosterSuggestions: React.FC = () => {
           </div>
           
           {/* Validation Section */}
-          <div className="mt-12 pt-8 border-t border-zinc-800">
-            <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-8">
-              Validazione Regolamento
+          <div className="mt-16 pt-10 border-t border-zinc-900">
+            <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-10">
+              Validazione <span className="text-zinc-700">Regolamento</span>
             </h2>
             <button 
               onClick={handleValidationClick}
-              className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-black rounded-2xl font-black italic uppercase text-xs tracking-widest transition-all mr-4"
+              className="px-10 py-5 bg-orange-500 hover:bg-orange-600 text-black rounded-[1.5rem] font-black italic uppercase text-sm tracking-widest transition-all shadow-2xl hover:scale-[1.02]"
             >
               Valida & Genera Report
             </button>
 
             {validationErrors.length > 0 && (
-              <div className="mt-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <AlertCircle size={20} />
-                  <h3 className="text-lg font-bold uppercase">Errori di Validazione:</h3>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-10 p-8 bg-red-500/10 border border-red-500/30 text-red-400 rounded-[2.5rem] font-black uppercase text-[10px] tracking-widest flex flex-col gap-6 shadow-2xl">
+                <div className="flex items-center gap-4">
+                  <AlertCircle size={28} />
+                  <h3 className="text-xl font-black italic tracking-tighter">Errori di Validazione Rilevati</h3>
                 </div>
-                <ul className="list-disc pl-6">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {validationErrors.map((error, idx) => (
-                    <li key={idx}>{error}</li>
+                    <li key={idx} className="bg-black/20 p-4 rounded-xl border border-red-500/20 list-none">{error}</li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             )}
             {validationErrors.length === 0 && confirmedProposals.length > 0 && (
-              <div className="mt-8 p-4 bg-green-500/10 border border-green-500/20 text-green-500 rounded-xl font-bold flex items-center gap-3">
-                <CheckCircle2 size={20} />
-                <h3 className="text-lg font-bold uppercase">Validazione Completata con Successo!</h3>
-              </div>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-10 p-8 bg-green-500/10 border border-green-500/30 text-green-400 rounded-[2.5rem] font-black uppercase text-xs tracking-widest flex items-center gap-5 shadow-2xl">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 size={32} />
+                </div>
+                <div>
+                   <h3 className="text-xl font-black italic tracking-tighter">Mission Ready</h3>
+                   <p className="opacity-60">Tutti i roster rispettano i parametri del regolamento ZRL.</p>
+                </div>
+              </motion.div>
             )}
           </div>
         </section>

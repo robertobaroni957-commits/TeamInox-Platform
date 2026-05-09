@@ -166,79 +166,79 @@ const AvailabilityManagement: React.FC = () => {
 
       {/* STATISTICS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
-          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Athletes</div>
-          <div className="text-3xl font-black italic text-white leading-none">{stats.total}</div>
-          <div className="w-full bg-zinc-800 h-1 rounded-full mt-4 overflow-hidden">
-            <div className="bg-inox-orange h-full" style={{ width: '100%' }} />
+        <div className="bg-zinc-900/60 p-5 rounded-[2rem] border border-zinc-800 hover:border-zinc-700 transition-all shadow-2xl">
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Total Athletes</div>
+          <div className="text-4xl font-black italic text-white leading-none">{stats.total}</div>
+          <div className="w-full bg-zinc-800/50 h-1.5 rounded-full mt-5 overflow-hidden">
+            <div className="bg-inox-orange h-full shadow-[0_0_10px_rgba(252,103,25,0.4)]" style={{ width: '100%' }} />
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
-          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Category A/B</div>
+        <div className="bg-zinc-900/60 p-5 rounded-[2rem] border border-zinc-800 hover:border-zinc-700 transition-all shadow-2xl">
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Category A/B</div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black italic text-red-500 leading-none">{stats.catA}</span>
-            <span className="text-zinc-700 font-bold">/</span>
-            <span className="text-2xl font-black italic text-emerald-500 leading-none">{stats.catB}</span>
+            <span className="text-4xl font-black italic text-red-500 leading-none">{stats.catA}</span>
+            <span className="text-zinc-600 font-bold">/</span>
+            <span className="text-3xl font-black italic text-emerald-400 leading-none">{stats.catB}</span>
           </div>
-          <div className="flex gap-1 mt-4">
-            <div className="bg-red-600 h-1 rounded-full" style={{ width: `${(stats.catA/stats.total)*100}%` }} />
-            <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${(stats.catB/stats.total)*100}%` }} />
+          <div className="flex gap-1.5 mt-5">
+            <div className="bg-red-600 h-1.5 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)]" style={{ width: `${(stats.catA/stats.total)*100}%` }} />
+            <div className="bg-emerald-500 h-1.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${(stats.catB/stats.total)*100}%` }} />
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
-          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Category C/D</div>
+        <div className="bg-zinc-900/60 p-5 rounded-[2rem] border border-zinc-800 hover:border-zinc-700 transition-all shadow-2xl">
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Category C/D</div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black italic text-inox-cyan leading-none">{stats.catC}</span>
-            <span className="text-zinc-700 font-bold">/</span>
-            <span className="text-2xl font-black italic text-yellow-500 leading-none">{stats.catD}</span>
+            <span className="text-4xl font-black italic text-inox-cyan leading-none">{stats.catC}</span>
+            <span className="text-zinc-600 font-bold">/</span>
+            <span className="text-3xl font-black italic text-yellow-400 leading-none">{stats.catD}</span>
           </div>
-          <div className="flex gap-1 mt-4">
-            <div className="bg-inox-cyan h-1 rounded-full" style={{ width: `${(stats.catC/stats.total)*100}%` }} />
-            <div className="bg-yellow-500 h-1 rounded-full" style={{ width: `${(stats.catD/stats.total)*100}%` }} />
+          <div className="flex gap-1.5 mt-5">
+            <div className="bg-inox-cyan h-1.5 rounded-full shadow-[0_0_10px_rgba(0,240,255,0.3)]" style={{ width: `${(stats.catC/stats.total)*100}%` }} />
+            <div className="bg-yellow-500 h-1.5 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.3)]" style={{ width: `${(stats.catD/stats.total)*100}%` }} />
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-xl">
-          <div className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Active RSVPs</div>
-          <div className="text-3xl font-black italic text-emerald-500 leading-none">{stats.availableNow}</div>
-          <p className="text-[8px] text-zinc-600 font-bold uppercase mt-3 italic">Atleti con almeno una disponibilità data</p>
+        <div className="bg-zinc-900/60 p-5 rounded-[2rem] border border-zinc-800 hover:border-zinc-700 transition-all shadow-2xl">
+          <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Active RSVPs</div>
+          <div className="text-4xl font-black italic text-emerald-400 leading-none">{stats.availableNow}</div>
+          <p className="text-[9px] text-zinc-500 font-bold uppercase mt-4 italic tracking-widest leading-relaxed">Atleti con feedback operativo rilevato</p>
         </div>
       </div>
 
       {message && (
-        <div className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-bold ${message.type === "success" ? "bg-green-500/10 border-green-500/30 text-green-500" : "bg-red-500/10 border-red-500/30 text-red-500"}`}>
-          <AlertCircle size={16} /> {message.text}
+        <div className={`p-5 rounded-2xl border flex items-center gap-4 text-xs font-black uppercase tracking-widest ${message.type === "success" ? "bg-green-500/10 border-green-500/40 text-green-400" : "bg-red-500/10 border-red-500/40 text-red-400"}`}>
+          <AlertCircle size={18} /> {message.text}
         </div>
       )}
 
       {/* FILTERS */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
           <input
             type="text"
             placeholder="Search by name or ZWID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-900 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:border-[#fc6719] outline-none transition-all"
+            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-3.5 pl-12 pr-6 text-sm text-white focus:border-inox-orange focus:bg-zinc-900 outline-none transition-all shadow-inner"
           />
         </div>
 
-        <div className="flex gap-1.5 p-1 bg-zinc-950 border border-zinc-900 rounded-xl">
+        <div className="flex gap-2 p-1.5 bg-zinc-900/50 border border-zinc-800 rounded-2xl shadow-inner">
           {["ALL", "A", "B", "C", "D"].map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCategory(cat)}
-              className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 filterCategory === cat 
-                  ? (cat === 'A' ? 'bg-red-600 text-white shadow-lg' :
-                     cat === 'B' ? 'bg-emerald-600 text-white shadow-lg' :
-                     cat === 'C' ? 'bg-inox-cyan text-black shadow-lg' :
-                     cat === 'D' ? 'bg-yellow-500 text-black shadow-lg' :
-                     'bg-[#fc6719] text-black shadow-lg')
-                  : 'text-zinc-600 hover:text-zinc-400'
+                  ? (cat === 'A' ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' :
+                     cat === 'B' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' :
+                     cat === 'C' ? 'bg-inox-cyan text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]' :
+                     cat === 'D' ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]' :
+                     'bg-[#fc6719] text-black shadow-[0_0_15px_rgba(252,103,25,0.4)]')
+                  : 'text-zinc-500 hover:text-white'
               }`}
             >
               {cat}
@@ -248,40 +248,42 @@ const AvailabilityManagement: React.FC = () => {
       </div>
 
       {/* MATRIX TABLE */}
-      <div className="bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden">
+      <div className="bg-zinc-900/30 border border-zinc-800 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-sm">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-zinc-900/50">
-                <th className="p-3 text-left border-b border-zinc-800 sticky left-0 bg-zinc-900 z-10 min-w-[200px]">
-                   <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Rider / Category</span>
+              <tr className="bg-zinc-800/40">
+                <th className="p-4 text-left border-b border-zinc-700 sticky left-0 bg-zinc-800 z-10 min-w-[220px]">
+                   <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Rider Intelligence</span>
                 </th>
                 {rounds.map((r) => (
-                  <th key={r.id} className="p-3 text-center border-b border-zinc-800 min-w-[100px]">
-                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter leading-tight block">{r.name.replace('ZRL 2025 ', '')}</span>
+                  <th key={r.id} className="p-4 text-center border-b border-zinc-700 min-w-[120px]">
+                    <span className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter leading-tight block">{r.name.replace('ZRL 2025 ', '')}</span>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-900">
+            <tbody className="divide-y divide-zinc-800/50">
               {filteredAthletes.map((a) => (
-                <tr key={a.zwid} className="hover:bg-zinc-900/30 transition-colors group">
-                  <td className="p-3 sticky left-0 bg-zinc-950 group-hover:bg-zinc-900/50 z-10 transition-colors">
-                    <div className="font-bold text-xs text-white truncate">{a.name}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
-                        a.category === 'A' || a.category === 'APLUS' ? 'bg-red-500/10 text-red-500' :
-                        a.category === 'B' ? 'bg-emerald-500/10 text-emerald-500' :
-                        a.category === 'C' ? 'bg-inox-cyan/10 text-inox-cyan' :
-                        a.category === 'D' ? 'bg-yellow-500/10 text-yellow-500' :
-                        'bg-zinc-800 text-zinc-500'
-                      }`}>Cat {a.category}</span>
-                      <span className="text-[8px] text-zinc-600 font-bold uppercase truncate max-w-[100px]">{a.team}</span>
+                <tr key={a.zwid} className="hover:bg-zinc-800/30 transition-colors group">
+                  <td className="p-4 sticky left-0 bg-zinc-900/80 group-hover:bg-zinc-800/60 z-10 transition-colors backdrop-blur-md">
+                    <div className="font-black text-sm text-white uppercase italic tracking-tighter leading-tight">{a.name}</div>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${
+                        a.category === 'A' || a.category === 'APLUS' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                        a.category === 'B' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                        a.category === 'C' ? 'bg-inox-cyan/10 text-inox-cyan border-inox-cyan/20' :
+                        a.category === 'D' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                        'bg-zinc-800 text-zinc-400 border-zinc-700'
+                      }`}>CAT {a.category}</span>
+                      <span className="text-[9px] text-zinc-500 font-bold uppercase truncate max-w-[120px] tracking-widest">{a.team}</span>
                     </div>
                   </td>
                   {rounds.map((r) => (
-                    <td key={r.id} className="p-3 text-center">
-                      {getStatusIcon(a.availabilities[r.id])}
+                    <td key={r.id} className="p-4 text-center">
+                      <div className="flex justify-center transform group-hover:scale-110 transition-transform">
+                        {getStatusIcon(a.availabilities[r.id])}
+                      </div>
                     </td>
                   ))}
                 </tr>
@@ -292,8 +294,8 @@ const AvailabilityManagement: React.FC = () => {
       </div>
 
       {filteredAthletes.length === 0 && (
-        <div className="py-20 text-center bg-zinc-950 border border-zinc-900 border-dashed rounded-2xl">
-          <p className="text-zinc-700 text-xs font-black uppercase tracking-widest">No riders match the current filters</p>
+        <div className="py-24 text-center bg-zinc-900/30 border border-zinc-800 border-dashed rounded-[2.5rem]">
+          <p className="text-zinc-600 text-xs font-black uppercase tracking-widest">No riders match the current operational filters</p>
         </div>
       )}
     </div>

@@ -102,48 +102,12 @@ const AdminDashboard: React.FC = () => {
       alert: (insights.missingCategory + insights.missingEmail) > 0 ? `${insights.missingCategory + insights.missingEmail} Errors` : null
     },
     {
-      title: "Rankings View",
-      subtitle: "Live Results",
-      desc: "Viewport per la consultazione rapida delle classifiche di divisione.",
-      icon: LayoutGrid,
-      path: "/zrl-results",
-      color: "from-zinc-700 to-zinc-900",
-      size: "sm"
-    },
-    {
-      title: "Strat Map",
-      subtitle: "Deep Analytics",
-      desc: "Analisi tattica DNA e generazione Social Cards per i risultati.",
-      icon: BarChart3,
-      path: "/zrl-analytics",
-      color: "from-cyan-600 to-blue-800",
-      size: "sm"
-    },
-    {
       title: "Events Lab",
       subtitle: "Configuration",
       desc: "Gestione calendario corse sociali e allenamenti di gruppo.",
       icon: Layout,
       path: "/admin/events",
       color: "from-emerald-500 to-teal-600",
-      size: "sm"
-    },
-    {
-      title: "Optimizer",
-      subtitle: "Roster Engine",
-      desc: "Algoritmi di suggerimento per la composizione dei team ZRL.",
-      icon: Lightbulb,
-      path: "/admin/optimizer",
-      color: "from-purple-500 to-pink-600",
-      size: "sm"
-    },
-    {
-      title: "Maintenance",
-      subtitle: "System Sync",
-      desc: "Reset database, manutenzione avanzata e log di sistema.",
-      icon: RefreshCw,
-      path: "/zrl-round-manager",
-      color: "from-zinc-700 to-zinc-900",
       size: "sm"
     }
   ];
@@ -180,15 +144,16 @@ const AdminDashboard: React.FC = () => {
             key={i}
             whileHover={{ scale: 1.01, y: -5 }}
             onClick={() => navigate(item.path)}
-            className={`group relative overflow-hidden rounded-[2.5rem] bg-zinc-900 border border-zinc-800 cursor-pointer shadow-2xl transition-all \${
+            className={`group relative overflow-hidden rounded-[2.5rem] bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700/50 cursor-pointer shadow-2xl transition-all ${
               item.size === 'lg' ? 'md:col-span-2' : ''
             }`}
           >
-            <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl \${item.color} opacity-[0.03] blur-3xl group-hover:opacity-[0.08] transition-opacity`} />
+            {/* Background Glow */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-[0.03] group-hover:opacity-[0.08] transition-opacity`} />
             
             <div className="relative z-10 p-8 lg:p-10 flex flex-col h-full min-h-[280px]">
               <div className="flex justify-between items-start mb-auto">
-                <div className="p-5 rounded-3xl bg-black border border-zinc-800 shadow-2xl group-hover:border-white/20 transition-colors">
+                <div className="p-5 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl group-hover:border-zinc-700 transition-colors">
                   <item.icon size={28} className="text-white" />
                 </div>
                 {item.alert && (
@@ -200,10 +165,10 @@ const AdminDashboard: React.FC = () => {
 
               <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] mb-1 block">{item.subtitle}</span>
-                  <h3 className="text-3xl lg:text-4xl font-black italic text-white uppercase tracking-tighter leading-none">{item.title}</h3>
+                  <span className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-1 block">{item.subtitle}</span>
+                  <h3 className="text-3xl lg:text-4xl font-black italic text-white uppercase tracking-tighter leading-none group-hover:text-inox-orange transition-colors">{item.title}</h3>
                 </div>
-                <p className="text-zinc-500 text-xs font-medium italic leading-relaxed max-w-sm">
+                <p className="text-zinc-400 text-xs font-medium italic leading-relaxed max-w-sm">
                   {item.desc}
                 </p>
               </div>
