@@ -5,7 +5,7 @@ REM ========================================================
 REM CONFIG (Dati presi dal wrangler.toml)
 REM ========================================================
 set JWT_SECRET=test_dev_secret_inoxteam_2026
-set D1_DB_ID=c45289cd-c758-4a9b-85c8-3e06713df1e4
+set D1_DB_ID=edd85466-cdf5-4cbe-a42b-f59d859bf73f
 
 echo ========================================================
 echo AVVIO COMPLETO INOXTEAM PLATFORM (DEV MODE)

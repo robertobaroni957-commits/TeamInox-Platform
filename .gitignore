@@ -44,3 +44,16 @@ yarn-error.log*
 /node_modules
 /.yarn/cache
 .wrangler/
+# Wrangler / Cloudflare
+.wrangler/
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# Env
+.env
+.env.local

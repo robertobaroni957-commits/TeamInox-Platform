@@ -1,9 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../services/api';
 import type { Round, Team, LineupEntry, Athlete } from '../services/types';
-import { Users, UserCheck, Shield, AlertTriangle, Info, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { 
+  Users, UserCheck, Shield, AlertTriangle, Info, CheckCircle2, 
+  XCircle, HelpCircle, Camera, Share2, MapPin, Calendar, 
+  Activity, TrendingUp, Zap, ChevronRight, LayoutGrid
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
 
-const RosterBuilder: React.FC = () => {
+interface RosterBuilderProps {
+  isEmbedded?: boolean;
+}
+
+const RosterBuilder: React.FC<RosterBuilderProps> = ({ isEmbedded = false }) => {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -15,6 +25,9 @@ const RosterBuilder: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [snapshotMode, setSnapshotMode] = useState(false);
+  
+  const captureRef = useRef<HTMLDivElement>(null);
 
   const loadInitialData = useCallback(async () => {
     setLoading(true);
@@ -78,12 +91,12 @@ const RosterBuilder: React.FC = () => {
         role: 'starter',
         status: 'confirmed'
       };
-      // Effettuo la chiamata API esplicitando il metodo POST
+      
       const response = await fetch('/api/lineup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}` // Aggiungo token se presente
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
         },
         body: JSON.stringify(entry),
       });
@@ -125,6 +138,25 @@ const RosterBuilder: React.FC = () => {
     }
   };
 
+  const handleCapture = async () => {
+    if (captureRef.current) {
+      try {
+        const canvas = await html2canvas(captureRef.current, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#050505',
+        });
+        const link = document.createElement('a');
+        link.download = `lineup_${teams.find(t => t.id === selectedTeam)?.name}_R${rounds.find(r => r.id === selectedRound)?.id}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (e) {
+        console.error("Capture error:", e);
+      }
+    }
+  };
+
   if (loading && rounds.length === 0) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-orange-500 font-black italic text-xl animate-pulse uppercase tracking-widest">
@@ -134,188 +166,315 @@ const RosterBuilder: React.FC = () => {
   );
 
   const currentTeam = teams.find(t => t.id === selectedTeam);
+  const currentRound = rounds.find(r => r.id === selectedRound);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <header className="mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-end border-b border-zinc-800 pb-8 gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="text-orange-500" size={16} />
-            <span className="text-orange-500 font-black text-xs tracking-[0.3em] uppercase italic">Capitancy Operations</span>
+    <div className={`transition-all duration-500 ${snapshotMode ? 'bg-[#050505] p-0 overflow-hidden' : 'space-y-8'}`}>
+      
+      {/* HEADER (Only if not embedded or snapshot) */}
+      {!isEmbedded && !snapshotMode && (
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end border-b border-zinc-800 pb-8 gap-6 px-6 pt-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="text-orange-500" size={16} />
+              <span className="text-orange-500 font-black text-xs tracking-[0.3em] uppercase italic">Capitancy Operations</span>
+            </div>
+            <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter leading-none text-white uppercase">
+              Roster <span className="text-zinc-600">Manager</span>
+            </h1>
           </div>
-          <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter leading-none text-white uppercase">
-            Roster <span className="text-zinc-600">Manager</span>
-          </h1>
-        </div>
-        
-        <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-            <label htmlFor="teamSelect" className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Squadra</label>
-            <select 
-              id="teamSelect"
-              name="teamSelect"
-              value={selectedTeam || ''} 
-              onChange={(e) => setSelectedTeam(Number(e.target.value))}
-              className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full"
-            >
-              <option value="" disabled>Scegli una squadra...</option>
-              {teams.map(t => <option key={t.id} value={t.id}>{t.name} (Cat {t.category})</option>)}
-            </select>
-          </div>
+          
+          <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+            <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+              <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Team</label>
+              <select 
+                value={selectedTeam || ''} 
+                onChange={(e) => setSelectedTeam(Number(e.target.value))}
+                className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full shadow-xl"
+              >
+                {teams.map(t => <option key={t.id} value={t.id}>{t.name} (Cat {t.category})</option>)}
+              </select>
+            </div>
 
-          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-            <label htmlFor="roundSelect" className="text-[10px] font-black uppercase text-zinc-500 ml-2">Seleziona Round</label>
-            <select 
-              id="roundSelect"
-              name="roundSelect"
-              value={selectedRound || ''} 
-              onChange={(e) => setSelectedRound(Number(e.target.value))}
-              className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full"
-            >
-              {rounds.map(r => (
-                <option key={r.id} value={r.id}>{r.name} - {new Date(r.date).toLocaleDateString('it-IT')}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </header>
+            <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+              <label className="text-[10px] font-black uppercase text-zinc-500 ml-2">Round</label>
+              <select 
+                value={selectedRound || ''} 
+                onChange={(e) => setSelectedRound(Number(e.target.value))}
+                className="bg-zinc-900 border border-zinc-800 text-white font-bold rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition-all w-full shadow-xl"
+              >
+                {rounds.map(r => (
+                  <option key={r.id} value={r.id}>{r.name} - {new Date(r.date).toLocaleDateString('it-IT')}</option>
+                ))}
+              </select>
+            </div>
 
-      {error && (
-        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex items-center gap-3">
+            <button 
+              onClick={() => setSnapshotMode(true)}
+              className="p-4 bg-white text-black rounded-2xl hover:bg-orange-500 transition-all shadow-xl self-end"
+            >
+              <Camera size={18} />
+            </button>
+          </div>
+        </header>
+      )}
+
+      {/* EMBEDDED CONTROLS (Only if embedded and not snapshot) */}
+      {isEmbedded && !snapshotMode && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-zinc-900/30 p-4 rounded-3xl border border-zinc-800/50 mx-6">
+           <div className="flex gap-4 w-full sm:w-auto">
+              <div className="flex flex-col gap-1">
+                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest ml-1">Select Team</span>
+                <select value={selectedTeam || ''} onChange={(e) => setSelectedTeam(Number(e.target.value))} className="bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500">
+                   {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest ml-1">Select Round</span>
+                <select value={selectedRound || ''} onChange={(e) => setSelectedRound(Number(e.target.value))} className="bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500">
+                   {rounds.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </select>
+              </div>
+           </div>
+           <button onClick={() => setSnapshotMode(true)} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-black italic rounded-xl hover:bg-orange-500 transition-all text-xs uppercase shadow-lg">
+             <Camera size={14} /> Snapshot Mode
+           </button>
+        </div>
+      )}
+
+      {error && !snapshotMode && (
+        <div className="mx-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold flex items-center gap-3">
           <AlertTriangle size={20} />
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LINEUP SECTION */}
-        <div className="lg:col-span-7 space-y-6">
-          <section className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl">
-            <div className="p-6 bg-zinc-800/50 border-b border-zinc-700 flex justify-between items-center">
+      <div ref={captureRef} className={`${snapshotMode ? 'w-[1080px] h-[1080px] bg-[#050505] p-12 flex flex-col justify-center border-[20px] border-zinc-900 mx-auto' : 'grid grid-cols-1 lg:grid-cols-12 gap-8 px-6 pb-12'}`}>
+        
+        {/* SNAPSHOT HEADER */}
+        {snapshotMode && (
+          <div className="absolute top-12 left-12 flex items-center gap-5">
+            <div className="w-20 h-20 bg-orange-500 flex items-center justify-center rounded-[2rem] shadow-[0_0_40px_rgba(252,103,25,0.3)]">
+              <Shield size={40} className="text-black" />
+            </div>
+            <div className="flex flex-col">
+               <h2 className="text-4xl font-black italic text-white leading-none tracking-tighter uppercase">Inoxteam <span className="text-zinc-700">Tactics</span></h2>
+               <p className="text-orange-500 font-black uppercase tracking-[0.4em] text-sm mt-1">Official Race Lineup</p>
+            </div>
+          </div>
+        )}
+
+        {/* LINEUP SECTION (TACTICAL CARD) */}
+        <div className={`${snapshotMode ? 'w-full' : 'lg:col-span-7'}`}>
+          <section className={`bg-zinc-950 rounded-[3rem] border border-zinc-900 overflow-hidden shadow-2xl h-full flex flex-col`}>
+            <div className="p-10 bg-zinc-900/50 border-b border-zinc-900 flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-black italic text-white uppercase flex items-center gap-3">
-                  <UserCheck className="text-orange-500" /> Lineup di Gara
+                <p className="text-orange-500 font-black text-[10px] tracking-[0.3em] uppercase mb-2">Starting Roster</p>
+                <h2 className="text-4xl font-black italic text-white uppercase leading-none tracking-tighter">
+                  {currentTeam?.name || 'Squadra'}
                 </h2>
-                <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mt-1">
-                  {currentTeam?.name || 'Seleziona Team'} • {rounds.find(r => r.id === selectedRound)?.name}
-                </p>
+                <div className="flex items-center gap-4 mt-4 text-zinc-500">
+                   <div className="flex items-center gap-1.5 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
+                      <MapPin size={12} className="text-zinc-600" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{currentRound?.world || 'Watopia'}</span>
+                   </div>
+                   <div className="flex items-center gap-1.5 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
+                      <Calendar size={12} className="text-zinc-600" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{currentRound ? new Date(currentRound.date).toLocaleDateString('it-IT') : 'TBD'}</span>
+                   </div>
+                </div>
               </div>
-              <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase border ${
-                lineup.length >= 4 && lineup.length <= 6 
-                ? "bg-green-500/10 text-green-500 border-green-500/20" 
-                : "bg-orange-500/10 text-orange-500 border-orange-500/20"
-              }`}>
-                {lineup.length}/6 Riders
+              <div className="flex flex-col items-end gap-2">
+                 <div className={`px-5 py-2 rounded-2xl text-xs font-black uppercase border-2 ${
+                  lineup.length >= 4 && lineup.length <= 6 
+                  ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]" 
+                  : "bg-orange-500/10 text-orange-500 border-orange-500/20 shadow-[0_0_20px_rgba(252,103,25,0.1)]"
+                }`}>
+                  {lineup.length}/6 Riders
+                </div>
+                {currentTeam?.category && (
+                  <span className="bg-white text-black px-4 py-1.5 rounded-xl text-[10px] font-black uppercase shadow-lg">Cat {currentTeam.category}</span>
+                )}
               </div>
             </div>
 
-            <div className="p-8">
-              {lineup.length === 0 ? (
-                <div className="text-center py-16 border-2 border-dashed border-zinc-800 rounded-3xl">
-                  <p className="text-zinc-600 font-bold text-xs uppercase tracking-widest">Nessun atleta in lineup</p>
-                  <p className="text-[10px] text-zinc-700 uppercase mt-2">Aggiungi atleti dal roster del team</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {lineup.map(entry => (
-                    <div key={entry.athlete_id} className="flex items-center justify-between p-4 bg-zinc-800 rounded-2xl border border-zinc-700 group hover:border-orange-500 transition-all">
-                      <div className="flex items-center gap-3">
-                        {entry.avatar_url ? (
-                          <img src={entry.avatar_url} alt={entry.athlete_name} className="w-10 h-10 rounded-full border border-zinc-700 object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-black font-black text-xs">
-                            {entry.athlete_name?.substring(0, 2).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-sm font-black text-white uppercase block">{entry.athlete_name}</span>
-                          <span className="text-[9px] font-bold text-zinc-500 uppercase">Starter</span>
+            <div className="p-10 flex-1">
+              <div className="grid grid-cols-2 gap-6 h-full content-start">
+                {lineup.map((entry, idx) => (
+                  <motion.div 
+                    key={entry.athlete_id} 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="flex items-center justify-between p-6 bg-zinc-900 border border-zinc-800 rounded-[2.5rem] group hover:border-orange-500 transition-all relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                       <Zap size={60} />
+                    </div>
+                    
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-black border border-zinc-800 flex items-center justify-center text-orange-500 font-black text-2xl shadow-xl overflow-hidden">
+                        {entry.athlete_name?.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-xl font-black text-white uppercase italic tracking-tighter block group-hover:text-orange-500 transition-colors leading-none">{entry.athlete_name}</span>
+                        <div className="flex items-center gap-2">
+                           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Confirmed Starter</span>
                         </div>
                       </div>
+                    </div>
+
+                    {!snapshotMode && (
                       <button 
                         onClick={() => removeFromLineup(entry)}
-                        className="text-zinc-600 hover:text-red-500 transition-colors p-2"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 hover:border-red-500 transition-all z-20"
                         disabled={saving}
                       >
                         ✕
                       </button>
-                    </div>
-                  ))}
-                  {Array.from({ length: Math.max(0, 6 - lineup.length) }).map((_, i) => (
-                    <div key={`empty-${i}`} className="border-2 border-dashed border-zinc-800 rounded-2xl p-4 flex items-center justify-center opacity-30">
-                      <span className="text-[10px] font-black text-zinc-700 uppercase">Slot Vuoto</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-
-        {/* ROSTER SECTION */}
-        <div className="lg:col-span-5 space-y-6">
-          <section className="bg-zinc-900/50 rounded-3xl border border-zinc-800 overflow-hidden">
-            <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-              <h2 className="text-xl font-black italic text-white uppercase flex items-center gap-3">
-                <Users className="text-zinc-500" /> Roster del Team
-              </h2>
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                {roster.length}/12 Riders
-              </span>
-            </div>
-
-            <div className="p-4 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {[...roster].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => {
-                const inLineup = isAthleteInLineup(athlete.zwid);
-                const status = (athlete as any).availability_status;
-                return (
-                  <button
-                    key={athlete.zwid}
-                    disabled={inLineup || saving}
-                    onClick={() => addToLineup(athlete)}
-                    className={`w-full flex items-center justify-between p-4 mb-2 rounded-2xl border transition-all text-left ${
-                      inLineup 
-                        ? "bg-zinc-950 border-zinc-900 opacity-40 grayscale cursor-not-allowed" 
-                        : "bg-zinc-900 border-zinc-800 hover:border-orange-500/50 active:scale-95 shadow-lg"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${
-                          inLineup ? "bg-zinc-800 text-zinc-600" : "bg-zinc-800 text-orange-500"
-                        }`}>
-                          {athlete.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 bg-zinc-900 rounded-full p-0.5 border border-zinc-800">
-                          {getAvailabilityIcon(status)}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white uppercase">{athlete.name}</p>
-                        <div className="flex items-center gap-2">
-                           <p className="text-[9px] font-bold text-zinc-600 uppercase">CAT {athlete.category || 'N/A'}</p>
-                           <span className={`text-[8px] font-black uppercase ${
-                             status === 'available' ? 'text-green-500' : 
-                             status === 'unavailable' ? 'text-red-500' : 
-                             status === 'tentative' ? 'text-orange-500' : 'text-zinc-700'
-                           }`}>
-                             {status || 'No RSVP'}
-                           </span>
-                        </div>
-                      </div>
-                    </div>
-                    {inLineup ? (
-                      <span className="text-[8px] font-black text-green-500 uppercase bg-green-500/10 px-2 py-1 rounded">Schierato</span>
-                    ) : (
-                      <span className="text-lg text-zinc-700 group-hover:text-orange-500">+</span>
                     )}
-                  </button>
-                );
-              })}
+                  </motion.div>
+                ))}
+                
+                {!snapshotMode && Array.from({ length: Math.max(0, 6 - lineup.length) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="border-2 border-dashed border-zinc-900 rounded-[2.5rem] p-6 flex flex-col items-center justify-center opacity-30 gap-2">
+                    <UserCheck size={24} className="text-zinc-700" />
+                    <span className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.2em]">Add Rider</span>
+                  </div>
+                ))}
+
+                {snapshotMode && Array.from({ length: Math.max(0, 6 - lineup.length) }).map((_, i) => (
+                  <div key={`empty-snap-${i}`} className="bg-zinc-950/50 border border-zinc-900/50 rounded-[2.5rem] p-6 flex items-center justify-center opacity-10">
+                    <div className="w-12 h-2 bg-zinc-800 rounded-full" />
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* ROUTE INFO (Snapshot only) */}
+            {snapshotMode && currentRound && (
+              <div className="px-10 py-8 bg-zinc-900/30 border-t border-zinc-900 grid grid-cols-3 gap-8">
+                 <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Route</span>
+                    <span className="text-base font-black text-white uppercase italic truncate">{currentRound.route}</span>
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Distance</span>
+                    <span className="text-base font-black text-white italic">{currentRound.distance}km</span>
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Elevation</span>
+                    <span className="text-base font-black text-white italic">{currentRound.elevation}m</span>
+                 </div>
+              </div>
+            )}
           </section>
         </div>
+
+        {/* ROSTER SECTION (Hidden in snapshot) */}
+        {!snapshotMode && (
+          <div className="lg:col-span-5">
+            <section className="bg-zinc-950/50 rounded-[3rem] border border-zinc-900 overflow-hidden sticky top-6">
+              <div className="p-8 border-b border-zinc-900 flex justify-between items-center bg-zinc-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-zinc-800 rounded-xl text-zinc-400">
+                    <Users size={20} />
+                  </div>
+                  <h2 className="text-xl font-black italic text-white uppercase tracking-tighter">
+                    Team Pool
+                  </h2>
+                </div>
+                <span className="bg-zinc-900 text-zinc-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                  {roster.length} Available
+                </span>
+              </div>
+
+              <div className="p-6 max-h-[700px] overflow-y-auto custom-scrollbar space-y-3">
+                {[...roster].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => {
+                  const inLineup = isAthleteInLineup(athlete.zwid);
+                  const status = (athlete as any).availability_status;
+                  return (
+                    <motion.button
+                      key={athlete.zwid}
+                      disabled={inLineup || saving}
+                      whileHover={!inLineup ? { x: 4 } : {}}
+                      onClick={() => addToLineup(athlete)}
+                      className={`w-full flex items-center justify-between p-5 rounded-[2rem] border transition-all text-left ${
+                        inLineup 
+                          ? "bg-zinc-950 border-zinc-900 opacity-40 grayscale cursor-not-allowed" 
+                          : "bg-zinc-900 border-zinc-800 hover:border-orange-500/50 active:scale-95 shadow-xl group"
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-colors ${
+                            inLineup ? "bg-zinc-800 text-zinc-600" : "bg-zinc-800 text-orange-500 group-hover:bg-orange-500 group-hover:text-black"
+                          }`}>
+                            {athlete.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="absolute -bottom-1 -right-1 bg-zinc-950 rounded-full p-1 border border-zinc-900 shadow-lg">
+                            {getAvailabilityIcon(status)}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1.5">{athlete.name}</p>
+                          <div className="flex items-center gap-2.5">
+                             <span className="px-2 py-0.5 bg-zinc-950 rounded text-[8px] font-black text-zinc-500 border border-zinc-800 uppercase tracking-widest">CAT {athlete.category || 'N/A'}</span>
+                             <span className={`text-[9px] font-black uppercase tracking-widest ${
+                               status === 'available' ? 'text-green-500' : 
+                               status === 'unavailable' ? 'text-red-500' : 
+                               status === 'tentative' ? 'text-orange-500' : 'text-zinc-700'
+                             }`}>
+                               {status || 'No RSVP'}
+                             </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="w-10 h-10 rounded-2xl bg-zinc-950 border border-zinc-900 flex items-center justify-center">
+                        {inLineup ? (
+                          <CheckCircle2 size={16} className="text-green-500" />
+                        ) : (
+                          <ChevronRight size={18} className="text-zinc-700 group-hover:text-orange-500" />
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* SNAPSHOT FOOTER */}
+        {snapshotMode && (
+          <div className="absolute bottom-12 left-12 flex items-center gap-3">
+             <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center border border-zinc-800">
+                <Info size={16} className="text-orange-500" />
+             </div>
+             <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Strategy developed by Inoxteam Command Center</p>
+          </div>
+        )}
       </div>
+
+      {/* --- EXIT & SAVE BUTTONS --- */}
+      {snapshotMode && (
+        <div className="fixed bottom-12 right-12 flex gap-4 z-[200]">
+          <button
+            onClick={() => setSnapshotMode(false)}
+            className="px-8 py-4 bg-zinc-800 text-white font-black italic rounded-full shadow-xl hover:scale-110 transition-all uppercase text-sm tracking-tighter"
+          >
+            EXIT
+          </button>
+          <button
+            onClick={handleCapture}
+            className="px-8 py-4 bg-orange-500 text-black font-black italic rounded-full shadow-2xl hover:scale-110 transition-all uppercase text-sm tracking-tighter"
+          >
+            SAVE SNAPSHOT
+          </button>
+        </div>
+      )}
     </div>
   );
 };

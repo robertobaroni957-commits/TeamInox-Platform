@@ -94,6 +94,30 @@ const ZRLOperations: React.FC = () => {
     }
   }, [activeStep]);
 
+  const handleSyncAvatars = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/admin/sync-avatars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: data.message });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: "Errore Sync Avatar: " + err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleHtmlImport = async () => {
     if (!htmlImport) return;
     setLoading(true);
@@ -665,7 +689,7 @@ const ZRLOperations: React.FC = () => {
             {/* STEP 2-4 */}
             {activeStep === 2 && <AvailabilityManagement />}
             {activeStep === 3 && <RosterSuggestions />}
-            {activeStep === 4 && <RosterBuilder />}
+            {activeStep === 4 && <RosterBuilder isEmbedded={true} />}
             
             {/* STEP 5: RESULTS */}
             {activeStep === 5 && (
