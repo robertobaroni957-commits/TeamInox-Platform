@@ -397,15 +397,61 @@ const ZRLOperations: React.FC = () => {
     return lastIdx;
   }).filter(idx => idx !== -1);
 
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+
   const steps = [
-    { id: 1, title: 'Setup Round', icon: Settings, desc: 'ID Round WTRL' },
-    { id: 2, title: 'Disponibilità', icon: ClipboardCheck, desc: 'Monitoraggio RSVP' },
-    { id: 3, title: 'Roster Strategy', icon: Zap, desc: 'Optimizer & Teams' },
-    { id: 4, title: 'Gare & Lineup', icon: Users, desc: 'Composizione Squadre' },
-    { id: 5, title: 'Risultati & Media', icon: Trophy, desc: 'Recap Gara' },
-    { id: 6, title: 'Rankings View', icon: LayoutGrid, desc: 'Classifiche Live' },
-    { id: 7, title: 'Strat Map', icon: BarChart3, desc: 'Analisi Tattica' },
+    { 
+      id: 1, 
+      title: 'Setup Round', 
+      icon: Settings, 
+      desc: 'ID Round WTRL',
+      help: 'Configura i parametri fondamentali del round. Inserisci l\'ID stagione WTRL (es. 19) e sincronizza il calendario gare e le squadre per inizializzare il sistema.'
+    },
+    { 
+      id: 2, 
+      title: 'Disponibilità', 
+      icon: ClipboardCheck, 
+      desc: 'Monitoraggio RSVP',
+      help: 'Analizza la matrice delle disponibilità in tempo reale. Visualizza chi ha confermato la presenza per i prossimi round e filtra per categoria per valutare la forza d\'attacco.'
+    },
+    { 
+      id: 3, 
+      title: 'Roster Strategy', 
+      icon: Zap, 
+      desc: 'Optimizer & Teams',
+      help: 'L\'intelligenza artificiale suggerisce la distribuzione ottimale degli atleti nei pool basandosi sulle preferenze orarie e sulla validazione automatica del regolamento ZRL.'
+    },
+    { 
+      id: 4, 
+      title: 'Gare & Lineup', 
+      icon: Users, 
+      desc: 'Composizione Squadre',
+      help: 'La War Room tattica. Seleziona un team e schiera i 6 titolari scegliendo tra gli atleti disponibili. Una volta pronti, puoi generare la card grafica per i social.'
+    },
+    { 
+      id: 5, 
+      title: 'Risultati & Media', 
+      icon: Trophy, 
+      desc: 'Recap Gara',
+      help: 'Importa i file JSON estratti dal sito WTRL. Questa fase aggiorna i punti individuali (FAL/FTS/Finish) e alimenta le classifiche globali della piattaforma.'
+    },
+    { 
+      id: 6, 
+      title: 'Rankings View', 
+      icon: LayoutGrid, 
+      desc: 'Classifiche Live',
+      help: 'Viewport di monitoraggio della classifica generale (GC). Controlla il posizionamento degli Inox Squadron rispetto ai rivali e analizza i distacchi in tempo reale.'
+    },
+    { 
+      id: 7, 
+      title: 'Strat Map', 
+      icon: BarChart3, 
+      desc: 'Analisi Tattica',
+      help: 'Deep Analytics Engine: confronta il DNA tattico delle squadre tramite grafici radar e identifica i top performer (MVPs) della divisione per ottimizzare le strategie future.'
+    },
   ];
+
+  const activeHelp = hoveredStep ? steps.find(s => s.id === hoveredStep)?.help : (activeStep !== 0 ? steps.find(s => s.id === activeStep)?.help : null);
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
@@ -419,32 +465,56 @@ const ZRLOperations: React.FC = () => {
         </h1>
       </header>
 
-      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
+          const isHovered = hoveredStep === step.id;
           return (
             <button
               key={step.id}
               onClick={() => setActiveStep(step.id)}
-              className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left ${
+              onMouseEnter={() => setHoveredStep(step.id)}
+              onMouseLeave={() => setHoveredStep(null)}
+              className={`flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left group ${
                 isActive 
-                  ? "bg-zinc-900 border-[#fc6719] shadow-[0_0_20px_rgba(252,103,25,0.15)]" 
-                  : "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 opacity-80 hover:opacity-100"
+                  ? "bg-zinc-800 border-[#fc6719] shadow-[0_0_25px_rgba(252,103,25,0.2)]" 
+                  : (isHovered ? "bg-zinc-800 border-zinc-500 shadow-xl" : "bg-zinc-900/80 border-zinc-700 opacity-90 shadow-lg")
               }`}
             >
-              <div className={`p-1.5 rounded-lg mb-2 ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-500"}`}>
-                <Icon size={14} />
+              <div className={`p-2 rounded-xl mb-3 transition-all ${isActive ? "bg-[#fc6719] text-black shadow-[0_0_15px_rgba(252,103,25,0.4)]" : "bg-zinc-800 text-zinc-300 group-hover:text-white border border-zinc-700"}`}>
+                <Icon size={16} />
               </div>
-              <span className="text-[7px] font-black uppercase text-zinc-600 mb-0.5 tracking-widest">Step 0{step.id}</span>
-              <span className={`text-[10px] font-black uppercase italic ${isActive ? "text-white" : "text-zinc-700"}`}>{step.title}</span>
+              <span className={`text-[8px] font-black uppercase mb-1 tracking-widest ${isActive ? "text-zinc-400" : "text-zinc-500"}`}>Step 0{step.id}</span>
+              <span className={`text-xs font-black uppercase italic tracking-tight ${isActive ? "text-white" : "text-zinc-400 group-hover:text-white"}`}>{step.title}</span>
             </button>
           );
         })}
       </nav>
 
-      <main className="bg-zinc-900/20 rounded-[2rem] border border-zinc-800 shadow-2xl min-h-[500px] relative overflow-hidden backdrop-blur-sm group/main hover:border-zinc-700/50 transition-all">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+      {/* INTELLIGENCE HUD (ONLINE GUIDE) */}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={hoveredStep || activeStep}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 10 }}
+          className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl flex items-start gap-4 shadow-inner min-h-[80px]"
+        >
+          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 shrink-0 border border-zinc-700">
+             <Brain size={18} className={hoveredStep ? "text-inox-orange animate-pulse" : "text-zinc-600"} />
+          </div>
+          <div>
+            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-1">Strategic Intelligence Briefing</p>
+            <p className="text-[11px] font-bold text-zinc-300 leading-relaxed uppercase tracking-tight italic">
+              {activeHelp || "Passa il mouse sopra un modulo operativo per ricevere istruzioni tattiche."}
+            </p>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      <main className="bg-zinc-900/60 rounded-[2.5rem] border-2 border-zinc-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] min-h-[600px] relative overflow-hidden backdrop-blur-md group/main hover:border-zinc-600 transition-all">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none" />
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
