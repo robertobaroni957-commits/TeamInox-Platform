@@ -99,19 +99,37 @@ export async function onRequestGet({ request, env }) {
             }
 
             // Recuperiamo tutti i risultati dei round per questa squadra
-            const { results: rawRoster } = await env.DB.prepare(`
-                SELECT 
-                    rider_name, 
-                    round_id,
-                    points_fal,
-                    points_fts,
-                    points_finish,
-                    points_total
-                FROM division_results
-                WHERE round_id IN (${roundIds.map(() => '?').join(',')})
-                  AND league_key = ?
-                  AND team_name = ?
-            `).bind(...roundIds, league_key, team.team_name).all();
+            // Cerchiamo prima per wtrl_team_id (stabile), poi per team_name (fallback)
+            let rawRoster;
+            if (team.wtrl_team_id) {
+                const { results } = await env.DB.prepare(`
+                    SELECT 
+                        rider_name, 
+                        round_id,
+                        points_fal,
+                        points_fts,
+                        points_finish,
+                        points_total
+                    FROM division_results
+                    WHERE round_id IN (${roundIds.map(() => '?').join(',')})
+                      AND (wtrl_team_id = ? OR (wtrl_team_id IS NULL AND team_name = ?))
+                `).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
+                rawRoster = results;
+            } else {
+                const { results } = await env.DB.prepare(`
+                    SELECT 
+                        rider_name, 
+                        round_id,
+                        points_fal,
+                        points_fts,
+                        points_finish,
+                        points_total
+                    FROM division_results
+                    WHERE round_id IN (${roundIds.map(() => '?').join(',')})
+                      AND team_name = ?
+                `).bind(...roundIds, team.team_name).all();
+                rawRoster = results;
+            }
 
             // Aggreghiamo i dati per rider_name
             const rosterMap = {};

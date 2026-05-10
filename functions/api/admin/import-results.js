@@ -107,6 +107,18 @@ export async function onRequestPost({ request, env }) {
                 const teamName = team.teamname || "Unknown Team";
                 const isInox = teamName.toUpperCase().includes("INOX");
                 const riders = team.a || [];
+                
+                // Stable ID detection (trc)
+                // id1 in WTRL results usually corresponds to the stable Team ID (tttid)
+                const tttid = team.id1 || team.tttid;
+                let wtrl_team_id = null;
+
+                // Tenta di risolvere il wtrl_team_id (trc) se abbiamo il team nel DB
+                if (tttid) {
+                    const knownTeam = await env.DB.prepare(`SELECT wtrl_team_id FROM teams WHERE tttid = ? OR wtrl_team_id = ?`).bind(tttid, tttid).first();
+                    if (knownTeam) wtrl_team_id = knownTeam.wtrl_team_id;
+                    else wtrl_team_id = tttid; // Fallback all'ID fornito
+                }
 
                 for (const r of riders) {
                     totalRidersImported++;
@@ -119,9 +131,9 @@ export async function onRequestPost({ request, env }) {
                         INSERT INTO division_results (
                             round_id, league_key, team_name, rider_name, zwid, 
                             position, time, points_finish, points_fal, points_fts, 
-                            points_total, is_inox
+                            points_total, is_inox, wtrl_team_id
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
                         raceId, leagueKey, teamName, riderName, zwid,
                         position, time, 
@@ -129,7 +141,8 @@ export async function onRequestPost({ request, env }) {
                         parseInt(r.falrp || r.falp || 0), 
                         parseInt(r.ftsrp || r.ftsp || 0), 
                         parseInt(r.totrp || r.totp || 0), 
-                        isInox ? 1 : 0
+                        isInox ? 1 : 0,
+                        wtrl_team_id
                     ));
                 }
             }

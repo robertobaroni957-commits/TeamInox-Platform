@@ -191,6 +191,7 @@ const ZRLDivisionResults: React.FC = () => {
                             <p className="text-[9px] font-bold uppercase text-zinc-500 tracking-widest">{formatLeagueName(opt)}</p>
                             <p className="text-[8px] font-black text-zinc-700 uppercase">{opt.season_name}</p>
                          </div>
+<<<<<<< HEAD
                        </button>
                      ))}
                   </motion.div>
@@ -224,6 +225,40 @@ const ZRLDivisionResults: React.FC = () => {
                 <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">{currentFilter?.round_name}</p>
                 <p className="text-xl font-black text-white uppercase italic">{currentFilter ? formatLeagueName(currentFilter) : ''}</p>
             </div>
+=======
+                      </td>
+                      <td className="px-6 py-8 text-center">
+                        <span className="text-sm font-black text-white">{team.total_race_points}</span>
+                      </td>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fal}</span>
+                      </td>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_fts}</span>
+                      </td>
+                      <td className="px-4 py-8 text-center">
+                        <span className="text-[10px] font-black text-zinc-500">{team.pts_finish}</span>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex justify-center items-center gap-1.5">
+                          {[team.r1, team.r2, team.r3, team.r4, team.r5, team.r6].map((pts, i) => (
+                            pts !== "0" && pts !== null && (
+                              <div key={i} className="flex flex-col items-center gap-1">
+                                <span className="text-[6px] font-black text-zinc-700 uppercase tracking-tighter">Race {i+1}</span>
+                                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                  <span className="text-[10px] font-black text-zinc-500">{pts}</span>
+                                </div>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+>>>>>>> 92133e3 (fix season analytics)
           </div>
         )}
 

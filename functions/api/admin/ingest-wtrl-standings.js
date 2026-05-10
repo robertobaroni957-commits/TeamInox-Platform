@@ -43,18 +43,29 @@ export async function onRequestPost({ request, env }) {
                 const teamName = team.d;
                 const isInox = teamName.toUpperCase().includes("INOX");
                 const totalRacePoints = parseInt(team.e) || 0;
+                
+                // Stable ID detection (trc)
+                const tttid = team.id1 || team.tttid || team.teamid;
+                let wtrl_team_id = null;
+
+                if (tttid) {
+                    const knownTeam = await env.DB.prepare(`SELECT wtrl_team_id FROM teams WHERE tttid = ? OR wtrl_team_id = ?`).bind(tttid, tttid).first();
+                    if (knownTeam) wtrl_team_id = knownTeam.wtrl_team_id;
+                    else wtrl_team_id = tttid;
+                }
 
                 insertStmts.push(env.DB.prepare(`
                     INSERT INTO zrl_team_standings (
                         round_group_id, league_key, league_name, team_name, rank, 
                         league_points, pts_fal, pts_fts, pts_finish, total_race_points,
-                        r1, r2, r3, r4, r5, r6, r7, r8, is_inox
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        r1, r2, r3, r4, r5, r6, r7, r8, is_inox, wtrl_team_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `).bind(
                     roundGroupId, currentLega.leagueKey, leagueName, teamName, team.c, 
                     team.j, team.e, team.k, team.i, totalRacePoints,
                     team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8,
-                    isInox ? 1 : 0
+                    isInox ? 1 : 0,
+                    wtrl_team_id
                 ));
             }
         }
