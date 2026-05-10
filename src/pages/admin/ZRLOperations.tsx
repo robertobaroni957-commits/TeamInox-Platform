@@ -15,7 +15,7 @@ import RosterSuggestions from './RosterSuggestions';
 import RosterBuilder from '../RosterBuilder';
 import ZRLDivisionResults from '../ZRLDivisionResults';
 import ZRLAnalytics from '../ZRLAnalytics';
-import ZRLSeasonStats from './ZRLSeasonStats';
+import ZRLSeasonStats from '../ZRLSeasonStats';
 
 interface RoundInput {
   id?: number;
