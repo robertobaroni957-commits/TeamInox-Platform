@@ -12,6 +12,7 @@ import Ranking from './pages/Ranking';
 import Events from './pages/Events';
 import ZRLDivisionResults from './pages/ZRLDivisionResults';
 import ZRLAnalytics from './pages/ZRLAnalytics';
+import ZRLSeasonStats from './pages/ZRLSeasonStats';
 import StravaCallback from './pages/StravaCallback';
 import ZRLOperations from './pages/admin/ZRLOperations';
 import ZRLRoundManager from './pages/ZRLRoundManager';
@@ -47,6 +48,7 @@ const App: React.FC = () => {
           <Route path="events" element={<Events />} />
           <Route path="zrl-results" element={<ZRLDivisionResults />} />
           <Route path="zrl-analytics" element={<ZRLAnalytics />} />
+          <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
           <Route path="strava-callback" element={<StravaCallback />} />
           <Route path="zrl-operations" element={
             <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>

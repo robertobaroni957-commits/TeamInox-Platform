@@ -98,10 +98,19 @@ const Dashboard: React.FC = () => {
     {
       title: "Strat Map",
       subtitle: "Tactical DNA",
-      desc: "Analisi avanzata delle performance e Social Cards per i media.",
+      desc: "Analisi avanzata delle performance e DNA tattico delle squadre.",
       icon: BarChart3,
       path: "/zrl-analytics",
       color: "from-cyan-500 to-blue-600",
+      size: "sm"
+    },
+    {
+      title: "Recap Stagione",
+      subtitle: "ZRL Season 19",
+      desc: "Statistiche cumulative, top performers e riepilogo generale.",
+      icon: TrendingUp,
+      path: "/zrl-season-stats",
+      color: "from-orange-400 to-red-500",
       size: "sm"
     }
   ];

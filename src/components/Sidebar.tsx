@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LogOut, Calendar, Trophy, Zap, Shield, LayoutDashboard, 
-  Home, Users, User, Mail, Settings, Briefcase, Star
+  Home, Users, User, Mail, Settings, Briefcase, Star,
+  BarChart3, TrendingUp
 } from 'lucide-react'; 
 
 interface UserData {
