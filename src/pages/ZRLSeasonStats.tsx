@@ -3,12 +3,20 @@ import {
   Trophy, Users, Target, Zap, Activity, Star, 
   BarChart3, TrendingUp, Shield, Info, RefreshCw, 
   Search, Camera, ChevronRight, Hash, Award,
-  Crown, Flame, FastForward
+  Crown, Flame, FastForward, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import html2canvas from 'html2canvas';
 
 // --- INTERFACES ---
+interface TeamRoundStat {
+  lp: number;
+  trp: number;
+  fal: number;
+  fts: number;
+  fin: number;
+}
+
 interface TeamSeasonStat {
   team_name: string;
   league_key: string;
@@ -18,7 +26,7 @@ interface TeamSeasonStat {
   total_fts: number;
   total_finish: number;
   is_inox: number;
-  segments_completed: number;
+  rounds: Record<number, TeamRoundStat>;
 }
 
 interface RiderSeasonStat {
@@ -31,6 +39,7 @@ interface RiderSeasonStat {
   total_fts: number;
   races_count: number;
   is_inox: number;
+  rounds: Record<number, number>;
 }
 
 interface SeasonData {
@@ -52,6 +61,7 @@ const ZRLSeasonStats: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'teams' | 'riders'>('teams');
   const [searchTerm, setSearchTerm] = useState('');
   const [snapshotMode, setSnapshotMode] = useState(false);
+  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   
   const captureRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +72,7 @@ const ZRLSeasonStats: React.FC = () => {
   const fetchSeasonStats = async () => {
     setLoading(true);
     try {
+      // Usiamo Season 19 come default se non diversamente specificato
       const res = await fetch('/api/season-stats?season_id=19');
       const json = await res.json();
       if (json.success) {
@@ -84,7 +95,7 @@ const ZRLSeasonStats: React.FC = () => {
           backgroundColor: '#050505',
         });
         const link = document.createElement('a');
-        link.download = `zrl_season_recap_${Date.now()}.png`;
+        link.download = `zrl_season_report_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } catch (e) {
@@ -104,14 +115,14 @@ const ZRLSeasonStats: React.FC = () => {
     r.team_name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const topInoxTeams = data?.teams.filter(t => t.is_inox === 1) || [];
+  const roundIndices = [1, 2, 3, 4]; // Round da visualizzare
 
   return (
-    <div className={`transition-all duration-500 ${snapshotMode ? 'bg-[#050505] p-0 overflow-hidden' : 'space-y-8 pb-20'}`}>
+    <div className={`transition-all duration-500 ${snapshotMode ? 'bg-[#050505] p-0' : 'space-y-8 pb-20'}`}>
       
       {/* HEADER SECTION (Hidden in snapshot) */}
       {!snapshotMode && (
-        <section className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 px-6 pt-6">
+        <section className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 px-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="px-3 py-1 bg-inox-orange/10 border border-inox-orange/20 rounded-full">
@@ -122,10 +133,10 @@ const ZRLSeasonStats: React.FC = () => {
               </div>
             </div>
             <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
-              SEASON <span className="text-zinc-700">RECAP</span>
+              SEASON <span className="text-zinc-700">REPORT</span>
             </h1>
-            <p className="text-zinc-400 font-bold italic text-sm uppercase tracking-widest italic">
-               Aggregazione totale delle performance: Squadre e Atleti.
+            <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest">
+               Analisi aggregata delle performance per Round.
             </p>
           </div>
 
@@ -135,7 +146,7 @@ const ZRLSeasonStats: React.FC = () => {
                 onClick={() => setActiveTab('teams')}
                 className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${activeTab === 'teams' ? 'bg-inox-orange text-black shadow-lg shadow-inox-orange/20' : 'text-zinc-500 hover:text-white'}`}
                >
-                 <Shield size={14} /> Team GC
+                 <Shield size={14} /> Team Performance
                </button>
                <button 
                 onClick={() => setActiveTab('riders')}
@@ -154,30 +165,30 @@ const ZRLSeasonStats: React.FC = () => {
         </section>
       )}
 
-      <div ref={captureRef} className={snapshotMode ? 'w-[1080px] h-[1080px] bg-[#050505] p-12 flex flex-col justify-center border-[20px] border-zinc-900 mx-auto relative' : 'px-6 space-y-10'}>
+      <div ref={captureRef} className={snapshotMode ? 'w-[1200px] bg-[#050505] p-12 flex flex-col border-[20px] border-zinc-900 mx-auto relative min-h-screen' : 'px-6 space-y-10'}>
         
         {/* SNAPSHOT HEADER */}
         {snapshotMode && (
-          <div className="absolute top-12 left-12 right-12 flex items-center gap-6">
+          <div className="flex items-center gap-6 mb-12">
             <div className="w-24 h-24 bg-inox-orange flex items-center justify-center rounded-[2.5rem] shadow-[0_0_50px_rgba(252,103,25,0.3)] border-4 border-white/20">
               <Shield size={48} className="text-black" />
             </div>
             <div className="flex flex-col">
-               <h2 className="text-5xl font-black italic text-white leading-none tracking-tighter uppercase">INOXTEAM <span className="text-zinc-700">Hall of Fame</span></h2>
-               <p className="text-inox-orange font-black uppercase tracking-[0.5em] text-sm mt-2 italic">ZRL SEASON {data?.season_id} OFFICIAL REPORT</p>
+               <h2 className="text-5xl font-black italic text-white leading-none tracking-tighter uppercase">INOXTEAM <span className="text-zinc-700">SEASON REPORT</span></h2>
+               <p className="text-inox-orange font-black uppercase tracking-[0.5em] text-sm mt-2 italic">ZRL SEASON {data?.season_id} OFFICIAL PERFORMANCE LOG</p>
             </div>
           </div>
         )}
 
         {/* SEASON HIGHLIGHTS BENTO */}
-        <section className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${snapshotMode ? 'mt-32' : ''}`}>
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
            {[
              { label: 'Season MVP', value: data?.highlights.top_scorer?.rider_name, icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
              { label: 'Sprint King', value: data?.highlights.top_sprinter?.rider_name, icon: FastForward, color: 'text-inox-cyan', bg: 'bg-inox-cyan/10' },
              { label: 'Top Attacker', value: data?.highlights.top_attacker?.rider_name, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
              { label: 'Iron Rider', value: data?.highlights.most_consistent?.rider_name, icon: Award, color: 'text-emerald-400', bg: 'bg-emerald-400/10' }
            ].map((h, i) => (
-             <div key={i} className={`p-6 rounded-[2.5rem] ${h.bg} border border-white/10 flex flex-col gap-4 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-2xl backdrop-blur-md`}>
+             <div key={i} className="p-6 rounded-[2.5rem] bg-zinc-900/40 border border-zinc-800/50 flex flex-col gap-4 relative overflow-hidden group hover:scale-[1.02] transition-all shadow-2xl backdrop-blur-md">
                 <div className="absolute -top-2 -right-2 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
                    <h.icon size={80} />
                 </div>
@@ -192,116 +203,183 @@ const ZRLSeasonStats: React.FC = () => {
 
         {/* TEAM GC VIEW */}
         {activeTab === 'teams' && (
-          <section className="bg-zinc-900/40 border-2 border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-md relative">
-             <div className="p-8 border-b border-zinc-800 flex justify-between items-center bg-black/20">
-                <div className="flex items-center gap-3">
-                   <Shield size={24} className="text-inox-orange" />
-                   <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">Team Season Standings</h3>
-                </div>
-                {!snapshotMode && (
-                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ranked by Season LP</span>
-                )}
-             </div>
-             
-             <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                   <thead className="bg-zinc-950/50 border-b border-zinc-800">
-                      <tr className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em]">
-                         <th className="px-10 py-6 text-center">RANK</th>
-                         <th className="px-10 py-6">SQUADRON</th>
-                         <th className="px-8 py-6 text-center text-inox-orange">TOTAL LP</th>
-                         <th className="px-8 py-6 text-center">TOTAL TRP</th>
-                         <th className="px-6 py-6 text-center opacity-60">FIN</th>
-                         <th className="px-6 py-6 text-center opacity-60">FAL</th>
-                         <th className="px-6 py-6 text-center opacity-60">FTS</th>
-                      </tr>
-                   </thead>
-                   <tbody className="divide-y divide-zinc-800/50">
-                      {(snapshotMode ? data?.teams.slice(0, 10) : data?.teams)?.map((team, idx) => (
-                        <tr key={idx} className={`group transition-all ${team.is_inox ? 'bg-inox-orange/5 hover:bg-inox-orange/10' : 'hover:bg-zinc-800/40'}`}>
-                           <td className="px-10 py-6 text-center">
-                              <span className={`text-4xl font-black italic ${idx < 3 ? 'text-white' : 'text-zinc-800'}`}>#{idx + 1}</span>
-                           </td>
-                           <td className="px-10 py-6">
-                              <div className="flex flex-col">
-                                 <span className="text-2xl font-black text-white uppercase tracking-tight leading-none italic">{team.team_name}</span>
-                                 <span className="text-[9px] font-bold text-zinc-500 mt-2 uppercase tracking-widest">{team.league_key}</span>
-                              </div>
-                           </td>
-                           <td className="px-8 py-6 text-center">
-                              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-950 border-2 border-zinc-800 group-hover:border-inox-orange/40 transition-all shadow-inner">
-                                 <span className="text-2xl font-black italic text-inox-orange">{team.total_lp}</span>
-                              </div>
-                           </td>
-                           <td className="px-8 py-6 text-center">
-                              <span className="text-xl font-black text-white tracking-tighter">{team.total_trp}</span>
-                           </td>
-                           <td className="px-6 py-6 text-center">
-                              <span className="text-xs font-black text-zinc-500">{team.total_finish}</span>
-                           </td>
-                           <td className="px-6 py-6 text-center">
-                              <span className="text-xs font-black text-zinc-500">{team.total_fal}</span>
-                           </td>
-                           <td className="px-6 py-6 text-center">
-                              <span className="text-xs font-black text-zinc-500">{team.total_fts}</span>
-                           </td>
+          <section className="space-y-6">
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-md">
+               <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                     <thead className="bg-black/40 border-b border-zinc-800">
+                        <tr className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                           <th className="px-8 py-6">Squadra</th>
+                           <th className="px-4 py-6 text-center text-inox-orange">LP</th>
+                           {roundIndices.map(r => (
+                             <th key={r} className="px-4 py-6 text-center border-l border-zinc-800/30">R{r} Rank</th>
+                           ))}
+                           <th className="px-8 py-6 text-right">Performance Mix</th>
                         </tr>
-                      ))}
-                   </tbody>
-                </table>
-             </div>
+                     </thead>
+                     <tbody className="divide-y divide-zinc-800/50">
+                        {data?.teams.map((team, idx) => (
+                          <React.Fragment key={idx}>
+                            <tr 
+                              onClick={() => setExpandedTeam(expandedTeam === team.team_name ? null : team.team_name)}
+                              className={`group cursor-pointer transition-all ${team.is_inox ? 'bg-inox-orange/5 hover:bg-inox-orange/10' : 'hover:bg-zinc-800/40'}`}
+                            >
+                               <td className="px-8 py-6">
+                                  <div className="flex items-center gap-4">
+                                     <span className="text-2xl font-black italic text-zinc-800">#{idx + 1}</span>
+                                     <div className="flex flex-col">
+                                        <span className="text-lg font-black text-white uppercase tracking-tight italic">{team.team_name}</span>
+                                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{team.league_key}</span>
+                                     </div>
+                                  </div>
+                               </td>
+                               <td className="px-4 py-6 text-center">
+                                  <span className="text-xl font-black italic text-inox-orange">{team.total_lp}</span>
+                               </td>
+                               {roundIndices.map(r => {
+                                 const rd = team.rounds[r];
+                                 return (
+                                   <td key={r} className="px-4 py-6 text-center border-l border-zinc-800/30">
+                                      {rd ? (
+                                        <div className="flex flex-col items-center">
+                                           <span className="text-xs font-black text-white">{rd.lp}pt</span>
+                                           <span className="text-[7px] font-bold text-zinc-600 uppercase tracking-widest">{rd.trp} TRP</span>
+                                        </div>
+                                      ) : <span className="text-zinc-800 font-black">-</span>}
+                                   </td>
+                                 );
+                               })}
+                               <td className="px-8 py-6">
+                                  <div className="flex justify-end gap-1.5">
+                                     {[
+                                       { label: 'FIN', val: team.total_finish, color: 'bg-white' },
+                                       { label: 'FTS', val: team.total_fts, color: 'bg-inox-cyan' },
+                                       { label: 'FAL', val: team.total_fal, color: 'bg-orange-500' }
+                                     ].map((p, pi) => (
+                                       <div key={pi} className="flex flex-col items-center gap-1">
+                                          <div className={`h-10 w-1.5 rounded-full bg-zinc-800 relative overflow-hidden`}>
+                                             <motion.div 
+                                              initial={{ height: 0 }}
+                                              animate={{ height: `${(p.val / (team.total_trp || 1)) * 100}%` }}
+                                              className={`absolute bottom-0 left-0 right-0 ${p.color}`}
+                                             />
+                                          </div>
+                                          <span className="text-[6px] font-black text-zinc-600">{p.label}</span>
+                                       </div>
+                                     ))}
+                                  </div>
+                               </td>
+                            </tr>
+                            
+                            {/* Detailed Breakdown Row */}
+                            <AnimatePresence>
+                              {expandedTeam === team.team_name && (
+                                <motion.tr 
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="bg-black/40"
+                                >
+                                  <td colSpan={7} className="px-8 py-8">
+                                     <div className="grid grid-cols-4 gap-6">
+                                        {roundIndices.map(r => {
+                                          const rd = team.rounds[r];
+                                          if (!rd) return null;
+                                          return (
+                                            <div key={r} className="bg-zinc-900/60 p-6 rounded-3xl border border-zinc-800 space-y-4">
+                                               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-zinc-800 pb-2">Round {r} Breakdown</p>
+                                               <div className="space-y-2">
+                                                  {[
+                                                    { label: 'Finish Points', val: rd.fin, color: 'text-white' },
+                                                    { label: 'FAL Points', val: rd.fal, color: 'text-orange-500' },
+                                                    { label: 'FTS Points', val: rd.fts, color: 'text-inox-cyan' }
+                                                  ].map((item, ii) => (
+                                                    <div key={ii} className="flex justify-between items-center">
+                                                       <span className="text-[8px] font-bold text-zinc-600 uppercase">{item.label}</span>
+                                                       <span className={`text-xs font-black italic ${item.color}`}>{item.val}</span>
+                                                    </div>
+                                                  ))}
+                                               </div>
+                                            </div>
+                                          );
+                                        })}
+                                     </div>
+                                  </td>
+                                </motion.tr>
+                              )}
+                            </AnimatePresence>
+                          </React.Fragment>
+                        ))}
+                     </tbody>
+                  </table>
+               </div>
+            </div>
           </section>
         )}
 
         {/* RIDER INDEX VIEW */}
-        {activeTab === 'riders' && !snapshotMode && (
+        {activeTab === 'riders' && (
           <section className="space-y-6">
-             <div className="flex items-center gap-4 bg-zinc-900/60 p-4 rounded-[2rem] border-2 border-zinc-800 shadow-xl backdrop-blur-md">
-                <Search size={20} className="text-zinc-500 ml-4" />
-                <input 
-                  type="text" 
-                  placeholder="Search by name or team..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-transparent border-none text-white font-bold uppercase italic text-sm w-full focus:ring-0 outline-none"
-                />
-             </div>
+             {!snapshotMode && (
+               <div className="flex items-center gap-4 bg-zinc-900/60 p-4 rounded-[2rem] border-2 border-zinc-800 shadow-xl backdrop-blur-md">
+                  <Search size={20} className="text-zinc-500 ml-4" />
+                  <input 
+                    type="text" 
+                    placeholder="Search by rider or squadron..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-transparent border-none text-white font-bold uppercase italic text-sm w-full focus:ring-0 outline-none"
+                  />
+               </div>
+             )}
 
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {filteredRiders.map((rider, i) => (
                   <motion.div 
                     key={rider.zid}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.02 }}
-                    className="bg-zinc-900/40 border-2 border-zinc-800 rounded-[2.5rem] p-8 shadow-2xl hover:border-inox-orange/50 transition-all group backdrop-blur-md relative overflow-hidden"
+                    transition={{ delay: i * 0.01 }}
+                    className="bg-zinc-900/40 border border-zinc-800 rounded-[2.5rem] p-8 shadow-2xl hover:border-inox-orange/50 transition-all group backdrop-blur-md relative overflow-hidden"
                   >
-                    {rider.is_inox === 1 && (
-                      <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity">
-                         <Shield size={100} />
-                      </div>
-                    )}
-                    <div className="flex justify-between items-start mb-8 relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                        <div className="space-y-1">
                           <p className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-inox-orange transition-colors">{rider.rider_name}</p>
-                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{rider.team_name}</p>
+                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">{rider.team_name}</p>
                        </div>
-                       <div className="text-right">
-                          <p className="text-4xl font-black italic text-white tracking-tighter">{rider.total_points}</p>
-                          <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Season Pts</p>
+                       
+                       <div className="flex items-center gap-6">
+                          {roundIndices.map(r => (
+                            <div key={r} className="flex flex-col items-center">
+                               <p className="text-[7px] font-black text-zinc-600 uppercase mb-1">R{r}</p>
+                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${rider.rounds[r] ? 'bg-zinc-950 border-inox-orange/40' : 'bg-transparent border-zinc-800/50 opacity-30'}`}>
+                                  <span className={`text-xs font-black italic ${rider.rounds[r] ? 'text-white' : 'text-zinc-700'}`}>{rider.rounds[r] || '0'}</span>
+                               </div>
+                            </div>
+                          ))}
+                          <div className="h-12 w-px bg-zinc-800 ml-2" />
+                          <div className="text-right">
+                             <p className="text-4xl font-black italic text-white tracking-tighter">{rider.total_points}</p>
+                             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Season Total</p>
+                          </div>
                        </div>
                     </div>
-
-                    <div className="grid grid-cols-4 gap-2 pt-6 border-t border-zinc-800 relative z-10">
+                    
+                    <div className="grid grid-cols-4 gap-4 mt-8 pt-6 border-t border-zinc-800/50">
                        {[
-                         { label: 'FIN', val: rider.total_finish, color: 'text-white' },
-                         { label: 'FAL', val: rider.total_fal, color: 'text-orange-500' },
-                         { label: 'FTS', val: rider.total_fts, color: 'text-inox-cyan' },
-                         { label: 'EVT', val: rider.races_count, color: 'text-zinc-500' }
+                         { label: 'FINISH', val: rider.total_finish, color: 'text-white', icon: Trophy },
+                         { label: 'FTS SPEED', val: rider.total_fts, color: 'text-inox-cyan', icon: FastForward },
+                         { label: 'FAL POWER', val: rider.total_fal, color: 'text-orange-500', icon: Flame },
+                         { label: 'RACES', val: rider.races_count, color: 'text-zinc-500', icon: Activity }
                        ].map((s, idx) => (
-                         <div key={idx} className="bg-zinc-950/60 p-3 rounded-2xl border border-zinc-800 text-center shadow-inner group/stat hover:border-zinc-700 transition-all">
-                            <p className="text-[7px] font-black text-zinc-600 uppercase tracking-widest mb-1">{s.label}</p>
-                            <p className={`text-sm font-black italic ${s.color}`}>{s.val}</p>
+                         <div key={idx} className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg bg-zinc-950 border border-zinc-800 ${s.color}`}>
+                               <s.icon size={12} />
+                            </div>
+                            <div>
+                               <p className="text-[7px] font-black text-zinc-600 uppercase mb-0.5">{s.label}</p>
+                               <p className={`text-sm font-black italic ${s.color}`}>{s.val}</p>
+                            </div>
                          </div>
                        ))}
                     </div>
@@ -313,11 +391,14 @@ const ZRLSeasonStats: React.FC = () => {
 
         {/* SNAPSHOT FOOTER */}
         {snapshotMode && (
-          <div className="absolute bottom-12 left-12 flex items-center gap-3">
-             <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center border-2 border-zinc-800 shadow-inner">
-                <Info size={18} className="text-inox-orange" />
+          <div className="mt-12 pt-8 border-t border-zinc-900 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center border border-zinc-800">
+                   <Info size={18} className="text-inox-orange" />
+                </div>
+                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Season Strategic Intelligence developed by Inoxteam Command Center</p>
              </div>
-             <p className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em]">Season Strategic Intelligence developed by Inoxteam Command Center</p>
+             <p className="text-[10px] font-black text-zinc-700 uppercase italic">© 2025 INOXTEAM OFFICIAL REPORT</p>
           </div>
         )}
       </div>
@@ -325,8 +406,8 @@ const ZRLSeasonStats: React.FC = () => {
       {/* --- EXIT & SAVE BUTTONS --- */}
       {snapshotMode && (
         <div className="fixed bottom-12 right-12 flex gap-4 z-[200]">
-          <button onClick={() => setSnapshotMode(false)} className="px-10 py-5 bg-zinc-800 text-white font-black italic rounded-full shadow-2xl hover:scale-110 transition-all uppercase text-sm tracking-tighter border-2 border-zinc-700">EXIT Hall</button>
-          <button onClick={handleCapture} className="px-10 py-5 bg-inox-orange text-black font-black italic rounded-full shadow-2xl hover:scale-110 transition-all uppercase text-sm tracking-tighter border-2 border-orange-600">DOWNLOAD Hall of Fame</button>
+          <button onClick={() => setSnapshotMode(false)} className="px-10 py-5 bg-zinc-800 text-white font-black italic rounded-full shadow-2xl hover:scale-110 transition-all uppercase text-sm tracking-tighter border-2 border-zinc-700">EXIT HALL</button>
+          <button onClick={handleCapture} className="px-10 py-5 bg-inox-orange text-black font-black italic rounded-full shadow-2xl hover:scale-110 transition-all uppercase text-sm tracking-tighter border-2 border-orange-600">DOWNLOAD REPORT</button>
         </div>
       )}
     </div>
