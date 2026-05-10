@@ -118,6 +118,26 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey, seasonId = "
     </div>
   );
 
+  if (!data || (data.teams.length === 0 && data.riders.length === 0)) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4">
+      <div className="p-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500">
+        <Shield size={40} className="opacity-20" />
+      </div>
+      <div className="space-y-2">
+        <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">No Data Available</h3>
+        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto">
+          Non sono stati trovati risultati per la stagione {seasonId} {leagueKey ? `e la divisione ${leagueKey}` : ''}.
+        </p>
+        <button 
+          onClick={fetchSeasonStats}
+          className="mt-4 px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+        >
+          Riprova Caricamento
+        </button>
+      </div>
+    </div>
+  );
+
   const filteredRiders = data?.riders.filter(r => 
     r.rider_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     r.team_name.toLowerCase().includes(searchTerm.toLowerCase())

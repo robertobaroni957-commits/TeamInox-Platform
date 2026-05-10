@@ -141,6 +141,7 @@ const ZRLAnalytics: React.FC = () => {
   );
 
   if (viewType === 'season') {
+    const currentLeagueKey = selectedOption.includes('|') ? selectedOption.split('|')[1] : '';
     return (
       <div className="min-h-screen space-y-6 pb-20 p-6 bg-black">
         {!snapshotMode && (
@@ -167,7 +168,7 @@ const ZRLAnalytics: React.FC = () => {
             </div>
           </div>
         )}
-        <ZRLSeasonStats leagueKey={selectedOption.split('|')[1]} />
+        <ZRLSeasonStats leagueKey={currentLeagueKey} />
       </div>
     );
   }
