@@ -1,13 +1,13 @@
 export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
     const season_id = url.searchParams.get("season_id") || "19";
+    const league_key = url.searchParams.get("league_key");
 
     try {
         if (!env.DB) return new Response("DB connection lost", { status: 500 });
 
         // 1. Team Season Standings with Round Breakdown
-        // Preleviamo i risultati round per round per le squadre
-        const { results: rawTeamStats } = await env.DB.prepare(`
+        let teamQuery = `
             SELECT 
                 ts.team_name,
                 ts.league_key,
@@ -21,8 +21,17 @@ export async function onRequestGet({ request, env }) {
             FROM zrl_team_standings ts
             JOIN zrl_round_groups rg ON ts.round_group_id = rg.id
             WHERE rg.external_season_id = ?
-            ORDER BY ts.team_name, rg.round_index ASC
-        `).bind(season_id).all();
+        `;
+        const teamParams = [season_id];
+
+        if (league_key) {
+            teamQuery += ` AND ts.league_key = ?`;
+            teamParams.push(league_key);
+        }
+
+        teamQuery += ` ORDER BY ts.team_name, rg.round_index ASC`;
+
+        const { results: rawTeamStats } = await env.DB.prepare(teamQuery).bind(...teamParams).all();
 
         // Aggreghiamo i dati per squadra
         const teamsMap = {};
@@ -37,7 +46,7 @@ export async function onRequestGet({ request, env }) {
                     total_fal: 0,
                     total_fts: 0,
                     total_finish: 0,
-                    rounds: {} // Breakdown per round
+                    rounds: {}
                 };
             }
             const t = teamsMap[row.team_name];
@@ -59,7 +68,7 @@ export async function onRequestGet({ request, env }) {
         const teamStats = Object.values(teamsMap).sort((a, b) => b.total_lp - a.total_lp || b.total_trp - a.total_trp);
 
         // 2. Rider Season Performance with Round Breakdown
-        const { results: rawRiderStats } = await env.DB.prepare(`
+        let riderQuery = `
             SELECT 
                 dr.rider_name,
                 dr.team_name,
@@ -74,8 +83,17 @@ export async function onRequestGet({ request, env }) {
             JOIN rounds r ON dr.round_id = r.id
             JOIN series s ON r.series_id = s.id
             WHERE s.external_season_id = ?
-            ORDER BY dr.zid, r.round_index ASC
-        `).bind(season_id).all();
+        `;
+        const riderParams = [season_id];
+
+        if (league_key) {
+            riderQuery += ` AND dr.league_key = ?`;
+            riderParams.push(league_key);
+        }
+
+        riderQuery += ` ORDER BY dr.zid, r.round_index ASC`;
+
+        const { results: rawRiderStats } = await env.DB.prepare(riderQuery).bind(...riderParams).all();
 
         const ridersMap = {};
         rawRiderStats.forEach(row => {
@@ -116,6 +134,7 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({ 
             success: true, 
             season_id,
+            league_key,
             teams: teamStats,
             riders: riderStats,
             highlights

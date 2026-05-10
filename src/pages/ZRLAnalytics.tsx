@@ -167,7 +167,7 @@ const ZRLAnalytics: React.FC = () => {
             </div>
           </div>
         )}
-        <ZRLSeasonStats />
+        <ZRLSeasonStats leagueKey={selectedOption.split('|')[1]} />
       </div>
     );
   }
@@ -358,7 +358,7 @@ const ZRLAnalytics: React.FC = () => {
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={currentTeamData.dna}>
                                 <defs>
-                                  <linearGradient id="colorA" x1="0" y1="0" x2="0" y2="1">
+                                  <linearGradient id="colorA" x1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#00bcd4" stopOpacity={0.3}/>
                                     <stop offset="95%" stopColor="#00bcd4" stopOpacity={0}/>
                                   </linearGradient>
@@ -379,9 +379,9 @@ const ZRLAnalytics: React.FC = () => {
                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Round Point Distribution</p>
                                <div className="space-y-4">
                                   {[
-                                    { label: 'FINISH POINTS', val: currentTeamData.stats.pts_finish, pct: (currentTeamData.stats.pts_finish / currentTeamData.stats.total_trp) * 100 },
-                                    { label: 'FAL SEGMENTS', val: currentTeamData.stats.pts_fal, pct: (currentTeamData.stats.pts_fal / currentTeamData.stats.total_trp) * 100 },
-                                    { label: 'FTS SEGMENTS', val: currentTeamData.stats.pts_fts, pct: (currentTeamData.stats.pts_fts / currentTeamData.stats.total_trp) * 100 }
+                                    { label: 'FINISH POINTS', val: currentTeamData.stats.pts_finish, pct: (currentTeamData.stats.pts_finish / (currentTeamData.stats.total_trp || 1)) * 100 },
+                                    { label: 'FAL SEGMENTS', val: currentTeamData.stats.pts_fal, pct: (currentTeamData.stats.pts_fal / (currentTeamData.stats.total_trp || 1)) * 100 },
+                                    { label: 'FTS SEGMENTS', val: currentTeamData.stats.pts_fts, pct: (currentTeamData.stats.pts_fts / (currentTeamData.stats.total_trp || 1)) * 100 }
                                   ].map((p, idx) => (
                                     <div key={idx} className="space-y-2">
                                        <div className="flex justify-between text-[9px] font-black text-white">

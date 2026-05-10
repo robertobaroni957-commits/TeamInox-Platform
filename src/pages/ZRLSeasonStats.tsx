@@ -45,6 +45,7 @@ interface RiderSeasonStat {
 interface SeasonData {
   success: boolean;
   season_id: string;
+  league_key: string | null;
   teams: TeamSeasonStat[];
   riders: RiderSeasonStat[];
   highlights: {
@@ -55,7 +56,12 @@ interface SeasonData {
   };
 }
 
-const ZRLSeasonStats: React.FC = () => {
+interface ZRLSeasonStatsProps {
+  leagueKey?: string;
+  seasonId?: string;
+}
+
+const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey, seasonId = "19" }) => {
   const [data, setData] = useState<SeasonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'teams' | 'riders'>('teams');
@@ -67,13 +73,15 @@ const ZRLSeasonStats: React.FC = () => {
 
   useEffect(() => {
     fetchSeasonStats();
-  }, []);
+  }, [leagueKey, seasonId]);
 
   const fetchSeasonStats = async () => {
     setLoading(true);
     try {
-      // Usiamo Season 19 come default se non diversamente specificato
-      const res = await fetch('/api/season-stats?season_id=19');
+      let url = `/api/season-stats?season_id=${seasonId}`;
+      if (leagueKey) url += `&league_key=${leagueKey}`;
+      
+      const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
         setData(json);
@@ -131,6 +139,11 @@ const ZRLSeasonStats: React.FC = () => {
               <div className="px-3 py-1 bg-zinc-800 border border-zinc-700 rounded-full">
                 <span className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">ZRL Season {data?.season_id}</span>
               </div>
+              {data?.league_key && (
+                <div className="px-3 py-1 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full">
+                  <span className="text-[9px] font-black text-inox-cyan uppercase tracking-[0.2em]">{data.league_key}</span>
+                </div>
+              )}
             </div>
             <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
               SEASON <span className="text-zinc-700">REPORT</span>
@@ -271,7 +284,6 @@ const ZRLSeasonStats: React.FC = () => {
                                </td>
                             </tr>
                             
-                            {/* Detailed Breakdown Row */}
                             <AnimatePresence>
                               {expandedTeam === team.team_name && (
                                 <motion.tr 
@@ -280,7 +292,7 @@ const ZRLSeasonStats: React.FC = () => {
                                   exit={{ opacity: 0, height: 0 }}
                                   className="bg-black/40"
                                 >
-                                  <td colSpan={7} className="px-8 py-8">
+                                  <td colSpan={roundIndices.length + 3} className="px-8 py-8">
                                      <div className="grid grid-cols-4 gap-6">
                                         {roundIndices.map(r => {
                                           const rd = team.rounds[r];
