@@ -450,13 +450,6 @@ const ZRLOperations: React.FC = () => {
       desc: 'Analisi Tattica',
       help: 'Deep Analytics Engine: confronta il DNA tattico delle squadre tramite grafici radar e identifica i top performer (MVPs) della divisione per ottimizzare le strategie future.'
     },
-    { 
-      id: 8, 
-      title: 'Recap Stagione', 
-      icon: TrendingUp, 
-      desc: 'Performance Season',
-      help: 'Visualizza le statistiche cumulative di tutta la stagione: top scorers, miglior sprinter, scalatore e costanza degli atleti InoxTeam.'
-    },
   ];
 
   const activeHelp = hoveredStep ? steps.find(s => s.id === hoveredStep)?.help : (activeStep !== 0 ? steps.find(s => s.id === activeStep)?.help : null);
