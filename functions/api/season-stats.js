@@ -6,7 +6,8 @@ export async function onRequestGet({ request, env }) {
         if (!env.DB) return new Response("DB connection lost", { status: 500 });
 
         // 1. Fetch results aggregated by ROUND INDEX (1, 2, 3, or 4)
-        // We join division_results -> rounds -> zrl_round_groups to get the correct round_index
+        // We join division_results -> rounds -> series -> zrl_round_groups 
+        // using external_season_id to ensure a stable link between races and round groups.
         const { results: rawResults } = await env.DB.prepare(`
             SELECT 
                 dr.team_name, 
@@ -19,7 +20,8 @@ export async function onRequestGet({ request, env }) {
                 SUM(dr.points_total) as total_points
             FROM division_results dr
             JOIN rounds r ON dr.round_id = r.id
-            JOIN zrl_round_groups rg ON r.series_id = rg.series_id
+            JOIN series s ON r.series_id = s.id
+            JOIN zrl_round_groups rg ON s.external_season_id = rg.external_season_id
             WHERE dr.league_key = ?
             GROUP BY dr.wtrl_team_id, dr.team_name, rg.round_index
         `).bind(league_key).all();
@@ -32,7 +34,7 @@ export async function onRequestGet({ request, env }) {
                 teamStatsMap[teamId] = {
                     team_name: row.team_name,
                     is_inox: row.is_inox,
-                    history: {} // Map round_index -> data
+                    history: {}
                 };
             }
             
