@@ -10,14 +10,17 @@ export async function onRequestGet({ request, env }) {
             return new Response(JSON.stringify({ error: "Parametri mancanti: round_group_id e league_key necessari." }), { status: 400 });
         }
 
-        // 0. Recupero Serie Attiva
-        const activeSeries = await env.DB.prepare("SELECT id FROM series WHERE is_active = 1").first();
-        if (!activeSeries) {
-            return new Response(JSON.stringify({ error: "Nessuna serie attiva trovata." }), { status: 404 });
-        }
-        const activeSeriesId = activeSeries.id;
+        // 1. Get the Round Group and its external_season_id to find relevant races
+        const roundGroup = await env.DB.prepare(`
+            SELECT external_season_id FROM zrl_round_groups WHERE id = ?
+        `).bind(round_group_id).first();
 
-        // 1. Recupero dati Squadre per Radar Chart
+        if (!roundGroup) {
+            return new Response(JSON.stringify({ error: "Round Group non trovato." }), { status: 404 });
+        }
+        const extSeasonId = roundGroup.external_season_id;
+
+        // 2. Fetch Team Standings for this Round
         const { results: teamData } = await env.DB.prepare(`
             SELECT * FROM zrl_team_standings 
             WHERE round_group_id = ? AND league_key = ?
@@ -28,46 +31,26 @@ export async function onRequestGet({ request, env }) {
             return new Response(JSON.stringify({ success: true, analytics: [], mvps: [] }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // 2. Calcolo Medie della Divisione per Normalizzazione
+        // 3. Find ALL races (rounds table) that belong to this WTRL Season
+        // We join via the series table using the stable external_season_id
+        const { results: relevantRounds } = await env.DB.prepare(`
+            SELECT DISTINCT r.id as round_id, r.name as round_name
+            FROM rounds r
+            JOIN series s ON r.series_id = s.id
+            WHERE s.external_season_id = ?
+            ORDER BY r.id ASC
+        `).bind(extSeasonId).all();
+
+        const roundIds = relevantRounds.map(r => r.round_id);
+
+        // 4. Calculate Division Averages for Radar Normalization
         const avgFAL = teamData.reduce((acc, t) => acc + (t.pts_fal || 0), 0) / teamData.length;
         const avgFTS = teamData.reduce((acc, t) => acc + (t.pts_fts || 0), 0) / teamData.length;
         const avgFinish = teamData.reduce((acc, t) => acc + (t.pts_finish || 0), 0) / teamData.length;
         const maxLP = Math.max(...teamData.map(t => t.league_points || 1));
 
-        // Trova i round rilevanti
-        const { results: relevantRounds } = await env.DB.prepare(`
-            SELECT DISTINCT dr.round_id, r.name as round_name
-            FROM division_results dr
-            JOIN rounds r ON dr.round_id = r.id
-            WHERE dr.league_key = ? AND r.series_id = ?
-            ORDER BY r.id ASC
-        `).bind(league_key, activeSeriesId).all();
-
-        const roundIds = relevantRounds.map(r => r.round_id);
-
-        if (roundIds.length === 0) {
-            const analytics = teamData.map(team => ({
-                team_name: team.team_name,
-                rank: team.rank,
-                is_inox: team.is_inox,
-                archetype: "N/A",
-                dna: [],
-                roster: [],
-                stats: { 
-                    total_lp: team.league_points, 
-                    total_trp: team.total_race_points, 
-                    races_completed: 0,
-                    pts_fal: team.pts_fal,
-                    pts_fts: team.pts_fts,
-                    pts_finish: team.pts_finish,
-                    race_points: [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8]
-                }
-            }));
-            return new Response(JSON.stringify({ success: true, analytics, mvps: [] }), { headers: { "Content-Type": "application/json" } });
-        }
-
         const analytics = await Promise.all(teamData.map(async (team) => {
-            // Calcolo Consistenza
+            // Consistency Calculation
             const races_stats = [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6]
                 .map(r => parseInt(r))
                 .filter(r => !isNaN(r) && r > 0);
@@ -98,40 +81,21 @@ export async function onRequestGet({ request, env }) {
                 else if (topMetric.subject.includes('Consistency')) archetype = "Steady Machines";
             }
 
-            // Recuperiamo tutti i risultati dei round per questa squadra
-            // Cerchiamo prima per wtrl_team_id (stabile), poi per team_name (fallback)
-            let rawRoster;
-            if (team.wtrl_team_id) {
-                const { results } = await env.DB.prepare(`
-                    SELECT 
-                        rider_name, 
-                        round_id,
-                        points_fal,
-                        points_fts,
-                        points_finish,
-                        points_total
+            // Fetch individual results for the history/roster
+            let rawRoster = [];
+            if (roundIds.length > 0) {
+                const placeholders = roundIds.map(() => '?').join(',');
+                const query = `
+                    SELECT rider_name, round_id, points_fal, points_fts, points_finish, points_total
                     FROM division_results
-                    WHERE round_id IN (${roundIds.map(() => '?').join(',')})
+                    WHERE round_id IN (${placeholders})
                       AND (wtrl_team_id = ? OR (wtrl_team_id IS NULL AND team_name = ?))
-                `).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
-                rawRoster = results;
-            } else {
-                const { results } = await env.DB.prepare(`
-                    SELECT 
-                        rider_name, 
-                        round_id,
-                        points_fal,
-                        points_fts,
-                        points_finish,
-                        points_total
-                    FROM division_results
-                    WHERE round_id IN (${roundIds.map(() => '?').join(',')})
-                      AND team_name = ?
-                `).bind(...roundIds, team.team_name).all();
+                `;
+                const { results } = await env.DB.prepare(query).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
                 rawRoster = results;
             }
 
-            // Aggreghiamo i dati per rider_name
+            // Aggregate by rider
             const rosterMap = {};
             rawRoster.forEach(row => {
                 if (!rosterMap[row.rider_name]) {
@@ -141,7 +105,7 @@ export async function onRequestGet({ request, env }) {
                         pts_fal: 0,
                         pts_fts: 0,
                         pts_finish: 0,
-                        race_points: {} // Mappa round_id -> punti
+                        race_points: {} 
                     };
                 }
                 const r = rosterMap[row.rider_name];
@@ -149,10 +113,26 @@ export async function onRequestGet({ request, env }) {
                 r.pts_fal += row.points_fal;
                 r.pts_fts += row.points_fts;
                 r.pts_finish += row.points_finish;
-                r.race_points[row.round_id] = row.points_total;
+                r.race_points[row.round_id] = (r.race_points[row.round_id] || 0) + row.points_total;
             });
 
-            // Trasformiamo in array e ordiniamo
+            // Map round IDs to Race 1-8 for the history chart
+            // Note: We use the names from the rounds table to map to indices
+            const historyPoints = [0, 0, 0, 0, 0, 0, 0, 0];
+            relevantRounds.forEach((rr, i) => {
+                const raceMatch = rr.round_name.match(/Race\s*(\d+)/i);
+                const raceIdx = raceMatch ? parseInt(raceMatch[1]) : (i + 1);
+                
+                // Sum all points for this specific round_id across all riders
+                const roundTotal = rawRoster
+                    .filter(r => r.round_id === rr.round_id)
+                    .reduce((sum, r) => sum + r.points_total, 0);
+                
+                if (raceIdx >= 1 && raceIdx <= 8) {
+                    historyPoints[raceIdx - 1] = roundTotal;
+                }
+            });
+
             const roster = Object.values(rosterMap).map(rider => {
                 const raceBreakdown = roundIds.map(rid => rider.race_points[rid] || 0);
                 return {
@@ -175,7 +155,7 @@ export async function onRequestGet({ request, env }) {
                     pts_fal: team.pts_fal,
                     pts_fts: team.pts_fts,
                     pts_finish: team.pts_finish,
-                    race_points: [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8]
+                    race_points: historyPoints // Actual historical points from division_results
                 }
             };
         }));
