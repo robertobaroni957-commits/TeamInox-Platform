@@ -404,13 +404,23 @@ const ZRLAnalytics: React.FC = () => {
                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Historical Momentum</p>
                                <div className="flex items-end gap-2 h-32">
                                   {currentTeamData.stats.race_points.map((pt, idx) => (
-                                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 group/bar relative">
+                                       {pt !== null && pt > 0 && (
+                                         <div className="absolute -top-6 bg-zinc-800 px-2 py-0.5 rounded text-[8px] font-black text-inox-orange opacity-0 group-hover/bar:opacity-100 transition-opacity">
+                                            {pt}
+                                         </div>
+                                       )}
                                        <motion.div 
                                          initial={{ height: 0 }}
-                                         animate={{ height: pt ? `${(pt / 500) * 100}%` : '4px' }}
-                                         className={`w-full rounded-t-md ${pt ? 'bg-inox-orange' : 'bg-zinc-800'}`}
+                                         animate={{ height: pt ? `${Math.min(100, (pt / 1200) * 100)}%` : '4px' }}
+                                         className={`w-full rounded-t-md transition-all ${pt ? 'bg-inox-orange group-hover/bar:bg-white shadow-[0_0_15px_rgba(252,103,25,0.2)]' : 'bg-zinc-800'}`}
                                        />
-                                       <span className="text-[8px] font-black text-zinc-700">R{idx + 1}</span>
+                                       <div className="flex flex-col items-center">
+                                          <span className="text-[8px] font-black text-zinc-700">R{idx + 1}</span>
+                                          {pt !== null && pt > 0 && (
+                                            <span className="text-[7px] font-black text-inox-orange mt-0.5">{pt}</span>
+                                          )}
+                                        </div>
                                     </div>
                                   ))}
                                </div>
