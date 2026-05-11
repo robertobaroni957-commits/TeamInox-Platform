@@ -5,19 +5,16 @@ export async function onRequestGet({ request, env }) {
     try {
         if (!env.DB) return new Response("DB connection lost", { status: 500 });
 
-        // 1. Get the current active round group (index) to know what we are looking at
-        // In the user's current DB, Round Group 1 is Round 4 (external_season_id 19)
-        const activeRoundGroup = await env.DB.prepare(`
-            SELECT id, round_index FROM zrl_round_groups WHERE is_closed = 0 LIMIT 1
-        `).first();
-
-        // 2. Fetch results and join with rounds to get the Race names (Race 1, Race 2, etc.)
+        // 1. Fetch detailed results to aggregate by Race and also get Round-wide totals
         const { results: rawResults } = await env.DB.prepare(`
             SELECT 
                 dr.team_name, 
                 dr.wtrl_team_id, 
                 dr.is_inox,
                 r.name as race_name,
+                SUM(dr.points_finish) as pts_finish,
+                SUM(dr.points_fal) as pts_fal,
+                SUM(dr.points_fts) as pts_fts,
                 SUM(dr.points_total) as total_points
             FROM division_results dr
             JOIN rounds r ON dr.round_id = r.id
@@ -33,11 +30,12 @@ export async function onRequestGet({ request, env }) {
                 teamStatsMap[teamId] = {
                     team_name: row.team_name,
                     is_inox: row.is_inox,
-                    history: {}
+                    history: {},
+                    totals: { finish: 0, fal: 0, fts: 0, total: 0 }
                 };
             }
             
-            // Extract race index from name (e.g., "Race 1" -> 1)
+            // Weekly History
             const raceMatch = row.race_name.match(/Race\s*(\d+)/i);
             const raceIdx = raceMatch ? parseInt(raceMatch[1]) : null;
 
@@ -46,12 +44,17 @@ export async function onRequestGet({ request, env }) {
                     pts: row.total_points
                 };
             }
+
+            // Round-wide Aggregates
+            teamStatsMap[teamId].totals.finish += row.pts_finish || 0;
+            teamStatsMap[teamId].totals.fal += row.pts_fal || 0;
+            teamStatsMap[teamId].totals.fts += row.pts_fts || 0;
+            teamStatsMap[teamId].totals.total += row.total_points || 0;
         });
 
-        // For Inox teams, we also want to fetch their official Rank for the entire Round
-        // This comes from zrl_team_standings
+        // 2. Fetch official Rank and points from standings (Round Level)
         const { results: standings } = await env.DB.prepare(`
-            SELECT team_name, wtrl_team_id, rank
+            SELECT team_name, wtrl_team_id, rank, league_points
             FROM zrl_team_standings
             WHERE league_key = ? AND is_inox = 1
         `).bind(league_key).all();
@@ -64,7 +67,9 @@ export async function onRequestGet({ request, env }) {
                 return {
                     team_name: t.team_name,
                     overall_rank: standing ? standing.rank : null,
-                    history: t.history
+                    league_points: standing ? standing.league_points : null,
+                    history: t.history,
+                    totals: t.totals
                 };
             });
 
