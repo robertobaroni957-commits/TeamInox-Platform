@@ -3,12 +3,12 @@ import { Shield, Zap, Trophy, RefreshCw, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface RoundResult {
-  rank: number;
   pts: number;
 }
 
 interface InoxTeamPerformance {
   team_name: string;
+  overall_rank: number | null;
   history: Record<number, RoundResult>;
 }
 
@@ -60,7 +60,7 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey }) => {
          </div>
          <div>
             <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter">Inox Team Tracker</h2>
-            <p className="text-inox-orange text-[10px] font-black uppercase tracking-[0.3em]">Official Round-by-Round Performance</p>
+            <p className="text-inox-orange text-[10px] font-black uppercase tracking-[0.3em]">Official Race-by-Race Performance</p>
          </div>
       </div>
 
@@ -73,7 +73,12 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey }) => {
             className="bg-zinc-900 border-2 border-zinc-800 rounded-[2.5rem] overflow-hidden shadow-2xl"
           >
             <div className="p-8 border-b border-zinc-800 flex justify-between items-center bg-gradient-to-r from-zinc-800/50 to-transparent">
-               <h3 className="text-2xl font-black italic text-white uppercase">{team.team_name}</h3>
+               <div className="space-y-1">
+                 <h3 className="text-2xl font-black italic text-white uppercase">{team.team_name}</h3>
+                 {team.overall_rank && (
+                   <p className="text-[10px] font-black text-inox-orange uppercase tracking-widest">Official Round Rank: #{team.overall_rank}</p>
+                 )}
+               </div>
                <div className="px-4 py-1 bg-inox-orange text-black text-[9px] font-black uppercase rounded-full">Inox Squadron</div>
             </div>
             
@@ -82,16 +87,13 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey }) => {
                  const res = team.history[rIdx];
                  return (
                    <div key={rIdx} className="p-6 flex flex-col items-center justify-center text-center space-y-2 group hover:bg-white/5 transition-all">
-                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Round {rIdx}</p>
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Race {rIdx}</p>
                       {res ? (
                         <>
-                           <div className={`text-3xl font-black italic leading-none ${res.rank === 1 ? 'text-yellow-400' : 'text-white'}`}>
-                              {res.rank}°
+                           <div className="text-3xl font-black italic leading-none text-white">
+                              {res.pts}
                            </div>
-                           <div className="px-3 py-1 bg-zinc-800 rounded-lg border border-zinc-700">
-                              <span className="text-xs font-black text-inox-orange uppercase">{res.pts}</span>
-                              <span className="text-[8px] font-bold text-zinc-500 ml-1 uppercase">pts</span>
-                           </div>
+                           <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Total Race Points</p>
                         </>
                       ) : (
                         <div className="py-4">
