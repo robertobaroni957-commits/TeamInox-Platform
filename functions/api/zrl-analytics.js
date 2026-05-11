@@ -10,7 +10,7 @@ export async function onRequestGet({ request, env }) {
             return new Response(JSON.stringify({ error: "Parametri mancanti: round_group_id e league_key necessari." }), { status: 400 });
         }
 
-        // 1. Get the Round Group and its external_season_id to find relevant races
+        // 1. Get the Round Group and its external_season_id
         const roundGroup = await env.DB.prepare(`
             SELECT external_season_id FROM zrl_round_groups WHERE id = ?
         `).bind(round_group_id).first();
@@ -20,7 +20,7 @@ export async function onRequestGet({ request, env }) {
         }
         const extSeasonId = roundGroup.external_season_id;
 
-        // 2. Fetch Team Standings for this Round (Authoritative source for Round-wide stats)
+        // 2. Fetch Team Standings for this Round
         const { results: teamData } = await env.DB.prepare(`
             SELECT * FROM zrl_team_standings 
             WHERE round_group_id = ? AND league_key = ?
@@ -42,24 +42,24 @@ export async function onRequestGet({ request, env }) {
 
         const roundIds = relevantRounds.map(r => r.round_id);
 
-        // 4. Calculate Division Averages for Radar Normalization
+        // 4. Calculate Division Averages for Radar
         const avgFAL = teamData.reduce((acc, t) => acc + (t.pts_fal || 0), 0) / teamData.length;
         const avgFTS = teamData.reduce((acc, t) => acc + (t.pts_fts || 0), 0) / teamData.length;
         const avgFinish = teamData.reduce((acc, t) => acc + (t.pts_finish || 0), 0) / teamData.length;
         const maxLP = Math.max(...teamData.map(t => t.league_points || 1));
 
         const analytics = await Promise.all(teamData.map(async (team) => {
-            // Consistency Calculation based on r1-r8 from standings
-            const races_stats = [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8]
+            // Consistency Calculation based on rank points (r1-r8)
+            const races_ranks = [team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8]
                 .map(r => parseInt(r))
                 .filter(r => !isNaN(r) && r > 0);
             
             let consistency = 0;
-            if (races_stats.length > 1) {
-                const avg = races_stats.reduce((a, b) => a + b, 0) / races_stats.length;
-                const variance = races_stats.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / races_stats.length;
+            if (races_ranks.length > 1) {
+                const avg = races_ranks.reduce((a, b) => a + b, 0) / races_ranks.length;
+                const variance = races_ranks.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / races_ranks.length;
                 consistency = Math.max(0, 100 - Math.sqrt(variance) * 10);
-            } else if (races_stats.length === 1) {
+            } else if (races_ranks.length === 1) {
                 consistency = 50;
             }
 
@@ -80,8 +80,8 @@ export async function onRequestGet({ request, env }) {
                 else if (topMetric.subject.includes('Consistency')) archetype = "Steady Machines";
             }
 
-            // Fetch individual results for the history/roster
-            let rawRoster = [];
+            // Fetch detailed results for points aggregation
+            let rawResults = [];
             if (roundIds.length > 0) {
                 const placeholders = roundIds.map(() => '?').join(',');
                 const query = `
@@ -91,12 +91,12 @@ export async function onRequestGet({ request, env }) {
                       AND (wtrl_team_id = ? OR (wtrl_team_id IS NULL AND team_name = ?))
                 `;
                 const { results } = await env.DB.prepare(query).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
-                rawRoster = results;
+                rawResults = results;
             }
 
             // Aggregate by rider
             const rosterMap = {};
-            rawRoster.forEach(row => {
+            rawResults.forEach(row => {
                 if (!rosterMap[row.rider_name]) {
                     rosterMap[row.rider_name] = {
                         rider_name: row.rider_name,
@@ -116,6 +116,21 @@ export async function onRequestGet({ request, env }) {
                 r.race_points[row.round_id] = (r.race_points[row.round_id] || 0) + row.points_total;
             });
 
+            // Calculate Historical Momentum (Sum of TOTAL points per Race 1-8)
+            const race_points = [0, 0, 0, 0, 0, 0, 0, 0];
+            relevantRounds.forEach((rr, i) => {
+                const raceMatch = rr.round_name.match(/Race\s*(\d+)/i);
+                const raceIdx = raceMatch ? parseInt(raceMatch[1]) : (i + 1);
+                
+                const roundTotal = rawResults
+                    .filter(res => res.round_id === rr.round_id)
+                    .reduce((sum, res) => sum + res.points_total, 0);
+                
+                if (raceIdx >= 1 && raceIdx <= 8) {
+                    race_points[raceIdx - 1] = roundTotal;
+                }
+            });
+
             const roster = Object.values(rosterMap).map(rider => {
                 const raceBreakdown = roundIds.map(rid => rider.race_points[rid] || 0);
                 return {
@@ -123,12 +138,6 @@ export async function onRequestGet({ request, env }) {
                     race_breakdown: raceBreakdown
                 };
             }).sort((a, b) => b.points_total - a.points_total);
-
-            // Historical Momentum (Race Points R1-R8)
-            const race_points = [
-                team.r1 || 0, team.r2 || 0, team.r3 || 0, team.r4 || 0,
-                team.r5 || 0, team.r6 || 0, team.r7 || 0, team.r8 || 0
-            ].map(v => parseInt(v) || 0);
 
             return {
                 team_name: team.team_name,
@@ -140,7 +149,7 @@ export async function onRequestGet({ request, env }) {
                 stats: {
                     total_lp: team.league_points,
                     total_trp: team.total_race_points,
-                    races_completed: races_stats.length,
+                    races_completed: races_ranks.length,
                     pts_fal: team.pts_fal || 0,
                     pts_fts: team.pts_fts || 0,
                     pts_finish: team.pts_finish || 0,
