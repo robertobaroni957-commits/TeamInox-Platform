@@ -5,74 +5,56 @@ export async function onRequestGet({ request, env }) {
     try {
         if (!env.DB) return new Response("DB connection lost", { status: 500 });
 
-        // 1. Fetch ALL results for this league to calculate correct positions per round
-        const { results: allResults } = await env.DB.prepare(`
-            SELECT team_name, round_id, points_total, is_inox
-            FROM division_results 
-            WHERE league_key = ?
+        // Query zrl_team_standings joined with zrl_round_groups to get round_index
+        const { results: standings } = await env.DB.prepare(`
+            SELECT 
+                s.team_name, 
+                s.wtrl_team_id, 
+                s.rank, 
+                s.league_points, 
+                s.is_inox,
+                g.round_index
+            FROM zrl_team_standings s
+            JOIN zrl_round_groups g ON s.round_group_id = g.id
+            WHERE s.league_key = ?
+            ORDER BY g.round_index ASC
         `).bind(league_key).all();
 
-        // 2. Fetch round mapping to know which ID is Round 1, 2, 3, etc.
-        const { results: rounds } = await env.DB.prepare("SELECT id, name FROM rounds").all();
-        const roundIdMap = {};
-        rounds.forEach(r => {
-            const idx = parseInt(r.name.replace(/[^0-9]/g, '')) || 0;
-            roundIdMap[r.id] = idx;
-        });
+        // Group by team identifier (prefer wtrl_team_id, fallback to team_name)
+        const teamStatsMap = {};
 
-        // 3. Group and Rank by Round
-        const roundRankings = {}; // { 1: [{team, pts}, ...], 2: ... }
-        allResults.forEach(res => {
-            const rIdx = roundIdMap[res.round_id];
-            if (!rIdx) return;
-            if (!roundRankings[rIdx]) roundRankings[rIdx] = [];
+        standings.forEach(row => {
+            const teamId = row.wtrl_team_id || row.team_name;
+            if (!teamStatsMap[teamId]) {
+                teamStatsMap[teamId] = {
+                    team_name: row.team_name,
+                    wtrl_team_id: row.wtrl_team_id,
+                    is_inox: row.is_inox,
+                    history: {}
+                };
+            }
             
-            // Aggreghiamo i punti se ci sono più entry per squadra nello stesso round
-            let teamEntry = roundRankings[rIdx].find(e => e.name === res.team_name);
-            if (!teamEntry) {
-                teamEntry = { name: res.team_name, pts: 0, is_inox: res.is_inox };
-                roundRankings[rIdx].push(teamEntry);
-            }
-            teamEntry.pts += res.points_total || 0;
-        });
-
-        // Ordiniamo ogni round per assegnare la posizione
-        Object.keys(roundRankings).forEach(rIdx => {
-            roundRankings[rIdx].sort((a, b) => b.pts - a.pts);
-            roundRankings[rIdx].forEach((item, pos) => {
-                item.rank = pos + 1;
-            });
-        });
-
-        // 4. Extract only Inox Teams with their round-by-round history
-        const inoxTeamsMap = {};
-        allResults.filter(r => r.is_inox === 1).forEach(r => {
-            if (!inoxTeamsMap[r.team_name]) {
-                inoxTeamsMap[r.team_name] = { team_name: r.team_name, rounds: {} };
+            // Map the performance to the correct round index (1-4)
+            if (row.round_index >= 1 && row.round_index <= 4) {
+                teamStatsMap[teamId].history[row.round_index] = {
+                    rank: row.rank,
+                    pts: row.league_points
+                };
             }
         });
 
-        const finalData = Object.keys(inoxTeamsMap).map(tName => {
-            const roundsData = {};
-            [1, 2, 3, 4, 5, 6].forEach(rIdx => {
-                const roundInfo = roundRankings[rIdx]?.find(e => e.name === tName);
-                if (roundInfo) {
-                    roundsData[rIdx] = {
-                        rank: roundInfo.rank,
-                        pts: roundInfo.pts
-                    };
-                }
-            });
-            return {
-                team_name: tName,
-                history: roundsData
-            };
-        });
+        // Filter for Inox teams only (as requested by the UI logic usually)
+        const inoxPerformance = Object.values(teamStatsMap)
+            .filter(t => t.is_inox === 1)
+            .map(t => ({
+                team_name: t.team_name,
+                history: t.history
+            }));
 
         return new Response(JSON.stringify({ 
             success: true, 
             league_key,
-            inox_performance: finalData
+            inox_performance: inoxPerformance
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {

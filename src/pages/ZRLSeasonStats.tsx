@@ -77,8 +77,8 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey }) => {
                <div className="px-4 py-1 bg-inox-orange text-black text-[9px] font-black uppercase rounded-full">Inox Squadron</div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-zinc-800">
-               {[1, 2, 3, 4, 5, 6].map(rIdx => {
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-zinc-800">
+               {[1, 2, 3, 4].map(rIdx => {
                  const res = team.history[rIdx];
                  return (
                    <div key={rIdx} className="p-6 flex flex-col items-center justify-center text-center space-y-2 group hover:bg-white/5 transition-all">
