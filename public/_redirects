@@ -1,6 +1,11 @@
 # Redirects per Cloudflare Pages
-# Indirizza tutte le chiamate API alla funzione corrispondente
+
+# 1. API: Indirizza le chiamate API
 /api/*  /api/:splat  200
 
-# Tutte le altre rotte devono essere gestite dall'index.html di React (SPA)
+# 2. ASSETS: Evita che i file statici vengano intercettati dal fallback SPA
+# Questo assicura che se un file in /assets non esiste, dia 404 invece di caricare index.html
+/assets/* /assets/:splat 200
+
+# 3. SPA FALLBACK: Tutte le altre rotte gestite da React
 /*  /index.html  200
