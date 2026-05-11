@@ -327,7 +327,7 @@ const ZRLAnalytics: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                  {[
                    { label: 'Division Rank', val: `#${currentTeamData.rank}`, color: 'text-white' },
-                   { label: 'Season Points', val: currentTeamData.stats.total_lp, color: 'text-[#fc6719]' },
+                   { label: 'Finish Points', val: currentTeamData.stats.pts_finish, color: 'text-[#fc6719]' },
                    { label: 'Total FAL', val: currentTeamData.stats.pts_fal, color: 'text-orange-500' },
                    { label: 'Total FTS', val: currentTeamData.stats.pts_fts, color: 'text-inox-cyan' }
                  ].map((s, idx) => (
