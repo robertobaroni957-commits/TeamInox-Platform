@@ -19,52 +19,54 @@ export async function onRequestPost(context) {
     const action = "schedule";
     
     const fetchSchedule = async (cat) => {
-        const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&category=${cat}&action=${action}`;
-        
-        const res = await fetch(url, {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-                "Accept": "application/json",
-                "Referer": "https://www.wtrl.racing/zwift-racing-league/schedule/"
-            }
-        });
-
-        const contentType = res.headers.get("content-type") || "";
-        const text = await res.text();
-
-        if (!res.ok) {
-            throw new Error(`WTRL API error ${res.status}: ${text.substring(0, 100)}`);
-        }
-
-        if (contentType.includes("text/html") || text.trim().startsWith("<")) {
-            throw new Error("WTRL ha restituito HTML invece di JSON. L'IP del server potrebbe essere temporaneamente bloccato o l'endpoint è cambiato.");
-        }
-
         try {
+            const url = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&category=${cat}&action=${action}`;
+            
+            const res = await fetch(url, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+                    "Accept": "application/json",
+                    "Referer": "https://www.wtrl.racing/zwift-racing-league/schedule/"
+                }
+            });
+
+            if (!res.ok) return [];
+
+            const contentType = res.headers.get("content-type") || "";
+            const text = await res.text();
+
+            if (contentType.includes("text/html") || text.trim().startsWith("<")) return [];
+
             const data = JSON.parse(text);
             return data.payload || (Array.isArray(data) ? data : []);
         } catch (e) {
-            throw new Error(`Errore parsing JSON WTRL: ${e.message}`);
+            console.error(`Fetch Schedule Error (Cat ${cat}):`, e.message);
+            return [];
         }
     };
 
-    const [scheduleA, scheduleC] = await Promise.all([
+    // Proviamo a recuperare da più categorie per sicurezza
+    const results = await Promise.all([
         fetchSchedule("A"),
+        fetchSchedule("B"),
         fetchSchedule("C")
     ]);
 
-    const combinedRounds = [...scheduleA, ...scheduleC];
+    const combinedRounds = results.flat();
     const uniqueRounds = [];
     const seenNames = new Set();
 
     combinedRounds.forEach(r => {
         if (!r) return;
-        const rName = r.race || r.name || r.roundName || `Round ${r.event_id}`;
-        const rDate = r.eventDate || r.date || "";
-        const rWorld = r.courseWorld || r.world || "";
-        const rRoute = r.courseName || r.route || "";
+        // WTRL usa vari campi per il nome
+        const rName = (r.race || r.name || r.roundName || "").toString().trim();
+        if (!rName || rName.match(/^\d+\.0$/)) return; // Salta placeholder tipo "1.0"
 
-        if (rName && !seenNames.has(rName)) {
+        const rDate = r.eventDate || r.date || "";
+        const rWorld = r.courseWorld || r.world || "See WTRL";
+        const rRoute = r.courseName || r.route || "See WTRL";
+
+        if (!seenNames.has(rName)) {
             seenNames.add(rName);
             uniqueRounds.push({ name: rName, date: rDate, world: rWorld, route: rRoute });
         }

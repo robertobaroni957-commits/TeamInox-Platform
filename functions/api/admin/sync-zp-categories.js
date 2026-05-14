@@ -11,32 +11,70 @@ export async function onRequestPost({ request, env }) {
     }
 
     const queries = [];
-    let updateCount = 0;
+    let processedCount = 0;
+
+    const divMapping = {
+      5: 'A+',
+      10: 'A',
+      20: 'B',
+      30: 'C',
+      40: 'D'
+    };
 
     for (const r of riders) {
       const zwid = parseInt(r.zwift_id || r.zwid || r.profileId || r.userId);
-      const category = (r.category || r.base_category || '').trim().toUpperCase();
+      if (!zwid) continue;
 
-      if (!zwid || !category) continue;
+      // Determinazione Categoria
+      let category = (r.category || r.base_category || '').trim().toUpperCase();
+      
+      // Se non c'è category, proviamo con div (mappatura ZwiftPower)
+      if (!category && r.div !== undefined) {
+        category = divMapping[parseInt(r.div)] || '';
+      }
 
-      let cleanCat = category;
-      if (category === 'A+') cleanCat = 'APLUS';
+      // Normalizzazione A+
+      // Se vogliamo mantenere la distinzione A+, non facciamo nulla.
+      // Se in futuro servirà raggrupparli, lo faremo a livello di UI.
 
+      // Sesso (ZwiftPower: 1=M, 2=F)
+      let gender = parseInt(r.gender) === 2 ? 'F' : 'M';
+      
+      // Nome
+      const name = (r.name || r.username || `Rider ${zwid}`).trim();
+
+      // Utilizziamo INSERT INTO ... ON CONFLICT per creare o aggiornare
       queries.push(
-        env.DB.prepare("UPDATE athletes SET base_category = ? WHERE zwid = ?")
-          .bind(cleanCat, zwid)
+        env.DB.prepare(`
+          INSERT INTO athletes (zwid, name, base_category, gender, role) 
+          VALUES (?, ?, ?, ?, 'athlete')
+          ON CONFLICT(zwid) DO UPDATE SET 
+            name = CASE 
+              WHEN athletes.name IS NULL OR athletes.name = '' OR athletes.name LIKE 'Rider %' 
+              THEN EXCLUDED.name 
+              ELSE athletes.name 
+            END,
+            base_category = COALESCE(NULLIF(EXCLUDED.base_category, ''), athletes.base_category),
+            gender = COALESCE(EXCLUDED.gender, athletes.gender)
+        `).bind(zwid, name, category, gender)
       );
-      updateCount++;
+      
+      processedCount++;
     }
 
     if (queries.length > 0) {
-      await env.DB.batch(queries);
+      // D1 batch ha un limite di 100 query alla volta per sicurezza, ma wrangler gestisce bene anche di più
+      // Per sicurezza facciamo dei chunk se l'array è molto grande (> 50)
+      const chunkSize = 50;
+      for (let i = 0; i < queries.length; i += chunkSize) {
+        await env.DB.batch(queries.slice(i, i + chunkSize));
+      }
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Sincronizzazione completata! ${updateCount} categorie aggiornate.`,
-      count: updateCount 
+      message: `Sincronizzazione completata! ${processedCount} atleti elaborati (creati o aggiornati).`,
+      count: processedCount 
     }), { 
       headers: { "Content-Type": "application/json" } 
     });

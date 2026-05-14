@@ -291,6 +291,35 @@ const ZRLRoundManager: React.FC = () => {
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number>(1);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('A');
+
+  const getRouteInfo = (round: Round, category: string) => {
+    try {
+      if (!round.strategy_details) return { 
+        world: round.world, 
+        route: round.route, 
+        dist: round.distance, 
+        elev: round.elevation 
+      };
+
+      const strategy = typeof round.strategy_details === 'string' 
+        ? JSON.parse(round.strategy_details) 
+        : round.strategy_details;
+
+      if (strategy.category_details && strategy.category_details[category]) {
+        const detail = strategy.category_details[category];
+        return {
+          world: detail.world || round.world,
+          route: detail.route || round.route,
+          dist: detail.distance || round.distance,
+          elev: detail.elevation || round.elevation
+        };
+      }
+    } catch (e) {
+      console.warn("Error parsing strategy_details:", e);
+    }
+    return { world: round.world, route: round.route, dist: round.distance, elev: round.elevation };
+  };
 
   if (loading) {
     return (
@@ -455,9 +484,29 @@ const ZRLRoundManager: React.FC = () => {
       </div>
 
       {/* Rounds List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">Gestione Gare del Round</h2>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+          <div>
+            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">Gestione Gare del Round</h2>
+            <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">Dettagli tecnici visualizzati per categoria selezionata</p>
+          </div>
+          
+          <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+            {['A', 'B', 'C', 'D'].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategoryFilter(cat)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${
+                  activeCategoryFilter === cat 
+                    ? 'bg-white text-orange-500 shadow-sm' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                CAT {cat}
+              </button>
+            ))}
+          </div>
+
           {wtrlScheduleLink && (
             <a href={wtrlScheduleLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-orange-500 hover:underline flex items-center gap-1">
               WTRL Official Schedule <ExternalLink size={12} />
@@ -466,71 +515,84 @@ const ZRLRoundManager: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          {rounds.map((round) => (
-            <div key={round.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-orange-200 transition-all group">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-orange-500 border border-gray-100 group-hover:bg-orange-50 transition-colors">
-                    <MapPin size={24} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-black text-gray-800 uppercase italic tracking-tight">{round.name}</h3>
-                      <span className="px-3 py-0.5 rounded-full bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
-                        {round.date ? new Date(round.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD'}
-                      </span>
+          {rounds.map((round) => {
+            const routeInfo = getRouteInfo(round, activeCategoryFilter);
+            return (
+              <div key={round.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-orange-200 transition-all group">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-orange-500 border border-gray-100 group-hover:bg-orange-50 transition-colors">
+                      <MapPin size={24} />
                     </div>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-tighter">
-                      {round.world || '---'} • <span className="text-gray-600">{round.route || '---'}</span>
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="text-lg font-black text-gray-800 uppercase italic tracking-tight">{round.name}</h3>
+                        <span className="px-3 py-0.5 rounded-full bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
+                          {round.date ? new Date(round.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-tighter">
+                          {routeInfo.world} • <span className="text-gray-700">{routeInfo.route}</span>
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md font-black border border-orange-100">
+                            {routeInfo.dist} KM
+                          </span>
+                          <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-black border border-blue-100">
+                            {routeInfo.elev} M
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-8">
-                  <div className="text-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Squadre</p>
-                    <p className="text-lg font-black text-gray-800">{round.team_count} / {totalSystemTeams}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lineup</p>
-                    <p className="text-lg font-black text-gray-800">{round.lineup_count}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">RSVP</p>
-                    <p className="text-lg font-black text-orange-500">{round.availability_count}</p>
-                  </div>
-                  <div className="h-10 w-px bg-gray-100 hidden lg:block" />
-                  
-                  <button 
-                    onClick={() => copyScraperScript(round.id, round.name)}
-                    className="flex items-center gap-2 px-4 py-3 bg-zinc-900 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-xl border border-zinc-800 hover:text-orange-500 hover:border-orange-500/50 transition-all"
-                    title="Copia Script Scraper per Console"
-                  >
-                    <Code size={14} />
-                    Copia Script
-                  </button>
+                  <div className="flex flex-wrap items-center gap-8">
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Squadre</p>
+                      <p className="text-lg font-black text-gray-800">{round.team_count} / {totalSystemTeams}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lineup</p>
+                      <p className="text-lg font-black text-gray-800">{round.lineup_count}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">RSVP</p>
+                      <p className="text-lg font-black text-orange-500">{round.availability_count}</p>
+                    </div>
+                    <div className="h-10 w-px bg-gray-100 hidden lg:block" />
+                    
+                    <button 
+                      onClick={() => copyScraperScript(round.id, round.name)}
+                      className="flex items-center gap-2 px-4 py-3 bg-zinc-900 text-zinc-400 font-black uppercase text-[10px] tracking-widest rounded-xl border border-zinc-800 hover:text-orange-500 hover:border-orange-500/50 transition-all"
+                      title="Copia Script Scraper per Console"
+                    >
+                      <Code size={14} />
+                      Copia Script
+                    </button>
 
-                  <button 
-                    onClick={() => handleImportResults(round.id)}
-                    disabled={actionLoading}
-                    className="flex items-center gap-2 px-6 py-3 bg-orange-50 text-orange-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-orange-100 hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50"
-                  >
-                    <Trophy size={14} />
-                    Importa Risultati
-                  </button>
+                    <button 
+                      onClick={() => handleImportResults(round.id)}
+                      disabled={actionLoading}
+                      className="flex items-center gap-2 px-6 py-3 bg-orange-50 text-orange-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-orange-100 hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50"
+                    >
+                      <Trophy size={14} />
+                      Importa Risultati
+                    </button>
 
-                  <button 
-                    onClick={() => handleResetRound(round.id, round.name)}
-                    disabled={actionLoading}
-                    className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-red-100 hover:bg-red-600 hover:text-white transition-all disabled:opacity-50"
-                  >
-                    <Trash2 size={14} />
-                    Hard Reset
-                  </button>
+                    <button 
+                      onClick={() => handleResetRound(round.id, round.name)}
+                      disabled={actionLoading}
+                      className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 font-black uppercase text-[10px] tracking-widest rounded-xl border border-red-100 hover:bg-red-600 hover:text-white transition-all disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                      Hard Reset
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {rounds.length === 0 && (
             <div className="p-20 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200 text-center">

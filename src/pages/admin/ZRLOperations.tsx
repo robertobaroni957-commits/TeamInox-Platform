@@ -43,6 +43,35 @@ const ZRLOperations: React.FC = () => {
   const [htmlImport, setHtmlImport] = useState('');
   const [selectedRace, setSelectedRace] = useState<RoundInput | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('A');
+
+  const getRouteInfo = (round: any, category: string) => {
+    try {
+      if (!round.strategy_details) return { 
+        world: round.world, 
+        route: round.route, 
+        dist: round.distance, 
+        elev: round.elevation 
+      };
+
+      const strategy = typeof round.strategy_details === 'string' 
+        ? JSON.parse(round.strategy_details) 
+        : round.strategy_details;
+
+      if (strategy.category_details && strategy.category_details[category]) {
+        const detail = strategy.category_details[category];
+        return {
+          world: detail.world || round.world,
+          route: detail.route || round.route,
+          dist: detail.distance || round.distance,
+          elev: detail.elevation || round.elevation
+        };
+      }
+    } catch (e) {
+      console.warn("Error parsing strategy_details:", e);
+    }
+    return { world: round.world, route: round.route, dist: round.distance, elev: round.elevation };
+  };
 
   // Caricamento dati iniziali dal database
   useEffect(() => {
@@ -709,8 +738,31 @@ const ZRLOperations: React.FC = () => {
                 <div className="h-px bg-zinc-900" />
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black italic text-white uppercase tracking-tighter">Race List</h3>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-black italic text-white uppercase tracking-tighter">Race List</h3>
+                      <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1">Dettagli visualizzati per categoria selezionata</p>
+                    </div>
+
+                    <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                      {['A', 'B', 'C', 'D'].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveCategoryFilter(cat);
+                          }}
+                          className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${
+                            activeCategoryFilter === cat 
+                              ? 'bg-zinc-800 text-[#fc6719] shadow-sm' 
+                              : 'text-zinc-500 hover:text-zinc-300'
+                          }`}
+                        >
+                          CAT {cat}
+                        </button>
+                      ))}
+                    </div>
+
                     <div className="flex gap-2">
                       <button onClick={addRace} className="bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-white px-4 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-2 transition-all"><Plus size={12} /> Add Race</button>
                       <button onClick={handleInitRound} className="bg-[#fc6719] text-black px-4 py-1.5 rounded-lg text-[8px] font-black uppercase italic flex items-center gap-2 transition-all shadow-md"><Save size={12} /> Save Season</button>
@@ -719,6 +771,8 @@ const ZRLOperations: React.FC = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                     {races.map((race, idx) => {
                       const isNext = highlightedIndices.includes(idx);
+                      const routeInfo = getRouteInfo(race, activeCategoryFilter);
+                      
                       return (
                         <motion.div 
                           key={idx} 
@@ -738,8 +792,8 @@ const ZRLOperations: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <span className={`text-[11px] font-black uppercase tracking-widest ${isNext ? "text-white" : "text-[#fc6719]"}`}>G{idx + 1}</span>
                               <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border-2 shadow-md ${
-                                isNext ? "bg-white text-black border-white" : "bg-[#fc6719] text-black border-[#fc6719]"
-                              }`}>Cat {race.category}</span>
+                                isNext ? "bg-white text-black border-white" : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                              }`}>Cat {activeCategoryFilter}</span>
                               {isNext && (
                                 <motion.span 
                                   animate={{ opacity: [0.7, 1, 0.7] }}
@@ -761,17 +815,17 @@ const ZRLOperations: React.FC = () => {
                             </button>
                           </div>
                           <div className="relative z-10 mt-3">
-                            <h4 className="text-sm font-black italic uppercase truncate text-white leading-tight">{race.name}</h4>
-                            <p className="text-zinc-500 text-[9px] font-bold uppercase mt-1">{race.date || 'TBD'}</p>
+                            <h4 className="text-sm font-black italic uppercase truncate text-white leading-tight">{routeInfo.route || race.name}</h4>
+                            <p className="text-zinc-500 text-[9px] font-bold uppercase mt-1">{race.date || 'TBD'} • {routeInfo.world}</p>
                           </div>
                           <div className="grid grid-cols-2 gap-1.5 relative z-10 mt-4">
                             <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
                               <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Dist</p>
-                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.distance}k</p>
+                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{routeInfo.dist}k</p>
                             </div>
                             <div className={`p-2 rounded-lg border ${isNext ? "bg-black/40 border-[#22c55e]/20" : "bg-black/20 border-zinc-800/40"}`}>
                               <p className={`text-[7px] font-black uppercase ${isNext ? "text-zinc-500" : "text-zinc-700"}`}>Elev</p>
-                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{race.elevation}m</p>
+                              <p className={`text-[11px] font-bold ${isNext ? "text-white" : "text-zinc-400"}`}>{routeInfo.elev}m</p>
                             </div>
                           </div>
                         </motion.div>
@@ -998,89 +1052,92 @@ const ZRLOperations: React.FC = () => {
 
       {/* RACE DETAIL MODAL */}
       <AnimatePresence>
-        {selectedRace && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedRace(null)}
-              className="absolute inset-0 bg-black/90 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl"
-            >
-              <div className="p-10 space-y-8">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-[#fc6719]/10 rounded-lg text-[#fc6719]">
-                        <Zap size={20} />
+        {selectedRace && (() => {
+          const routeInfo = getRouteInfo(selectedRace, activeCategoryFilter);
+          return (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedRace(null)}
+                className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl"
+              >
+                <div className="p-10 space-y-8">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-[#fc6719]/10 rounded-lg text-[#fc6719]">
+                          <Zap size={20} />
+                        </div>
+                        <span className="text-[#fc6719] font-black text-xs tracking-[0.3em] uppercase italic">Dettaglio Gara • CAT {activeCategoryFilter}</span>
                       </div>
-                      <span className="text-[#fc6719] font-black text-xs tracking-[0.3em] uppercase italic">Dettaglio Gara</span>
+                      <h2 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
+                        {selectedRace.name}
+                      </h2>
                     </div>
-                    <h2 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
-                      {selectedRace.name}
-                    </h2>
+                    <button 
+                      onClick={() => setSelectedRace(null)}
+                      className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white transition-all"
+                    >
+                      <Plus size={24} className="rotate-45" />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => setSelectedRace(null)}
-                    className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-white transition-all"
-                  >
-                    <Plus size={24} className="rotate-45" />
-                  </button>
-                </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { label: 'Data', value: selectedRace.date || 'TBD', icon: Calendar },
-                    { label: 'Mondo', value: selectedRace.world, icon: MapPin },
-                    { label: 'Formato', value: selectedRace.format, icon: Activity },
-                    { label: 'Percorso', value: selectedRace.route, icon: TrendingUp },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-zinc-900/50 p-5 rounded-2xl border border-zinc-800">
-                      <stat.icon size={16} className="text-zinc-600 mb-3" />
-                      <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                      <p className="text-xs font-bold text-white uppercase truncate">{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Data', value: selectedRace.date || 'TBD', icon: Calendar },
+                      { label: 'Mondo', value: routeInfo.world, icon: MapPin },
+                      { label: 'Formato', value: selectedRace.format, icon: Activity },
+                      { label: 'Percorso', value: routeInfo.route, icon: TrendingUp },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-zinc-900/50 p-5 rounded-2xl border border-zinc-800">
+                        <stat.icon size={16} className="text-zinc-600 mb-3" />
+                        <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                        <p className="text-xs font-bold text-white uppercase truncate">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
 
-                <div className="bg-zinc-900/30 p-8 rounded-[2rem] border border-zinc-900 space-y-6">
-                  <h4 className="text-xs font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
-                    <Settings size={14} /> Parametri Tecnici
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-1">
-                      <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Distanza</p>
-                      <p className="text-xl font-black italic text-white">{selectedRace.distance} <span className="text-zinc-500 text-xs uppercase not-italic">km</span></p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Dislivello</p>
-                      <p className="text-xl font-black italic text-white">{selectedRace.elevation} <span className="text-zinc-500 text-xs uppercase not-italic">m</span></p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Powerups</p>
-                      <p className="text-sm font-bold text-[#fc6719] uppercase italic">{selectedRace.powerups || 'Standard'}</p>
+                  <div className="bg-zinc-900/30 p-8 rounded-[2rem] border border-zinc-900 space-y-6">
+                    <h4 className="text-xs font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
+                      <Settings size={14} /> Parametri Tecnici
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Distanza</p>
+                        <p className="text-xl font-black italic text-white">{routeInfo.dist} <span className="text-zinc-500 text-xs uppercase not-italic">km</span></p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Dislivello</p>
+                        <p className="text-xl font-black italic text-white">{routeInfo.elev} <span className="text-zinc-500 text-xs uppercase not-italic">m</span></p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black uppercase text-zinc-600 ml-1">Powerups</p>
+                        <p className="text-sm font-bold text-[#fc6719] uppercase italic">{selectedRace.powerups || 'Standard'}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    onClick={() => setSelectedRace(null)}
-                    className="flex-1 py-4 bg-[#fc6719] text-black font-black italic rounded-2xl hover:scale-[1.02] transition-all uppercase text-xs tracking-widest shadow-lg"
-                  >
-                    Chiudi Dettaglio
-                  </button>
+                  <div className="flex gap-4 pt-4">
+                    <button 
+                      onClick={() => setSelectedRace(null)}
+                      className="flex-1 py-4 bg-[#fc6719] text-black font-black italic rounded-2xl hover:scale-[1.02] transition-all uppercase text-xs tracking-widest shadow-lg"
+                    >
+                      Chiudi Dettaglio
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

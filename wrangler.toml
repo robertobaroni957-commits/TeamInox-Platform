@@ -4,5 +4,5 @@ compatibility_date = "2024-05-18"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "team_inox_db"
-database_id = "edd85466-cdf5-4cbe-a42b-f59d859bf73f"
+database_name = "DB"
+database_id = "2557959d-d99d-427e-b160-b7cba06cfa97"
