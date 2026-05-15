@@ -1,7 +1,7 @@
-import { ZRLService } from '../../../src/services/ZRLService';
+import { zrlService } from '../../../src/services/zrlService';
 
 export async function onRequestPost({ request, env }) {
-    const service = new ZRLService(env.DB);
+    const service = new zrlService(env.DB);
     try {
         const body = await request.json().catch(() => ({}));
         const seasonId = body.seasonId || 19;

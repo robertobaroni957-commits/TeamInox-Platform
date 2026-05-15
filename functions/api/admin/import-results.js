@@ -1,8 +1,8 @@
 
-import { ZRLService } from '../../../src/services/ZRLService';
+import { zrlService } from '../../../src/services/zrlService';
 
 export async function onRequestPost({ request, env }) {
-    const service = new ZRLService(env.DB);
+    const service = new zrlService(env.DB);
     try {
         const payload = await request.json();
         const result = await service.importResults(payload);

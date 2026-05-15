@@ -1,8 +1,8 @@
-import { ZRLService } from '../../../src/services/ZRLService';
+import { zrlService } from '../../../src/services/zrlService';
 
 export async function onRequestPost({ request, env }) {
   const payload = await request.json();
-  const service = new ZRLService(env.DB);
+  const service = new zrlService(env.DB);
   try {
     if (!payload.meta || !payload.meta.team) {
       return new Response(JSON.stringify({ error: "Struttura JSON non valida." }), { status: 400 });
