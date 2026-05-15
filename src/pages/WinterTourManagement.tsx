@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ChevronLeft, Trophy, Star, Shield, Layout, Settings, 
+  ChevronLeft, Trophy, Star, Shield, LayoutGrid, Settings, 
   Plus, Save, Loader2, AlertCircle, CheckCircle2 
 } from 'lucide-react';
 
@@ -241,7 +241,7 @@ const WinterTourManagement: React.FC = () => {
       <div className="p-10 rounded-[3rem] bg-zinc-950 border border-zinc-900 shadow-xl">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-2">
-            <Layout size={14} className="text-[#fc6719]" /> Gestione Tappe <span className="text-white">{activeSeason?.name}</span>
+            <LayoutGrid size={14} className="text-[#fc6719]" /> Gestione Tappe <span className="text-white">{activeSeason?.name}</span>
           </h3>
           <button className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-white transition-all flex items-center gap-2">
              <Plus size={14} /> Aggiungi Tappa

@@ -8,7 +8,7 @@ import {
   Activity, 
   ArrowUpRight, 
   Zap, 
-  Layout, 
+  LayoutGrid,
   RefreshCw, 
   AlertTriangle, 
   Lightbulb, 
@@ -16,7 +16,6 @@ import {
   Crosshair,
   TrendingUp,
   MailWarning,
-  LayoutGrid,
   BarChart3
 } from 'lucide-react';
 import { api } from '../../services/api';
@@ -105,7 +104,7 @@ const AdminDashboard: React.FC = () => {
       title: "Events Lab",
       subtitle: "Configuration",
       desc: "Gestione calendario corse sociali e allenamenti di gruppo.",
-      icon: Layout,
+      icon: LayoutGrid,
       path: "/admin/events",
       color: "from-emerald-500 to-teal-600",
       size: "sm"

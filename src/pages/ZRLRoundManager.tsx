@@ -91,17 +91,17 @@ const ZRLRoundManager: React.FC = () => {
 
   const finalResults = [];
   for (const key of leagueKeys) {
-    console.log(\`Scarico risultati per \${key}...\`);
+    console.log("Scarico risultati per " + key + "...");
     try {
-      const res = await fetch(\`https://www.wtrl.racing/api/zrl/results/\${season}/\${key}/\${race}\`);
+      const res = await fetch("https://www.wtrl.racing/api/zrl/results/" + season + "/" + key + "/" + race);
       const data = await res.json();
       if (data.success && data.payload && data.payload.length > 0) {
         finalResults.push({ key, data });
-        console.log(\`✅ \${key}: \${data.payload.length} team trovati\`);
+        console.log("✅ " + key + ": " + data.payload.length + " team trovati");
       } else {
-        console.warn(\`⚠️ \${key}: Nessun risultato trovato per Season \${season}, Race \${race}\`);
+        console.warn("⚠️ " + key + ": Nessun risultato trovato per Season " + season + ", Race " + race);
       }
-    } catch (e) { console.error(\`❌ Errore su \${key}:\`, e); }
+    } catch (e) { console.error("❌ Errore su " + key + ":", e); }
   }
 
   if (finalResults.length === 0) {
@@ -114,9 +114,9 @@ const ZRLRoundManager: React.FC = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = \`zrl_results_s\${season}_r\${race}.json\`;
+  a.download = "zrl_results_s" + season + "_r" + race + ".json";
   a.click();
-  console.log("%c SUCCESS %c File scaricato con \${finalResults.length} divisioni.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;", "");
+  console.log("%c SUCCESS %c File scaricato con " + finalResults.length + " divisioni.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;", "");
 })();`;
 
     navigator.clipboard.writeText(script);
@@ -227,9 +227,12 @@ const ZRLRoundManager: React.FC = () => {
         setMessage({ type: 'success', text: res.message || "Stagione inizializzata con successo!" });
         await loadData();
       } else {
+        const isBlock = res.error?.includes("403") || res.error?.includes("HTML");
         setMessage({
           type: 'error',
-          text: res.error || "Errore durante l\'inizializzazione.",
+          text: isBlock 
+            ? "MISSION FAILED: WTRL API bloccata da Cloudflare. Utilizza la procedura manuale (Copia Script > Importa JSON)." 
+            : res.error || "Errore durante l'inizializzazione.",
         });
       }
     } catch {
@@ -238,6 +241,74 @@ const ZRLRoundManager: React.FC = () => {
       setActionLoading(false);
     }
   };
+
+  const copySeasonScraperScript = () => {
+    const seasonId = (selectedYear === 2025) ? (19 + (selectedRoundIndex - 4)) : ((selectedYear - 2026) * 4 + 20 + (selectedRoundIndex - 1));
+    const seriesName = `ZRL ${selectedYear} Round ${selectedRoundIndex}`;
+
+    const script = `(async () => {
+  const season = ${seasonId};
+  const seriesName = "${seriesName}";
+  console.log("%c INOX SEASON SCRAPER ", "background: #fc6719; color: white; font-weight: bold; padding: 2px 5px;");
+  try {
+    const res = await fetch(\`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=\${season}&category=A&action=schedule&test=c2NoZWR1bGU%3D\`);
+    const data = await res.json();
+    if (data.payload || Array.isArray(data)) {
+      const output = { seriesName, season, rounds: data.payload || data };
+      const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = \`zrl_schedule_S\${season}.json\`;
+      a.click();
+      console.log("%c SUCCESS %c File scaricato.", "background: #22c55e; color: white; font-weight: bold; padding: 2px 5px;", "");
+    }
+  } catch (e) { console.error("Errore:", e); }
+  })();`;
+    navigator.clipboard.writeText(script);
+    alert("Script inizializzazione copiato! Usalo sulla console di WTRL.");
+  };
+
+  const handleManualSeasonImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setActionLoading(true);
+    setMessage(null);
+
+    try {
+      const data = JSON.parse(await file.text());
+      const response = await fetch('/api/admin/init-season', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
+        },
+        body: JSON.stringify({
+          name: data.seriesName,
+          external_id: data.season,
+          rounds: (data.rounds || []).map((r:any) => ({
+            name: `Week ${r.race || r.round || '?'}`,
+            date: r.eventDate || r.date,
+            world: (r.courseWorld || r.world || "TBD").toUpperCase(),
+            route: (r.courseName || r.route || "TBD")
+          }))
+        })
+      });
+      const res = await response.json();
+      if (res.success) {
+        setMessage({ type: 'success', text: "Stagione importata manualmente!" });
+        await loadData();
+      } else {
+        throw new Error(res.error);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: "Import fallito: " + err.message });
+    } finally {
+      setActionLoading(false);
+      e.target.value = '';
+    }
+  };
+
 
   const handleResetRound = async (roundId: number, roundName: string) => {
     const confirmed = window.confirm(`SEI SICURO? Questo cancellerà TUTTE le lineup, le disponibilità e le associazioni squadre per la gara "${roundName}". Questa operazione NON può essere annullata.`);
@@ -472,14 +543,29 @@ const ZRLRoundManager: React.FC = () => {
               <option value={4}>Round 4</option>
             </select>
           </div>
-          <button 
-            type="submit"
-            disabled={actionLoading}
-            className="bg-gray-900 hover:bg-black text-white font-black italic uppercase py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {actionLoading ? <RefreshCw className="animate-spin" size={20} /> : <Zap size={20} className="text-orange-500" />}
-            GENERA ROUND
-          </button>
+          <div className="flex flex-col gap-2">
+            <button 
+              type="submit"
+              disabled={actionLoading}
+              className="w-full bg-gray-900 hover:bg-black text-white font-black italic uppercase py-3 rounded-xl shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+            >
+              {actionLoading ? <RefreshCw className="animate-spin" size={18} /> : <Zap size={18} className="text-orange-500" />}
+              GENERA ROUND (API)
+            </button>
+            <div className="flex gap-2">
+               <button 
+                  type="button"
+                  onClick={copySeasonScraperScript}
+                  className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold uppercase py-2 rounded-lg text-[9px] border border-zinc-200 transition-all flex items-center justify-center gap-1"
+               >
+                  <Code size={12} /> Copia Script
+               </button>
+               <label className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold uppercase py-2 rounded-lg text-[9px] border border-zinc-200 transition-all flex items-center justify-center gap-1 cursor-pointer">
+                  <Upload size={12} /> Importa JSON
+                  <input type="file" accept=".json" className="hidden" onChange={handleManualSeasonImport} />
+               </label>
+            </div>
+          </div>
         </form>
       </div>
 

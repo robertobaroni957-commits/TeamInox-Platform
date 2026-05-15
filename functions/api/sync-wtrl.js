@@ -37,11 +37,11 @@ export async function onRequestPost(context) {
     const members = data.riders || data.members || []; 
     
     // Recuperiamo l'ID interno del team
-    const teamRecord = await env.DB.prepare("SELECT id FROM teams WHERE wtrl_team_id = ?").bind(teamId).first();
+    const teamRecord = await env.DB.prepare("SELECT wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(teamId).first();
     if (!teamRecord) {
       return new Response(JSON.stringify({ error: `Team con ID WTRL ${teamId} non trovato nel database locale. Sincronizza prima le squadre.` }), { status: 404 });
     }
-    const internalTeamId = teamRecord.id;
+    const internalTeamId = teamRecord.wtrl_team_id;
 
     const statements = [];
     // Pulizia roster attuale per questo team

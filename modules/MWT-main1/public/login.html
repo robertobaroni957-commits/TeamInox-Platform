@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masters Winter Tour - Login</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1e1e2f; color: #e0e0e0; padding: 20px; text-align: center; }
+        .login-container { background: #2a2a3a; padding: 30px; border-radius: 8px; max-width: 400px; margin: 50px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        h1 { color: #4CAF50; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; }
+        .form-group input[type="text"], .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: none;
+            outline: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        .error-message { color: #d32f2f; margin-top: 15px; }
+        .success-message { color: #4CAF50; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login Amministratore</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Nome Utente:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Accedi</button>
+            <div id="message" class="error-message"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = ''; // Clear previous messages
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    messageDiv.className = 'success-message';
+                    messageDiv.textContent = 'Login riuscito! Reindirizzamento...';
+                    window.location.href = '/calculator.html'; // Redirect to protected page
+                } else {
+                    const errorData = await response.json();
+                    messageDiv.className = 'error-message';
+                    messageDiv.textContent = errorData.error || 'Credenziali non valide.';
+                }
+            } catch (error) {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = 'Errore di connessione. Riprova.';
+                console.error('Login error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

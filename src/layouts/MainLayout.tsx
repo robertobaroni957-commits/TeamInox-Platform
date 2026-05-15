@@ -5,10 +5,7 @@ import {
   AlertTriangle, 
   ChevronRight, 
   LayoutGrid, 
-  User, 
   LogOut,
-  Shield,
-  Zap
 } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
@@ -53,7 +50,7 @@ const MainLayout: React.FC = () => {
     navigate('/login');
   };
 
-  const isHub = location.pathname === '/dashboard' || location.pathname === '/admin';
+  const isHub = location.pathname === '/dashboard';
   const isAdmin = user?.role === 'admin' || user?.role === 'moderator';
 
   return (
@@ -70,7 +67,7 @@ const MainLayout: React.FC = () => {
           {/* Universal Back to Hub */}
           {!isHub && (
             <button 
-              onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all text-[10px] font-black uppercase tracking-widest group"
             >
               <LayoutGrid size={14} className="group-hover:rotate-90 transition-transform" />
@@ -83,7 +80,7 @@ const MainLayout: React.FC = () => {
           {/* Mobile Back to Hub */}
           {!isHub && (
             <button 
-              onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="md:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400"
             >
               <LayoutGrid size={18} />
@@ -94,7 +91,7 @@ const MainLayout: React.FC = () => {
             <div className="flex items-center gap-3 lg:gap-4 pl-4 border-l border-zinc-900">
               <div className="hidden lg:flex flex-col items-end">
                 <span className="text-[9px] font-black text-white uppercase tracking-tighter leading-none">{user.username}</span>
-                <span className={`text-[7px] font-black uppercase tracking-widest mt-0.5 \${isAdmin ? 'text-red-500' : 'text-[#fc6719]'}`}>{user.role}</span>
+                <span className={`text-[7px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-red-500' : 'text-[#fc6719]'}`}>{user.role}</span>
               </div>
               <button 
                 onClick={handleLogout}
@@ -142,29 +139,9 @@ const MainLayout: React.FC = () => {
           </div>
         </main>
       </div>
-
-      {/* Footer Navigation (Mobile Only) */}
-      {!isHub && (
-        <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-3xl bg-black/80 backdrop-blur-xl border border-zinc-800 shadow-2xl flex items-center gap-8">
-          <button 
-            onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
-            className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white transition-all"
-          >
-            <LayoutGrid size={20} />
-            <span className="text-[8px] font-black uppercase tracking-widest">Hub</span>
-          </button>
-          <div className="w-px h-6 bg-zinc-800" />
-          <button 
-            onClick={() => navigate('/racing')}
-            className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white transition-all"
-          >
-            <Zap size={20} />
-            <span className="text-[8px] font-black uppercase tracking-widest">Race</span>
-          </button>
-        </nav>
-      )}
     </div>
   );
 };
 
 export default MainLayout;
+

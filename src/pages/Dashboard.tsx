@@ -2,37 +2,57 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
-  Trophy, 
   Activity, 
   ArrowUpRight, 
   Zap, 
-  Calendar, 
-  Shield, 
-  Flag, 
-  Star,
-  ChevronRight,
-  AlertCircle,
-  TrendingUp,
   Users,
-  LayoutGrid,
-  MapPin,
-  Clock,
-  Compass,
-  BarChart3
+  Flag,
+  AlertCircle,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { DASHBOARD_CONFIG } from '../services/dashboardConfig';
+import { hasPermission } from '../services/permissions';
+import type { Role } from '../services/permissions';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{username: string, role: string} | null>(null);
+  const [user, setUser] = useState<{username: string, role: Role} | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsQuestionnaire, setNeedsQuestionnaire] = useState(false);
+  const [stats, setStats] = useState({
+    users: 0,
+    teams: 0,
+    activeSeries: 'N/A',
+    nextRace: 'TBD'
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('inox_token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setUser({ username: payload.username, role: payload.role });
+        setUser({ username: payload.username, role: payload.role as Role });
+        
+        // Check questionnaire status
+        api.checkAvailabilityStatus().then(status => {
+          setNeedsQuestionnaire(status.missing);
+        }).catch(err => console.error("Error checking availability:", err));
+
+        // Fetch Stats
+        Promise.all([
+          api.listUsers().catch(() => []),
+          api.getTeams().catch(() => []),
+          api.getSeries().catch(() => [])
+        ]).then(([users, teams, series]) => {
+          const active = series.find((s:any) => s.is_active);
+          setStats({
+            users: users.length,
+            teams: teams.length,
+            activeSeries: active ? active.name : 'N/A',
+            nextRace: 'Tues 19:30' // Fallback or logic to find next race
+          });
+        });
+
       } catch (e) {
         localStorage.removeItem('inox_token');
       }
@@ -40,80 +60,17 @@ const Dashboard: React.FC = () => {
     setLoading(false);
   }, []);
 
-  const menuItems = [
-    {
-      title: "War Room",
-      subtitle: "Gare & Live Tracking",
-      desc: "Monitora le gare in corso e segui i compagni in tempo reale.",
-      icon: Zap,
-      path: "/racing",
-      color: "from-orange-500 to-red-600",
-      size: "lg"
-    },
-    {
-      title: "ZRL Hub",
-      subtitle: "Zwift Racing League",
-      desc: "Disponibilità, roster e timeline della stagione ufficiale.",
-      icon: Trophy,
-      path: "/availability",
-      color: "from-blue-500 to-indigo-600",
-      size: "md"
-    },
-    {
-      title: "Master Winter Tour",
-      subtitle: "Campionato Interno",
-      desc: "Classifiche, punti e tappe del tour invernale InoxTeam.",
-      icon: Star,
-      path: "/ranking",
-      color: "from-yellow-400 to-orange-500",
-      size: "md"
-    },
-    {
-      title: "Events",
-      subtitle: "Calendario Sociale",
-      desc: "Allenamenti, corse di gruppo e appuntamenti settimanali.",
-      icon: Calendar,
-      path: "/events",
-      color: "from-emerald-500 to-teal-600",
-      size: "sm"
-    },
-    {
-      title: "Teams",
-      subtitle: "Squadre & Roster",
-      desc: "Esplora le divisioni e i componenti dei team ufficiali.",
-      icon: Users,
-      path: "/teams",
-      color: "from-purple-500 to-pink-600",
-      size: "sm"
-    },
-    {
-      title: "Classifiche ZRL",
-      subtitle: "Risultati & Ranking",
-      desc: "Consulta i piazzamenti ufficiali di tutte le divisioni InoxTeam.",
-      icon: Trophy,
-      path: "/zrl-results",
-      color: "from-zinc-700 to-zinc-900",
-      size: "sm"
-    },
-    {
-      title: "Strat Map",
-      subtitle: "Tactical DNA",
-      desc: "Analisi avanzata delle performance e DNA tattico delle squadre.",
-      icon: BarChart3,
-      path: "/zrl-analytics",
-      color: "from-cyan-500 to-blue-600",
-      size: "sm"
-    },
-    {
-      title: "Recap Stagione",
-      subtitle: "ZRL Season 19",
-      desc: "Statistiche cumulative, top performers e riepilogo generale.",
-      icon: TrendingUp,
-      path: "/zrl-season-stats",
-      color: "from-orange-400 to-red-500",
-      size: "sm"
+  const filteredMenuItems = DASHBOARD_CONFIG.filter(item => {
+    // Permission check
+    const hasPerm = hasPermission(user?.role, item.permission);
+    
+    // Admin specific exclusion for Questionnaire card
+    if (user?.role === 'admin' && item.id === 'zrl-questionnaire') {
+      return false;
     }
-  ];
+    
+    return hasPerm;
+  });
 
   if (loading) return null;
 
@@ -127,28 +84,58 @@ const Dashboard: React.FC = () => {
             <div className="px-3 py-1 bg-inox-cyan/10 border border-inox-cyan/20 rounded-full">
               <span className="text-[9px] font-black text-inox-cyan uppercase tracking-[0.2em]">Operational Deck</span>
             </div>
+            {user?.role === 'admin' && (
+              <div className="px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
+                <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em]">Command Level</span>
+              </div>
+            )}
           </div>
           <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none">
             HELLO, <span className="text-zinc-800">{user?.username || 'RIDER'}</span>
           </h1>
           <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest max-w-xl">
-             Seleziona un modulo operativo per iniziare la tua sessione.
+             {user?.role === 'admin' 
+               ? "Pannello di controllo globale. Monitora e gestisci l'intera infrastruttura InoxTeam."
+               : "Benvenuto nel Deck Operativo. Seleziona un modulo per iniziare la tua sessione."}
           </p>
         </div>
       </section>
 
+      {/* GLOBAL ALERTS (ZRL Questionnaire) */}
+      {needsQuestionnaire && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate('/availability')}
+          className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between cursor-pointer group"
+        >
+          <div className="flex items-center gap-6">
+            <div className="p-4 rounded-2xl bg-orange-500 text-white shadow-xl">
+              <AlertCircle size={24} />
+            </div>
+            <div>
+              <h4 className="text-xl font-black italic text-white uppercase tracking-tighter">Azione Richiesta: ZRL RSVP</h4>
+              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Non hai ancora completato il questionario di disponibilità per il prossimo round.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-orange-500 font-black italic uppercase text-sm group-hover:gap-5 transition-all">
+            Completa Ora <ArrowUpRight size={18} />
+          </div>
+        </motion.div>
+      )}
+
       {/* PORTAL GRID (Bento Style) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {menuItems.map((item, i) => (
+        {filteredMenuItems.map((item) => (
           <motion.div
-            key={i}
+            key={item.id}
             whileHover={{ scale: 1.01, y: -5 }}
             onClick={() => navigate(item.path)}
-            className={`group relative overflow-hidden rounded-[2.5rem] bg-zinc-900 border border-zinc-800 cursor-pointer shadow-2xl transition-all \${
+            className={`group relative overflow-hidden rounded-[2.5rem] bg-zinc-900 border border-zinc-800 cursor-pointer shadow-2xl transition-all ${
               item.size === 'lg' ? 'md:col-span-2' : ''
             }`}
           >
-            <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl \${item.color} opacity-[0.03] blur-3xl group-hover:opacity-[0.08] transition-opacity`} />
+            <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl ${item.color} opacity-[0.03] blur-3xl group-hover:opacity-[0.08] transition-opacity`} />
             
             <div className="relative z-10 p-8 lg:p-10 flex flex-col h-full min-h-[280px]">
               <div className="flex justify-between items-start mb-auto">
@@ -177,10 +164,10 @@ const Dashboard: React.FC = () => {
       {/* QUICK STATUS BAR */}
       <footer className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-zinc-900">
          {[
-           { label: "Active Nodes", value: "Optimal", icon: Activity, color: "text-green-500" },
-           { label: "Next Race", value: "Tues 19:30", icon: Zap, color: "text-[#fc6719]" },
-           { label: "Team Strength", value: "48 Riders", icon: Users, color: "text-inox-cyan" },
-           { label: "Season Stage", value: "Round 4", icon: Flag, color: "text-yellow-500" }
+           { label: "Nodes Status", value: "Optimal", icon: Activity, color: "text-green-500" },
+           { label: "Next Race", value: stats.nextRace, icon: Zap, color: "text-[#fc6719]" },
+           { label: "Team Strength", value: `${stats.users} Riders`, icon: Users, color: "text-inox-cyan" },
+           { label: "Season Stage", value: stats.activeSeries, icon: Flag, color: "text-yellow-500" }
          ].map((stat, i) => (
            <div key={i} className="p-6 rounded-[2rem] bg-zinc-950 border border-zinc-900 flex flex-col gap-2">
              <stat.icon size={16} className={stat.color} />

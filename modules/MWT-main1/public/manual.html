@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuale d'Uso - Masters Winter Tour Calculator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #e0e0e0; background: #1e1e2f; padding: 20px; max-width: 900px; margin: 0 auto; }
+        h1, h2, h3 { color: #4CAF50; margin-top: 1.5em; margin-bottom: 0.5em; }
+        h1 { font-size: 2.2em; text-align: center; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        h2 { font-size: 1.8em; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        h3 { font-size: 1.4em; color: #007bff; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .container { background: #2a2a3a; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        code { background: #333; padding: 2px 4px; border-radius: 4px; font-family: 'Consolas', monospace; color: #FFD700; }
+        pre { background: #333; padding: 10px; border-radius: 4px; overflow-x: auto; font-family: 'Consolas', monospace; color: #eee; }
+        .note { background: #007bff20; border-left: 5px solid #007bff; padding: 10px; border-radius: 4px; margin: 1em 0; }
+        ul { list-style-type: disc; margin-left: 20px; }
+        ol { list-style-type: decimal; margin-left: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background: #333; color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>Manuale d'Uso - Masters Winter Tour Calculator</h1>
+    <div class="container">
+        <p>Questo manuale descrive il funzionamento del sito del Masters Winter Tour, con particolare attenzione alle funzionalità di calcolo delle classifiche e al controllo degli accessi.</p>
+    </div>
+
+    <div class="container">
+        <h2>1. Panoramica del Sito</h2>
+        <p>Il sito è una Single Page Application (SPA) distribuita su Cloudflare Pages, con funzionalità di backend implementate come Cloudflare Functions. Utilizza un database D1 per la persistenza dei dati e un sistema di autenticazione basato su JWT per proteggere le funzionalità amministrative.</p>
+        
+        <h3>Struttura delle Pagine:</h3>
+        <ul>
+            <li><strong><code>/</code> (<code>index.html</code>)</strong>: Homepage pubblica. Pagina di benvenuto con link alle altre sezioni.</li>
+            <li><strong><code>/login.html</code></strong>: Pagina di accesso per gli amministratori.</li>
+            <li><strong><code>/calculator.html</code></strong>: Interfaccia del calcolatore classifiche. Questa pagina è protetta e accessibile solo agli amministratori autenticati.</li>
+            <li><strong><code>/manual.html</code></strong>: Questa stessa pagina del manuale.</li>
+            <li>Altre pagine descrittive (es. `eventi.html`, `regolamento.html`) se presenti nel tuo progetto.</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>2. Controllo Accessi</h2>
+        <p>Il sito implementa un sistema di autenticazione basato su JWT (JSON Web Tokens) per distinguere tra utenti pubblici e amministratori.</p>
+        <ul>
+            <li><strong>Utenti Pubblici</strong>: Possono visualizzare solo la homepage e altre pagine descrittive (es. regolamento, eventi).</li>
+            <li><strong>Amministratori</strong>: Devono effettuare il login tramite <code>/login.html</code>. Una volta autenticati, possono accedere all'interfaccia del calcolatore classifiche (<code>/calculator.html</code>) e utilizzare tutte le funzionalità di elaborazione dati.</li>
+        </ul>
+        <h3>Processo di Login:</h3>
+        <ol>
+            <li>Accedi a <code>/login.html</code>.</li>
+            <li>Inserisci le credenziali di un utente amministratore.</li>
+            <li>Se il login ha successo, verrai reindirizzato automaticamente a <code>/calculator.html</code>.</li>
+            <li>Un cookie <code>mwt_jwt</code> verrà impostato nel tuo browser, identificandoti come amministratore per le successive richieste.</li>
+        </ol>
+        <div class="note"><strong>Nota sulla Sicurezza:</strong> Il cookie <code>mwt_jwt</code> è <code>HttpOnly</code> e <code>Secure</code>, il che significa che è accessibile solo via HTTP(S) e non via JavaScript, e viene inviato solo su connessioni HTTPS. Questo offre una protezione contro attacchi XSS.</div>
+        <h3>Logout:</h3>
+        <p>Sulla pagina <code>/calculator.html</code> è presente un pulsante "Logout". Cliccandolo, il cookie di sessione verrà cancellato e verrai reindirizzato alla pagina di login.</p>
+    </div>
+
+    <div class="container">
+        <h2>3. Utilizzo del Calcolatore Classifiche (Solo Amministratori)</h2>
+        <p>L'interfaccia del calcolatore (<code>/calculator.html</code>) permette di elaborare i dati di una gara, aggiornare la classifica generale e generare report.</p>
+        <h3>Workflow:</h3>
+        <ol>
+            <li>
+                <strong>Caricamento Gare</strong>: All'apertura della pagina, viene caricata la lista delle gare disponibili dal database D1.
+                <br>Seleziona una gara dal menu a tendina "Seleziona Gara:".
+            </li>
+            <li>
+                <strong>Carica Dati</strong>: Clicca sul pulsante "Carica Dati". Questo recupererà tutti i dati grezzi (FIN, FAL, FTS) della gara selezionata dal database.
+            </li>
+            <li>
+                <strong>Mappatura Segmenti</strong>: Una volta caricati i dati, apparirà un pannello "Mappatura Segmenti Gara". Qui dovrai classificare ogni segmento identificato nella gara come "Sprint ⚡", "KOM ⛰️" o "Nessuna". Questo è fondamentale per l'assegnazione dei punti Sprint e KOM.
+                <div class="note"><strong>Importante:</strong> Questa mappatura è specifica per la singola elaborazione della gara. Le tue scelte non vengono salvate permanentemente per un riutilizzo futuro della stessa gara/tratta, ma vengono passate al backend per il calcolo attuale.</div>
+            </li>
+            <li>
+                <strong>Calcola Classifiche</strong>: Dopo aver classificato i segmenti, clicca sul pulsante "Calcola Classifiche". La logica di calcolo verrà eseguita sul backend (Cloudflare Function):
+                <ul>
+                    <li>Verranno calcolate le classifiche della singola gara.</li>
+                    <li>Verranno aggiornati i risultati cumulativi nel database D1, gestendo penalità per assenze e nuovi partecipanti.</li>
+                </ul>
+                I risultati (sia della singola gara che i cumulativi aggiornati) verranno visualizzati immediatamente sotto il pannello di controllo.
+            </li>
+            <li>
+                <strong>Download dei Risultati</strong>: Una volta calcolate le classifiche, i pulsanti di download diventeranno attivi:
+                <ul>
+                    <li><strong>Scarica Generale (JSON)</strong>: Scarica il file <code>cumulative_results.json</code> aggiornato.</li>
+                    <li><strong>Scarica Gara (JSON)</strong>: Scarica i risultati della singola gara in formato JSON.</li>
+                    <li><strong>Scarica Report (HTML)</strong>: Genera e scarica un report HTML formattato, pronto per essere incorporato in altre pagine web.</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>4. Setup e Deployment (Per Sviluppatori/Proprietari)</h2>
+        <p>Questa sezione riassume i passaggi tecnici necessari per configurare e mantenere l'applicazione. È rivolta all'amministratore del sito.</p>
+        
+        <h3>Configurazione Locale del Progetto:</h3>
+        <ol>
+            <li>Clonare il repository GitHub contenente il progetto.</li>
+            <li>Assicurarsi di avere Node.js e Wrangler installati globalmente.</li>
+            <li>Nella root del progetto (<code>mwt-cloudflare-app</code>), eseguire <code>npm install</code>.</li>
+        </ol>
+
+        <h3>Database Cloudflare D1:</h3>
+        <ol>
+            <li>Crea un database D1 dalla tua dashboard Cloudflare.</li>
+            <li>Aggiorna il file <code>wrangler.toml</code> con il <code>database_name</code> e <code>database_id</code> del tuo database D1.</li>
+            <li><strong>Crea lo Schema:</strong> Esegui la migrazione SQL per creare le tabelle necessarie:
+<pre><code>npx wrangler d1 execute &lt;NOME_TUO_DB_D1&gt; --file=./migrations/0001_initial_schema.sql</code></pre>
+            </li>
+            <li><strong>Popola i Dati Iniziali:</strong>
+                <ul>
+                    <li>Assicurati che i tuoi dati grezzi (cartella <code>data/races</code> e <code>data/cumulative_results.json</code>) siano presenti nella directory <code>data/</code>.</li>
+                    <li>Genera lo script di popolazione SQL:
+<pre><code>node populate_db.js</code></pre>
+                        Questo creerà il file <code>populate_data.sql</code>.
+                    </li>
+                    <li>Esegui lo script SQL per popolare il DB:
+<pre><code>npx wrangler d1 execute &lt;NOME_TUO_DB_D1&gt; --file=./populate_data.sql</code></pre>
+                    </li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Gestione Utenti (Amministratori):</h3>
+        <ol>
+            <li><strong>Crea un Utente Admin:</strong> Esegui lo script locale (ti chiederà username e password):
+<pre><code>node functions/utils/create_admin_user.js</code></pre>
+                Lo script ti fornirà un comando SQL <code>INSERT</code>.
+            </li>
+            <li><strong>Inserisci l'Admin nel DB:</strong> Esegui il comando SQL generato contro il tuo database D1:
+<pre><code>npx wrangler d1 execute &lt;NOME_TUO_DB_D1&gt; --command="&lt;IL_COMANDO_SQL_GENERATO&gt;"</code></pre>
+            </li>
+            <li><strong>Configura JWT Secret:</strong>
+                <ul>
+                    <li>Scegli una stringa lunga e casuale come chiave segreta per i JWT.</li>
+                    <li>Nella tua dashboard Cloudflare, vai al progetto Pages -> Settings -> Environment variables.</li>
+                    <li>Aggiungi una variabile con <strong>Nome:</strong> <code>JWT_SECRET</code> e incolla la tua chiave nel <strong>Valore</strong>. Assicurati che sia criptata e disponibile per gli ambienti Production e Preview.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Deployment su Cloudflare Pages:</h3>
+        <p>Una volta configurato il progetto Cloudflare Pages e collegato al tuo repository GitHub, ogni volta che effettui un <code>git push</code> al branch configurato, Cloudflare Pages rileverà le modifiche e distribuirà automaticamente la nuova versione del sito.</p>
+    </div>
+
+    <div class="container">
+        <h2>5. Problemi Comuni e Risoluzione</h2>
+        <ul>
+            <li><strong>401 Unauthorized / 403 Forbidden</strong>: Assicurati di aver effettuato il login. Controlla che il <code>JWT_SECRET</code> sia impostato correttamente nelle variabili d'ambiente di Cloudflare Pages e che il tuo utente sia segnato come amministratore nel database D1.</li>
+            <li><strong>Dati mancanti dopo il deploy</strong>: Verifica di aver eseguito correttamente i passaggi di "Deploy D1 Schema" e "Popola D1 con Dati".</li>
+            <li><strong>Errori di Build</strong>: Controlla il log di build su Cloudflare Pages. Spesso sono dovuti a dipendenze mancanti (<code>npm install</code> non eseguito localmente prima del push) o a errori di sintassi nel codice.</li>
+        </ul>
+    </div>
+</body>
+</html>

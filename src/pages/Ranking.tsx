@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { hasPermission } from '../services/permissions';
 
 interface Rider {
   zwid: number;
@@ -18,6 +19,17 @@ interface Rider {
 const ageCategoryMap: Record<string, string> = { 'A': '0-29', 'B': '30-39', 'C': '40-49', 'D': '50-59', 'E': '60+' };
 
 const Ranking: React.FC = () => {
+  const [role, setRole] = useState<string>('guest');
+  useEffect(() => {
+    const token = localStorage.getItem('inox_token');
+    if (token) {
+        try {
+            const p = JSON.parse(atob(token.split('.')[1]));
+            setRole(p.role);
+        } catch {}
+    }
+  }, []);
+
   const [language, setLanguage] = useState<'it' | 'en'>('it');
   const [races, setRaces] = useState<{ text: string; value: string }[]>([]);
   const [selectedRace, setSelectedRace] = useState('cumulative');
@@ -111,9 +123,16 @@ const Ranking: React.FC = () => {
     <div className="p-6 min-h-screen bg-zinc-950 text-white">
       <header className="mb-8 border-b border-zinc-800 pb-6 flex justify-between items-end">
         <div>
-          <h1 className="text-5xl font-black italic tracking-tighter uppercase">
-            {t('title')} <span className="text-inox-orange">2025/26</span>
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-5xl font-black italic tracking-tighter uppercase">
+              {t('title')} <span className="text-inox-orange">2025/26</span>
+            </h1>
+            {hasPermission(role, 'wt.manage') && (
+              <a href="/winter-tour-management" className="px-4 py-2 bg-yellow-600 text-white font-black italic uppercase rounded-lg text-[10px] hover:bg-yellow-700 transition-all">
+                Amministrazione Tour
+              </a>
+            )}
+          </div>
           <p className="text-zinc-500 font-medium italic">{t('subtitle')}</p>
         </div>
         <button 

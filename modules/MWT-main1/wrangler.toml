@@ -1,0 +1,21 @@
+name = "teaminox1"
+compatibility_date = "2025-12-21"
+pages_build_output_dir = "public"
+
+
+# D1 Database configuration
+[[d1_databases]]
+binding = "DB"
+database_name = "inox_auth_db"
+database_id = "c45289cd-c758-4a9b-85c8-3e06713df1e4"
+migrations_dir = "migrations"
+
+# All variables moved to [vars] section as per Pages configuration
+[vars]
+CF_PAGES_FUNCTIONS_MODULES = "true"
+
+
+# Build configuration for Pages Functions
+[build]
+  [build.upload]
+  external = ["@cloudflare/d1"] # Mark @cloudflare/d1 as external for the bundler

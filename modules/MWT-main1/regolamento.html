@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regolamento - Inoxteam</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="sidebar.css?v=1.6">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zwift: { dark: '#111111', card: '#1e1e24', orange: '#fc6719', blue: '#00f0ff', text: '#f0f0f0', gray: '#888888' },
+                        race: { flat: '#10b981', mountain: '#ef4444', hilly: '#f59e0b', time: '#00f0ff', }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-zwift-dark font-body text-zwift-text">
+
+    <nav class="bg-zwift-card border-b border-gray-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-wider font-display text-zwift-orange">MASTER WINTER TOUR <span class="text-white text-lg font-light">2025/26</span></div>
+                        <div class="flex space-x-3 items-center">
+                            <!-- Language toggle button -->
+                            <button id="lang-toggle-btn" class="lang-btn" aria-label="Change language">
+                                <span id="lang-icon">🇮🇹</span>
+                            </button>
+                            <button id="menu-toggle" class="text-white text-2xl lg:hidden focus:outline-none ml-3">
+                                <span id="menu-icon-open"><i class="fas fa-bars"></i></span>
+                                <span id="menu-icon-close" class="hidden"><i class="fas fa-times"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+                
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black z-40 transition-opacity duration-300 hidden"></div>
+    <div id="sidebar" class="fixed top-0 left-0 w-72 h-full bg-[#1a1d20] shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-4 border-b border-gray-700 sticky top-0 bg-[#1a1d20]">
+            <div class="flex items-center space-x-2">
+                <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" class="h-8" alt="Logo INOX">
+
+            </div>
+        </div>
+        <div class="flex flex-col p-2 space-y-1 text-base font-semibold">
+            <div class="border-b border-gray-700 pb-2 mb-2">
+                <p class="text-xs text-gray-500 uppercase px-3 py-1">Navigazione</p>
+                <a href="mwt_page.html" class="sidebar-link">Masters Winter Tour</a>
+                <a href="regolamento.html" class="sidebar-link">Regolamento</a>
+                <a href="Leaders.html" class="sidebar-link">Leaders del Tour</a>
+                <a href="ranking.html" class="sidebar-link">Classifiche</a>
+            </div>
+        </div>
+    </div>
+                
+    <div id="main-content" class="flex-grow">
+        <main class="flex-grow container mx-auto py-8 mt-4">
+                    <div class="rule-content-wrapper">
+                        <!-- Header with language toggles -->
+                        <div class="rule-header" role="banner">
+                            <p class="organizer" aria-hidden="false"><strong>Organized by Team INOX</strong></p>
+                        </div>
+            <!-- =========================
+                 ITALIANO
+                 ========================= -->
+            <div class="lang-it rule-section" id="it-section">
+                <h1>Masters Winter Tour - Regolamento</h1>
+
+                <div class="sommario" id="sommario-it">
+                    <h2>📌 Sommario</h2>
+                    <ul>
+                        <li><a href="#winters-tour-it">1. Masters Winter Tour</a></li>
+                        <li><a href="#rider-it">2. Rider</a></li>
+                        <li><a href="#categorie-it">3. Categorie</a></li>
+                        <li><a href="#classifiche-it">4. Classifiche e Punti</a></li>
+                        <li><a href="#punti-gare-it">5. Punti nelle Diverse Gare</a></li>
+                        <li><a href="#tabelle-punti-it">6. Tabelle Punti</a></li>
+                        <li><a href="#abbuoni-it">7. Abbuoni</a></li>
+                        <li><a href="#contatti-it">8. Contatti</a></li>
+                    </ul>
+                </div>
+
+                <hr id="winters-tour-it" />
+                <h2>1. Masters Winter Tour</h2>
+                <ul>
+                    <li>Competizione individuale per conquistare classifiche: <strong>Punti, Tempo, Sprint e Scalata</strong>.</li>
+                    <li>Griglie di partenza riportate nel Racepass.</li>
+                    <li>Regole generali: vietato l'uso di tecniche o attrezzature non consentite; prima infrazione comporta squalifica (DQ).</li>
+                </ul>
+
+                <h3>Regole specifiche della gara</h3>
+                <ul>
+                    <li>Libera scelta di bici e ruote (bici TT consentite solo negli eventi cronometro).</li>
+                    <li>Power-up assenti.</li>
+                    <li>Vietata modalità ERG.</li>
+                </ul>
+
+                <h3>Regole iTT (cronometro)</h3>
+                <ul>
+                    <li>Scia disattivata.</li>
+                    <li>Libera scelta di bici e ruote (consigliata bici TT).</li>
+                    <li>Power-up assenti.</li>
+                    <li>Vietata modalità ERG.</li>
+                </ul>
+
+                <hr id="rider-it" />
+                <h2>2. Rider</h2>
+                <ul>
+                    <li>Account attivo su ZwiftPower.</li>
+                    <li>Trainer smart o interattivo obbligatorio. Mancata trasmissione dati = annullamento punti.</li>
+                    <li>Cardiofrequenzimetro obbligatorio; malfunzionamenti gestiti dagli organizzatori.</li>
+                    <li>Altezza e peso corretti nel profilo Zwift; variazioni significative possono comportare squalifica.</li>
+                </ul>
+
+                <hr id="categorie-it" />
+                <h2>3. Categorie</h2>
+                <table>
+                    <thead>
+                        <tr><th>Categoria</th><th>in base all'età</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>A</td><td>0 – 29</td></tr>
+                        <tr><td>B</td><td>30 – 39</td></tr>
+                        <tr><td>C</td><td>40 – 49</td></tr>
+                        <tr><td>D</td><td>50 – 59</td></tr>
+                        <tr><td>E</td><td>60+</td></tr>
+                    </tbody>
+                </table>
+
+                <hr id="classifiche-it" />
+                <h2>4. Classifiche e Punti</h2>
+                <h3>Classificazione Individuale a punti</h3>
+                <ul>
+                    <li>Punti accumulati in fasi iTT e Points.</li>
+                    <li>Punti totali = FIN + FTS + FAL.</li>
+                    <li>Ogni tappa conta per la classifica finale.</li>
+                    <li>In caso di parità: si considerano i punti FIN.</li>
+                </ul>
+
+                <h3>Classifica Specialista Sprinter</h3>
+                <ul>
+                    <li>Punti FTS e FAL Sprint da iTT e Points.</li>
+                    <li>In caso di parità: si considerano punti iTT.</li>
+                </ul>
+
+                <h3>Classifica Specialista Scalatore (KOM)</h3>
+                <ul>
+                    <li>Punti FTS e FAL KOM da iTT e Points.</li>
+                    <li>In caso di parità: si considerano punti iTT.</li>
+                </ul>
+
+                <h3>Classifica Tempo Individuale</h3>
+                <ul>
+                    <li>Somma dei tempi di ogni tappa, con abbuoni FIN, FAL, FTS.</li>
+                    <li>Non partecipazione o ingresso in corso: tempo ultimo classificato.</li>
+                </ul>
+
+                <hr id="punti-gare-it" />
+                <h2>5. Punti nelle Diverse Gare</h2>
+
+                <h3>Gare a punti (Points & Luna Park)</h3>
+                <ul>
+                    <li>FIN: secondo tabella.</li>
+                    <li>FTS: primi 10 segmenti Prime.</li>
+                    <li>FAL: primi 10 segmenti Prime.</li>
+                    <li>Punti totali = FIN + FTS + FAL.</li>
+                </ul>
+
+                <h3>Gare iTT Climber</h3>
+                <ul>
+                    <li>FIN: secondo tabella.</li>
+                    <li>FTS e FAL non assegnati.</li>
+                    <li>Punti totali = FIN.</li>
+                </ul>
+
+                <h3>Fasi iTT</h3>
+                <ul>
+                    <li>FIN: secondo tabella.</li>
+                    <li>FTS: primi 10 segmenti Sprint/KOM.</li>
+                    <li>FAL: non assegnato.</li>
+                    <li>Punti totali = FIN + FTS.</li>
+                </ul>
+
+                <hr id="tabelle-punti-it" />
+                <h2>6. Tabelle Punti</h2>
+
+                <h3>FIN – Punti di Arrivo</h3>
+                <table>
+                    <thead>
+                        <tr><th>Posizione</th><th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th><th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th><th>11°</th><th>12°</th><th>13°</th><th>14°</th><th>15°</th><th>16°</th><th>17°</th><th>18°</th><th>19°</th><th>20°</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Punti</td><td>100</td><td>80</td><td>70</td><td>60</td><td>55</td><td>50</td><td>45</td><td>40</td><td>36</td><td>32</td><td>29</td><td>26</td><td>24</td><td>22</td><td>20</td><td>18</td><td>16</td><td>14</td><td>12</td><td>10</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>FAL – First Across a Line</h3>
+                <table>
+                    <thead>
+                        <tr><th>Posizione</th><th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th><th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Punti</td><td>25</td><td>21</td><td>17</td><td>14</td><td>11</td><td>8</td><td>6</td><td>4</td><td>2</td><td>1</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>FTS – Fastest Through a Segment</h3>
+                <table>
+                    <thead>
+                        <tr><th>Posizione</th><th>1°</th><th>2°</th><th>3°</th><th>4°</th><th>5°</th><th>6°</th><th>7°</th><th>8°</th><th>9°</th><th>10°</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Punti</td><td>25</td><td>21</td><td>17</td><td>14</td><td>11</td><td>8</td><td>6</td><td>4</td><td>2</td><td>1</td></tr>
+                    </tbody>
+                </table>
+
+                <hr id="abbuoni-it" />
+                <h2>7. Abbuoni</h2>
+                <ul>
+                    <li>FIN: NO</li>
+                    <li>FAL: NO</li>
+                    <li>FTS: NO</li>
+                </ul>
+
+                <hr id="contatti-it" />
+                <h2>8. Contatti</h2>
+                <ul>
+                    <li>Website: <a href="https://www.teaminox.it" target="_blank" rel="noopener">teaminox.it</a></li>
+                    <li>Facebook Page: <a href="https://www.facebook.com/groups/inoxteam/" target="_blank" rel="noopener">InoxTeam</a></li>
+                    <li>Zwift Companion Club: <a href="https://www.zwift.com/clubs/cef70cde-9149-43a2-b3ae-187643a44703/home" target="_blank" rel="noopener">Zwift Club</a></li>
+                    <li>Discord Channel: <a href="https://discord.gg/cpr3rBGaZy" target="_blank" rel="noopener">Discord</a></li>
+                    <li>ZwiftPower: <a href="https://zwiftpower.com/team.php?id=1646" target="_blank" rel="noopener">ZwiftPower</a></li>
+                    <li>STRAVA: <a href="https://strava.app.link/p2Oj6TaE3Gb" target="_blank" rel="noopener">Strava</a></li>
+                </ul>
+            </div>
+
+            <!-- =========================
+                 ENGLISH
+                 ========================= -->
+            <div class="lang-en rule-section" id="en-section" hidden aria-hidden="true">
+                <h1>Masters Winter Tour - Rules</h1>
+
+                <div class="summary" id="summary-en">
+                    <h2>📌 Contents</h2>
+                    <ul>
+                        <li><a href="#winters-tour-en">1. Masters Winter Tour</a></li>
+                        <li><a href="#rider-en">2. Riders</a></li>
+                        <li><a href="#categorie-en">3. Categories</a></li>
+                        <li><a href="#classifiche-en">4. Rankings & Points</a></li>
+                        <li><a href="#punti-gare-en">5. Points in Different Races</a></li>
+                        <li><a href="#tabelle-punti-en">6. Points Tables</a></li>
+                        <li><a href="#abbuoni-en">7. Time Bonuses</a></li>
+                        <li><a href="#contatti-en">8. Contacts</a></li>
+                    </ul>
+                </div>
+
+                <hr id="winters-tour-en" />
+                <h2>1. Masters Winter Tour</h2>
+                <ul>
+                    <li>Individual competition with rankings for: <strong>Points, Time, Sprint and Climb</strong>.</li>
+                    <li>Start grids reported in the Racepass.</li>
+                    <li>General rules: use of prohibited techniques or equipment is forbidden; first violation results in disqualification (DQ).</li>
+                </ul>
+
+                <h3>Specific race rules</h3>
+                <ul>
+                    <li>Free choice of bike and wheels (TT bikes allowed only in time trial events).</li>
+                    <li>No power-ups.</li>
+                    <li>ERG mode is forbidden.</li>
+                </ul>
+
+                <h3>Time Trial (iTT) rules</h3>
+                <ul>
+                    <li>Drafting disabled.</li>
+                    <li>Free choice of bike and wheels (TT bike recommended).</li>
+                    <li>No power-ups.</li>
+                    <li>ERG mode is forbidden.</li>
+                </ul>
+
+                <hr id="rider-en" />
+                <h2>2. Riders</h2>
+                <ul>
+                    <li>Active ZwiftPower account required.</li>
+                    <li>Smart or interactive trainer required. If no data is transmitted, points will be voided.</li>
+                    <li>Heart-rate monitor mandatory; malfunctions will be handled by the organisers.</li>
+                    <li>Correct height and weight in Zwift profile; significant discrepancies may lead to disqualification.</li>
+                    </ul>
+
+                <hr id="categorie-en" />
+                <h2>3. Categories</h2>
+                <table>
+                    <thead>
+                        <tr><th>Category</th><th>By age</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>A</td><td>0 – 29</td></tr>
+                        <tr><td>B</td><td>30 – 39</td></tr>
+                        <tr><td>C</td><td>40 – 49</td></tr>
+                        <tr><td>D</td><td>50 – 59</td></tr>
+                        <tr><td>E</td><td>60+</td></tr>
+                    </tbody>
+                </table>
+
+                <hr id="classifiche-en" />
+                <h2>4. Rankings & Points</h2>
+                <h3>Individual points ranking</h3>
+                <ul>
+                    <li>Points accumulated from iTT and Points stages.</li>
+                    <li>Total points = FIN + FTS + FAL.</li>
+                    <li>Each stage counts toward the final ranking.</li>
+                    <li>Tie: FIN points are used to break ties.</li>
+                </ul>
+
+                <h3>Sprint Specialist Ranking</h3>
+                <ul>
+                    <li>FTS and FAL sprint points from iTT and Points stages.</li>
+                    <li>Tie: iTT points are used to break ties.</li>
+                </ul>
+
+                <h3>Climber Specialist (KOM) Ranking</h3>
+                <ul>
+                    <li>FTS and FAL KOM points from iTT and Points stages.</li>
+                    <li>Tie: iTT points are used to break ties.</li>
+                </ul>
+
+                <h3>Individual Time Ranking</h3>
+                <ul>
+                    <li>Sum of times from each stage, including FIN, FAL and FTS bonuses.</li>
+                    <li>Non participation or late entry: time of the last classified rider.</li>
+                </ul>
+
+                <hr id="punti-gare-en" />
+                <h2>5. Points in Different Races</h2>
+
+                <h3>Points races (Points & Luna Park)</h3>
+                <ul>
+                    <li>FIN: see table.</li>
+                    <li>FTS: top 10 Prime segments.</li>
+                    <li>FAL: top 10 Prime segments.</li>
+                    <li>Punti totali = FIN + FTS + FAL.</li>
+                </ul>
+
+                <h3>iTT Climber races</h3>
+                <ul>
+                    <li>FIN: see table.</li>
+                    <li>FTS e FAL non assegnati.</li>
+                    <li>Punti totali = FIN.</li>
+                </ul>
+
+                <h3>iTT stages</h3>
+                <ul>
+                    <li>FIN: see table.</li>
+                    <li>FTS: top 10 Sprint/KOM.</li>
+                    <li>FAL: non awarded.</li>
+                    <li>Punti totali = FIN + FTS.</li>
+                </ul>
+
+                <hr id="tabelle-punti-en" />
+                <h2>6. Points Tables</h2>
+
+                <h3>FIN – Finish Points</h3>
+                <table>
+                    <thead>
+                        <tr><th>Place</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5°</th><th>6th</th><th>7th</th><th>8th</th><th>9th</th><th>10th</th><th>11th</th><th>12th</th><th>13th</th><th>14th</th><th>15th</th><th>16th</th><th>17th</th><th>18th</th><th>19th</th><th>20th</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Points</td><td>100</td><td>80</td><td>70</td><td>60</td><td>55</td><td>50</td><td>45</td><td>40</td><td>36</td><td>32</td><td>29</td><td>26</td><td>24</td><td>22</td><td>20</td><td>18</td><td>16</td><td>14</td><td>12</td><td>10</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>FAL – First Across a Line</h3>
+                <table>
+                    <thead>
+                        <tr><th>Place</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>8th</th><th>9th</th><th>10th</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Points</td><td>25</td><td>21</td><td>17</td><td>14</td><td>11</td><td>8</td><td>6</td><td>4</td><td>2</td><td>1</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>FTS – Fastest Through a Segment</h3>
+                <table>
+                    <thead>
+                        <tr><th>Place</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>8th</th><th>9th</th><th>10th</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Points</td><td>25</td><td>21</td><td>17</td><td>14</td><td>11</td><td>8</td><td>6</td><td>4</td><td>2</td><td>1</td></tr>
+                    </tbody>
+                </table>
+
+                <hr id="abbuoni-en" />
+                <h2>7. Time Bonuses</h2>
+                <ul>
+                    <li>FIN: NO</li>
+                    <li>FAL: NO</li>
+                    <li>FTS: NO</li>
+                </ul>
+
+                <hr id="contatti-en" />
+                <h2>8. Contacts</h2>
+                <ul>
+                    <li>Website: <a href="https://www.teaminox.it" target="_blank" rel="noopener">teaminox.it</a></li>
+                    <li>Facebook Page: <a href="https://www.facebook.com/groups/inoxteam/" target="_blank" rel="noopener">InoxTeam</a></li>
+                    <li>Zwift Companion Club: <a href="https://www.zwift.com/clubs/cef70cde-9149-43a2-b3ae-187643a44703/home" target="_blank" rel="noopener">Zwift Club</a></li>
+                    <li>Discord Channel: <a href="https://discord.gg/cpr3rBGaZy" target="_blank" rel="noopener">Discord</a></li>
+                    <li>ZwiftPower: <a href="https://zwiftpower.com/team.php?id=1646" target="_blank" rel="noopener">ZwiftPower</a></li>
+                    <li>STRAVA: <a href="https://strava.app.link/p2Oj6TaE3Gb" target="_blank" rel="noopener">Strava</a></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    </div>
+
+    <footer class="bg-black py-8 border-t border-gray-800"><!-- footer content --></footer>
+    <div id="event-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"><!-- modal content --></div>
+
+
+    <script src="sidebar.js?v=1.6"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team INOX - Gestione Utenti</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zwift: { dark: '#111111', card: '#1e1e24', orange: '#fc6719', blue: '#00f0ff', text: '#f0f0f0', gray: '#888888' },
+                        race: { flat: '#10b981', mountain: '#ef4444', hilly: '#f59e0b', time: '#00f0ff', }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="sidebar.css?v=1.6" type="text/css">
+    
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-zwift-dark font-body text-zwift-text">
+
+    <video autoplay muted loop id="background-video">
+        <source src="https://www.teaminox.it/wp-content/uploads/2025/11/Presentazione-2025-.mp4" type="video/mp4">
+    </video>
+
+    <button id="menu-toggle" class="lg:hidden fixed top-4 left-4 z-[100] p-2 bg-zwift-card rounded-md shadow-2xl border border-gray-700">
+        <svg id="menu-icon-open" class="w-6 h-6 text-zwift-orange block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+        <svg id="menu-icon-close" class="w-6 h-6 text-zwift-orange hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
+    <div id="sidebar-overlay" class="hidden"></div>
+
+    <div id="main-layout">
+
+        <aside id="sidebar">
+            <!-- Sidebar content will be loaded by sidebar.js -->
+        </aside>
+
+        <div id="main-content">
+            
+            <nav id="top-nav" class="bg-zwift-card border-b border-gray-700 shadow-lg hidden lg:block w-full">
+                 <!-- Top nav content can be loaded dynamically if needed -->
+            </nav>
+
+            <main class="w-full p-4 sm:p-6 lg:p-6 pt-16 lg:pt-6">
+                
+                <section id="user-management-section" class="bg-zwift-card rounded-xl p-6 sm:p-8 mb-10 card-shadow border-l-4 border-zwift-blue">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-6 text-white zwift-font tracking-tight">
+                        Gestione Utenti
+                    </h2>
+                    <p class="text-gray-300 mb-8 max-w-lg text-sm sm:text-base">
+                        Visualizza, promuovi o elimina utenti dal sistema.
+                    </p>
+                    
+                    <div id="status-message" class="mb-6 text-sm"></div>
+
+                    <div class="overflow-x-auto">
+                        <table id="users-table" class="min-w-full table-auto text-left">
+                            <thead>
+                                <tr class="bg-gray-800">
+                                    <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">ID</th>
+                                    <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Username</th>
+                                    <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Email</th>
+                                    <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Ruolo</th>
+                                    <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- User rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+            </main>
+        </div>
+    </div>
+
+    <script src="sidebar.js?v=1.6"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_token');
+
+            // 1. Auth check and role check
+            if (!token) {
+                window.location.href = '/index.html'; 
+                return;
+            }
+
+            try {
+                const payloadBase64 = token.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                if (decodedPayload.role !== 'admin') {
+                    alert('Accesso negato. Solo gli amministratori possono accedere a questa pagina.');
+                    window.location.href = '/home.html';
+                    return;
+                }
+            } catch (e) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            const tableBody = document.getElementById('users-table-body');
+            const statusMessage = document.getElementById('status-message');
+
+            const fetchUsers = async () => {
+                try {
+                    statusMessage.innerHTML = `<span class="text-zwift-blue">Caricamento utenti...</span>`;
+                    const response = await fetch('/api/admin/users', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Errore nel caricamento degli utenti.');
+                    }
+                    const users = await response.json();
+                    renderTable(users);
+                    statusMessage.innerHTML = '';
+                } catch (error) {
+                    statusMessage.innerHTML = `<span class="text-red-500">Errore: ${error.message}</span>`;
+                }
+            };
+
+            const renderTable = (users) => {
+                tableBody.innerHTML = '';
+                users.forEach(user => {
+                    const isAdmin = user.is_admin === 1 || user.role === 'admin';
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-800';
+                    
+                    const roleButtonText = isAdmin ? 'Rimuovi Admin' : 'Promuovi ad Admin';
+                    const roleButtonClass = isAdmin ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700';
+
+                    row.innerHTML = "
+                        <td class=\"px-4 py-3 text-white\">${user.id}</td>
+                        <td class=\"px-4 py-3 text-white\">${user.username}</td>
+                        <td class=\"px-4 py-3 text-gray-400\">${user.email}</td>
+                        <td class=\"px-4 py-3 text-white\">${isAdmin ? '<span class="font-bold text-zwift-orange">Admin</span>' : 'Utente'}</td>
+                        <td class=\"px-4 py-3 space-x-2\">
+                            <button data-user-id=\""${user.id}\"" data-is-admin=\""${isAdmin}\"" class=\"toggle-admin-btn text-white text-xs font-bold py-1 px-3 rounded-md transition ${roleButtonClass}\">
+                                ${roleButtonText}
+                            </button>
+                            <button data-user-id=\""${user.id}\"" data-username=\""${user.username}\"" class=\"delete-user-btn bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-3 rounded-md transition\">
+                                Elimina
+                            </button>
+                        </td>
+                    ";
+                    tableBody.appendChild(row);
+                });
+                addEventListeners();
+            };
+
+            const addEventListeners = () => {
+                document.querySelectorAll('.toggle-admin-btn').forEach(button => {
+                    button.addEventListener('click', handleToggleAdmin);
+                });
+                document.querySelectorAll('.delete-user-btn').forEach(button => {
+                    button.addEventListener('click', handleDeleteUser);
+                });
+            };
+
+            const handleToggleAdmin = async (event) => {
+                const button = event.currentTarget;
+                const userId = button.dataset.userId;
+                const isAdmin = button.dataset.isAdmin === 'true';
+                const newIsAdmin = !isAdmin;
+
+                if (confirm(`Sei sicuro di voler ${newIsAdmin ? 'promuovere ad admin' : 'rimuovere i privilegi admin per'} l'utente ${userId}?`)) {
+                    try {
+                        const response = await fetch('/api/admin/users', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ userId: parseInt(userId), isAdmin: newIsAdmin, role: newIsAdmin ? 'admin' : 'team_member' })
+                        });
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(err.error || 'Errore durante l\'aggiornamento del ruolo.');
+                        }
+                        statusMessage.innerHTML = `<span class="text-green-500">Ruolo utente aggiornato.</span>`;
+                        fetchUsers(); // Refresh the table
+                    } catch (error) {
+                        statusMessage.innerHTML = `<span class="text-red-500">Errore: ${error.message}</span>`;
+                    }
+                }
+            };
+            
+            const handleDeleteUser = async (event) => {
+                const button = event.currentTarget;
+                const userId = button.dataset.userId;
+                const username = button.dataset.username;
+
+                if (confirm(`Sei SICURO di voler eliminare l'utente "${username}" (ID: ${userId})? L'azione è irreversibile.`)) {
+                     try {
+                        const response = await fetch('/api/admin/users', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ userId: parseInt(userId) })
+                        });
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(err.error || 'Errore durante l\'eliminazione dell\'utente.');
+                        }
+                        statusMessage.innerHTML = `<span class="text-green-500">Utente eliminato.</span>`;
+                        fetchUsers(); // Refresh the table
+                    } catch (error) {
+                        statusMessage.innerHTML = `<span class="text-red-500">Errore: ${error.message}</span>`;
+                    }
+                }
+            };
+
+            // Initial load
+            fetchUsers();
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifiche Masters Winter Tour 2025/26</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="sidebar.css?v=1.6">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zwift: { dark: '#111111', card: '#1e1e24', orange: '#fc6719', blue: '#00f0ff', text: '#f0f0f0', gray: '#888888' },
+                        race: { flat: '#10b981', mountain: '#ef4444', hilly: '#f59e0b', time: '#00f0ff', }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-zwift-dark font-body text-zwift-text">
+
+    <nav class="bg-zwift-card border-b border-gray-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-wider font-display text-zwift-orange">MASTER WINTER TOUR <span class="text-white text-lg font-light">2025/26</span></div>
+                        <div class="flex space-x-3 items-center">
+                            <!-- Language toggle button -->
+                            <button id="lang-toggle-btn" class="lang-btn" aria-label="Change language">
+                                <span id="lang-icon">🇮🇹</span>
+                            </button>
+                            <button id="menu-toggle" class="text-white text-2xl lg:hidden focus:outline-none ml-3">
+                                <span id="menu-icon-open"><i class="fas fa-bars"></i></span>
+                                <span id="menu-icon-close" class="hidden"><i class="fas fa-times"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+                
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black z-40 transition-opacity duration-300 hidden"></div>
+    <div id="sidebar" class="fixed top-0 left-0 w-72 h-full bg-[#1a1d20] shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-4 border-b border-gray-700 sticky top-0 bg-[#1a1d20]">
+            <div class="flex items-center space-x-2">
+                <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" class="h-8" alt="Logo INOX">
+
+            </div>
+        </div>
+        <div class="flex flex-col p-2 space-y-1 text-base font-semibold">
+            <div class="border-b border-gray-700 pb-2 mb-2">
+                <p class="text-xs text-gray-500 uppercase px-3 py-1">Navigazione</p>
+
+                <a href="mwt_page.html" class="sidebar-link">Masters Winter Tour</a>
+                <a href="regolamento.html" class="sidebar-link">Regolamento</a>
+                <a href="Leaders.html" class="sidebar-link">Leaders del Tour</a>
+
+
+                <a href="ranking.html" class="sidebar-link">Classifiche</a>
+            </div>
+        </div>
+    </div>
+                
+    <div id="main-content" class="flex-grow">
+        <section id="ranking" class="py-12 bg-zwift-dark">
+            <div class="container mx-auto px-4">
+                <div class="mb-8 border-b border-gray-700 pb-4">
+                    <h2 class="text-4xl font-bold text-white font-display lang-it">CLASSIFICHE TOUR</h2>
+                    <p class="text-gray-400 lang-it">Seleziona una gara, la classifica e un grupo di età per visualizzare i risultati aggiornati.</p>
+                    <h2 class="text-4xl font-bold text-white font-display lang-en" hidden>TOUR RANKINGS</h2>
+                    <p class="text-gray-400 lang-en" hidden>Select a race, ranking, and age group to view updated results.</p>
+                </div>
+                
+                <div class="flex space-x-4 mb-4 flex-wrap items-center bg-zwift-card p-4 rounded-lg border border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <label for="selectGaraRanking" class="text-gray-400 text-sm font-semibold lang-it">Gara:</label>
+                        <label for="selectGaraRanking" class="text-gray-400 text-sm font-semibold lang-en" hidden>Race:</label>
+                        <select id="selectGaraRanking" class="bg-zwift-dark text-white border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-zwift-orange">
+                            <option value="cumulative" class="lang-it">Generale (Cumulata)</option>
+                            <option value="cumulative" class="lang-en" hidden>General (Cumulative)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="selectCategory" class="text-gray-400 text-sm font-semibold lang-it">Categoria:</label>
+                        <label for="selectCategory" class="text-gray-400 text-sm font-semibold lang-en" hidden>Category:</label>
+                        <select id="selectCategory" class="bg-zwift-dark text-white border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-zwift-orange"></select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="selectType" class="text-gray-400 text-sm font-semibold lang-it">Classifica:</label>
+                        <label for="selectType" class="text-gray-400 text-sm font-semibold lang-en" hidden>Ranking:</label>
+                        <select id="selectType" class="bg-zwift-dark text-white border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-zwift-orange"></select>
+                    </div>
+                </div>
+                <div id="podium-container-mwt" class="mb-12">
+                    <!-- Podio dinamico verrà renderizzato qui -->
+                </div>
+                <div id="ranking-container" class="bg-zwift-card p-6 rounded-xl border border-gray-800 shadow-lg min-h-[300px] relative">
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-black py-8 border-t border-gray-800"><!-- footer content --></footer>
+    <div id="event-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"><!-- modal content --></div>
+
+
+    <script src="sidebar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const getLang = () => localStorage.getItem('mwt_lang') || 'it';
+
+            const translations = {
+                'loading_ranking': { it: 'Caricamento classifica...', en: 'Loading ranking...' }, 'file_not_found': { it: 'File non trovato:', en: 'File not found:' },
+                'error_loading_cumulative_data': { it: 'Errore caricamento dati cumulativi:', en: 'Error loading cumulative data:' },
+                'invalid_ranking_type': { it: 'Tipo classifica non valido.', en: 'Invalid ranking type.' }, 'no_data_available': { it: 'Nessun dato disponibile per questa selezione.', en: 'No data available for this selection.' },
+                'individual': { it: 'Individuale', en: 'Individual' }, 'error_loading_ranking': { it: 'Errore caricamento classifica:', en: 'Error loading ranking:' },
+                'ensure_json_files': { it: 'Assicurati che i file JSON siano presenti.', en: 'Ensure JSON files are present.' },
+                'unrecognized_json_format': { it: 'Formato JSON non riconosciuto.', en: 'Unrecognized JSON format.' },
+                'pos': { it: 'Pos', en: 'Pos' }, 'athlete': { it: 'Atleta', en: 'Athlete' }, 'team': { it: 'Squadra', en: 'Team' }, 'points': { it: 'Punti', en: 'Points' },
+                'time': { it: 'Tempo', en: 'Time' }, 'sprint_points': { it: 'Punti Sprint', en: 'Sprint Points' }, 'climb_points': { it: 'Punti Scalata', en: 'Climb Points' },
+                'race_prefix': { it: 'Gara', en: 'Race' }, 'general_suffix': { it: 'Generali', en: 'General' },
+                'cumulative_general': { it: 'Generale (Cumulata)', en: 'General (Cumulative)' }, 'time_ranking': { it: 'Tempo', en: 'Time' },
+                'points_ranking': { it: 'Punti', en: 'Points' }, 'sprinter_ranking': { it: 'Punti Sprinter', en: 'Sprinter Points' },
+                'climber_ranking': { it: 'Punti Scalatore', en: 'Climber Coaches' }
+            };
+
+            const t = (key) => {
+                const lang = getLang();
+                return translations[key]?.[lang] || translations[key]?.it || key;
+            };
+
+            let currentCategory = 'A', currentType = 'punti', currentStage = 'cumulative'; // Default values
+
+            const secondsToHms = (d) => {
+                if (d === undefined || d === null || isNaN(d) || d === 0) return "--:--:--";
+                // Convert milliseconds to seconds for consistency with old data
+                const seconds = Math.floor(d / 1000); 
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = Math.round(seconds % 60);
+                const pad = (num) => String(num).padStart(2, '0');
+                return `${pad(h)}:${pad(m)}:${pad(s)}`;
+            };
+
+            const renderRankingTable = (data, type, stage) => {
+                const isCumulative = stage === 'cumulative';
+                // Keys from DB: total_points, total_time_ms, total_sprint_points, total_kom_points
+                const scoreKeys = { 
+                    punti: { api: 'total_points' }, 
+                    tempo: { api: 'total_time_ms' }, 
+                    sprinter: { api: 'total_sprint_points' }, 
+                    scalatore: { api: 'total_kom_points' } 
+                };
+                
+                const headers = { 
+                    punti: [t('pos'), t('athlete'), t('team'), t('points')], 
+                    tempo: [t('pos'), t('athlete'), t('team'), t('time')], 
+                    sprinter: [t('pos'), t('athlete'), t('team'), t('sprint_points')], 
+                    scalatore: [t('pos'), t('athlete'), t('team'), t('climb_points')] 
+                };
+                const tableHeaders = headers[type] || [];
+                
+                const sortedData = [...data].sort((a, b) => {
+                    const key = scoreKeys[type].api;
+                    const scoreA = a[key] || (type === 'tempo' ? Infinity : 0);
+                    const scoreB = b[key] || (type === 'tempo' ? Infinity : 0);
+                    return type === 'tempo' ? scoreA - scoreB : scoreB - scoreA;
+                });
+
+                let html = `<div class="overflow-x-scroll"><table class="min-w-full table-auto text-left"><thead><tr class="bg-black/50">${tableHeaders.map(h => `<th class="px-4 py-2 border-b-2 border-zwift-orange">${h}</th>`).join('')}</tr></thead><tbody>`;
+                if (sortedData.length === 0) {
+                    html += `<tr><td colspan="${tableHeaders.length}" class="text-center py-8 text-gray-500">${t('no_data_available')}</td></tr>`;
+                } else {
+                    sortedData.forEach((athlete, index) => {
+                        const rank = index + 1, 
+                              scoreValue = athlete[scoreKeys[type].api];
+                        const scoreDisplay = type === 'tempo' ? secondsToHms(scoreValue) : `${scoreValue || 0} Pts`;
+                        const medals = ['🥇', '🥈', '🥉'], medalIcon = rank <= 3 ? medals[rank - 1] : '';
+                        const flagImg = athlete.flag ? `<img src="https://flagcdn.com/16x12/${athlete.flag.toLowerCase()}.png" alt="${athlete.flag}" class="inline-block mr-2">` : '';
+                        html += `<tr class="hover:bg-black/30"><td class="px-4 py-3 font-bold">${medalIcon}${rank}</td><td class="px-4 py-3 font-semibold text-white">${flagImg}${athlete.name}</td><td class="px-4 py-3 text-gray-400">${athlete.team_name || t('individual')}</td><td class="px-4 py-3 font-bold text-zwift-orange">${scoreDisplay}</td></tr>`;
+                    });
+                }
+                html += `</tbody></table></div>`;
+                return html;
+            };
+
+            const loadRanking = async (category, type, stage) => {
+                currentCategory = category; 
+                currentType = type; 
+                currentStage = stage;
+                const container = document.getElementById('ranking-container');
+                container.innerHTML = `<div class="text-gray-500 absolute inset-0 flex items-center justify-center">${t('loading_ranking')}</div>`;
+                try {
+                    const isCumulative = stage === 'cumulative';
+                    let apiUrl = isCumulative ? '/api/rankings' : `/api/race-results?raceId=${stage}`;
+                    
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `${t('file_not_found')} (API)`);
+                    }
+                    const apiData = await response.json();
+                    
+                    let dataToRender = [];
+
+                    if (isCumulative) {
+                        dataToRender = apiData[category] || [];
+                    } else {
+                        // For race results, data comes grouped by classification already
+                        if (apiData.categories && apiData.categories[category]) {
+                            const catData = apiData.categories[category];
+                            if (type === 'punti') dataToRender = catData.punti;
+                            else if (type === 'tempo') dataToRender = catData.tempo;
+                            else if (type === 'sprinter') dataToRender = catData.sprinter;
+                            else if (type === 'scalatore') dataToRender = catData.climber;
+                        }
+                    }
+
+                    if (dataToRender.length === 0) {
+                        container.innerHTML = `<p class="text-gray-500 text-lg p-10 text-center">${t('no_data_available')}</p>`;
+                    } else {
+                        container.innerHTML = renderRankingTable(dataToRender, type, stage);
+                    }
+
+                } catch (error) {
+                    console.error(t('error_loading_ranking'), error);
+                    container.innerHTML = `<p class="text-red-500 text-lg p-10 text-center">${t('error_loading_ranking')} (${error.message})</p>`;
+                }
+            };
+            
+            // Helper to fetch and populate races
+            const fetchAndPopulateRaces = async (selectElement, defaultOptionValue, defaultOptionText) => {
+                try {
+                    const response = await fetch('/api/races'); // Assuming a new API endpoint for races
+                    if (!response.ok) throw new Error('Could not fetch races.');
+                    const races = await response.json();
+                    
+                    selectElement.innerHTML = '';
+                    selectElement.add(new Option(defaultOptionText, defaultOptionValue)); // "Generale (Cumulata)"
+                    
+                    races.forEach(race => {
+                        selectElement.add(new Option(`${t('race_prefix')} ${race.id} - ${race.name || ''}`, race.id));
+                    });
+                } catch (error) {
+                    console.error('Error populating races:', error);
+                    selectElement.innerHTML = '';
+                    selectElement.add(new Option(defaultOptionText, defaultOptionValue)); // Fallback
+                    selectElement.add(new Option('Error loading races', 'error'));
+                }
+            };
+
+            const initRankingListeners = () => {
+                const selectGaraRanking = document.getElementById('selectGaraRanking');
+                const selectCategory = document.getElementById('selectCategory');
+                const selectType = document.getElementById('selectType');
+
+                const populateSelect = (select, options) => {
+                    select.innerHTML = ''; // Clear existing options
+                    options.forEach(opt => select.appendChild(new Option(opt.text, opt.value)));
+                };
+                
+                // Populate categories (static as before)
+                const ageCategoryMap = { 'A': '0-29', 'B': '30-39', 'C': '40-49', 'D': '50-59', 'E': '60+' };
+                populateSelect(selectCategory, Object.keys(ageCategoryMap).map(key => ({ text: ageCategoryMap[key], value: key })));
+                
+                // Populate types (static as before)
+                populateSelect(selectType, [
+                    { value: 'punti', text: t('points_ranking') }, 
+                    { value: 'tempo', text: t('time_ranking') },
+                    { value: 'sprinter', text: t('sprinter_ranking') }, 
+                    { value: 'scalatore', text: t('climber_ranking') }
+                ]);
+
+                // Populate races dynamically
+                fetchAndPopulateRaces(selectGaraRanking, 'cumulative', t('cumulative_general')).then(() => {
+                    selectGaraRanking.value = currentStage;
+                    selectCategory.value = currentCategory;
+                    selectType.value = currentType;
+                    loadRanking(currentCategory, currentType, currentStage); // Initial load
+                });
+                
+                selectGaraRanking.onchange = (e) => loadRanking(currentCategory, currentType, e.target.value);
+                selectCategory.onchange = (e) => loadRanking(e.target.value, currentType, currentStage);
+                selectType.onchange = (e) => loadRanking(currentCategory, e.target.value, currentStage);
+            };
+
+            const setLanguage = (lang) => {
+                localStorage.setItem('mwt_lang', lang);
+                document.documentElement.lang = lang;
+                document.querySelectorAll('.lang-it').forEach(el => el.hidden = lang !== 'it');
+                document.querySelectorAll('.lang-en').forEach(el => el.hidden = lang !== 'en');
+                
+                const langIcon = document.getElementById('lang-icon');
+                if (langIcon) {
+                    langIcon.textContent = lang === 'it' ? '🇮🇹' : '🇬🇧';
+                }
+
+                initRankingListeners(); // Re-initialize listeners to update text
+            };
+            
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            if (langToggleBtn) {
+                langToggleBtn.addEventListener('click', () => {
+                    const currentLang = getLang();
+                    const newLang = currentLang === 'it' ? 'en' : 'it';
+                    setLanguage(newLang);
+                });
+            }
+            
+            setLanguage(getLang()); // Initial setup
+        });
+    </script>
+</body>
+</html>

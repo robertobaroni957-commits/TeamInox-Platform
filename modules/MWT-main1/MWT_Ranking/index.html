@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masters Winter Tour 2025/26 - Calcolatore Classifiche</title>
+<style>
+/* Stili per l'interfaccia di gestione (Scuro) */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #1e1e2f; 
+    color: #e0e0e0; 
+    padding: 20px; 
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* --- Controlli --- */
+.controls {
+    background: #2a2a3a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+select, button { 
+    padding: 10px 15px; 
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    outline: none;
+}
+select {
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+}
+button {
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+button:hover { background: #45a049; }
+button:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+/* --- Statistiche --- */
+.stats {
+    background: #2a2a3a;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+.stat-box {
+    background: #333344;
+    padding: 15px 25px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+    border: 1px solid #444;
+}
+.stat-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 5px; }
+.stat-value { font-size: 28px; font-weight: bold; color: #4CAF50; line-height: 1.2; }
+
+/* --- Tabelle di Visualizzazione (per l'amministratore) --- */
+table { 
+    border-collapse: collapse;
+    width: 100%; 
+    margin-top: 15px; 
+    background: #2a2a3a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 40px;
+}
+th, td { border-bottom: 1px solid #333; padding: 12px 15px; text-align: center; }
+td:nth-child(2) { text-align: left; font-weight: 500; color: #fff; } 
+td:nth-child(1) { font-weight: bold; background: #333344; width: 50px; } 
+
+.score-col { font-weight: bold; color: #4CAF50; font-size: 1.1em; } 
+.time-col { font-weight: bold; color: #FFD700; font-size: 1.1em; } 
+
+th { 
+    background: #1a1a2a; 
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #4CAF50;
+    padding: 15px;
+    border-bottom: 2px solid #4CAF50;
+}
+tr:nth-child(even) { background: #232333; }
+tr:nth-child(odd) { background: #2a2a3a; }
+tbody tr:hover { background: #353555 !important; }
+
+h1 { color: #4CAF50; text-align: center; margin-bottom: 30px; font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px; }
+h2 { margin-top: 50px; color: #fff; border-left: 5px solid #4CAF50; padding-left: 15px; font-size: 1.5em; }
+h3 { color: #aaa; margin-top: 20px; font-size: 1.1em; }
+
+.loading { text-align: center; padding: 30px; font-size: 18px; color: #4CAF50; }
+.error { background: #d32f2f; color: white; padding: 15px; border-radius: 8px; margin: 20px 0; }
+
+.pos-1 td:nth-child(1) { color: #FFD700; font-size: 1.2em; }
+.pos-2 td:nth-child(1) { color: #C0C0C0; font-size: 1.2em; }
+.pos-3 td:nth-child(1) { color: #CD7F32; font-size: 1.2em; }
+.no-time { color: #666; font-style: italic; }
+.info-box { background: #007bff; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+/* NUOVE REGOLE PER segmentTable */
+#segmentTable th:nth-child(2),
+#segmentTable td:nth-child(2), /* FTS */
+#segmentTable th:nth-child(3),
+#segmentTable td:nth-child(3), /* FAL */
+#segmentTable th:nth-child(4),
+#segmentTable td:nth-child(4) { /* Classifica */
+    text-align: right;
+    width: 1%; /* Forza la colonna ad essere stretta quanto il contenuto */
+    white-space: nowrap; /* Evita il wrap del testo */
+}
+
+#segmentTable th:nth-child(1),
+#segmentTable td:nth-child(1) { /* Segmento */
+    text-align: left;
+    width: auto; /* Permette di prendere lo spazio rimanente */
+}
+</style>
+</head>
+<body>
+
+<h1>🏆 Masters Winter Tour 2025/26</h1>
+
+<div class="controls">
+    <label for="selectGara">Seleziona Gara:</label>
+    <select id="selectGara">
+        <option value="">-- Scegli --</option>
+    </select>
+    <button id="loadGaraBtn">Carica Dati</button>
+    <button id="reportBtn" style="background: #007bff;" disabled>Genera Report HTML</button> 
+    <button id="resetBtn" style="background: #d32f2f;">Reset Totali</button>
+</div>
+
+<div id="statusMessage" class="info-box" style="display: none;"></div>
+
+<div id="segmentPanel" style="display: none; margin-top: 30px; padding: 20px; background: #333344; border-radius: 8px;">
+    <h2>🔗 Mappatura Segmenti Gara <span id="garaSegmentoId"></span></h2>
+        <p style="color: #ccc;">Seleziona per ogni segmento a quale classifca porta punti e se i punti assegnati arriveranno dall'orinde FTS, FAL o entrambi</p>
+    
+    <table id="segmentTable" style="margin-top: 15px;">
+        <thead>
+            <tr>
+                <th>Segmento</th>
+                <th>FTS</th>
+                <th>FAL</th>
+                <th>Classifica</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <button id="calcolaClassificheBtn" style="background: #008CBA; margin-top: 20px;">
+        Genera Classifiche Complete e Aggiorna Generale
+    </button>
+</div>
+<div id="classifiche"></div>
+
+<div id="reportOutput" style="margin-top: 30px; display: none;">
+    <h2>📝 Report Pubblicabile (Formato HTML)</h2>
+    <p style="color: #ccc;">Copia il contenuto del box qui sotto per incollarlo direttamente in una pagina web/CMS. **Questo codice include stili inline per la compatibilità.**</p>
+    <button onclick="copiaReport()" style="background: #28a745;">Copia negli Appunti</button>
+    <textarea id="reportTextarea" rows="25" style="width: 100%; height: 500px; margin-top: 10px; padding: 10px; background: #333; color: white; border: 1px solid #555; font-family: monospace;"></textarea>
+</div>
+
+
+<script>
+// --- CONFIGURAZIONE E VARIABILI GLOBALI ---
+const PUNTI_FIN = [100,80,70,60,55,50,45,40,36,32,29,26,24,22,20,18,16,14,12,10];
+const PUNTI_FTS = [25,21,17,14,11,8,6,4,2,1];
+const PUNTI_FAL = [25,21,17,14,11,8,6,4,2,1];
+const CATEGORIE = ['A','B','C','D','E'];
+
+let cumulative = { races_processed: 0, max_times_per_race: [], results: {A:[], B:[], C:[], D:[], E:[]} };
+let classGaraGlobale = null; // Sarà popolato con i dati della GARA SINGOLA
+let eventDetailsGlobale = null; // Conterrà i dettagli dell'evento caricato
+
+// --- VARIABILI PER LA MAPPATURA DINAMICA ---
+let allSegments = new Set(); 
+let selectedSegments = {}; // Modificato per contenere un oggetto per segmento con le classificazioni
+let rawDataGaraGlobale = { 
+    fal: {},
+    fts: {},
+    fin: null
+}; 
+
+// Popola il selettore delle gare dinamicamente
+const selectGara = document.getElementById('selectGara');
+async function popolaSelettoreGare() {
+    try {
+        const response = await fetch('/api/races?cache_bust=' + new Date().getTime());
+        if (!response.ok) {
+            throw new Error('Impossibile caricare la lista delle gare.');
+        }
+        const races = await response.json();
+        
+        // Svuota le opzioni esistenti (tranne la prima)
+        selectGara.innerHTML = '<option value="">-- Scegli --</option>';
+
+        races.forEach(raceNumber => {
+            const option = document.createElement('option');
+            option.value = raceNumber;
+            option.textContent = `Gara ${raceNumber}`;
+            selectGara.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Errore nel caricamento dinamico delle gare:', error);
+        // Messaggio di errore per l'utente, o fallback a un metodo statico
+        selectGara.innerHTML = '<option value="">-- Errore nel caricare le gare --</option>';
+    }
+}
+
+// --- FUNZIONI DI PERSISTENZA ---
+
+// --- FUNZIONI DI PERSISTENZA ---
+
+function scaricaDatiCumulative(data) {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "cumulative_results.json"); // Nome file standardizzato
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    console.log("File cumulative_results.json scaricato.");
+    
+    document.getElementById('statusMessage').style.display = 'block';
+    document.getElementById('statusMessage').innerHTML = '✅ CLASSIFICA GENERALE AGGIORNATA SCARICATA! <br> **SALVA** il file `cumulative_results.json` e caricalo sul server per la prossima gara.';
+    document.getElementById('reportBtn').disabled = false;
+}
+
+function scaricaDatiGaraSingola(garaNum, data, eventDetails) {
+    console.log('>>> [DEBUG] Dati ricevuti da scaricaDatiGaraSingola:', { garaNum, eventDetails });
+    const finalOutput = {
+        event_details: eventDetails || null,
+        race_results: data
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalOutput));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `gara_${garaNum}_results.json`); // Nome file specifico per gara
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    console.log(`File gara_${garaNum}_results.json scaricato.`);
+    
+    document.getElementById('statusMessage').style.display = 'block';
+    document.getElementById('statusMessage').innerHTML += `<br>✅ CLASSIFICA SINGOLA GARA ${garaNum} SCARICATA!`;
+}
+
+async function caricaDatiCumulative() {
+    const statusMsg = document.getElementById('statusMessage');
+    try {
+        const response = await fetch('cumulative_results.json?cache_bust=' + new Date().getTime());
+        if (response.ok) {
+            const data = await response.json();
+            if (data.results) { // Nuovo formato
+                cumulative = data;
+                statusMsg.innerHTML = `🔄 Classifica Generale pre-esistente caricata (Gare elaborate: ${cumulative.races_processed}). Pronto per la prossima.`;
+            } else if (Object.keys(data).length > 0 && data.A) { // Vecchio formato con dati
+                cumulative = {
+                    races_processed: 0, // Non possiamo sapere le gare passate
+                    max_times_per_race: [], // I dati dei tempi massimi sono persi
+                    results: data
+                };
+                statusMsg.innerHTML = '🔄 Classifica Generale CONVERTITA. La nuova regola sul tempo di penalità sarà attiva dalla prossima gara.';
+            } else { // File vuoto o non valido
+                 throw new Error("File `cumulative_results.json` vuoto o non valido.");
+            }
+            statusMsg.style.display = 'block';
+            statusMsg.style.backgroundColor = '#17a2b8';
+            return true;
+        }
+    } catch (e) {
+        statusMsg.style.display = 'block';
+        statusMsg.style.backgroundColor = '#6c757d';
+        statusMsg.innerHTML = '🆕 Nessun file `cumulative_results.json` trovato. Si parte da zero.';
+        // Assicura che la struttura sia quella nuova anche partendo da zero
+        cumulative = { races_processed: 0, max_times_per_race: [], results: {A:[],B:[],C:[],D:[],E:[]} };
+    }
+    return false;
+}
+
+// --- FUNZIONI UTILI ---
+
+function formatTime(sec){
+    if (Array.isArray(sec)) sec = sec[0];
+    if(!sec || isNaN(sec) || sec < 0) return '00:00:00';
+    const h = Math.floor(sec/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s = Math.floor(sec%60);
+    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function copiaReport() {
+    const textarea = document.getElementById('reportTextarea');
+    textarea.select();
+    document.execCommand('copy');
+    alert("Report HTML copiato negli appunti!");
+}
+
+function createFlagHtml(rider) {
+    if (rider && rider.flag) {
+        return `<img src="https://flagcdn.com/w20/${rider.flag.toLowerCase()}.png" alt="${rider.flag}" style="width: 20px; height: 15px; vertical-align: middle; margin-right: 8px; border: 1px solid #555;">`;
+    }
+    return '';
+}
+
+function estraiRidersPerCategoria(sprintData, targetCategory) {
+    const ridersByCategory = {[targetCategory]: []};
+    if (!sprintData || !sprintData.data) return ridersByCategory;
+
+    sprintData.data.forEach(sprint => {
+        // Create a unique ID for each segment occurrence, assuming 'lap' property exists
+        const uniqueSprintId = sprint.name + (sprint.lap ? ` (Lap ${sprint.lap})` : '');
+        
+        Object.keys(sprint).forEach(key => {
+            if(key.startsWith('rider_')) {
+                const rider = sprint[key];
+                
+                ridersByCategory[targetCategory].push({
+                    zwid: rider.zwid,
+                    name: rider.name,
+                    elapsed: rider.elapsed, 
+                    mtime: rider.mtime,
+                    msec: rider.msec,     
+                    sprint_name: sprint.name, // Keep original sprint name
+                    lap: sprint.lap,          // Add lap information
+                    unique_sprint_id: uniqueSprintId // The new unique identifier
+                });
+            }
+        });
+    });
+    return ridersByCategory;
+}
+
+function calcolaClassificaSprint(ridersByCategory, mode, targetCategory) {
+    const risultati = {[targetCategory]: {}};
+    const riders = ridersByCategory[targetCategory];
+    
+    if(!riders || riders.length === 0) return risultati;
+
+    const sprintGroups = {};
+    riders.forEach(r => {
+        if(!sprintGroups[r.unique_sprint_id]) sprintGroups[r.unique_sprint_id] = [];
+        sprintGroups[r.unique_sprint_id].push(r);
+    });
+    
+    Object.values(sprintGroups).forEach(sprintRiders => {
+        const segmentName = sprintRiders[0].unique_sprint_id; 
+        const segmentClassifications = selectedSegments[segmentName] || {};
+
+        if(mode === 'FAL') {
+            sprintRiders.sort((a, b) => a.msec - b.msec);
+        } else { // mode === 'FTS'
+            sprintRiders.sort((a, b) => a.elapsed - b.elapsed);
+        }
+        
+        const puntiDaUsare = (mode === 'FAL') ? PUNTI_FAL : PUNTI_FTS;
+
+        sprintRiders.forEach((rider, pos) => {
+            if(!risultati[targetCategory][rider.zwid]) {
+                risultati[targetCategory][rider.zwid] = { 
+                    name: rider.name, 
+                    fal_points: 0,
+                    fts_points: 0,
+                    sprint_points: 0,
+                    kom_points: 0,
+                };
+            }
+            
+            if(pos < puntiDaUsare.length) {
+                const points = puntiDaUsare[pos];
+                if(pos < 10) console.log(`[DEBUG] Rider: ${rider.name}, Segmento: ${segmentName}, Punti: ${points}, Pos: ${pos + 1}`, segmentClassifications);
+
+                if(mode === 'FAL') {
+                    if (segmentClassifications.FAL) {
+                        risultati[targetCategory][rider.zwid].fal_points += points;
+                        if(pos < 10) console.log(`       -> Assegnati a FAL`);
+                    }
+                    if (segmentClassifications.SPRINT && segmentClassifications.FAL) {
+                        risultati[targetCategory][rider.zwid].sprint_points += points;
+                        if(pos < 10) console.log(`       -> Assegnati a SPRINT (da FAL)`);
+                    }
+                    if (segmentClassifications.KOM && segmentClassifications.FAL) {
+                         risultati[targetCategory][rider.zwid].kom_points += points;
+                         if(pos < 10) console.log(`       -> Assegnati a KOM (da FAL)`);
+                    }
+                } else { // mode === 'FTS'
+                    if (segmentClassifications.FTS) {
+                        risultati[targetCategory][rider.zwid].fts_points += points;
+                        if(pos < 10) console.log(`       -> Assegnati a FTS`);
+                    }
+                    if (segmentClassifications.SPRINT && segmentClassifications.FTS) {
+                        risultati[targetCategory][rider.zwid].sprint_points += points;
+                        if(pos < 10) console.log(`       -> Assegnati a SPRINT (da FTS)`);
+                    }
+                     if (segmentClassifications.KOM && segmentClassifications.FTS) {
+                         risultati[targetCategory][rider.zwid].kom_points += points;
+                         if(pos < 10) console.log(`       -> Assegnati a KOM (da FTS)`);
+                    }
+                }
+            }
+        });
+    });
+    return risultati;
+}
+
+
+// --- NUOVA FUNZIONE: Calcolo Solo Gara Singola (NON CUMULATIVA) ---
+function calcolaClassificaGaraSingola(falDataMap, ftsDataMap, finData){
+    const classGara = {A:[],B:[],C:[],D:[],E:[]};
+    const finRecords = finData ? (Array.isArray(finData.data) ? finData.data : finData) : [];
+
+    CATEGORIE.forEach(cat => {
+        const punteggio = {};
+        
+        // Calcolo del maxTime per la gestione DNF/NP
+        let catFinishersForMaxTime = finRecords.filter(f => f.category === cat && parseFloat(f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0)) > 0);
+        const maxTime = catFinishersForMaxTime.length > 0
+            ? Math.max(...catFinishersForMaxTime.map(f => parseFloat(f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0))))
+            : 0;
+        
+        // 1. GESTIONE PUNTI E TEMPI FINISH
+        if(finRecords.length > 0) {
+            let catFinishers = finRecords.filter(f => f.category === cat); 
+
+            // Sort by time to award FIN points correctly
+            catFinishers.sort((a, b) => (a.time_gun || (Array.isArray(a.time) ? a.time[0] : 0)) - (b.time_gun || (Array.isArray(b.time) ? b.time[0] : 0)));
+
+            catFinishers.forEach((f, index) => {
+                const rzwid = parseInt(f.zwid);
+                const posIndex = index; // Position is now based on time sorting
+                
+                let pFin = 0;
+                if(posIndex < PUNTI_FIN.length) { 
+                    pFin = PUNTI_FIN[posIndex];
+                }
+                
+                const raceTime = f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0);
+                
+                punteggio[rzwid] = {
+                    name: f.name,
+                    tname: f.tname,
+                    fal: 0, 
+                    fts: 0, 
+                    fin: pFin, 
+                    pts_sprint: 0, 
+                    pts_kom: 0,    
+                    time: parseFloat(raceTime) || 0,
+                    zwid: rzwid,
+                    flag: f.flag // Aggiunto flag
+                };
+            });
+        }
+
+        // 2. Aggiungi punti FAL e FTS (e speciali)
+        const falResults = calcolaClassificaSprint(estraiRidersPerCategoria(falDataMap[cat], cat), 'FAL', cat);
+        const ftsResults = calcolaClassificaSprint(estraiRidersPerCategoria(ftsDataMap[cat], cat), 'FTS', cat);
+
+        const allRiders = new Set([...Object.keys(falResults[cat] || {}), ...Object.keys(ftsResults[cat] || {})]);
+
+        allRiders.forEach(zwid => {
+            const currentZwid = parseInt(zwid);
+            const falData = falResults[cat] ? falResults[cat][zwid] : null;
+            const ftsData = ftsResults[cat] ? ftsResults[cat][zwid] : null;
+
+            if (!punteggio[currentZwid]) {
+                punteggio[currentZwid] = { name: (falData || ftsData).name, tname: '', fal: 0, fts: 0, fin: 0, pts_sprint: 0, pts_kom: 0, time: 0, zwid: currentZwid };
+            }
+            
+            if (falData) {
+                punteggio[currentZwid].fal += falData.fal_points;
+                punteggio[currentZwid].pts_sprint += falData.sprint_points;
+                punteggio[currentZwid].pts_kom += falData.kom_points;
+            }
+            if (ftsData) {
+                punteggio[currentZwid].fts += ftsData.fts_points;
+                punteggio[currentZwid].pts_sprint += ftsData.sprint_points;
+                punteggio[currentZwid].pts_kom += ftsData.kom_points;
+            }
+        });
+
+
+        // --- CALCOLO CLASSIFICHE FINALI PER CATEGORIA ---
+        const riders = Object.values(punteggio)
+            .map(r => ({...r, total: r.fal + r.fts + r.fin}));
+
+        // Classifica Punti (Totale decrescente, poi Tempo crescente)
+        const classPunti = riders.slice().sort((a, b) => b.total - a.total || a.time - b.time); 
+        
+        // Classifica Tempo (Tempo crescente, DNF (time=0) in fondo)
+        const classTempo = riders.slice().sort((a, b) => {
+            const timeA = a.time > 0 ? a.time : Number.MAX_SAFE_INTEGER;
+            const timeB = b.time > 0 ? b.time : Number.MAX_SAFE_INTEGER;
+            if (timeA === timeB) { return b.total - a.total; }
+            return timeA - timeB;
+        });
+        
+        // Classifiche Speciali Gara Singola (Solo se hanno punti)
+        const classSprinter = riders.slice().sort((a, b) => b.pts_sprint - a.pts_sprint || b.fts - a.fts).filter(r => (r.pts_sprint || 0) > 0); 
+        const classClimber = riders.slice().sort((a, b) => b.pts_kom - a.pts_kom || b.fts - a.fts).filter(r => (r.pts_kom || 0) > 0); 
+
+
+        classGara[cat] = { punti: classPunti, tempo: classTempo, sprinter: classSprinter, climber: classClimber };
+    });
+
+    return classGara;
+}
+
+
+// --- CALCOLO E AGGIORNAMENTO CUMULATIVO ---
+function calcolaPunteggi(falDataMap, ftsDataMap, finData){
+    const classGara = {A:[],B:[],C:[],D:[],E:[]};
+    const finRecords = finData ? (Array.isArray(finData.data) ? finData.data : finData) : [];
+    const currentRaceMaxTimes = {}; // Oggetto per memorizzare i tempi massimi di questa gara
+
+    CATEGORIE.forEach(cat => {
+        const punteggio = {};
+        
+        // Calcolo del maxTime per la gestione DNF/NP (Regolamento)
+        let catFinishersForMaxTime = finRecords.filter(f => f.category === cat && parseFloat(f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0)) > 0);
+        const maxTime = catFinishersForMaxTime.length > 0
+            ? Math.max(...catFinishersForMaxTime.map(f => parseFloat(f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0))))
+            : 0;
+        const timeForDNF = maxTime;
+        currentRaceMaxTimes[cat] = timeForDNF; // Salva il tempo massimo per la categoria in questa gara
+
+        // 1. GESTIONE PUNTI E TEMPI FINISH
+        if(finRecords.length > 0) {
+            let catFinishers = finRecords.filter(f => f.category === cat); 
+
+            catFinishers.sort((a, b) => (a.time_gun || (Array.isArray(a.time) ? a.time[0] : 0)) - (b.time_gun || (Array.isArray(b.time) ? b.time[0] : 0)));
+
+            catFinishers.forEach((f, index) => {
+                const rzwid = parseInt(f.zwid);
+                const pFin = (index < PUNTI_FIN.length) ? PUNTI_FIN[index] : 0;
+                const raceTime = f.time_gun || (Array.isArray(f.time) ? f.time[0] : 0);
+                
+                punteggio[rzwid] = {
+                    name: f.name,
+                    tname: f.tname, 
+                    fal: 0, fts: 0, fin: pFin, 
+                    pts_sprint: 0, pts_kom: 0,
+                    time: parseFloat(raceTime) || 0,
+                    zwid: rzwid,
+                    flag: f.flag // Aggiunto flag
+                };
+            });
+        }
+
+        // 2. Aggiungi punti FAL e FTS
+        const falResults = calcolaClassificaSprint(estraiRidersPerCategoria(falDataMap[cat], cat), 'FAL', cat);
+        const ftsResults = calcolaClassificaSprint(estraiRidersPerCategoria(ftsDataMap[cat], cat), 'FTS', cat);
+        const allRiders = new Set([...Object.keys(falResults[cat] || {}), ...Object.keys(ftsResults[cat] || {})]);
+
+        allRiders.forEach(zwid => {
+            const currentZwid = parseInt(zwid);
+            const falData = falResults[cat] ? falResults[cat][zwid] : null;
+            const ftsData = ftsResults[cat] ? ftsResults[cat][zwid] : null;
+
+            if (!punteggio[currentZwid]) {
+                punteggio[currentZwid] = { name: (falData || ftsData).name, tname: '', fal: 0, fts: 0, fin: 0, pts_sprint: 0, pts_kom: 0, time: 0, zwid: currentZwid };
+            }
+            
+            if (falData) {
+                punteggio[currentZwid].fal += falData.fal_points;
+                punteggio[currentZwid].pts_sprint += falData.sprint_points;
+                punteggio[currentZwid].pts_kom += falData.kom_points;
+            }
+            if (ftsData) {
+                punteggio[currentZwid].fts += ftsData.fts_points;
+                punteggio[currentZwid].pts_sprint += ftsData.sprint_points;
+                punteggio[currentZwid].pts_kom += ftsData.kom_points;
+            }
+        });
+
+        // 3. AGGIORNAMENTO CUMULATIVE GLOBALE con la nuova logica
+        const riders = Object.values(punteggio).map(r => ({...r, total: r.fal + r.fts + r.fin}));
+
+        riders.forEach(r => {
+            const timeToApply = (r.time > 0) ? r.time : timeForDNF; 
+            
+            let cum = cumulative.results[cat].find(x => x.zwid === r.zwid);
+            
+            if(cum) { // Rider esistente
+                cum.name = r.name; // Update name and team name
+                cum.tname = r.tname;
+                cum.fal += r.fal;
+                cum.fts += r.fts;
+                cum.fin += r.fin;
+                cum.total += r.total;
+                cum.time += timeToApply;
+                cum.pts_sprint = (cum.pts_sprint || 0) + r.pts_sprint;
+                cum.pts_kom = (cum.pts_kom || 0) + r.pts_kom;
+            } else { // NUOVO RIDER
+                let penaltyTime = 0;
+                // Calcola la penalità per le gare saltate
+                if (cumulative.max_times_per_race && cumulative.max_times_per_race.length > 0) {
+                    cumulative.max_times_per_race.forEach(pastRaceMaxTimes => {
+                        penaltyTime += pastRaceMaxTimes[cat] || 0;
+                    });
+                }
+                
+                cumulative.results[cat].push({
+                    ...r, 
+                    time: timeToApply + penaltyTime, // Applica tempo di gara + penalità
+                    pts_sprint: r.pts_sprint, 
+                    pts_kom: r.pts_kom
+                });
+            }
+        });
+        
+        // --- FIX: GESTIONE CORRIDORI ASSENTI ---
+        // Trova i corridori presenti nella classifica cumulativa ma non nella gara corrente.
+        const currentRaceZwids = new Set(Object.keys(punteggio).map(zwid => parseInt(zwid)));
+        const cumulativeRiders = cumulative.results[cat];
+
+        if(cumulativeRiders) {
+            cumulativeRiders.forEach(cumRider => {
+                if (!currentRaceZwids.has(cumRider.zwid)) {
+                    // Questo corridore era in gare precedenti ma non in questa.
+                    // Aggiungi il tempo di penalità (DNF) per questa gara.
+                    cumRider.time += timeForDNF;
+                    // Non guadagna punti (FAL, FTS, FIN) per questa gara, quindi non si tocca altro.
+                }
+            });
+        }
+
+
+        // NB: La variabile classGara non viene più usata da questa funzione per il calcolo,
+        // ma è restituita per compatibilità. Il calcolo della gara singola è separato.
+        const classPunti = riders.slice().sort((a, b) => b.total - a.total || a.time - a.time); 
+        const classTempo = riders.slice().sort((a, b) => {
+            const timeA = a.time > 0 ? a.time : Number.MAX_SAFE_INTEGER;
+            const timeB = b.time > 0 ? b.time : Number.MAX_SAFE_INTEGER;
+            if (timeA === timeB) { return b.total - a.total; }
+            return timeA - timeB;
+        });
+        classGara[cat] = { punti: classPunti, tempo: classTempo };
+    });
+
+    // Dopo aver processato tutte le categorie, aggiorna i metadati delle gare
+    cumulative.max_times_per_race.push(currentRaceMaxTimes);
+    cumulative.races_processed = (cumulative.races_processed || 0) + 1;
+
+    return classGara; // Mantenuto per compatibilità
+}
+
+function mostraClassifiche(classGara){
+    const container = document.getElementById('classifiche');
+    container.innerHTML = '';
+    
+    let totalRiders = 0;
+    CATEGORIE.forEach(cat => totalRiders += classGara[cat].punti.length);
+    const activeCategories = CATEGORIE.filter(cat => classGara[cat].punti.length > 0).length;
+
+    // Statistiche
+    container.innerHTML += `
+    <div class="stats">
+        <div class="stat-box"><div class="stat-label">Partecipanti</div><div class="stat-value">${totalRiders}</div></div>
+        <div class="stat-box"><div class="stat-label">Categorie Totali</div><div class="stat-value">5</div></div>
+        <div class="stat-box"><div class="stat-label">Cat. Attive</div><div class="stat-value">${activeCategories}</div></div>
+    </div>`;
+
+    // --- GENERAZIONE DELLE TABELLE (Interfaccia Amministratore) ---
+    CATEGORIE.forEach(cat => {
+        const garaPunti = classGara[cat].punti;
+        const garaTempo = classGara[cat].tempo;
+        const garaSprinter = classGara[cat].sprinter; // AGGIUNTA
+        const garaClimber = classGara[cat].climber;   // AGGIUNTA
+        
+        // Ordina le cumulative per PUNTI e TEMPO
+        const cumPunti = cumulative.results[cat].slice().sort((a, b) => b.total - a.total || a.time - b.time);
+        const cumTempo = cumulative.results[cat].slice().sort((a, b) => {
+            const timeA = a.time > 0 ? a.time : Number.MAX_SAFE_INTEGER;
+            const timeB = b.time > 0 ? b.time : Number.MAX_SAFE_INTEGER;
+            if (timeA === timeB) return b.total - a.total;
+            return timeA - timeB;
+        }).filter(r => r.time > 0); 
+        
+        // Classifiche Speciali Cumulative
+        const cumSprinter = cumulative.results[cat].slice().sort((a, b) => (b.pts_sprint || 0) - (a.pts_sprint || 0) || (b.fts || 0) - (a.fts || 0)).filter(r => (r.pts_sprint || 0) > 0); 
+        const cumClimber = cumulative.results[cat].slice().sort((a, b) => (b.pts_kom || 0) - (a.pts_kom || 0) || (b.fts || 0) - (a.fts || 0)).filter(r => (r.pts_kom || 0) > 0); 
+
+        if(garaPunti.length === 0) return;
+
+        let html = `<h2>Categoria ${cat}</h2>`;
+        
+        // GARA SINGOLA A PUNTI
+        html += `<h3>Risultati Gara (Classifica Punti) 🥇</h3>`;
+        html += `<table>
+            <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th>FAL</th><th>FTS</th><th>FIN</th><th class="score-col">Totale</th><th>Tempo</th></tr></thead>
+            <tbody>`;
+        garaPunti.forEach((r, i) => {
+            const posClass = i < 3 ? `pos-${i+1}` : '';
+            const timeDisplay = r.time === 0 ? '<span class="no-time">DNF</span>' : formatTime(r.time);
+            html += `<tr class="${posClass}">
+                <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td>${r.fal}</td><td>${r.fts}</td><td>${r.fin}</td><td class="score-col">${r.total}</td><td>${timeDisplay}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        
+        // GARA SINGOLA A TEMPO
+        html += `<h3>Risultati Gara (Classifica Tempo) ⏱️</h3>`;
+        html += `<table>
+            <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="time-col">Tempo</th><th>Totale Punti</th></tr></thead>
+            <tbody>`;
+        garaTempo.forEach((r, i) => {
+            const posClass = i < 3 ? `pos-${i+1}` : '';
+            const timeDisplay = r.time === 0 ? '<span class="no-time">DNF</span>' : formatTime(r.time);
+            html += `<tr class="${posClass}">
+                <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="time-col">${timeDisplay}</td><td>${r.total}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        
+        // AGGIUNTA: CLASSIFICHE SPECIALI GARA SINGOLA
+        if(garaSprinter.length > 0) {
+            html += `<h3>Risultati Gara (Sprinter) ⚡</h3>`;
+            html += `<table>
+                <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="score-col">Punti Sprint</th><th>Totale Punti</th></tr></thead>
+                <tbody>`;
+            garaSprinter.forEach((r, i) => {
+                const posClass = i < 3 ? `pos-${i+1}` : '';
+                html += `<tr class="${posClass}">
+                    <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="score-col">${r.pts_sprint}</td><td>${r.total}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+        
+        if(garaClimber.length > 0) {
+            html += `<h3>Risultati Gara (Scalatore) ⛰️</h3>`;
+            html += `<table>
+                <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="score-col">Punti KOM</th><th>Totale Punti</th></tr></thead>
+                <tbody>`;
+            garaClimber.forEach((r, i) => {
+                const posClass = i < 3 ? `pos-${i+1}` : '';
+                html += `<tr class="${posClass}">
+                    <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="score-col">${r.pts_kom}</td><td>${r.total}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+
+        // GENERALE CUMULATIVA A PUNTI
+        html += `<h3>Classifica Generale (Punti) 🏆</h3>`;
+        html += `<table>
+            <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th>FAL</th><th>FTS</th><th>FIN</th><th class="score-col">Totale</th><th>Tempo Tot.</th></tr></thead>
+            <tbody>`;
+        cumPunti.forEach((r, i) => {
+            const posClass = i < 3 ? `pos-${i+1}` : '';
+            const timeDisplay = r.time === 0 ? '<span class="no-time">N/A</span>' : formatTime(r.time);
+            html += `<tr class="${posClass}">
+                <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td>${r.fal}</td><td>${r.fts}</td><td>${r.fin}</td><td class="score-col">${r.total}</td><td>${timeDisplay}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        
+        // --- NUOVA CLASSIFICA: SPRINTER GENERALE ---
+        if(cumSprinter.length > 0) {
+            html += `<h3>Classifica Generale Specialista Sprinter ⚡</h3>`;
+            html += `<table>
+                <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="score-col">Punti Sprint</th><th>Punti Gara Tot.</th></tr></thead>
+                <tbody>`;
+            cumSprinter.forEach((r, i) => {
+                const posClass = i < 3 ? `pos-${i+1}` : '';
+                html += `<tr class="${posClass}">
+                    <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="score-col">${r.pts_sprint}</td><td>${r.total}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+
+        // --- NUOVA CLASSIFICA: SCALATORE (KOM) GENERALE ---
+        if(cumClimber.length > 0) {
+            html += `<h3>Classifica Generale Specialista Scalatore ⛰️</h3>`;
+            html += `<table>
+                <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="score-col">Punti KOM</th><th>Punti Gara Tot.</th></tr></thead>
+                <tbody>`;
+            cumClimber.forEach((r, i) => {
+                const posClass = i < 3 ? `pos-${i+1}` : '';
+                html += `<tr class="${posClass}">
+                    <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="score-col">${r.pts_kom}</td><td>${r.total}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+
+        // GENERALE CUMULATIVA A TEMPO
+        html += `<h3>Classifica Generale Tempo Totale ⏱️</h3>`;
+        html += `<table>
+            <thead><tr><th>Pos</th><th>Rider</th><th>Team</th><th class="time-col">Tempo Totale</th><th>Totale Punti</th></tr></thead>
+            <tbody>`;
+        cumTempo.forEach((r, i) => {
+            const posClass = i < 3 ? `pos-${i+1}` : '';
+            const timeDisplay = r.time === 0 ? '<span class="no-time">N/A</span>' : formatTime(r.time);
+            html += `<tr class="${posClass}">
+                <td>${i+1}</td><td>${createFlagHtml(r)}${r.name}</td><td>${r.tname || ''}</td><td class="time-col">${timeDisplay}</td><td>${r.total}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        
+        container.innerHTML += html;
+    });
+}
+
+// --- FUNZIONE GENERAZIONE REPORT HTML (CORRETTA) ---
+
+function generaReportHTML(garaNum, classGara) {
+    let reportHTML = `<div style="font-family: Arial, sans-serif; color: #333; max-width: 900px; margin: 0 auto;">`;
+    reportHTML += `<h1 style="color: #008CBA; border-bottom: 2px solid #008CBA; padding-bottom: 10px; text-align: center;">🏁 Risultati Gara ${garaNum} & Classifiche Generali</h1>`;
+    
+    // Funzione interna per generare la tabella (riutilizzabile)
+    const generateTable = (title, data, isTimeClassification, isSpecialClassification = false) => {
+        if (data.length === 0) return '';
+        
+        let tableHTML = `<h2 style="margin-top: 30px; font-size: 1.4em; color: #333;">${title}</h2>`;
+        tableHTML += `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 5%;">Pos</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Rider</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 20%;">Team</th>`;
+                    
+        if (isSpecialClassification) {
+            // Sprinter/Scalatore: AGGIUNTA COLONNA PUNTI GARA TOT.
+            tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #e0f7fa;">Punti Speciali</th>`;
+            tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #ffe0b2; width: 15%;">Punti Gara Tot.</th>`; // NUOVA COLONNA
+        } else if (isTimeClassification) {
+            // Tempo
+            tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #fffde7;">Tempo Totale</th>`;
+        } else {
+            // Punti (Gara/Generale)
+            tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #e8f5e9;">Punti Totali</th>`;
+        }
+
+        // Colonne extra per la classifica generale punti (opzionale)
+        if (!isSpecialClassification && !isTimeClassification && title.includes('Generale')) {
+            tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #e8f5e9; width: 15%;">Tempo Tot.</th>`;
+        }
+
+        tableHTML += `</tr></thead><tbody>`;
+
+        data.forEach((r, i) => {
+            const displayValue = isTimeClassification ? (r.time === 0 ? 'N/A' : formatTime(r.time))
+                               : isSpecialClassification ? (r.pts_sprint !== undefined ? r.pts_sprint : r.pts_kom)
+                               : r.total;
+
+            const bgColor = (i === 0) ? '#ffeb3b' : (i === 1) ? '#c0c0c0' : (i === 2) ? '#cd7f32' : (i % 2 === 0 ? '#f9f9f9' : '#ffffff');
+            const posColor = (i < 3) ? '#333' : '#666';
+
+            tableHTML += `<tr style="background-color: ${bgColor};">
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${posColor};">${i + 1}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${createFlagHtml(r)}${r.name}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${r.tname || ''}</td>`;
+
+            if (isTimeClassification) {
+                tableHTML += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: #007bff;">${displayValue}</td>`;
+            } else {
+                 tableHTML += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: #4CAF50;">${displayValue}</td>`;
+            }
+            
+            // Colonna Punti Gara Tot. per Classifica Speciale (CONTENUTO)
+            if (isSpecialClassification) {
+                 tableHTML += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center; color: #999;">${r.total}</td>`; // NUOVO CONTENUTO
+            }
+            
+            // Colonna Tempo Totale per Classifica Generale Punti
+            if (!isSpecialClassification && !isTimeClassification && title.includes('Generale')) {
+                 tableHTML += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center; color: #999;">${formatTime(r.time)}</td>`;
+            }
+            
+            tableHTML += `</tr>`;
+        });
+
+        tableHTML += `</tbody></table>`;
+        return tableHTML;
+    };
+
+
+    CATEGORIE.forEach(cat => {
+        // --- Ordina i dati cumulativi per il report ---
+        const cumPunti = cumulative.results[cat].slice().sort((a, b) => b.total - a.total || a.time - b.time);
+        const cumTempo = cumulative.results[cat].slice().sort((a, b) => {
+            const timeA = a.time > 0 ? a.time : Number.MAX_SAFE_INTEGER;
+            const timeB = b.time > 0 ? b.time : Number.MAX_SAFE_INTEGER;
+            return timeA - timeB;
+        }).filter(r => r.time > 0); 
+        const cumSprinter = cumulative.results[cat].slice().sort((a, b) => (b.pts_sprint || 0) - (a.pts_sprint || 0) || (b.fts || 0) - (a.fts || 0)).filter(r => (r.pts_sprint || 0) > 0); 
+        const cumClimber = cumulative.results[cat].slice().sort((a, b) => (b.pts_kom || 0) - (a.pts_kom || 0) || (b.fts || 0) - (a.fts || 0)).filter(r => (r.pts_kom || 0) > 0); 
+        
+        // AGGIUNTA: Estrazione Classifiche Gara Singola da classGara
+        const garaPunti = classGara[cat].punti;
+        const garaTempo = classGara[cat].tempo;
+        const garaSprinter = classGara[cat].sprinter; 
+        const garaClimber = classGara[cat].climber;
+
+        if (classGara[cat].punti.length === 0) return;
+
+        reportHTML += `<h1 style="color: #6a1b9a; border-bottom: 1px dashed #6a1b9a; margin-top: 40px; text-align: left;">➡️ Categoria ${cat}</h1>`;
+
+        // 1. Gara Singola (Punti)
+        reportHTML += generateTable(`Risultati Gara ${garaNum} - Classifica Punti`, garaPunti, false);
+
+        // 2. Classifica Gara Singola (Tempo)
+        if(garaTempo.length > 0) {
+            reportHTML += generateTable(`Risultati Gara ${garaNum} - Classifica Tempo ⏱️`, garaTempo, true);
+        }
+        
+        // 3. Classifica Gara Singola (Sprinter)
+        if(garaSprinter.length > 0) {
+            reportHTML += generateTable(`Risultati Gara ${garaNum} - Specialista Sprinter ⚡`, garaSprinter, false, true);
+        }
+        
+        // 4. Classifica Gara Singola (Scalatore KOM)
+        if(garaClimber.length > 0) {
+            reportHTML += generateTable(`Risultati Gara ${garaNum} - Specialista Scalatore ⛰️`, garaClimber, false, true);
+        }
+        
+        // --- CLASSIFICHE GENERALI ---
+
+        // 5. Classifica Generale Punti
+        reportHTML += generateTable(`Classifica Generale Punti dopo Gara ${garaNum}`, cumPunti, false);
+        
+        // 6. Classifica Generale Sprinter
+        if(cumSprinter.length > 0) {
+            reportHTML += generateTable(`Classifica Generale Specialista Sprinter ⚡`, cumSprinter, false, true);
+        }
+        
+        // 7. Classifica Generale Scalatore (KOM)
+        if(cumClimber.length > 0) {
+            reportHTML += generateTable(`Classifica Generale Specialista Scalatore ⛰️`, cumClimber, false, true);
+        }
+
+        // 8. Classifica Generale Tempo
+        if(cumTempo.length > 0) {
+            reportHTML += generateTable(`Classifica Generale Tempo Totale ⏱️`, cumTempo, true);
+        }
+    });
+
+    reportHTML += `<p style="text-align: right; font-size: 0.8em; margin-top: 40px; color: #888;">Report generato automaticamente dal Calcolatore Masters Winter Tour.</p></div>`;
+    return reportHTML;
+}
+
+// Collega il pulsante Report alla nuova funzione
+document.getElementById('reportBtn').addEventListener('click', () => {
+    const gara = document.getElementById('selectGara').value;
+    
+    if (!classGaraGlobale) {
+        alert("Carica ed elabora prima i dati di una gara per generare il report!");
+        return;
+    }
+
+    const reportText = generaReportHTML(gara, classGaraGlobale); 
+    
+    document.getElementById('reportTextarea').value = reportText;
+    document.getElementById('reportOutput').style.display = 'block';
+    window.scrollTo(0, document.body.scrollHeight); 
+});
+
+// Funzione per avviare il calcolo e la visualizzazione dopo la mappatura
+async function calcolaEVisualizzaClassifiche() {
+    // Usa i dati grezzi e le selezioni dell'admin
+    const currentGara = document.getElementById('selectGara').value;
+    
+    document.getElementById('calcolaClassificheBtn').textContent = 'Calcolo in corso...';
+    document.getElementById('calcolaClassificheBtn').disabled = true;
+
+    // Ricarica i dati cumulativi per evitare di aggiungere punti più volte
+    await caricaDatiCumulative();
+
+    // 1. Calcola le classifiche finali della singola gara senza toccare il cumulativo
+    const classGaraSingola = calcolaClassificaGaraSingola(
+        rawDataGaraGlobale.fal, 
+        rawDataGaraGlobale.fts, 
+        rawDataGaraGlobale.fin
+    );
+    
+    // 2. Aggiornamento del cumulativo (logica originale)
+    // NB: Questa funzione aggiorna l'oggetto globale 'cumulative'
+    calcolaPunteggi(
+        rawDataGaraGlobale.fal, 
+        rawDataGaraGlobale.fts, 
+        rawDataGaraGlobale.fin
+    ); 
+
+    // 3. Imposta la variabile globale per la visualizzazione e il report sulla Classifica di Gara Singola.
+    classGaraGlobale = classGaraSingola; 
+    
+    mostraClassifiche(classGaraGlobale);
+    scaricaDatiCumulative(cumulative); // Salva lo stato cumulativo aggiornato
+
+    // Flatten the single race results for an Excel-friendly JSON
+    const flattenedSingleRaceResults = [];
+    CATEGORIE.forEach(cat => {
+        const catData = classGaraSingola[cat];
+        
+        // Create a map for each rider's data across all classifications for the current category
+        const riderMap = new Map();
+
+        // Process 'punti' classification
+        catData.punti.forEach((rider, index) => {
+            const entry = riderMap.get(rider.zwid) || { category: cat, name: rider.name, tname: rider.tname, zwid: rider.zwid };
+            entry.punti_pos = index + 1;
+            entry.punti_fal = rider.fal;
+            entry.punti_fts = rider.fts;
+            entry.punti_fin = rider.fin;
+            entry.punti_total = rider.total;
+            entry.punti_time = rider.time;
+            riderMap.set(rider.zwid, entry);
+        });
+
+        // Process 'tempo' classification
+        catData.tempo.forEach((rider, index) => {
+            const entry = riderMap.get(rider.zwid) || { category: cat, name: rider.name, tname: rider.tname, zwid: rider.zwid };
+            entry.tempo_pos = index + 1;
+            entry.tempo_time = rider.time;
+            entry.tempo_points = rider.total; // Total points from the time classification context
+            riderMap.set(rider.zwid, entry);
+        });
+
+        // Process 'sprinter' classification
+        catData.sprinter.forEach((rider, index) => {
+            const entry = riderMap.get(rider.zwid) || { category: cat, name: rider.name, tname: rider.tname, zwid: rider.zwid };
+            entry.sprinter_pos = index + 1;
+            entry.sprinter_points = rider.pts_sprint;
+            entry.sprinter_total_race_points = rider.total;
+            riderMap.set(rider.zwid, entry);
+        });
+
+        // Process 'climber' classification
+        catData.climber.forEach((rider, index) => {
+            const entry = riderMap.get(rider.zwid) || { category: cat, name: rider.name, tname: rider.tname, zwid: rider.zwid };
+            entry.climber_pos = index + 1;
+            entry.climber_points = rider.pts_kom;
+            entry.climber_total_race_points = rider.total;
+            riderMap.set(rider.zwid, entry);
+        });
+
+        // Add all riders from this category to the flattened list
+        riderMap.forEach(rider => flattenedSingleRaceResults.push(rider));
+    });
+
+    scaricaDatiGaraSingola(currentGara, flattenedSingleRaceResults, eventDetailsGlobale); // Salva i risultati della gara singola (flattened)
+
+    document.getElementById('calcolaClassificheBtn').textContent = 'Genera Classifiche Complete e Aggiorna Generale';
+    document.getElementById('calcolaClassificheBtn').disabled = false;
+}
+
+// --- LOGICA MAPPATURA SEGMENTI ---
+
+function mostraPannelloSegmenti(garaNum) {
+    const tableBody = document.querySelector('#segmentTable tbody');
+    tableBody.innerHTML = '';
+    
+    document.getElementById('garaSegmentoId').textContent = garaNum;
+    
+    document.getElementById('reportBtn').disabled = true;
+    document.getElementById('classifiche').innerHTML = '';
+    document.getElementById('reportOutput').style.display = 'none';
+
+    if (allSegments.size === 0) {
+        document.getElementById('segmentPanel').style.display = 'none';
+        
+        if (rawDataGaraGlobale.fin) {
+             document.getElementById('statusMessage').innerHTML = '⚠️ Nessun segmento Sprint/KOM/FAL/FTS trovato. Calcolo avviato basato solo su punti FIN/Tempo.';
+             document.getElementById('statusMessage').style.backgroundColor = '#ffc107';
+             calcolaEVisualizzaClassifiche();
+        } else {
+             document.getElementById('classifiche').innerHTML = '<div class="error">❌ Dati FIN non trovati. Impossibile calcolare.</div>';
+        }
+        return;
+    }
+    
+    // Inizializza selectedSegments per i nuovi segmenti, mantenendo le selezioni esistenti se presenti
+    allSegments.forEach(segmentName => {
+        if (!selectedSegments[segmentName]) {
+            selectedSegments[segmentName] = { SPRINT: false, KOM: false, FAL: false, FTS: false };
+        }
+    });
+
+    // Popola la tabella con i segmenti unici trovati
+    allSegments.forEach(segmentName => {
+        const row = tableBody.insertRow();
+        const currentSelection = selectedSegments[segmentName] || { SPRINT: false, KOM: false, FTS: false, FAL: false };
+        row.innerHTML = `
+            <td>${segmentName}</td>
+            <td><input type="checkbox" data-segment="${segmentName}" data-type="FTS" onchange="gestisciSelezioneSegmento(this)" ${currentSelection.FTS ? 'checked' : ''}></td>
+            <td><input type="checkbox" data-segment="${segmentName}" data-type="FAL" onchange="gestisciSelezioneSegmento(this)" ${currentSelection.FAL ? 'checked' : ''}></td>
+            <td>
+                <select data-segment="${segmentName}" data-type="CLASS" onchange="gestisciSelezioneSegmento(this)" style="padding: 5px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                    <option value="NONE" ${ !(currentSelection.SPRINT || currentSelection.KOM) ? 'selected' : '' }>Nessuna</option>
+                    <option value="SPRINT" ${currentSelection.SPRINT ? 'selected' : ''}>Sprint ⚡</option>
+                    <option value="KOM" ${currentSelection.KOM ? 'selected' : ''}>KOM ⛰️</option>
+                </select>
+            </td>
+        `;
+    });
+
+    document.getElementById('segmentPanel').style.display = 'block';
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function gestisciSelezioneSegmento(element) {
+    const segment = element.dataset.segment;
+    const type = element.dataset.type;
+
+    if (!selectedSegments[segment]) {
+        selectedSegments[segment] = { SPRINT: false, KOM: false, FAL: false, FTS: false };
+    }
+
+    if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+        // Gestione per FTS e FAL
+        selectedSegments[segment][type] = element.checked;
+        console.log(`Checkbox: Segment=${segment}, Type=${type}, Checked=${element.checked}`);
+
+    } else if (element.tagName === 'SELECT') {
+        // Gestione per il menu a tendina SPRINT/KOM
+        const value = element.value;
+        console.log(`Select: Segment=${segment}, Value=${value}`);
+        if (value === 'SPRINT') {
+            selectedSegments[segment].SPRINT = true;
+            selectedSegments[segment].KOM = false;
+        } else if (value === 'KOM') {
+            selectedSegments[segment].SPRINT = false;
+            selectedSegments[segment].KOM = true;
+        } else { // value === 'NONE'
+            selectedSegments[segment].SPRINT = false;
+            selectedSegments[segment].KOM = false;
+        }
+    }
+     console.log(`Stato aggiornato per ${segment}:`, selectedSegments[segment]);
+}
+
+
+
+// --- STARTUP / LISTENER ---
+
+document.getElementById('loadGaraBtn').addEventListener('click', async () => {
+    const gara = document.getElementById('selectGara').value;
+    if(!gara){ alert("Seleziona una gara!"); return; }
+
+    const btn = document.getElementById('loadGaraBtn');
+    btn.disabled = true;
+    btn.textContent = 'Caricamento...';
+    
+    // Reset dello stato della mappatura
+    allSegments.clear();
+    selectedSegments = {}; 
+    document.getElementById('segmentPanel').style.display = 'none';
+    
+    const div = document.getElementById('classifiche');
+    div.innerHTML = '<div class="loading">Caricamento dati in corso...</div>';
+
+    const basePath = `gare/${gara}/`;
+    const falDataMap = {};
+    const ftsDataMap = {};
+    let finData = null;
+    let eventDetailsData = null; 
+
+    try {
+        const promises = [];
+        
+        for(let cat of CATEGORIE) {
+            promises.push(fetch(basePath + `fal_${cat}.json`).then(r => r.ok ? r.json() : null).then(d => falDataMap[cat] = d).catch(e => console.warn(`Manca file: fal_${cat}.json`)));
+            promises.push(fetch(basePath + `fts_${cat}.json`).then(r => r.ok ? r.json() : null).then(d => ftsDataMap[cat] = d).catch(e => console.warn(`Manca file: fts_${cat}.json`)));
+        }
+        promises.push(fetch(basePath + 'fin.json').then(r => { if(!r.ok) throw new Error("File fin.json non trovato"); return r.json(); }).then(d => finData = d));
+        promises.push(fetch(basePath + 'event_details.json').then(r => r.ok ? r.json() : null).then(d => eventDetailsData = d).catch(e => console.warn(`Manca file: event_details.json`)));
+
+        await Promise.all(promises);
+
+        // --- 1. MEMORIZZA DATI GREZZI ---
+        rawDataGaraGlobale.fal = falDataMap;
+        rawDataGaraGlobale.fts = ftsDataMap;
+        rawDataGaraGlobale.fin = finData;
+        eventDetailsGlobale = eventDetailsData;
+        console.log('>>> [DEBUG] Dettagli evento caricati:', eventDetailsGlobale);
+
+        // --- 2. ESTRAI TUTTI I NOMI DEI SEGMENTI ---
+        CATEGORIE.forEach(cat => {
+            if (falDataMap[cat] && falDataMap[cat].data) {
+                falDataMap[cat].data.forEach(sprint => {
+                    const uniqueSprintId = sprint.name + (sprint.lap ? ` (Lap ${sprint.lap})` : '');
+                    allSegments.add(uniqueSprintId);
+                });
+            }
+            if (ftsDataMap[cat] && ftsDataMap[cat].data) {
+                ftsDataMap[cat].data.forEach(sprint => {
+                    const uniqueSprintId = sprint.name + (sprint.lap ? ` (Lap ${sprint.lap})` : '');
+                    allSegments.add(uniqueSprintId);
+                });
+            }
+        });
+        
+        // --- 3. MOSTRA IL PANNELLO DI SELEZIONE ---
+        mostraPannelloSegmenti(gara); 
+
+    } catch(err){
+        div.innerHTML = `<div class="error">❌ Errore: ${err.message}</div>`;
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Carica Dati';
+    }
+});
+
+document.getElementById('calcolaClassificheBtn').addEventListener('click', async () => {
+    document.getElementById('segmentPanel').style.display = 'none'; // Nasconde il pannello
+    await calcolaEVisualizzaClassifiche();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+    if(confirm("ATTENZIONE! Azzerare completamente la classifica generale? Questo non è reversibile senza il file JSON salvato.")) {
+        cumulative = { races_processed: 0, max_times_per_race: [], results: {A:[],B:[],C:[],D:[],E:[]} };
+        classGaraGlobale = null;
+        document.getElementById('classifiche').innerHTML = '';
+        document.getElementById('reportOutput').style.display = 'none';
+        document.getElementById('selectGara').value = '';
+        document.getElementById('reportBtn').disabled = true;
+        
+        document.getElementById('statusMessage').style.display = 'block';
+        document.getElementById('statusMessage').style.backgroundColor = '#d32f2f';
+        document.getElementById('statusMessage').innerHTML = '🗑️ CLASSIFICHE GENERALI AZZERATE. Inizia con la prima gara.';
+    }
+});
+
+
+// INIZIALIZZAZIONE: Carica i dati cumulativi all'avvio
+(async function init() {
+    await popolaSelettoreGare();
+    await caricaDatiCumulative();
+})();
+
+// --- HEALTH CHECK PER CHIUSURA AUTOMATICA ---
+const healthCheckInterval = setInterval(() => {
+    fetch('/api/health_check')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server non raggiungibile');
+            }
+        })
+        .catch(() => {
+            // Se il server non risponde, chiudi la scheda
+            clearInterval(healthCheckInterval);
+            document.body.innerHTML = '<h1 style="color: #d32f2f; text-align: center; padding-top: 50px;">SERVER OFFLINE. Questa finestra si chiuderà a breve...</h1>';
+            setTimeout(() => window.close(), 2000);
+        });
+}, 3000); // Controlla ogni 3 secondi
+
+</script>
+</body>
+</html>

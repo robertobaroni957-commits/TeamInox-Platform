@@ -17,12 +17,8 @@ export async function onRequestPost({ request, env }) {
       if (body.seasonId) SEASON_ID = body.seasonId.toString();
     } catch (e) {}
 
-    // Pulizia cookie centralizzata: teniamo solo quelli WTRL essenziali
-    const cleanCookie = (env.WTRL_COOKIE || "")
-      .split(';')
-      .map(c => c.trim())
-      .filter(c => c.startsWith('wtrl_session') || c.startsWith('wtrl_settings') || c.startsWith('_ga'))
-      .join('; ');
+    // Pulizia cookie centralizzata: preferiamo tenere tutto se fornito
+    const cleanCookie = (env.WTRL_COOKIE || "").trim();
 
     const wtrlIds = ["zrl", "wzrl"];
 
@@ -124,7 +120,7 @@ export async function onRequestPost({ request, env }) {
           is_dev = excluded.is_dev,
           rounds = excluded.rounds,
           member_count = excluded.member_count
-        RETURNING id
+        RETURNING wtrl_team_id
       `)
       .bind(
         t.teamname || t.name,
@@ -147,8 +143,8 @@ export async function onRequestPost({ request, env }) {
       )
       .first();
 
-      if (!teamResult || teamResult.id === undefined) continue;
-      const internalTeamId = teamResult.id;
+      if (!teamResult || teamResult.wtrl_team_id === undefined) continue;
+      const internalTeamId = teamResult.wtrl_team_id;
       report.teams_synced++;
 
       // RECUPERO ROSTER DA WTRL (Obbligatorio)
@@ -161,7 +157,7 @@ export async function onRequestPost({ request, env }) {
         const rosterRes = await fetch(rosterUrl, {
           headers: {
             "accept": "application/json",
-            "cookie": WTRL_COOKIE,
+            "cookie": cleanCookie,
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
           }
         });
@@ -182,7 +178,7 @@ export async function onRequestPost({ request, env }) {
             category = ?, 
             division = ?,
             member_count = ?
-          WHERE id = ?
+          WHERE wtrl_team_id = ?
         `).bind(
           metaData.competition.division || t.division || '', // Categoria reale (A, B, C, D)
           metaData.division || t.zrldivision || '',          // Divisione reale (es: Open Lime B1)

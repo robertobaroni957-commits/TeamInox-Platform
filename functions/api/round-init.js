@@ -25,12 +25,9 @@ export async function onRequestPost(context) {
         const seriesName = `ZRL ${year} Round ${round_index}`;
         const slotId = default_timeslot_id || 'EMEA_C';
 
-        // Pulizia cookie centralizzata: teniamo solo quelli WTRL essenziali
-        const cleanCookie = (env.WTRL_COOKIE || "")
-            .split(';')
-            .map(c => c.trim())
-            .filter(c => c.startsWith('wtrl_session') || c.startsWith('wtrl_settings') || c.startsWith('_ga'))
-            .join('; ');
+        // Pulizia cookie centralizzata: preferiamo tenere tutto se fornito, 
+        // per evitare blocchi Cloudflare che spesso richiedono cookie specifici (__cf_bm, etc.)
+        const cleanCookie = (env.WTRL_COOKIE || "").trim();
 
         // 1. Fetch da WTRL (con cookie e gestione HTML)
         const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
@@ -118,9 +115,10 @@ export async function onRequestPost(context) {
             if (round && round.id) {
                 await env.DB.prepare(`
                     INSERT INTO round_teams (round_id, team_id, timeslot_id)
-                    SELECT ?, id, ? FROM teams
+                    SELECT ?, wtrl_team_id, ? FROM teams
                 `).bind(round.id, slotId).run();
             }
+
         }
 
         return new Response(JSON.stringify({

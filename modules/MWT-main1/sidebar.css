@@ -1,0 +1,462 @@
+/* ====================================
+   FILE: sidebar.css
+   ==================================== */
+
+/* ---- FONT ---- */
+#sidebar, #sidebar h3, .sidebar-link {
+    font-family: "Teko", sans-serif !important;
+    text-transform: uppercase;
+}
+
+body, input, button, p, label {
+    font-family: "Inter", sans-serif !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---- BODY GLOBALE (Quello che era nel tag <style>) ---- */
+body {
+    background-color: #0d0f11;
+    color: #f0f0f0;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    min-height: 100vh;
+}
+h1, h2, h3, .inox-font {
+    font-family: 'Teko', sans-serif;
+    text-transform: uppercase;
+}
+.no-scroll {
+    overflow: hidden !important;
+}
+
+/* Video Background */
+#background-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -10;
+    filter: brightness(0.4) grayscale(50%);
+}
+
+/* ============================
+   SIDEBAR MOBILE/BASE (300px)
+   ============================ */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #1a1d20;
+    z-index: 50; 
+    overflow-y: auto;
+    transform: translateX(-100%);
+    pointer-events: none; /* Cruciale quando chiusa */
+    transition: transform 0.28s cubic-bezier(.2,.9,.2,1);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+}
+
+/* Scrollbar personalizzata per sidebar */
+#sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background: #fc6719;
+    border-radius: 3px;
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background: #ff7a2e;
+}
+
+
+
+/* Overlay */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    pointer-events: none; 
+    transition: opacity 0.28s ease;
+    z-index: 45;
+}
+/* La classe opacity-50 e pointer-events-auto sono aggiunte dal JS */
+
+/* Pulsante Toggle */
+#menu-toggle {
+    z-index: 100 !important; /* Assicura che sia sempre sopra la sidebar (50) e l'overlay (45) */
+}
+
+/* Link Sidebar */
+.sidebar-link {
+    padding: 10px 16px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #f0f0f0;
+    transition: background-color 0.2s;
+}
+.sidebar-link:hover {
+    background-color: rgba(252,103,25,0.1);
+    color: #fc6719;
+}
+.sidebar-active {
+    background-color: #fc6719;
+    color: black !important;
+}
+
+/* Contenuto Principale e Card */
+#main-content {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; /* Removed to avoid horizontal centering issues */
+    /* justify-content: center; /* Removed to avoid vertical centering issues */
+    flex-grow: 1;
+    padding: 20px;
+    padding-top: 80px;
+}
+.login-input {
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(51, 51, 51, 0.7);
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 6px;
+}
+.login-input:focus {
+    border-color: #fc6719;
+    outline: none;
+}
+.login-card {
+    background-color: rgba(26, 29, 32, 0.95);
+    backdrop-filter: blur(8px);
+}
+
+
+/* Class to control open state for sidebar */
+#sidebar.is-open {
+    transform: translateX(0%) !important;
+    pointer-events: auto !important;
+}
+
+/* ============================
+   DESKTOP (min-width: 1024px)
+   ============================ */
+@media (min-width: 1024px) {
+    /* Removed #main-layout */
+    
+    /* SIDEBAR FISSA SU DESKTOP */
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: none !important;
+        box-shadow: none;
+        pointer-events: auto;
+        display: block !important; /* Ensure it's visible on desktop */
+    }
+    
+    /* CONTENUTO CON MARGINE PER LA SIDEBAR */
+    #main-content {
+        margin-left: 300px;
+        padding-top: 20px;
+    }
+    
+    #menu-toggle, #sidebar-overlay {
+        display: none !important;
+    }
+}
+
+
+/* Stili Sidebar Essenziali */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    background-color: #0d0f11; 
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-out;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    border-right: 1px solid #1f2937;
+}
+#sidebar.active {
+    transform: translateX(0);
+}
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 20;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+#sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+@media (min-width: 1024px) {
+    #sidebar {
+        position: relative;
+        transform: translateX(0);
+        flex-shrink: 0;
+    }
+    #sidebar-overlay, #menu-toggle {
+        display: none !important;
+    }
+}
+/* Stili Link */
+.sidebar-link {
+    padding: 10px 16px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #f0f0f0;
+    transition: background-color 0.2s;
+}
+.sidebar-link:hover {
+    background-color: rgba(252, 103, 25, 0.1);
+    color: #fc6719;
+}
+/* Ensure main content is flex and takes full width on mobile, and shifts on desktop */
+body { display: flex; min-height: 100vh; flex-direction: column; }
+
+@media (min-width: 1024px) {
+    body { flex-direction: row; } /* Desktop layout with sidebar beside content */
+    body > nav { /* Target the direct child nav of body */
+        margin-left: 300px;
+        width: calc(100% - 300px); /* Ensure it doesn't overflow */
+    }
+    #main-content { margin-left: 300px; }
+}
+.lang-toggle {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.lang-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.25rem; /* text-xl */
+    cursor: pointer;
+    padding: 0.375rem; /* p-1.5 */
+    border-radius: 0.375rem; /* rounded-md */
+    color: #d1d5db; /* gray-300 */
+}
+.lang-btn[aria-pressed="true"] {
+    outline: 2px solid rgba(0, 102, 34, 0.2); /* Accent green, transparent */
+    background: rgba(0, 102, 34, 0.1); /* Accent green, transparent */
+    color: #fc6719; /* zwift-orange to highlight active */
+}
+.lang-btn:focus { box-shadow: 0 0 0 3px rgba(252, 103, 25, 0.3); /* zwift-orange focus */ }
+
+.chart-container { position: relative; width: 100%; max-width: 500px; height: 350px; margin: 0 auto; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1e1e24; }
+::-webkit-scrollbar-thumb { background: #fc6719; border-radius: 4px; }
+
+/* Styles for the background video */
+#background-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    background-size: cover;
+    filter: grayscale(80%) brightness(30%);
+    opacity: 0.5;
+}
+
+/* Stili aggiuntivi per le card eventi */
+.event-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+.race-type-tag { 
+    padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 8px; text-shadow: 0 1px 1px rgba(0,0,0,0.5); 
+}
+.tag-tour-highlight { background-color: #00f0ff; color: #0d0f11; } 
+.tag-endurance { background-color: #048ea0; color: white; } 
+.tag-short { background-color: #fc6719; color: black; } 
+.tag-tt { background-color: #00f0ff; color: black; } 
+.tag-critical { background-color: #ef4444; color: white; }
+
+/* General styles to integrate Rule.html content with existing theme */
+/* Body styles are handled by Tailwind classes on the body tag */
+
+/* Styles for the language toggle header */
+.rule-header {
+    position: relative;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    background-color: transparent; /* Let body background dictate */
+    color: #f0f0f0; /* zwift-text */
+}
+.rule-header .organizer {
+    text-align: center;
+    font-weight: 700;
+    color: #d1d5db; /* gray-300 */
+}
+.lang-toggle {
+    position: absolute;
+    right: 0;
+    top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.lang-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.25rem; /* text-xl */
+    cursor: pointer;
+    padding: 0.375rem; /* p-1.5 */
+    border-radius: 0.375rem; /* rounded-md */
+    color: #d1d5db; /* gray-300 */
+}
+.lang-btn[aria-pressed="true"] {
+    outline: 2px solid rgba(0, 102, 34, 0.2); /* Accent green, transparent */
+    background: rgba(0, 102, 34, 0.1); /* Accent green, transparent */
+    color: #fc6719; /* zwift-orange to highlight active */
+}
+.lang-btn:focus { box-shadow: 0 0 0 3px rgba(252, 103, 25, 0.3); /* zwift-orange focus */ }
+
+/* Main content styling */
+.rule-content-wrapper {
+    max-width: 1250px;
+    margin: 40px auto;
+    padding: 0 20px;
+    line-height: 1.7;
+}
+
+.rule-section { /* This will be the new content-section equivalent */
+    background-color: #1e1e24; /* zwift-card */
+    border: 1px solid #374151; /* gray-700 */
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 1.5rem; /* p-6 */
+    margin-bottom: 1.5rem; /* mb-6 */
+}
+
+.rule-section h1 { /* Main title of the rule document */
+    text-align: center;
+    color: #fc6719; /* zwift-orange */
+    font-size: 2.5em; /* Larger, based on existing h1 */
+    margin: 0.5rem 0 1rem;
+    font-family: 'Teko', sans-serif;
+    font-weight: 700;
+}
+
+.rule-section h2 { /* Section titles */
+    color: #00f0ff; /* zwift-blue */
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: 700; /* font-bold */
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-family: 'Teko', sans-serif;
+}
+
+.rule-section h3 { /* Sub-section titles */
+    color: #fc6719; /* zwift-orange */
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.rule-section p, .rule-section li {
+    color: #d1d5db; /* gray-300 */
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.rule-section ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+}
+.rule-section ol {
+    list-style-type: decimal;
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.rule-section a {
+    color: #00f0ff; /* zwift-blue for links */
+    text-decoration: underline;
+}
+.rule-section a:hover {
+    color: #fc6719; /* zwift-orange on hover */
+}
+
+.sommario, .summary {
+    background-color: #1e1e24; /* zwift-card */
+    border: 1px solid #374151; /* gray-700 */
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    margin: 1.25rem 0 2.5rem;
+}
+.sommario h2, .summary h2 {
+    margin-top:0;
+    font-size:1.2em;
+    text-align:center;
+    color: #fc6719; /* zwift-orange */
+    font-family: 'Teko', sans-serif;
+}
+.sommario ul, .summary ul {
+    columns: 2;
+    -webkit-columns:2;
+    -moz-columns:2;
+    list-style-type: square;
+    padding-left:20px;
+    color: #d1d5db; /* gray-300 */
+}
+
+table {
+    border-collapse: collapse;
+    width:100%;
+    margin:1rem 0 2rem 0;
+    color: #d1d5db; /* gray-300 */
+}
+table, th, td { border:1px solid #4b5563; /* gray-600 */ }
+th, td { padding:0.75rem 1rem; text-align:center; }
+th {
+    background-color: rgba(252, 103, 25, 0.2); /* Transparent zwift-orange */
+    font-weight:600;
+    color: #fc6719; /* zwift-orange */
+}
+
+hr {
+    border:none;
+    border-top:2px solid #4b5563; /* gray-600 */
+    margin:2.5rem 0 2rem;
+}
+
+.highlight { color: #00f0ff; /* zwift-blue */ font-weight:bold; }
+
+.lang-it, .lang-en { display:block; }
+.lang-en[hidden], .lang-it[hidden] { display:none; }
+
+@media (max-width:600px){
+    .sommario ul, .summary ul { columns:1; -webkit-columns:1; -moz-columns:1; }
+    .lang-toggle { right:0.5rem; top:0.5rem; }
+    .rule-section h1 { font-size:2em; }
+}

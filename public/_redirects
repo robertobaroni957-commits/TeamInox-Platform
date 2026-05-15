@@ -3,9 +3,13 @@
 # 1. API: Indirizza le chiamate API
 /api/*  /api/:splat  200
 
-# 2. ASSETS: Evita che i file statici vengano intercettati dal fallback SPA
-# Questo assicura che se un file in /assets non esiste, dia 404 invece di caricare index.html
+# 2. STATIC FILES: Previeni loop per file esistenti
+/favicon.svg /favicon.svg 200
+/icons.svg /icons.svg 200
+/index.html /index.html 200
+
+# 3. ASSETS: Evita che i file statici vengano intercettati dal fallback SPA
 /assets/* /assets/:splat 200
 
-# 3. SPA FALLBACK: Tutte le altre rotte gestite da React
+# 4. SPA FALLBACK: Tutte le altre rotte gestite da React
 /*  /index.html  200

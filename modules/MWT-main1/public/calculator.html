@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masters Winter Tour - Calcolatore Classifiche (Cloudflare)</title>
+<style>
+/* Base styles - similar to original index.html but simplified */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #1e1e2f; 
+    color: #e0e0e0; 
+    padding: 20px; 
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.container {
+    background: #2a2a3a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+select, button { 
+    padding: 10px 15px; 
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    outline: none;
+}
+select {
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+}
+button {
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+button:hover { background: #45a049; }
+button:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+h1 { color: #4CAF50; text-align: center; margin-bottom: 30px; font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px; }
+h2 { margin-top: 50px; color: #fff; border-left: 5px solid #4CAF50; padding-left: 15px; font-size: 1.5em; }
+h3 { color: #aaa; margin-top: 20px; font-size: 1.1em; }
+
+table { 
+    border-collapse: collapse;
+    width: 100%; 
+    margin-top: 15px; 
+    background: #2a2a3a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 40px;
+}
+th, td { border-bottom: 1px solid #333; padding: 12px 15px; text-align: center; }
+td:nth-child(2) { text-align: left; font-weight: 500; color: #fff; } 
+td:nth-child(1) { font-weight: bold; background: #333344; width: 50px; } 
+th { 
+    background: #1a1a2a; 
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #4CAF50;
+    padding: 15px;
+    border-bottom: 2px solid #4CAF50;
+}
+tr:nth-child(even) { background: #232333; }
+tr:nth-child(odd) { background: #2a2a3a; }
+tbody tr:hover { background: #353555 !important; }
+
+.error { background: #d32f2f; color: white; padding: 15px; border-radius: 8px; margin: 20px 0; }
+.info-box { background: #007bff; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+
+/* Styles for report tables (copied from original index.html) */
+.score-col { font-weight: bold; color: #4CAF50; font-size: 1.1em; } 
+.time-col { font-weight: bold; color: #FFD700; font-size: 1.1em; } 
+.pos-1 td:nth-child(1) { color: #FFD700; font-size: 1.2em; }
+.pos-2 td:nth-child(1) { color: #C0C0C0; font-size: 1.2em; }
+.pos-3 td:nth-child(1) { color: #CD7F32; font-size: 1.2em; }
+.no-time { color: #666; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>🏆 Masters Winter Tour - Classifiche</h1>
+
+<div class="container">
+    <div class="controls">
+        <label for="selectGara">Seleziona Gara:</label>
+        <select id="selectGara">
+            <option value="">-- Caricamento gare... --</option>
+        </select>
+        <button id="loadGaraBtn" disabled>Carica Dati</button>
+        <button id="calcolaClassificheBtn" disabled>Calcola Classifiche</button>
+        <button id="downloadCumulativeBtn" disabled style="background: #008CBA;">Scarica Generale (JSON)</button>
+        <button id="downloadSingleBtn" disabled style="background: #5cb85c;">Scarica Gara (JSON)</button>
+        <button id="downloadHtmlReportBtn" disabled style="background: #f0ad4e;">Scarica Report (HTML)</button>
+        <button id="logoutBtn" style="background: #dc3545; margin-left: auto;">Logout</button>
+    </div>
+    
+    <div id="statusMessage" class="info-box" style="display: none;"></div>
+</div>
+
+<div id="segmentPanel" class="container" style="display: none; margin-top: 30px;">
+    <h2>🔗 Mappatura Segmenti Gara <span id="garaSegmentoId"></span></h2>
+    <p style="color: #ccc;">Classifica i segmenti (Sprint/KOM).</p>
+    
+    <table id="segmentTable" style="margin-top: 15px;">
+        <thead>
+            <tr>
+                <th>Segmento</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Segment rows will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<div id="classifiche" style="margin-top: 30px;">
+    <!-- Results will be displayed here by JavaScript -->
+</div>
+
+<script src="calculator_page.js"></script>
+</body>
+</html>

@@ -22,7 +22,6 @@ import Availability from './pages/Availability';
 import RosterBuilder from './pages/RosterBuilder';
 import UserManagement from './pages/admin/UserManagement';
 import EventManagement from './pages/admin/EventManagement';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import AvailabilityManagement from './pages/admin/AvailabilityManagement';
 import RosterSuggestions from './pages/admin/RosterSuggestions';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -41,76 +40,115 @@ const App: React.FC = () => {
         <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
         {/* Main Platform (Nested in Layout) */}
-        <Route element={<ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin', 'guest']}><MainLayout /></ProtectedRoute>}>
+        <Route element={<ProtectedRoute allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}><MainLayout /></ProtectedRoute>}>
+          
+          {/* Unified Dashboard - Single Entry Point */}
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="racing" element={<Racing />} />
-          <Route path="ranking" element={<Ranking />} />
-          <Route path="events" element={<Events />} />
-          <Route path="zrl-results" element={<ZRLDivisionResults />} />
-          <Route path="zrl-analytics" element={<ZRLAnalytics />} />
-          <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
-          <Route path="strava-callback" element={<StravaCallback />} />
-          <Route path="zrl-operations" element={
-            <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
-              <ZRLOperations />
-            </ProtectedRoute>
-          } />
-          <Route path="zrl-round-manager" element={
-            <ProtectedRoute allowedRoles={['moderator', 'admin']}>
-              <ZRLRoundManager />
-            </ProtectedRoute>
-          } />
-          <Route path="winter-tour-management" element={
-            <ProtectedRoute allowedRoles={['moderator', 'admin']}>
-              <WinterTourManagement />
+          <Route path="admin" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Operational Modules */}
+          <Route path="racing" element={
+            <ProtectedRoute permission="racing.view">
+              <Racing />
             </ProtectedRoute>
           } />
           
-          {/* Routes restricted from Guests */}
-          <Route path="teams" element={
-            <ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin']}>
-              <Teams />
+          <Route path="ranking" element={
+            <ProtectedRoute permission="wt.view">
+              <Ranking />
             </ProtectedRoute>
           } />
+          
+          <Route path="events" element={
+            <ProtectedRoute permission="events.view">
+              <Events />
+            </ProtectedRoute>
+          } />
+
+          {/* ZRL Modules */}
           <Route path="availability" element={
-            <ProtectedRoute allowedRoles={['user', 'captain', 'moderator', 'admin']}>
+            <ProtectedRoute permission="questionnaire.view">
               <Availability />
             </ProtectedRoute>
           } />
           
-          {/* Roles specifically for staff/captains */}
-          <Route path="roster" element={
-            <ProtectedRoute allowedRoles={['captain', 'moderator', 'admin']}>
-              <RosterBuilder />
+          <Route path="teams" element={
+            <ProtectedRoute permission="teams.view">
+              <Teams />
+            </ProtectedRoute>
+          } />
+
+          <Route path="zrl-results" element={
+            <ProtectedRoute permission="zrl.results">
+              <ZRLDivisionResults />
             </ProtectedRoute>
           } />
           
-          {/* Admin/Moderator Routes */}
-          <Route path="admin" element={
-            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-              <AdminDashboard />
+          <Route path="zrl-analytics" element={
+            <ProtectedRoute permission="analytics.view">
+              <ZRLAnalytics />
             </ProtectedRoute>
           } />
+          
+          <Route path="zrl-season-stats" element={
+            <ProtectedRoute permission="analytics.view">
+              <ZRLSeasonStats />
+            </ProtectedRoute>
+          } />
+
+          {/* Captain/Staff Tools */}
+          <Route path="zrl-operations" element={
+            <ProtectedRoute permission="zrl.lineup">
+              <ZRLOperations />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="roster" element={
+            <ProtectedRoute permission="teams.manage">
+              <RosterBuilder />
+            </ProtectedRoute>
+          } />
+
+          {/* Moderator/Admin Tools */}
+          <Route path="zrl-round-manager" element={
+            <ProtectedRoute permission="zrl.manage">
+              <ZRLRoundManager />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="winter-tour-management" element={
+            <ProtectedRoute permission="wt.manage">
+              <WinterTourManagement />
+            </ProtectedRoute>
+          } />
+
+          {/* Admin System Routes */}
           <Route path="admin/users" element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute permission="admin.system">
               <UserManagement />
             </ProtectedRoute>
           } />
+          
           <Route path="admin/events" element={
-            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+            <ProtectedRoute permission="events.manage">
               <EventManagement />
             </ProtectedRoute>
           } />
+          
           <Route path="admin/availability" element={
-            <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+            <ProtectedRoute permission="admin.system">
               <AvailabilityManagement />
             </ProtectedRoute>
           } />
+          
           <Route path="admin/optimizer" element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute permission="admin.system">
               <RosterSuggestions />
             </ProtectedRoute>
           } />
+
+          {/* Integrations */}
+          <Route path="strava-callback" element={<StravaCallback />} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

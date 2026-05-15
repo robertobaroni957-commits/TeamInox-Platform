@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team INOX - Calendario Eventi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zwift: { dark: '#111111', card: '#1e1e24', orange: '#fc6719', blue: '#00f0ff', text: '#f0f0f0', gray: '#888888' },
+                        race: { flat: '#10b981', mountain: '#ef4444', hilly: '#f59e0b', time: '#00f0ff', }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="sidebar.css?v=1.6"> 
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-zwift-dark font-body text-zwift-text">
+
+    <video autoplay muted loop id="background-video">
+        <source src="https://www.teaminox.it/wp-content/uploads/2025/11/Presentazione-2025-.mp4" type="video/mp4">
+    </video>
+
+    <button id="menu-toggle" class="lg:hidden fixed top-4 left-4 z-[100] p-2 bg-zwift-card rounded-md shadow-2xl border border-gray-700">
+        <svg id="menu-icon-open" class="w-6 h-6 text-zwift-orange block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+        <svg id="menu-icon-close" class="w-6 h-6 text-zwift-orange hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 transition-opacity duration-300 pointer-events-none z-20 lg:hidden"></div>
+    
+    <div id="main-layout" class="lg:grid lg:grid-cols-[250px_1fr] relative min-h-screen"> 
+        
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-[250px] bg-zwift-dark z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto shadow-2xl lg:shadow-none border-r border-gray-800">
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <img src="https://www.teaminox.it/wp-content/uploads/2023/11/cropped-INOX-semplice-colore-lineare.png" class="h-8" alt="Logo INOX">
+                    <span class="text-xl font-bold zwift-font text-zwift-orange">INOX</span>
+                </div>
+            </div>
+
+            <div class="p-4 space-y-4"> 
+                
+                <div>
+                    <h3 class="text-sm text-zwift-gray uppercase font-semibold pl-2 pt-2 pb-1 border-b border-gray-800">Area Riservata</h3>
+                    <a href="index.html" class="sidebar-link">Login/Accesso</a>
+                    <a href="registrazione.html" class="sidebar-link">Registrazione</a>
+                    <a href="#" class="sidebar-link">Recupera Password</a>
+                </div>
+
+                <div>
+                    <h3 class="text-sm text-zwift-gray uppercase font-semibold pl-2 pt-2 pb-1 border-b border-gray-800">Team INOX</h3>
+                    <a href="home.html" class="sidebar-link">Home Pubblica</a>
+                    <a href="chi_siamo.html" class="sidebar-link">Chi Siamo / Filosofia</a>
+                    <a href="contatti.html" class="sidebar-link">Contatti</a>
+                </div>
+
+                <div>
+                    <h3 class="text-sm text-zwift-gray uppercase font-semibold pl-2 pt-2 pb-1 border-b border-gray-800">Attività Team</h3>
+                    <a href="eventi.html" class="sidebar-link sidebar-active">Calendario Eventi</a> <a href="mwt_page.html" class="sidebar-link">Master Winter Tour</a>
+                    <a href="zrl_page.html" class="sidebar-link">ZRL Roster (API)</a>
+                </div>
+
+                <div>
+                    <h3 class="text-sm text-zwift-gray uppercase font-semibold pl-2 pt-2 pb-1 border-b border-gray-800">Risorse</h3>
+                    <a href="https://zwiftpower.com/team.php?id=16461" target="_blank" class="sidebar-link">ZwiftPower</a>
+                    <a href="https://discord.gg/cpr3rBGaZy" target="_blank" class="sidebar-link">Discord INOX</a>
+                    <a href="https://strava.app.link/p2Oj6TaE3Gb" target="_blank" class="sidebar-link">Gruppo Strava</a>
+                    <a href="https://www.zwift.com/eu/clubs/cef70cde-9149-43a2-b3ae-187643a44703/home" target="_blank" class="sidebar-link">Club Zwift</a>
+                </div>
+
+            </div>
+        </aside>
+
+        <div id="main-content" class="min-h-screen lg:overflow-y-auto w-full lg:ml-[250px]"> 
+            
+            <nav id="top-nav" class="bg-zwift-card border-b border-gray-700 shadow-lg sticky top-0 z-20">
+                <div class="px-6 py-3 flex justify-between items-center text-sm font-semibold">
+                    
+                    
+                    
+                    <div class="hidden lg:flex items-center">
+                        <a href="home.html" class="hover:text-zwift-orange px-4">Home</a>
+                        <a href="chi_siamo.html" class="hover:text-zwift-orange px-4">Chi Siamo</a>
+                        <a href="eventi.html" class="hover:text-zwift-orange px-4 text-zwift-orange">Eventi</a>
+                        <span class="text-zwift-gray px-4">|</span>
+                        <a href="#" id="logoutButton" class="text-zwift-gray hover:text-zwift-orange px-4 cursor-pointer">Logout</a> 
+                    </div>
+                    
+                    <a href="#" class="bg-zwift-orange text-black font-bold py-1.5 px-3 rounded-md text-xs transition lg:ml-auto">
+                        AREA TECNICA
+                    </a>
+                </div>
+            </nav>
+
+            <main class="p-4 sm:p-8">
+                
+                <h1 class="text-5xl sm:text-7xl font-extrabold mb-8 text-white zwift-font tracking-tight border-b border-gray-700 pb-2">
+                    CALENDARIO <span class="text-zwift-orange">EVENTI</span>
+                </h1>
+                
+                <section id="links" class="mb-12">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mb-5 text-white zwift-font border-b border-gray-700 pb-2">
+                        Link <span class="text-zwift-blue">Cruciali</span>
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <a href="https://zwiftpower.com" target="_blank" class="bg-zwift-card p-4 rounded-lg text-center event-card border-b-4 border-zwift-orange">
+                            <span class="block text-2xl mb-1">📊</span>
+                            <span class="font-semibold text-white">ZWIFT POWER</span>
+                            <span class="block text-xs text-zwift-gray">Le nostre statistiche</span>
+                        </a>
+                        <a href="https://discord.com" target="_blank" class="bg-zwift-card p-4 rounded-lg text-center event-card border-b-4 border-zwift-blue">
+                            <span class="block text-2xl mb-1">💬</span>
+                            <span class="font-semibold text-white">DISCORD</span>
+                            <span class="block text-xs text-zwift-gray">Comunicazione Live</span>
+                        </a>
+                        <a href="https://strava.com" target="_blank" class="bg-zwift-card p-4 rounded-lg text-center event-card border-b-4 border-zwift-orange">
+                            <span class="block text-2xl mb-1">📍</span>
+                            <span class="font-semibold text-white">STRAVA</span>
+                            <span class="block text-xs text-zwift-gray">Condivisione Attività</span>
+                        </a>
+                        <a href="https://www.teaminox.it/wp-content/uploads/2025/11/Presentazione-2025-.mp4" target="_blank" class="bg-zwift-card p-4 rounded-lg text-center event-card border-b-4 border-zwift-blue">
+                            <span class="block text-2xl mb-1">▶️</span>
+                            <span class="font-semibold text-white">PRESENTAZIONE 2025</span>
+                            <span class="block text-xs text-zwift-gray">Guarda il Video</span>
+                        </a>
+                    </div>
+                </section>
+
+                <section id="scoreboard" class="mb-12">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mb-6 text-white zwift-font border-b border-gray-700 pb-2">
+                        Classifica <span class="text-zwift-blue">Riservata</span> (API Test)
+                    </h2>
+                    
+                    <p class="text-sm text-zwift-gray mb-4">Questa sezione carica i dati solo se il tuo token JWT è valido e verificato dal Middleware di Cloudflare.</p>
+                    
+                    <button id="loadScoresButton" class="bg-zwift-blue hover:bg-zwift-blue hover:text-black text-white font-bold py-2 px-4 rounded transition">
+                        Carica Punteggi Team
+                    </button>
+                    
+                    <div id="scoresContainer" class="mt-6">
+                        <p id="apiStatus" class="text-sm text-red-400"></p>
+                    </div>
+
+                    <div id="scoresTable" class="hidden">
+                        <table class="min-w-full bg-zwift-card rounded-lg shadow-xl mt-4 border border-gray-700">
+                            <thead>
+                                <tr class="border-b border-gray-700 text-left text-sm text-zwift-gray uppercase tracking-wider">
+                                    <th class="p-3">Utente</th>
+                                    <th class="p-3">Ruolo</th>
+                                    <th class="p-3 text-center">Score (Simulato)</th>
+                                    <th class="p-3 hidden sm:table-cell">Membro Dal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoresBody" class="divide-y divide-gray-800">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="races" class="mb-12">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mb-6 text-white zwift-font border-b border-gray-700 pb-2">
+                        Appuntamenti <span class="text-zwift-orange">Settimanali</span>
+                    </h2>
+
+                    <div class="space-y-6"> 
+                        
+                        <a href="mwt_page.html" class="bg-zwift-card p-6 rounded-xl event-card border-l-8 border-zwift-orange flex flex-col sm:flex-row justify-between items-start transition hover:scale-[1.01] hover:shadow-xl block">
+                            <div>
+                                <h3 class="text-3xl sm:text-4xl font-bold text-zwift-blue zwift-font mb-2">MASTER WINTER TOUR 2025/26</h3>
+                                <p class="text-sm text-gray-300 mb-3 font-semibold">Il tour invernale ufficiale di Team INOX. 18 tappe e classifica generale a punti.</p>
+                                <span class="race-type-tag tag-tour-highlight">TOUR UFFICIALE</span>
+                                <span class="race-type-tag" style="background-color: #1e40af; color: white;">INIZIO 12 DICEMBRE</span>
+                            </div>
+                            <div class="text-left sm:text-right mt-4 sm:mt-0">
+                                <span class="block text-3xl font-display text-zwift-orange font-bold">18 TAPPE</span>
+                                <span class="block text-xl font-display text-zwift-blue font-bold">6 SETTIMANE</span>
+                                <span class="text-sm text-white hover:text-zwift-blue mt-1 block font-bold">Vai all'Hub Completo &rarr;</span>
+                            </div>
+                        </a>
+                        
+                        <div class="bg-zwift-card p-6 rounded-xl event-card border-l-8 border-zwift-blue flex flex-col sm:flex-row justify-between items-start">
+                            <div>
+                                <h3 class="text-3xl font-bold text-white zwift-font mb-2">ZWIFT RACING LEAGUE (ZRL)</h3>
+                                <p class="text-sm text-gray-400 mb-3">La nostra partecipazione alla lega a squadre più prestigiosa di Zwift. Gara settimanale.</p>
+                                <span class="race-type-tag tag-critical">LEGA A SQUADRE</span>
+                                <span class="race-type-tag" style="background-color: #048ea0; color: white;">PROSSIMA STAGIONE: GENNAIO</span>
+                            </div>
+                            <div class="text-left sm:text-right mt-4 sm:mt-0">
+                                <span class="block text-3xl font-display text-white font-bold">MARTEDÌ SERA</span>
+                                <a href="#" class="text-sm text-zwift-blue hover:text-white mt-1 block font-semibold">Iscrizione & Regolamento</a>
+                            </div>
+                        </div>
+
+                        <div class="bg-zwift-card p-6 rounded-xl event-card border-l-8 border-zwift-blue flex flex-col sm:flex-row justify-between items-start">
+                            <div>
+                                <h3 class="text-3xl font-bold text-white zwift-font mb-2">ENDURANCE CHALLENGE</h3>
+                                <p class="text-sm text-gray-400 mb-3">La nostra gara di endurance stagionale. Ogni tappa è una sfida sulla distanza.</p>
+                                <span class="race-type-tag tag-endurance">ENDURANCE</span>
+                            </div>
+                            <div class="text-left sm:text-right mt-4 sm:mt-0">
+                                <span class="block text-3xl font-display text-zwift-blue font-bold">LUNEDÌ / MARTEDÌ</span>
+                                <a href="#" class="text-sm text-zwift-orange hover:text-white mt-1 block font-semibold">Dettagli Tappe & Classifiche</a>
+                            </div>
+                        </div>
+
+                        <div class="bg-zwift-card p-6 rounded-xl event-card border-l-8 border-zwift-orange flex flex-col sm:flex-row justify-between items-start">
+                            <div>
+                                <h3 class="text-3xl font-bold text-white zwift-font mb-2">TOUR OF DISCOVERY</h3>
+                                <p class="text-sm text-gray-400 mb-3">Gare brevi su circuiti pianeggianti o misti per mettere alla prova la velocità.</p>
+                                <span class="race-type-tag tag-short">SHORT RACE</span>
+                            </div>
+                            <div class="text-left sm:text-right mt-4 sm:mt-0">
+                                <span class="block text-3xl font-display text-zwift-orange font-bold">MERCOLEDÌ / GIOVEDÌ</span>
+                                <a href="#" class="text-sm text-zwift-orange hover:text-white mt-1 block font-semibold">Iscriviti su Zwift</a>
+                            </div>
+                        </div>
+
+                        <div class="bg-zwift-card p-6 rounded-xl event-card border-l-8 border-zwift-blue flex flex-col sm:flex-row justify-between items-start">
+                            <div>
+                                <h3 class="text-3xl font-bold text-white zwift-font mb-2">TRILOGY MASTERS LEAGUE</h3>
+                                <p class="text-sm text-gray-400 mb-3">La sfida a cronometro del Team INOX. Massima potenza richiesta.</p>
+                                <span class="race-type-tag tag-tt">CRONOMETRO (TT)</span>
+                            </div>
+                            <div class="text-left sm:text-right mt-4 sm:mt-0">
+                                <span class="block text-3xl font-display text-zwift-blue font-bold">VENERDÌ</span>
+                                <a href="#" class="text-sm text-zwift-orange hover:text-white mt-1 block font-semibold">Regolamento Completo</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="text-center text-xs text-gray-700 mt-10 border-t border-gray-900 pt-6">
+                    &copy; 2025 Team INOX. Tutti i diritti riservati.
+                </footer>
+            </main>
+        </div>
+    </div>
+    
+    <script src="sidebar.js?v=1.6"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // ===========================================
+            // 🛑 1. PROTEZIONE PAGINA (AUTORIZZAZIONE JWT) 🛑
+            // ===========================================
+            const token = localStorage.getItem('inox_jwt');
+
+            if (!token) {
+                console.warn("Accesso negato: Token JWT mancante.");
+                // Reindirizza al login. Il middleware del server bloccherà anche l'accesso diretto ai file.
+                window.location.href = 'index.html?auth_error=missing_token';
+                return; // Ferma l'esecuzione dello script se non autorizzato
+            }
+            
+            // Elementi DOM per il caricamento dei punteggi
+            const loadScoresButton = document.getElementById('loadScoresButton');
+            const apiStatus = document.getElementById('apiStatus');
+            const scoresBody = document.getElementById('scoresBody');
+            const scoresTable = document.getElementById('scoresTable');
+            
+            // ===========================================
+            // 🔑 2. CHIAMATA ALL'API PROTETTA (/api/scores)
+            // ===========================================
+            const API_URL = '/api/scores';
+
+            const loadScores = async () => {
+                apiStatus.textContent = 'Caricamento in corso...';
+                scoresBody.innerHTML = '';
+                scoresTable.classList.add('hidden');
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'GET',
+                        headers: { 
+                            'Authorization': `Bearer ${token}` // Invia il JWT nel formato standard
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 'success') {
+                        apiStatus.textContent = `Dati caricati! Autenticato come: ${data.requestedBy} (${data.role})`;
+                        apiStatus.classList.remove('text-red-400');
+                        apiStatus.classList.add('text-zwift-blue');
+                        
+                        // Riempie la tabella con i dati
+                        data.data.forEach(item => {
+                            const row = scoresBody.insertRow();
+                            row.classList.add('hover:bg-zwift-card/50', 'transition', 'duration-150');
+                            
+                            row.innerHTML = `
+                                <td class="p-3 font-semibold">${item.username}</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${item.role === 'admin' ? 'bg-red-800 text-white' : 'bg-zwift-blue text-black'}">${item.role.toUpperCase()}</span></td>
+                                <td class="p-3 text-center text-lg font-display text-zwift-orange">${item.score}</td>
+                                <td class="p-3 text-xs text-zwift-gray hidden sm:table-cell">${item.memberSince}</td>
+                            `;
+                        });
+                        scoresTable.classList.remove('hidden');
+
+                    } else {
+                        // Errore 401/403 (Token scaduto o permessi insufficienti)
+                        apiStatus.textContent = `❌ Errore API: ${data.message || 'Accesso ai dati negato. Rilogga.'}`;
+                        apiStatus.classList.remove('text-zwift-blue');
+                        apiStatus.classList.add('text-red-400');
+                    }
+
+                } catch (error) {
+                    console.error('Errore di rete o API:', error);
+                    apiStatus.textContent = '❌ Errore di connessione. Impossibile contattare l\'API.';
+                    apiStatus.classList.add('text-red-400');
+                }
+            };
+            
+            if (loadScoresButton) {
+                loadScoresButton.addEventListener('click', loadScores);
+            }
+
+            // ===========================================
+            // 3. LOGICA LOGOUT
+            // ===========================================
+            const logoutButton = document.getElementById('logoutButton');
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('inox_jwt'); 
+                    window.location.href = 'index.html?logout=success';
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>

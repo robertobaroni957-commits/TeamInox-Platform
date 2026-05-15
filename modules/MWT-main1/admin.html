@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team INOX - Amministrazione Gare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zwift: { dark: '#111111', card: '#1e1e24', orange: '#fc6719', blue: '#00f0ff', text: '#f0f0f0', gray: '#888888' },
+                        race: { flat: '#10b981', mountain: '#ef4444', hilly: '#f59e0b', time: '#00f0ff', }
+                    },
+                    fontFamily: { display: ['Teko', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="sidebar.css?v=1.6" type="text/css"> 
+    
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-zwift-dark font-body text-zwift-text">
+
+    <video autoplay muted loop id="background-video">
+        <source src="https://www.teaminox.it/wp-content/uploads/2025/11/Presentazione-2025-.mp4" type="video/mp4">
+    </video>
+
+    <button id="menu-toggle" class="lg:hidden fixed top-4 left-4 z-[100] p-2 bg-zwift-card rounded-md shadow-2xl border border-gray-700">
+        <svg id="menu-icon-open" class="w-6 h-6 text-zwift-orange block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+        <svg id="menu-icon-close" class="w-6 h-6 text-zwift-orange hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
+    <div id="sidebar-overlay" class="hidden"></div>
+
+    <div id="main-layout">
+
+        <aside id="sidebar">
+            <!-- Sidebar content will be loaded by sidebar.js -->
+        </aside>
+
+        <div id="main-content">
+            
+            <nav id="top-nav" class="bg-zwift-card border-b border-gray-700 shadow-lg hidden lg:block w-full">
+                 <!-- Top nav content can be loaded dynamically if needed -->
+            </nav>
+
+            <main class="w-full p-4 sm:p-6 lg:p-6 pt-16 lg:pt-6">
+                
+                <section id="admin-section" class="bg-zwift-card rounded-xl p-6 sm:p-8 mb-10 card-shadow border-l-4 border-zwift-blue">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-6 text-white zwift-font tracking-tight">
+                        Pannello Amministratore
+                    </h2>
+                    <p class="text-gray-300 mb-8 max-w-lg text-sm sm:text-base">
+                        Importa i dati da ZwiftPower e calcola le classifiche delle gare.
+                        Assicurati di aver configurato le tue credenziali ZwiftPower nella sezione <a href="profilo.html" class="text-zwift-orange hover:underline">Profilo</a>.
+                    </p>
+                    
+                    <form id="import-form" class="space-y-6 max-w-md">
+                        <div>
+                            <label for="race_id" class="block text-sm font-medium text-zwift-gray mb-2">ID Gara Interno (es. 1, 2, 3)</label>
+                            <input type="number" id="race_id" name="race_id" required 
+                                   class="w-full bg-zwift-dark text-white border border-gray-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-zwift-blue focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-2">Un numero univoco per questa gara nel nostro sistema.</p>
+                        </div>
+                        
+                        <div>
+                            <label for="zwift_event_id" class="block text-sm font-medium text-zwift-gray mb-2">ID Evento ZwiftPower</label>
+                            <input type="text" id="zwift_event_id" name="zwift_event_id" required 
+                                   class="w-full bg-zwift-dark text-white border border-gray-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-zwift-blue focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-2">L'ID numerico dell'evento su ZwiftPower (es. 123456).</p>
+                        </div>
+
+                        <div>
+                            <button type="submit" id="download-raw-button"
+                                    class="bg-zwift-blue hover:bg-zwift-blue text-black font-bold py-2 px-6 rounded-lg text-sm transition transform hover:scale-105">
+                                Scarica Dati Raw da ZwiftPower
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="status-message" class="mt-6 text-sm"></div>
+
+                </section>
+
+                <!-- Segment Mapping Panel (Hidden by default) -->
+                <section id="segment-mapping-section" class="bg-zwift-card rounded-xl p-6 sm:p-8 mt-10 card-shadow border-l-4 border-zwift-orange" style="display: none;">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold mb-6 text-white zwift-font tracking-tight">
+                        Mappatura Segmenti Gara <span id="garaSegmentoId"></span>
+                    </h2>
+                    <p class="text-gray-300 mb-8 max-w-lg text-sm sm:text-base">
+                        Seleziona per ogni segmento a quale classifca porta punti e se i punti assegnati arriveranno dall'orinde FTS, FAL o entrambi.
+                    </p>
+                    
+                    <table id="segmentTable" class="min-w-full table-auto text-left mb-6">
+                        <thead>
+                            <tr class="bg-gray-800">
+                                <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Segmento</th>
+                                <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">FTS</th>
+                                <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">FAL</th>
+                                <th class="px-4 py-2 border-b border-gray-700 text-zwift-gray">Classifica Speciale</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Segment rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+
+                    <div>
+                        <button type="button" id="calculate-rankings-button"
+                                class="bg-zwift-orange hover:bg-red-500 text-black font-bold py-2 px-6 rounded-lg text-sm transition transform hover:scale-105">
+                            Calcola Classifiche Complete e Aggiorna Generale
+                        </button>
+                    </div>
+                </section>
+                
+            </main>
+        </div>
+    </div>
+
+    <script src="sidebar.js?v=1.6"></script>
+    <script>
+        // --- CONSTANTS AND GLOBAL VARIABLES (from MWT_Ranking/index.html) ---
+        const PUNTI_FIN = [100,80,70,60,55,50,45,40,36,32,29,26,24,22,20,18,16,14,12,10];
+        const PUNTI_FTS = [25,21,17,14,11,8,6,4,2,1];
+        const PUNTI_FAL = [25,21,17,14,11,8,6,4,2,1];
+        const CATEGORIE = ['A','B','C','D','E'];
+        let allSegments = new Set(); 
+        let selectedSegments = {}; // { segmentName: { SPRINT: bool, KOM: bool, FAL: bool, FTS: bool } }
+        let currentRawRaceData = {}; // Stores the raw fin, fal, fts data fetched after initial download
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_token');
+
+            // 1. Auth check and role check
+            if (!token) {
+                window.location.href = '/index.html'; // Redirect to login if not authenticated
+                return;
+            }
+
+            // Decode token to check role (simple client-side check, backend will re-verify)
+            try {
+                const payloadBase64 = token.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                if (decodedPayload.role !== 'admin') {
+                    alert('Accesso negato. Solo gli amministratori possono accedere a questa pagina.');
+                    window.location.href = '/home.html'; // Redirect non-admins
+                    return;
+                }
+            } catch (e) {
+                console.error("Errore decoding JWT:", e);
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            const importForm = document.getElementById('import-form');
+            const raceIdInput = document.getElementById('race_id');
+            const zwiftEventIdInput = document.getElementById('zwift_event_id');
+            const statusMessage = document.getElementById('status-message');
+            const downloadRawButton = document.getElementById('download-raw-button');
+            const segmentMappingSection = document.getElementById('segment-mapping-section');
+            const segmentTableBody = document.querySelector('#segmentTable tbody');
+            const garaSegmentoIdSpan = document.getElementById('garaSegmentoId');
+            const calculateRankingsButton = document.getElementById('calculate-rankings-button');
+
+
+            // --- Helper to extract segments from raw data ---
+            function extractSegments(falDataMap, ftsDataMap) {
+                const segments = new Set();
+                CATEGORIE.forEach(cat => {
+                    if (falDataMap[cat] && falDataMap[cat].data) {
+                        falDataMap[cat].data.forEach(sprint => {
+                            const uniqueSprintId = sprint.name + (sprint.lap ? ` (Lap ${sprint.lap})` : '');
+                            segments.add(uniqueSprintId);
+                        });
+                    }
+                    if (ftsDataMap[cat] && ftsDataMap[cat].data) {
+                        ftsDataMap[cat].data.forEach(sprint => {
+                            const uniqueSprintId = sprint.name + (sprint.lap ? ` (Lap ${sprint.lap})` : '');
+                            segments.add(uniqueSprintId);
+                        });
+                    }
+                });
+                return Array.from(segments);
+            }
+
+            // --- Segment Mapping UI Functions (from MWT_Ranking/index.html) ---
+            window.gestisciSelezioneSegmento = function(element) {
+                const segment = element.dataset.segment;
+                const type = element.dataset.type;
+
+                if (!selectedSegments[segment]) {
+                    selectedSegments[segment] = { SPRINT: false, KOM: false, FAL: false, FTS: false };
+                }
+
+                if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+                    selectedSegments[segment][type] = element.checked;
+                } else if (element.tagName === 'SELECT') {
+                    const value = element.value;
+                    if (value === 'SPRINT') {
+                        selectedSegments[segment].SPRINT = true;
+                        selectedSegments[segment].KOM = false;
+                    } else if (value === 'KOM') {
+                        selectedSegments[segment].SPRINT = false;
+                        selectedSegments[segment].KOM = true;
+                    } else { // value === 'NONE'
+                        selectedSegments[segment].SPRINT = false;
+                        selectedSegments[segment].KOM = false;
+                    }
+                }
+                console.log(`Stato aggiornato per ${segment}:`, selectedSegments[segment]);
+            };
+
+            function populateSegmentPanel(segments, garaId) {
+                segmentTableBody.innerHTML = '';
+                allSegments = new Set(segments); // Update global allSegments
+                selectedSegments = {}; // Reset selections for new gara
+
+                garaSegmentoIdSpan.textContent = garaId;
+                
+                if (allSegments.size === 0) {
+                    segmentMappingSection.style.display = 'none';
+                    statusMessage.innerHTML = `<span class="text-zwift-orange">Nessun segmento Sprint/KOM/FAL/FTS trovato per questa gara. Calcolo basato solo sui punti FIN.</span>`;
+                    calculateRankingsButton.disabled = false; // Allow to calculate without segments
+                    return;
+                }
+
+                allSegments.forEach(segmentName => {
+                    const row = segmentTableBody.insertRow();
+                    selectedSegments[segmentName] = { SPRINT: false, KOM: false, FAL: false, FTS: false }; // Default to unchecked
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-white border-b border-gray-700">${segmentName}</td>
+                        <td class="px-4 py-3 text-center border-b border-gray-700"><input type="checkbox" data-segment="${segmentName}" data-type="FTS" onchange="gestisciSelezioneSegmento(this)"></td>
+                        <td class="px-4 py-3 text-center border-b border-gray-700"><input type="checkbox" data-segment="${segmentName}" data-type="FAL" onchange="gestisciSelezioneSegmento(this)"></td>
+                        <td class="px-4 py-3 text-center border-b border-gray-700">
+                            <select data-segment="${segmentName}" data-type="CLASS" onchange="gestisciSelezioneSegmento(this)" class="bg-zwift-dark text-white border border-gray-700 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-zwift-orange focus:outline-none">
+                                <option value="NONE">Nessuna</option>
+                                <option value="SPRINT">Sprint ⚡</option>
+                                <option value="KOM">KOM ⛰️</option>
+                            </select>
+                        </td>
+                    `;
+                });
+                segmentMappingSection.style.display = 'block';
+                calculateRankingsButton.disabled = false;
+            }
+
+            // --- 2. Handle initial raw data download ---
+            importForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                downloadRawButton.disabled = true;
+                downloadRawButton.textContent = 'Scaricando Dati Raw...';
+                statusMessage.textContent = '';
+                statusMessage.className = 'mt-6 text-sm text-gray-300';
+                segmentMappingSection.style.display = 'none'; // Hide segment panel initially
+
+                const race_id = parseInt(raceIdInput.value);
+                const zwift_event_id = zwiftEventIdInput.value;
+                
+                statusMessage.innerHTML = `<span class="text-zwift-blue">Scaricando i dati raw da ZwiftPower...</span>`;
+
+                try {
+                    const response = await fetch('/api/admin/import-zwift-data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ race_id, zwift_event_id, download_only: true }) // New flag for raw download
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Errore durante il download dei dati raw.');
+                    }
+
+                    const data = await response.json();
+                    currentRawRaceData = data.raw_data; // Store the raw data for segment extraction
+                    statusMessage.innerHTML = `<span class="text-green-500">${data.message}</span>`;
+
+                    // Extract segments and populate panel
+                    const segments = extractSegments(currentRawRaceData.fal, currentRawRaceData.fts);
+                    populateSegmentPanel(segments, race_id);
+
+                } catch (error) {
+                    statusMessage.innerHTML = `<span class="text-red-500">Errore: ${error.message}</span>`;
+                    segmentMappingSection.style.display = 'none';
+                } finally {
+                    downloadRawButton.disabled = false;
+                    downloadRawButton.textContent = 'Scarica Dati Raw da ZwiftPower';
+                }
+            });
+
+            // --- 3. Handle Calculate Rankings button ---
+            calculateRankingsButton.addEventListener('click', async () => {
+                calculateRankingsButton.disabled = true;
+                calculateRankingsButton.textContent = 'Calcolando Classifiche...';
+                statusMessage.textContent = '';
+                statusMessage.className = 'mt-6 text-sm text-gray-300';
+
+                const race_id = parseInt(raceIdInput.value);
+                const zwift_event_id = zwiftEventIdInput.value;
+
+                statusMessage.innerHTML = `<span class="text-zwift-blue">Calcolando e aggiornando le classifiche...</span>`;
+
+                try {
+                    const response = await fetch('/api/admin/import-zwift-data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ race_id, zwift_event_id, segment_mapping: selectedSegments, calculate_only: true }) // New flag for calculation
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Errore durante il calcolo delle classifiche.');
+                    }
+
+                    const data = await response.json();
+                    statusMessage.innerHTML = `<span class="text-green-500">${data.message}</span>`;
+
+                } catch (error) {
+                    statusMessage.innerHTML = `<span class="text-red-500">Errore: ${error.message}</span>`;
+                } finally {
+                    calculateRankingsButton.disabled = false;
+                    calculateRankingsButton.textContent = 'Calcola Classifiche Complete e Aggiorna Generale';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

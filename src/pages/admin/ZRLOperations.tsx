@@ -16,6 +16,7 @@ import RosterBuilder from '../RosterBuilder';
 import ZRLDivisionResults from '../ZRLDivisionResults';
 import ZRLAnalytics from '../ZRLAnalytics';
 import ZRLSeasonStats from '../ZRLSeasonStats';
+import TeamsPage from '../TeamsPage';
 
 interface RoundInput {
   id?: number;
@@ -432,52 +433,75 @@ const ZRLOperations: React.FC = () => {
   const steps = [
     { 
       id: 1, 
-      title: 'Setup Round', 
+      title: 'Setup & Sync', 
       icon: Settings, 
-      desc: 'ID Round WTRL',
-      help: 'Configura i parametri fondamentali del round. Inserisci l\'ID stagione WTRL (es. 19) e sincronizza il calendario gare e le squadre per inizializzare il sistema.'
+      desc: 'Configurazione Round',
+      help: 'Configura i parametri del round, sincronizza il calendario gare da WTRL e aggiorna la base dati delle squadre.',
+      path: '/zrl-round-manager'
     },
     { 
       id: 2, 
-      title: 'Disponibilità', 
-      icon: ClipboardCheck, 
-      desc: 'Monitoraggio RSVP',
-      help: 'Analizza la matrice delle disponibilità in tempo reale. Visualizza chi ha confermato la presenza per i prossimi round e filtra per categoria per valutare la forza d\'attacco.'
+      title: 'Roster & Teams', 
+      icon: Users, 
+      desc: 'Gestione Squadre',
+      help: 'Visualizza e gestisci le squadre InoxTeam. Sincronizza le rose direttamente da WTRL e monitora i RacePass attivi per ogni rider.',
+      path: '/teams'
     },
     { 
       id: 3, 
-      title: 'Roster Strategy', 
-      icon: Zap, 
-      desc: 'Optimizer & Teams',
-      help: 'L\'intelligenza artificiale suggerisce la distribuzione ottimale degli atleti nei pool basandosi sulle preferenze orarie e sulla validazione automatica del regolamento ZRL.'
+      title: 'Disponibilità', 
+      icon: ClipboardCheck, 
+      desc: 'Monitoraggio RSVP',
+      help: 'Analizza la matrice delle disponibilità in tempo reale. Visualizza chi ha confermato la presenza e filtra per categoria per valutare la forza.',
+      path: '/admin/availability'
     },
     { 
       id: 4, 
-      title: 'Gare & Lineup', 
-      icon: Users, 
-      desc: 'Composizione Squadre',
-      help: 'La War Room tattica. Seleziona un team e schiera i 6 titolari scegliendo tra gli atleti disponibili. Una volta pronti, puoi generare la card grafica per i social.'
+      title: 'Roster Strategy', 
+      icon: Brain, 
+      desc: 'Optimizer',
+      help: 'L\'intelligenza artificiale suggerisce la distribuzione ottimale degli atleti nei pool basandosi sulle preferenze orarie e sulla validazione automatica del regolamento ZRL.',
+      path: '/admin/optimizer'
     },
     { 
       id: 5, 
-      title: 'Risultati & Media', 
-      icon: Trophy, 
-      desc: 'Recap Gara',
-      help: 'Importa i file JSON estratti dal sito WTRL. Questa fase aggiorna i punti individuali (FAL/FTS/Finish) e alimenta le classifiche globali della piattaforma.'
+      title: 'Gare & Lineup', 
+      icon: Zap, 
+      desc: 'Composizione Squadre',
+      help: 'La War Room tattica. Seleziona un team e schiera i 6 titolari scegliendo tra gli atleti disponibili. Genera la card grafica per i social.',
+      path: '/zrl-operations' // Note: This might need a specific sub-route or remain self-contained
     },
     { 
       id: 6, 
-      title: 'Rankings View', 
-      icon: LayoutGrid, 
-      desc: 'Classifiche Live',
-      help: 'Viewport di monitoraggio della classifica generale (GC). Controlla il posizionamento degli Inox Squadron rispetto ai rivali e analizza i distacchi in tempo reale.'
+      title: 'Risultati & Media', 
+      icon: Trophy, 
+      desc: 'Ingestion Data',
+      help: 'Importa i file JSON estratti dal sito WTRL. Aggiorna punti individuali (FAL/FTS/Finish) e alimenta le classifiche.',
+      path: '/admin/import-results'
     },
     { 
       id: 7, 
+      title: 'Rankings View', 
+      icon: LayoutGrid, 
+      desc: 'Classifiche Live',
+      help: 'Viewport di monitoraggio della classifica generale (GC). Controlla il posizionamento degli Inox Squadron rispetto ai rivali in tempo reale.',
+      path: '/zrl-results'
+    },
+    { 
+      id: 8, 
       title: 'Strat Map', 
       icon: BarChart3, 
       desc: 'Analisi Tattica',
-      help: 'Deep Analytics Engine: confronta il DNA tattico delle squadre tramite grafici radar e identifica i top performer (MVPs) della divisione per ottimizzare le strategie future.'
+      help: 'Deep Analytics Engine: confronta il DNA tattico delle squadre tramite grafici radar e identifica i top performer (MVPs).',
+      path: '/zrl-analytics'
+    },
+    { 
+      id: 9, 
+      title: 'Recap Stagione ZRL', 
+      icon: TrendingUp, 
+      desc: 'Statistiche',
+      help: 'Analisi cumulativa della stagione 19: statistiche di performance, top performers e riepilogo generale.',
+      path: '/zrl-season-stats'
     },
   ];
 
@@ -495,28 +519,38 @@ const ZRLOperations: React.FC = () => {
         </h1>
       </header>
 
-      <nav className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <nav className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {steps.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
-          const isHovered = hoveredStep === step.id;
           return (
             <button
               key={step.id}
-              onClick={() => setActiveStep(step.id)}
-              onMouseEnter={() => setHoveredStep(step.id)}
-              onMouseLeave={() => setHoveredStep(null)}
-              className={`flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left group ${
+              onClick={() => {
+                 if (step.path) {
+                    navigate(step.path);
+                 } else {
+                    setActiveStep(step.id);
+                 }
+              }}
+              className={`relative flex items-center p-6 rounded-3xl border-2 transition-all text-left group ${
                 isActive 
                   ? "bg-zinc-800 border-[#fc6719] shadow-[0_0_25px_rgba(252,103,25,0.2)]" 
-                  : (isHovered ? "bg-zinc-800 border-zinc-500 shadow-xl" : "bg-zinc-900/80 border-zinc-700 opacity-90 shadow-lg")
+                  : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 shadow-lg"
               }`}
             >
-              <div className={`p-2 rounded-xl mb-3 transition-all ${isActive ? "bg-[#fc6719] text-black shadow-[0_0_15px_rgba(252,103,25,0.4)]" : "bg-zinc-800 text-zinc-300 group-hover:text-white border border-zinc-700"}`}>
-                <Icon size={16} />
+              <div className={`p-4 rounded-2xl mr-5 transition-all ${isActive ? "bg-[#fc6719] text-black" : "bg-zinc-800 text-zinc-400 group-hover:text-white"}`}>
+                <Icon size={24} />
               </div>
-              <span className={`text-[8px] font-black uppercase mb-1 tracking-widest ${isActive ? "text-zinc-400" : "text-zinc-500"}`}>Step 0{step.id}</span>
-              <span className={`text-xs font-black uppercase italic tracking-tight ${isActive ? "text-white" : "text-zinc-400 group-hover:text-white"}`}>{step.title}</span>
+              <div className="flex flex-col">
+                 <span className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em]">Step 0{step.id}</span>
+                 <span className={`text-sm font-black uppercase italic tracking-tight ${isActive ? "text-white" : "text-zinc-300"}`}>{step.title}</span>
+              </div>
+
+              {/* Hover Tooltip */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none p-4 bg-black/90 rounded-3xl border border-zinc-700">
+                  <p className="text-[11px] font-bold text-center text-white uppercase tracking-widest italic">{step.help}</p>
+              </div>
             </button>
           );
         })}
@@ -562,16 +596,16 @@ const ZRLOperations: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 0: WELCOME/SELECTION */}
+            {/* STEP 0: WELCOME */}
             {activeStep === 0 && (
-              <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-6">
-                <div className="p-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 shadow-[0_0_40px_rgba(252,103,25,0.05)]">
-                  <Activity size={56} className="animate-pulse text-inox-orange" />
+              <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-4">
+                <div className="w-16 h-16 rounded-3xl bg-zinc-800 flex items-center justify-center text-[#fc6719]">
+                  <Activity size={32} />
                 </div>
-                <div className="space-y-3">
-                  <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter">Mission Selection Required</h3>
-                  <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed italic">
-                    Inizia la gestione tattica del round selezionando un modulo operativo dal centro di comando.
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">ZRL Command Center</h3>
+                  <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed italic">
+                    Seleziona un modulo operativo dal centro di comando per iniziare la gestione tattica del round.
                   </p>
                 </div>
               </div>
@@ -1040,8 +1074,15 @@ const ZRLOperations: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 8: SEASON RECAP */}
+            {/* STEP 8: TEAMS */}
             {activeStep === 8 && (
+              <div className="-m-8 lg:-m-12">
+                <TeamsPage />
+              </div>
+            )}
+            
+            {/* STEP 9: SEASON RECAP */}
+            {activeStep === 9 && (
               <div className="-m-8 lg:-m-12">
                 <ZRLSeasonStats />
               </div>
