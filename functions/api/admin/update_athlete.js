@@ -1,7 +1,7 @@
 // functions/api/admin/update_athlete.js
 export async function onRequestPost({ request, env }) {
     // Il middleware ha già verificato il ruolo 'admin'
-    if (!env.DB) {
+    if (!env.ZRL_DB) {
         return new Response(JSON.stringify({ error: 'Database binding missing' }), { status: 500 });
     }
 
@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env }) {
         params.push(userId);
         const query = `UPDATE athletes SET ${updates.join(", ")} WHERE zwid = ?`;
 
-        await env.DB.prepare(query).bind(...params).run();
+        await env.ZRL_DB.prepare(query).bind(...params).run();
 
         return new Response(JSON.stringify({ success: true, message: 'Atleta aggiornato con successo' }), { 
             status: 200,
@@ -47,3 +47,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: 'Errore durante l\'aggiornamento dell\'atleta' }), { status: 500 });
     }
 }
+

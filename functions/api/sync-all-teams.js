@@ -4,7 +4,7 @@ export async function onRequestPost({ request, env }) {
     let SEASON_ID = "19";
 
     // Cerchiamo la serie attiva nel DB per usare il suo external_season_id come default
-    const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
+    const activeSeries = await env.ZRL_DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
     if (activeSeries?.external_season_id) {
       SEASON_ID = activeSeries.external_season_id.toString();
     } else {
@@ -17,9 +17,7 @@ export async function onRequestPost({ request, env }) {
       if (body.seasonId) SEASON_ID = body.seasonId.toString();
     } catch (e) {}
 
-    // Pulizia cookie centralizzata: preferiamo tenere tutto se fornito
-    const cleanCookie = (env.WTRL_COOKIE || "").trim();
-
+    // Pulizia cookie centralizzata (non più utilizzata)
     const wtrlIds = ["zrl", "wzrl"];
 
     const fetchTeams = async (wtrlId) => {
@@ -30,7 +28,6 @@ export async function onRequestPost({ request, env }) {
           headers: {
             "accept": "application/json, text/plain, */*",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            "cookie": cleanCookie,
             "referer": "https://www.wtrl.racing/zwift-racing-league/",
             "x-requested-with": "XMLHttpRequest"
           }
@@ -96,7 +93,7 @@ export async function onRequestPost({ request, env }) {
       const wtrlTeamId = parseInt(t.id || t.wtrl_team_id);
       if (isNaN(wtrlTeamId)) continue;
 
-      const teamResult = await env.DB.prepare(`
+      const teamResult = await env.ZRL_DB.prepare(`
         INSERT INTO teams (
           name, category, division, division_number, wtrl_team_id, club_id, 
           tttid, club_name, gender, league, zrldivision, league_color, 
@@ -157,7 +154,6 @@ export async function onRequestPost({ request, env }) {
         const rosterRes = await fetch(rosterUrl, {
           headers: {
             "accept": "application/json",
-            "cookie": cleanCookie,
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
           }
         });
@@ -173,7 +169,7 @@ export async function onRequestPost({ request, env }) {
 
       // AGGIORNAMENTO DATI SQUADRA DA META (Dati più precisi)
       if (metaData && metaData.competition) {
-        await env.DB.prepare(`
+        await env.ZRL_DB.prepare(`
           UPDATE teams SET 
             category = ?, 
             division = ?,
@@ -190,14 +186,14 @@ export async function onRequestPost({ request, env }) {
       const statements = [];
       
       // PULIZIA ROSTER ATTUALE (Per rendere WTRL l'unica fonte di verità)
-      statements.push(env.DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
+      statements.push(env.ZRL_DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
       for (const m of members) {
         const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
         if (!zwid) continue;
 
         // 1. Upsert Atleta con dati estesi
-        statements.push(env.DB.prepare(`
+        statements.push(env.ZRL_DB.prepare(`
           INSERT INTO athletes (
             zwid, name, role, base_category, avatar_url, 
             zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id
@@ -227,14 +223,14 @@ export async function onRequestPost({ request, env }) {
         ));
 
         // 2. Inserimento nel Roster
-        statements.push(env.DB.prepare(`
+        statements.push(env.ZRL_DB.prepare(`
           INSERT INTO team_members (team_id, athlete_id)
           VALUES (?, ?)
         `).bind(internalTeamId, zwid));
       }
 
       if (statements.length > 0) {
-        await env.DB.batch(statements);
+        await env.ZRL_DB.batch(statements);
         report.athletes_synced += members.length;
       }
 
@@ -255,3 +251,4 @@ export async function onRequestPost({ request, env }) {
     });
   }
 }
+

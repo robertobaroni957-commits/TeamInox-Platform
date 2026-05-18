@@ -27,7 +27,7 @@ async function verifyAdminToken(request, env) {
 // GET /api/admin/users
 async function handleGet(context) {
     const { env } = context;
-    const { results } = await env.DB.prepare(
+    const { results } = await env.ZRL_DB.prepare(
         "SELECT id, username, email, role, is_admin FROM users ORDER BY id ASC"
     ).all();
 
@@ -63,7 +63,7 @@ async function handlePut(context) {
 
     const sql = `UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`;
 
-    await env.DB.prepare(sql).bind(...bindings).run();
+    await env.ZRL_DB.prepare(sql).bind(...bindings).run();
     
     return new Response(JSON.stringify({ message: `Utente ${userId} aggiornato con successo.` }), { status: 200 });
 }
@@ -78,7 +78,7 @@ async function handleDelete(context) {
         return new Response(JSON.stringify({ error: 'userId è richiesto.' }), { status: 400 });
     }
 
-    await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
+    await env.ZRL_DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
 
     return new Response(JSON.stringify({ message: `Utente ${userId} eliminato con successo.` }), { status: 200 });
 }

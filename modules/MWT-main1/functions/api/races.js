@@ -3,7 +3,7 @@
 
 export async function onRequestGet(context) {
     const { env } = context;
-    const db = env.DB; // Assumes D1 binding is named DB in wrangler.toml
+    const db = env.ZRL_DB; // Assumes D1 binding is named DB in wrangler.toml
 
     try {
         const { results } = await db.prepare("SELECT DISTINCT race_id FROM race_data ORDER BY race_id ASC").all();

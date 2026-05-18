@@ -23,7 +23,7 @@ export async function onRequestGet({ request, env }) {
       params.push(team_id);
     }
 
-    const { results } = await env.DB.prepare(query).bind(...params).all();
+    const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
     return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
   try {
     const { round_id, team_id, athlete_id, role, status } = await request.json();
     // TODO: Se Captain, verificare che team_id appartenga a lui
-    await env.DB.prepare(`
+    await env.ZRL_DB.prepare(`
       INSERT INTO race_lineup (round_id, team_id, athlete_id, role, status)
       VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(round_id, athlete_id) DO UPDATE SET
@@ -82,7 +82,7 @@ export async function onRequestDelete(context) {
       });
     }
 
-    const result = await env.DB.prepare(`
+    const result = await env.ZRL_DB.prepare(`
       DELETE FROM race_lineup 
       WHERE round_id = ? AND team_id = ? AND athlete_id = ?
     `).bind(round_id, team_id, athlete_id).run();
@@ -97,3 +97,4 @@ export async function onRequestDelete(context) {
     });
   }
 }
+

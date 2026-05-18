@@ -1,0 +1,45 @@
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUnknown argument: var[0m
+
+
+wrangler pages dev [directory] [-- command..]
+
+Develop your full-stack Pages application locally
+
+POSITIONALS
+  directory  The directory of static assets to serve  [string]
+  command    The proxy command to run  [deprecated]  [string]
+
+GLOBAL FLAGS
+      --cwd      Run as if Wrangler was started in the specified directory instead of the current working directory  [string]
+  -h, --help     Show help  [boolean]
+  -v, --version  Show version number  [boolean]
+
+OPTIONS
+      --compatibility-date                         Date to use for compatibility checks  [string]
+      --compatibility-flags, --compatibility-flag  Flags to use for compatibility checks  [array]
+      --ip                                         The IP address to listen on  [string]
+      --port                                       The port to listen on (serve from)  [number]
+      --inspector-port                             Port for devtools to connect to  [number]
+      --proxy                                      The port to proxy (where the static assets are served)  [deprecated] [number]
+      --script-path                                The location of the single Worker script if not using functions  [default: _worker.js]  [deprecated] [string]
+      --no-bundle                                  Whether to run bundling on `_worker.js`  [boolean]
+  -b, --binding                                    Bind variable/secret (KEY=VALUE)  [array]
+  -k, --kv                                         KV namespace to bind (--kv KV_BINDING)  [array]
+      --d1                                         D1 database to bind (--d1 D1_BINDING)  [array]
+  -o, --do                                         Durable Object to bind (--do DO_BINDING=CLASS_NAME@SCRIPT_NAME)  [array]
+      --r2                                         R2 bucket to bind (--r2 R2_BINDING)  [array]
+      --ai                                         AI to bind (--ai AI_BINDING)  [string]
+      --version-metadata                           Worker Version metadata (--version-metadata VERSION_METADATA_BINDING)  [string]
+      --service                                    Service to bind (--service SERVICE=SCRIPT_NAME)  [array]
+      --live-reload                                Auto reload HTML pages when change is detected  [boolean] [default: false]
+      --local-protocol                             Protocol to listen to requests on, defaults to http.  [choices: "http", "https"]
+      --https-key-path                             Path to a custom certificate key  [string]
+      --https-cert-path                            Path to a custom certificate  [string]
+      --persist-to                                 Specify directory to use for local persistence (defaults to .wrangler/state)  [string]
+      --log-level                                  Specify logging level  [choices: "debug", "info", "log", "warn", "error", "none"]
+      --show-interactive-dev-session               Show interactive dev session (defaults to true if the terminal supports interactivity)  [boolean]
+      --experimental-vectorize-bind-to-prod        Bind to production Vectorize indexes in local development mode  [boolean] [default: false]
+      --experimental-images-local-mode             Use a local lower-fidelity implementation of the Images binding  [boolean] [default: false]
+🪵  Logs were written to "C:\Users\Roberto\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-05-18_16-01-33_610.log"
+Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76

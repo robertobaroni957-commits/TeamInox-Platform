@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 export async function onRequestPost(context) {
     const { request, env } = context;
 
-    if (!env.DB) {
+    if (!env.ZRL_DB) {
         return new Response(JSON.stringify({ message: 'Database non configurato.' }), { 
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
         }
 
         // 1. Controllo se lo ZWID esiste già
-        const existingAthlete = await env.DB.prepare("SELECT zwid, password_hash FROM athletes WHERE zwid = ?").bind(zwid).first();
+        const existingAthlete = await env.ZRL_DB.prepare("SELECT zwid, password_hash FROM athletes WHERE zwid = ?").bind(zwid).first();
         
         if (existingAthlete) {
             if (existingAthlete.password_hash) {
@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
             
             // L'atleta esiste (importato) ma non ha password. Procediamo all'aggiornamento.
             // Prima verifichiamo che l'email non sia usata da ALTRI
-            const emailTaken = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ? AND zwid != ?").bind(email, zwid).first();
+            const emailTaken = await env.ZRL_DB.prepare("SELECT zwid FROM athletes WHERE email = ? AND zwid != ?").bind(email, zwid).first();
             if (emailTaken) {
                 return new Response(JSON.stringify({ message: 'Email già in uso da un altro profilo.' }), { 
                     status: 409,
@@ -43,7 +43,7 @@ export async function onRequestPost(context) {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            await env.DB.prepare(
+            await env.ZRL_DB.prepare(
                 "UPDATE athletes SET name = ?, email = ?, password_hash = ? WHERE zwid = ?"
             ).bind(username, email, hashedPassword, zwid).run();
 
@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
 
         // 2. Lo ZWID non esiste, creiamo un nuovo atleta. 
         // Verifichiamo prima l'email
-        const emailTaken = await env.DB.prepare("SELECT zwid FROM athletes WHERE email = ?").bind(email).first();
+        const emailTaken = await env.ZRL_DB.prepare("SELECT zwid FROM athletes WHERE email = ?").bind(email).first();
         if (emailTaken) {
             return new Response(JSON.stringify({ message: 'Email già registrata.' }), { 
                 status: 409,
@@ -68,7 +68,7 @@ export async function onRequestPost(context) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await env.DB.prepare(
+        await env.ZRL_DB.prepare(
             "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
         ).bind(zwid, username, email, hashedPassword, 'athlete').run();
 
@@ -88,3 +88,4 @@ export async function onRequestPost(context) {
         });
     }
 }
+

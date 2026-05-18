@@ -1,6 +1,6 @@
 
 export async function onRequestGet({ env }) {
-    if (!env.DB) return new Response("DB non trovato", { status: 500 });
+    if (!env.ZRL_DB) return new Response("DB non trovato", { status: 500 });
 
     try {
         // 1. DISABILITIAMO I VINCOLI E RESETTIAMO TUTTO IL COMPARTO ZRL
@@ -13,7 +13,7 @@ export async function onRequestGet({ env }) {
             `DROP TABLE IF EXISTS zrl_seasons`
         ];
         
-        for (const q of dropSql) await env.DB.prepare(q).run();
+        for (const q of dropSql) await env.ZRL_DB.prepare(q).run();
 
         // 2. RICOSTRUZIONE PULITA (Schema Unificato 2026)
         const createSql = [
@@ -71,16 +71,16 @@ export async function onRequestGet({ env }) {
             )`
         ];
         
-        for (const q of createSql) await env.DB.prepare(q).run();
+        for (const q of createSql) await env.ZRL_DB.prepare(q).run();
 
         // 3. SEED DATI INIZIALI (Corretti per Season 2025 Round 4)
-        await env.DB.prepare(`INSERT OR REPLACE INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025', 1)`).run();
-        await env.DB.prepare(`
+        await env.ZRL_DB.prepare(`INSERT OR REPLACE INTO zrl_seasons (id, name, is_active) VALUES (1, 'ZRL 2025', 1)`).run();
+        await env.ZRL_DB.prepare(`
             INSERT OR REPLACE INTO zrl_round_groups (id, series_id, round_index, external_season_id, description) 
             VALUES (1, 1, 4, 19, 'ZRL Round 4 (Season 2025)')
         `).run();
 
-        const check = await env.DB.prepare(`SELECT * FROM zrl_round_groups WHERE external_season_id = 19`).first();
+        const check = await env.ZRL_DB.prepare(`SELECT * FROM zrl_round_groups WHERE external_season_id = 19`).first();
 
         return new Response(JSON.stringify({ 
             success: true, 
@@ -92,3 +92,4 @@ export async function onRequestGet({ env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

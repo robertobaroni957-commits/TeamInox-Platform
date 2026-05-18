@@ -157,6 +157,7 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: "Nessuna gara valida trovata nel contenuto fornito." }), { status: 400 });
     }
 
+    // HOOK POINT: Inject runWithGuard(context, () => validateSeasonState(env.ZRL_DB, sId), legacyHandler, 'SYNC_SCHEDULE')
     // 2. Aggiornamento DB
     const sId = parseInt(seasonId) || 19;
     const dates = roundsData.map(r => r.date).filter(d => d).sort();
@@ -164,49 +165,49 @@ export async function onRequestPost({ request, env }) {
     const endDate = dates.length > 0 ? dates[dates.length - 1] : null;
 
     // Disattiviamo altre serie
-    await env.DB.prepare("UPDATE series SET is_active = 0 WHERE external_season_id = ?").bind(sId).run();
+    await env.ZRL_DB.prepare("UPDATE series SET is_active = 0 WHERE external_season_id = ?").bind(sId).run();
 
-    let seriesRecord = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ? ORDER BY id DESC").bind(sId).first();
+    let seriesRecord = await env.ZRL_DB.prepare("SELECT id FROM series WHERE external_season_id = ? ORDER BY id DESC").bind(sId).first();
     let activeSeriesId;
     
     if (seriesRecord) {
         activeSeriesId = seriesRecord.id;
-        await env.DB.prepare("UPDATE series SET is_active = 1, name = ?, start_date = ?, end_date = ? WHERE id = ?")
+        await env.ZRL_DB.prepare("UPDATE series SET is_active = 1, name = ?, start_date = ?, end_date = ? WHERE id = ?")
             .bind(seasonName, startDate, endDate, activeSeriesId).run();
     } else {
-        const res = await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active, start_date, end_date) VALUES (?, ?, 1, ?, ?)")
+        const res = await env.ZRL_DB.prepare("INSERT INTO series (external_season_id, name, is_active, start_date, end_date) VALUES (?, ?, 1, ?, ?)")
             .bind(sId, seasonName, startDate, endDate).run();
         // Fallback per recuperare l'ID se meta non è disponibile come previsto
-        const lastSeries = await env.DB.prepare("SELECT id FROM series ORDER BY id DESC LIMIT 1").first();
+        const lastSeries = await env.ZRL_DB.prepare("SELECT id FROM series ORDER BY id DESC LIMIT 1").first();
         activeSeriesId = lastSeries.id;
     }
 
     // --- AGGIORNAMENTO COMPATIBILITÀ ANALYTICS ---
     // 1. Assicuriamoci che esista una Season in zrl_seasons (Contenitore Globale)
-    let zrlSeason = await env.DB.prepare("SELECT id FROM zrl_seasons WHERE is_active = 1 LIMIT 1").first();
+    let zrlSeason = await env.ZRL_DB.prepare("SELECT id FROM zrl_seasons WHERE is_active = 1 LIMIT 1").first();
     if (!zrlSeason) {
         // Se non c'è una season attiva, ne creiamo una di default per la stagione corrente
-        await env.DB.prepare("INSERT INTO zrl_seasons (name, is_active) VALUES (?, 1)")
+        await env.ZRL_DB.prepare("INSERT INTO zrl_seasons (name, is_active) VALUES (?, 1)")
             .bind("ZRL Season 2025/26").run();
-        zrlSeason = await env.DB.prepare("SELECT id FROM zrl_seasons ORDER BY id DESC LIMIT 1").first();
+        zrlSeason = await env.ZRL_DB.prepare("SELECT id FROM zrl_seasons ORDER BY id DESC LIMIT 1").first();
     }
 
     // 2. Assicuriamoci che esista un round_group collegato a questa season (necessario per Analytics)
     // Usiamo activeSeriesId (il nostro ID Round interno) per cercare se esiste già un mapping
     // NOTA: zrl_round_groups.series_id nel tuo schema punta a zrl_seasons.id
-    let roundGroup = await env.DB.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(sId).first();
+    let roundGroup = await env.ZRL_DB.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(sId).first();
 
     if (!roundGroup) {
-        await env.DB.prepare("INSERT INTO zrl_round_groups (series_id, round_index, external_season_id, description) VALUES (?, ?, ?, ?)")
+        await env.ZRL_DB.prepare("INSERT INTO zrl_round_groups (series_id, round_index, external_season_id, description) VALUES (?, ?, ?, ?)")
             .bind(zrlSeason.id, 1, sId, seasonName).run();
     } else {
-        await env.DB.prepare("UPDATE zrl_round_groups SET series_id = ?, description = ? WHERE external_season_id = ?")
+        await env.ZRL_DB.prepare("UPDATE zrl_round_groups SET series_id = ?, description = ? WHERE external_season_id = ?")
             .bind(zrlSeason.id, seasonName, sId).run();
     }
     // ---------------------------------------------
 
     // 3. PULIZIA TOTALE
-    const roundIdsResult = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ?").bind(activeSeriesId).all();
+    const roundIdsResult = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE series_id = ?").bind(activeSeriesId).all();
     const roundIds = (roundIdsResult.results || []).map(r => r.id);
 
     if (roundIds.length > 0) {
@@ -214,18 +215,18 @@ export async function onRequestPost({ request, env }) {
         const tablesToClean = ['race_lineup', 'round_teams', 'availability', 'results', 'division_results'];
         for (const table of tablesToClean) {
             try {
-                await env.DB.prepare(`DELETE FROM ${table} WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
+                await env.ZRL_DB.prepare(`DELETE FROM ${table} WHERE round_id IN (${placeholders})`).bind(...roundIds).run();
             } catch (e) {}
         }
     }
 
-    await env.DB.prepare("DELETE FROM rounds WHERE series_id = ?").bind(activeSeriesId).run();
+    await env.ZRL_DB.prepare("DELETE FROM rounds WHERE series_id = ?").bind(activeSeriesId).run();
 
     // 4. Inserimento Gare
     let insertCount = 0;
     for (const r of roundsData) {
         try {
-            await env.DB.prepare("INSERT INTO rounds (series_id, name, date, world, route, distance, elevation, powerups, format, strategy_details, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+            await env.ZRL_DB.prepare("INSERT INTO rounds (series_id, name, date, world, route, distance, elevation, powerups, format, strategy_details, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                 .bind(activeSeriesId, r.name, r.date, r.world, r.route, r.distance, r.elevation, r.powerups, r.format, r.strategy_details, r.category).run();
             insertCount++;
         } catch (e) {
@@ -244,3 +245,4 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ error: `Errore Critico: ${error.message}` }), { status: 500 });
   }
 }
+

@@ -155,13 +155,13 @@ const ZRLAnalytics: React.FC = () => {
             <div className="flex p-1 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl">
               <button 
                 onClick={() => setViewType('round')}
-                className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewType === 'round' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className="px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-zinc-300"
               >
                 Round View
               </button>
               <button 
                 onClick={() => setViewType('season')}
-                className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewType === 'season' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className="px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-inox-orange text-black"
               >
                 Season View
               </button>
@@ -191,13 +191,13 @@ const ZRLAnalytics: React.FC = () => {
               <div className="flex p-1 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl">
                  <button 
                   onClick={() => setViewType('round')}
-                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewType === 'round' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all bg-inox-orange text-black"
                  >
                    Round
                  </button>
                  <button 
                   onClick={() => setViewType('season')}
-                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewType === 'season' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-zinc-300"
                  >
                    Season
                  </button>

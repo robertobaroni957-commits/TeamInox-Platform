@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 
 export async function onRequestGet({ env }) {
-    if (!env.DB) {
+    if (!env.ZRL_DB) {
         return new Response(JSON.stringify({ error: "Database non configurato." }), { status: 500 });
     }
 
@@ -17,14 +17,14 @@ export async function onRequestGet({ env }) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // INSERIMENTO/AGGIORNAMENTO NELLA TABELLA ATHLETES (quella usata dal sistema unified)
-        const existing = await env.DB.prepare("SELECT zwid FROM athletes WHERE zwid = ?").bind(zwid).first();
+        const existing = await env.ZRL_DB.prepare("SELECT zwid FROM athletes WHERE zwid = ?").bind(zwid).first();
 
         if (existing) {
-            await env.DB.prepare(
+            await env.ZRL_DB.prepare(
                 "UPDATE athletes SET name = ?, email = ?, password_hash = ?, role = ? WHERE zwid = ?"
             ).bind(username, email, hashedPassword, role, zwid).run();
         } else {
-            await env.DB.prepare(
+            await env.ZRL_DB.prepare(
                 "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
             ).bind(zwid, username, email, hashedPassword, role).run();
         }
@@ -43,3 +43,4 @@ export async function onRequestGet({ env }) {
         });
     }
 }
+

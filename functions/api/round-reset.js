@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
         }
 
         // 1. Get round info to log what we're deleting
-        const round = await env.DB.prepare(`SELECT name FROM rounds WHERE id = ?`).bind(round_id).first();
+        const round = await env.ZRL_DB.prepare(`SELECT name FROM rounds WHERE id = ?`).bind(round_id).first();
         if (!round) {
             return new Response(JSON.stringify({ success: false, error: "Round non trovato." }), { status: 404 });
         }
@@ -32,11 +32,11 @@ export async function onRequestPost(context) {
         // 2. Perform deletions in a batch
         // We delete: lineups, availability, round_teams, results
         // WE DO NOT delete the round entry itself or users/teams
-        await env.DB.batch([
-            env.DB.prepare(`DELETE FROM race_lineup WHERE round_id = ?`).bind(round_id),
-            env.DB.prepare(`DELETE FROM availability WHERE round_id = ?`).bind(round_id),
-            env.DB.prepare(`DELETE FROM round_teams WHERE round_id = ?`).bind(round_id),
-            env.DB.prepare(`DELETE FROM results WHERE round_id = ?`).bind(round_id)
+        await env.ZRL_DB.batch([
+            env.ZRL_DB.prepare(`DELETE FROM race_lineup WHERE round_id = ?`).bind(round_id),
+            env.ZRL_DB.prepare(`DELETE FROM availability WHERE round_id = ?`).bind(round_id),
+            env.ZRL_DB.prepare(`DELETE FROM round_teams WHERE round_id = ?`).bind(round_id),
+            env.ZRL_DB.prepare(`DELETE FROM results WHERE round_id = ?`).bind(round_id)
         ]);
 
         return new Response(JSON.stringify({
@@ -54,3 +54,4 @@ export async function onRequestPost(context) {
         }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 }
+

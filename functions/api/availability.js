@@ -25,10 +25,10 @@ export async function onRequestGet(context) {
         if (isAdminRequest && (role === 'admin' || role === 'moderator')) {
             console.log("[DEBUG] Eseguo batch Admin / Moderator");
 
-            const results = await env.DB.batch([
-                env.DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
-                env.DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.athlete_id = a.zwid`),
-                env.DB.prepare(`
+            const results = await env.ZRL_DB.batch([
+                env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
+                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.athlete_id = a.zwid`),
+                env.ZRL_DB.prepare(`
                     SELECT a.zwid, a.name, a.base_category, 
                            GROUP_CONCAT(t.name, ', ') as team
                     FROM athletes a
@@ -57,10 +57,10 @@ export async function onRequestGet(context) {
         // ============================
         console.log("[DEBUG] Eseguo batch User");
 
-        const results = await env.DB.batch([
-            env.DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`),
-            env.DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid),
-            env.DB.prepare(`
+        const results = await env.ZRL_DB.batch([
+            env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`),
+            env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid),
+            env.ZRL_DB.prepare(`
                 SELECT r.id, r.name, r.date, r.world, r.route,
                     (SELECT status FROM availability WHERE athlete_id = ? AND round_id = r.id) as status
                 FROM rounds r
@@ -114,14 +114,14 @@ export async function onRequestPost(context) {
 
             const statements = payload.map(p => {
                 console.log(`[DEBUG] Inserimento preference: slot=${p.slotId}, level=${p.level}`);
-                return env.DB.prepare(`
+                return env.ZRL_DB.prepare(`
                     INSERT OR REPLACE INTO user_time_preferences 
                     (zwid, time_slot_id, preference_level) 
                     VALUES (?, ?, ?)
                 `).bind(zwid, p.slotId, p.level);
             });
 
-            await env.DB.batch(statements);
+            await env.ZRL_DB.batch(statements);
 
             return new Response(JSON.stringify({ success: true, message: "Preferences updated" }), {
                 headers: { "Content-Type": "application/json" }
@@ -141,7 +141,7 @@ export async function onRequestPost(context) {
 
             console.log(`[DEBUG] Inserimento availability: roundId=${payload.roundId}, status=${payload.status}`);
 
-            await env.DB.prepare(`
+            await env.ZRL_DB.prepare(`
                 INSERT OR REPLACE INTO availability 
                 (athlete_id, round_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)

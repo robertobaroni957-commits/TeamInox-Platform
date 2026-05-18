@@ -51,12 +51,12 @@ export async function onRequestPost({ request, env }) {
         // 1. Upsert Teams
         for (const [key, t] of teamsMap) {
             // Poiché 'name' non è UNIQUE nello schema, usiamo un approccio diverso o aggiorniamo se esiste
-            const existingTeam = await env.DB.prepare("SELECT wtrl_team_id FROM teams WHERE name = ?").bind(teamName).first();
+            const existingTeam = await env.ZRL_DB.prepare("SELECT wtrl_team_id FROM teams WHERE name = ?").bind(teamName).first();
             const teamWtrlId = existingTeam ? existingTeam.wtrl_team_id : null;
 
             if (teamWtrlId) {
                 // Aggiorna il team esistente (se necessario)
-                statements.push(env.DB.prepare(`
+                statements.push(env.ZRL_DB.prepare(`
                     UPDATE teams SET category = ?, club_id = ?
                     WHERE wtrl_team_id = ?
                 `).bind(a.category, INOX_CLUB_ID, teamWtrlId));
@@ -65,14 +65,14 @@ export async function onRequestPost({ request, env }) {
                 // Questo caso è meno probabile se si usa prima il CSV per popolare i team
                 // Potrebbe essere necessario un approccio diverso per creare nuovi team tramite CSV
                 console.warn(`Team ${teamName} non trovato con wtrl_team_id. Inserimento come nuovo team.`);
-                statements.push(env.DB.prepare(`
+                statements.push(env.ZRL_DB.prepare(`
                     INSERT INTO teams (name, category, club_id, wtrl_team_id)
                     VALUES (?, ?, ?, ?)
                 `).bind(teamName, a.category, INOX_CLUB_ID, null)); // wtrl_team_id è null qui, gestione da rivedere
             }
 
             // Relazione Team
-            statements.push(env.DB.prepare(`
+            statements.push(env.ZRL_DB.prepare(`
                 INSERT OR IGNORE INTO team_members (team_id, athlete_id)
                 SELECT t.wtrl_team_id, ? FROM teams t WHERE t.name = ?
             `).bind(a.zwid, teamName));
@@ -88,3 +88,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

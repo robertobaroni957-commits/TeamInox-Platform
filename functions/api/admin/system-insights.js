@@ -7,27 +7,27 @@ export async function onRequestGet({ env, data }) {
 
   try {
     // 1. Atleti senza categoria
-    const noCategory = await env.DB.prepare(
+    const noCategory = await env.ZRL_DB.prepare(
       "SELECT count(*) as count FROM athletes WHERE base_category IS NULL OR base_category = ''"
     ).first();
 
     // 2. Atleti senza email (che non possono loggarsi)
-    const noEmail = await env.DB.prepare(
+    const noEmail = await env.ZRL_DB.prepare(
       "SELECT count(*) as count FROM athletes WHERE email IS NULL OR email = ''"
     ).first();
 
     // 3. Atleti senza password (importati che devono ancora registrarsi)
-    const noPassword = await env.DB.prepare(
+    const noPassword = await env.ZRL_DB.prepare(
       "SELECT count(*) as count FROM athletes WHERE password_hash IS NULL"
     ).first();
 
     // 4. Riepilogo preferenze espresse (per capire se il roster è pronto)
-    const rsvpSummary = await env.DB.prepare(`
+    const rsvpSummary = await env.ZRL_DB.prepare(`
       SELECT count(DISTINCT zwid) as count FROM user_time_preferences WHERE preference_level >= 1
     `).first();
 
     // 5. Squadre senza capitano assegnato
-    const teamsNoCaptain = await env.DB.prepare(`
+    const teamsNoCaptain = await env.ZRL_DB.prepare(`
       SELECT count(*) as count FROM teams t 
       WHERE t.wtrl_team_id NOT IN (SELECT team_id FROM team_members tm JOIN athletes a ON tm.athlete_id = a.zwid WHERE a.role = 'captain')
     `).first();
@@ -49,3 +49,4 @@ export async function onRequestGet({ env, data }) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

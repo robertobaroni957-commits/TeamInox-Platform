@@ -4,14 +4,14 @@ export async function onRequestGet({ request, env }) {
     const league_key = url.searchParams.get("league_key");
 
     try {
-        if (!env.DB) return new Response("DB connection lost", { status: 500 });
+        if (!env.ZRL_DB) return new Response("DB connection lost", { status: 500 });
 
         if (!round_group_id || !league_key) {
             return new Response(JSON.stringify({ error: "Parametri mancanti: round_group_id e league_key necessari." }), { status: 400 });
         }
 
         // 1. Get the Round Group and its external_season_id
-        const roundGroup = await env.DB.prepare(`
+        const roundGroup = await env.ZRL_DB.prepare(`
             SELECT external_season_id FROM zrl_round_groups WHERE id = ?
         `).bind(round_group_id).first();
 
@@ -21,7 +21,7 @@ export async function onRequestGet({ request, env }) {
         const extSeasonId = roundGroup.external_season_id;
 
         // 2. Fetch Team Standings for this Round
-        const { results: teamData } = await env.DB.prepare(`
+        const { results: teamData } = await env.ZRL_DB.prepare(`
             SELECT * FROM zrl_team_standings 
             WHERE round_group_id = ? AND league_key = ?
             ORDER BY rank ASC
@@ -32,7 +32,7 @@ export async function onRequestGet({ request, env }) {
         }
 
         // 3. Find ALL races (rounds table) that belong to this WTRL Season
-        const { results: relevantRounds } = await env.DB.prepare(`
+        const { results: relevantRounds } = await env.ZRL_DB.prepare(`
             SELECT DISTINCT r.id as round_id, r.name as round_name
             FROM rounds r
             JOIN series s ON r.series_id = s.id
@@ -90,7 +90,7 @@ export async function onRequestGet({ request, env }) {
                     WHERE round_id IN (${placeholders})
                       AND (wtrl_team_id = ? OR (wtrl_team_id IS NULL AND team_name = ?))
                 `;
-                const { results } = await env.DB.prepare(query).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
+                const { results } = await env.ZRL_DB.prepare(query).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
                 rawResults = results;
             }
 
@@ -169,3 +169,4 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

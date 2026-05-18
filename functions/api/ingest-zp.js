@@ -17,14 +17,14 @@ export async function onRequestPost({ request, env }) {
       const fin = r.fin || 0;
       const total = fal + fts + fin;
 
-      return env.DB.prepare(`
+      return env.ZRL_DB.prepare(`
         INSERT OR REPLACE INTO results (round_id, zwid, time, points_total, points_fal, points_fts, points_fin, data_source)
         VALUES (?, ?, ?, ?, ?, ?, ?, 'zwiftpower')
       `).bind(round_id, r.zwid, r.time, total, fal, fts, fin);
     });
 
     if (queries.length > 0) {
-      await env.DB.batch(queries);
+      await env.ZRL_DB.batch(queries);
     }
 
     return new Response(JSON.stringify({ success: true, count: race_results.length }));
@@ -32,3 +32,4 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

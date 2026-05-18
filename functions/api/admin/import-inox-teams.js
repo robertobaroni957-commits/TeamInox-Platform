@@ -5,7 +5,7 @@ export async function onRequestPost({ request, env }) {
     );
 
     try {
-        if (!env.DB) return errorRes("Database non trovato", 500);
+        if (!env.ZRL_DB) return errorRes("Database non trovato", 500);
 
         const body = await request.json();
         const teamsData = body.teams || body; // Handle both {teams: [...]} and direct array
@@ -51,7 +51,7 @@ export async function onRequestPost({ request, env }) {
             }
 
             // 1. Inserimento/Aggiornamento Team
-            updates.push(env.DB.prepare(`
+            updates.push(env.ZRL_DB.prepare(`
                 INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(wtrl_team_id) DO UPDATE SET 
@@ -71,7 +71,7 @@ export async function onRequestPost({ request, env }) {
                 if (!zwid) continue;
 
                 // Inserimento/Aggiornamento Atleta
-                updates.push(env.DB.prepare(`
+                updates.push(env.ZRL_DB.prepare(`
                     INSERT INTO athletes (zwid, name, base_category, avatar_url, zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(zwid) DO UPDATE SET
@@ -97,7 +97,7 @@ export async function onRequestPost({ request, env }) {
                 ));
 
                 // Collegamento Team-Atleta (usando wtrl_team_id direttamente)
-                updates.push(env.DB.prepare(`
+                updates.push(env.ZRL_DB.prepare(`
                     INSERT OR IGNORE INTO team_members (team_id, athlete_id)
                     VALUES (?, ?)
                 `).bind(wtrl_team_id, zwid));
@@ -111,7 +111,7 @@ export async function onRequestPost({ request, env }) {
         if (updates.length > 0) {
             // Eseguiamo in batch. Nota: RETURNING potrebbe non funzionare bene in batch D1 
             // per logiche dipendenti, ma qui usiamo wtrl_team_id per i join successivi.
-            await env.DB.batch(updates);
+            await env.ZRL_DB.batch(updates);
         }
 
         return new Response(JSON.stringify({ 
@@ -125,3 +125,4 @@ export async function onRequestPost({ request, env }) {
         return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
+

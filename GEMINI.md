@@ -61,7 +61,7 @@ This project is designed for deployment on Cloudflare Pages and Cloudflare Worke
 
 *   **Code Style:** Standard JavaScript practices.
 *   **Authentication:** Utilizes `bcryptjs` for password hashing and `jose` for JWTs.
-*   **Database Interactions:** Uses Cloudflare D1 via the `env.DB` binding for all database operations within the Workers.
+*   **Database Interactions:** Uses Cloudflare D1 via the `env.ZRL_DB` binding for all database operations within the Workers.
 *   **Error Handling:** API endpoints provide JSON responses with appropriate HTTP status codes for errors and success.
 
 ## Troubleshooting

@@ -1,7 +1,7 @@
 // functions/api/admin/update_role.js
 export async function onRequestPost({ request, env }) {
     // Il middleware ha già verificato il ruolo 'admin'
-    if (!env.DB) {
+    if (!env.ZRL_DB) {
         return new Response(JSON.stringify({ error: 'Database binding missing' }), { status: 500 });
     }
 
@@ -15,7 +15,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         // 3. Aggiorna DB
-        await env.DB.prepare(
+        await env.ZRL_DB.prepare(
             "UPDATE athletes SET role = ? WHERE zwid = ?"
         ).bind(newRole, userId).run();
 
@@ -29,3 +29,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: 'Errore durante l\'aggiornamento ruolo' }), { status: 500 });
     }
 }
+

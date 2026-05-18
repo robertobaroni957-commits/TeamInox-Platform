@@ -9,6 +9,7 @@ import {
   HelpCircle,
   AlertCircle,
 } from "lucide-react";
+import { safeString } from "../../utils/stringUtils";
 
 interface AthleteAvail {
   zwid: number;
@@ -258,7 +259,7 @@ const AvailabilityManagement: React.FC = () => {
                 </th>
                 {rounds.map((r) => (
                   <th key={r.id} className="p-4 text-center border-b border-zinc-700 min-w-[120px]">
-                    <span className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter leading-tight block">{r.name.replace('ZRL 2025 ', '')}</span>
+                    <span className="text-[10px] font-black text-zinc-300 uppercase tracking-tighter leading-tight block">{safeString(r.name).replace('ZRL 2025 ', '')}</span>
                   </th>
                 ))}
               </tr>

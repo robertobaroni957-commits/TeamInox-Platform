@@ -9,7 +9,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         // 1. Trova il Round Group
-        const roundGroup = await env.DB.prepare(`
+        const roundGroup = await env.ZRL_DB.prepare(`
             SELECT id FROM zrl_round_groups WHERE external_season_id = ? LIMIT 1
         `).bind(externalSeasonId).first();
 
@@ -27,7 +27,7 @@ export async function onRequestPost({ request, env }) {
             if (!currentLega.leagueKey || !currentLega.payload) continue;
 
             // Recupero nome lega dalla tabella teams con logica di matching robusta
-            const leagueInfo = await env.DB.prepare(`
+            const leagueInfo = await env.ZRL_DB.prepare(`
                 SELECT division FROM teams 
                 WHERE (league || '0' || category || division_number || '0') = ?
                 OR (league || '0' || zrldivision || division_number || '0') = ?
@@ -37,7 +37,7 @@ export async function onRequestPost({ request, env }) {
             const leagueName = leagueInfo?.division || null; // Salviamo NULL se non trovato per usare il fallback nel frontend
 
             // Pulizia per questa specifica lega
-            insertStmts.push(env.DB.prepare(`DELETE FROM zrl_team_standings WHERE round_group_id = ? AND league_key = ?`).bind(roundGroupId, currentLega.leagueKey));
+            insertStmts.push(env.ZRL_DB.prepare(`DELETE FROM zrl_team_standings WHERE round_group_id = ? AND league_key = ?`).bind(roundGroupId, currentLega.leagueKey));
 
             for (const team of currentLega.payload) {
                 const teamName = team.d;
@@ -49,12 +49,12 @@ export async function onRequestPost({ request, env }) {
                 let wtrl_team_id = null;
 
                 if (tttid) {
-                    const knownTeam = await env.DB.prepare(`SELECT wtrl_team_id FROM teams WHERE tttid = ? OR wtrl_team_id = ?`).bind(tttid, tttid).first();
+                    const knownTeam = await env.ZRL_DB.prepare(`SELECT wtrl_team_id FROM teams WHERE tttid = ? OR wtrl_team_id = ?`).bind(tttid, tttid).first();
                     if (knownTeam) wtrl_team_id = knownTeam.wtrl_team_id;
                     else wtrl_team_id = tttid;
                 }
 
-                insertStmts.push(env.DB.prepare(`
+                insertStmts.push(env.ZRL_DB.prepare(`
                     INSERT INTO zrl_team_standings (
                         round_group_id, league_key, league_name, team_name, rank, 
                         league_points, pts_fal, pts_fts, pts_finish, total_race_points,
@@ -72,7 +72,7 @@ export async function onRequestPost({ request, env }) {
 
         // 3. Esecuzione batch (divisa per sicurezza se troppi dati)
         for (let i = 0; i < insertStmts.length; i += 100) {
-            await env.DB.batch(insertStmts.slice(i, i + 100));
+            await env.ZRL_DB.batch(insertStmts.slice(i, i + 100));
         }
 
         return new Response(JSON.stringify({ 
@@ -84,3 +84,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

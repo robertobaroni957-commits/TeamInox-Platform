@@ -24,7 +24,7 @@ export async function onRequestPost({ request, env }) {
         // SE RICEVIAMO JSON (Metodo Avanzato tramite Console)
         if (jsonData && Array.isArray(jsonData)) {
             for (const t of jsonData) {
-                statements.push(env.DB.prepare(`
+                statements.push(env.ZRL_DB.prepare(`
                     INSERT INTO teams (name, wtrl_team_id, club_id, category, division, rounds, member_count)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(wtrl_team_id) DO UPDATE SET 
@@ -45,7 +45,7 @@ export async function onRequestPost({ request, env }) {
 
                 if (t.riders && Array.isArray(t.riders)) {
                     for (const r of t.riders) {
-                        statements.push(env.DB.prepare(`
+                        statements.push(env.ZRL_DB.prepare(`
                             INSERT INTO athletes (zwid, name, base_category, avatar_url)
                             VALUES (?, ?, ?, ?)
                             ON CONFLICT(zwid) DO UPDATE SET 
@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
                             r.avatar || ''
                         ));
 
-                        statements.push(env.DB.prepare(`
+                        statements.push(env.ZRL_DB.prepare(`
                             INSERT OR IGNORE INTO team_members (team_id, athlete_id)
                             VALUES (?, ?)
                         `).bind(wtrlId, r.zwid));
@@ -76,7 +76,7 @@ export async function onRequestPost({ request, env }) {
                 const wtrlId = parseInt(teamMatch[1]);
                 const teamName = teamMatch[2].trim();
                 
-                statements.push(env.DB.prepare(`
+                statements.push(env.ZRL_DB.prepare(`
                     INSERT INTO teams (name, wtrl_team_id, club_id, category)
                     VALUES (?, ?, ?, 'TBD')
                     ON CONFLICT(wtrl_team_id) DO UPDATE SET name = excluded.name
@@ -86,7 +86,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         if (statements.length > 0) {
-            await env.DB.batch(statements);
+            await env.ZRL_DB.batch(statements);
         }
 
         return new Response(JSON.stringify({ 
@@ -99,3 +99,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
     }
 }
+

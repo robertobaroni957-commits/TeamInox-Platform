@@ -1,7 +1,7 @@
 
 export async function onRequestPost({ env }) {
     try {
-        if (!env.DB) return new Response(JSON.stringify({ error: "DB non trovato" }), { status: 500 });
+        if (!env.ZRL_DB) return new Response(JSON.stringify({ error: "DB non trovato" }), { status: 500 });
 
         // In un worker reale non possiamo leggere file locali col filesystem, 
         // ma in questo ambiente di sviluppo/Pages possiamo simulare o usare i dati se li passiamo.
@@ -16,3 +16,4 @@ export async function onRequestPost({ env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

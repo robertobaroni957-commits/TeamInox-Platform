@@ -1,7 +1,7 @@
 // functions/api/events.js
 export async function onRequestGet({ env }) {
   try {
-    const { results } = await env.DB.prepare(
+    const { results } = await env.ZRL_DB.prepare(
       "SELECT * FROM inox_events WHERE is_active = 1 ORDER BY CASE day_of_week WHEN 'Lunedì' THEN 1 WHEN 'Martedì' THEN 2 WHEN 'Mercoledì' THEN 3 WHEN 'Giovedì' THEN 4 WHEN 'Venerdì' THEN 5 WHEN 'Sabato' THEN 6 WHEN 'Domenica' THEN 7 END, time ASC"
     ).all();
     return new Response(JSON.stringify(results), {
@@ -16,7 +16,7 @@ export async function onRequestPost({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { name, day_of_week, time, description, zwift_link, strava_segment_id, category } = await request.json();
-    const result = await env.DB.prepare(
+    const result = await env.ZRL_DB.prepare(
       "INSERT INTO inox_events (name, day_of_week, time, description, zwift_link, strava_segment_id, category) VALUES (?, ?, ?, ?, ?, ?, ?)"
     ).bind(name, day_of_week, time, description, zwift_link, strava_segment_id, category).run();
     
@@ -30,7 +30,7 @@ export async function onRequestPatch({ request, env }) {
   // Il middleware garantisce che solo Admin/Moderator arrivino qui
   try {
     const { id, name, day_of_week, time, description, zwift_link, strava_segment_id, category, is_active } = await request.json();
-    await env.DB.prepare(
+    await env.ZRL_DB.prepare(
       "UPDATE inox_events SET name = ?, day_of_week = ?, time = ?, description = ?, zwift_link = ?, strava_segment_id = ?, category = ?, is_active = ? WHERE id = ?"
     ).bind(name, day_of_week, time, description, zwift_link, strava_segment_id, category, is_active ? 1 : 0, id).run();
     
@@ -50,9 +50,10 @@ export async function onRequestDelete({ request, env }) {
   }
 
   try {
-    await env.DB.prepare("DELETE FROM inox_events WHERE id = ?").bind(id).run();
+    await env.ZRL_DB.prepare("DELETE FROM inox_events WHERE id = ?").bind(id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

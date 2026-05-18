@@ -6,7 +6,14 @@ const ALG = 'HS256';
 
 export async function onRequestPost({ request, env, data }) {
     try {
-        // ✅ Leggi body JSON
+        if (!env.JWT_SECRET) {
+            console.error("Missing JWT_SECRET in environment");
+            return new Response(JSON.stringify({ message: 'Missing JWT_SECRET configuration' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         const body = await request.json();
         const loginId = (body.identifier || body.zwid || body.email || "").toString().trim();
         const password = body.password;
@@ -18,28 +25,19 @@ export async function onRequestPost({ request, env, data }) {
             });
         }
 
-        // ======================================================
-        // 1️⃣ Cerca l'utente nel DB
-        // ======================================================
         let user;
         const isNumeric = /^\d+$/.test(loginId);
 
         if (isNumeric) {
-            user = await env.ZRL_DB.prepare(
-                "SELECT * FROM athletes WHERE zwid = ?"
-            ).bind(parseInt(loginId)).first();
+            user = await env.ZRL_DB.prepare("SELECT * FROM athletes WHERE zwid = ?").bind(parseInt(loginId)).first();
         }
 
         if (!user) {
-            user = await env.ZRL_DB.prepare(
-                "SELECT * FROM athletes WHERE LOWER(email) = ?"
-            ).bind(loginId.toLowerCase()).first();
+            user = await env.ZRL_DB.prepare("SELECT * FROM athletes WHERE LOWER(email) = ?").bind(loginId.toLowerCase()).first();
         }
 
         if (!user) {
-            user = await env.ZRL_DB.prepare(
-                "SELECT * FROM athletes WHERE LOWER(name) = ?"
-            ).bind(loginId.toLowerCase()).first();
+            user = await env.ZRL_DB.prepare("SELECT * FROM athletes WHERE LOWER(name) = ?").bind(loginId.toLowerCase()).first();
         }
 
         if (!user) {
@@ -49,16 +47,15 @@ export async function onRequestPost({ request, env, data }) {
             });
         }
 
-        // ======================================================
-        // 2️⃣ Verifica password
-        // ======================================================
         let isPasswordValid = false;
-
         if (user.password_hash) {
-            // bcrypt hash
-            isPasswordValid = await bcrypt.compare(password, user.password_hash);
+            try {
+                isPasswordValid = await bcrypt.compare(password, user.password_hash);
+            } catch (e) {
+                console.error("Bcrypt compare error:", e);
+                return new Response(JSON.stringify({ message: 'Errore verifica password.' }), { status: 500 });
+            }
         } else {
-            // fallback utenti CSV senza hash: password = zwid
             isPasswordValid = (password === user.zwid.toString());
         }
 
@@ -68,23 +65,14 @@ export async function onRequestPost({ request, env, data }) {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-
-        // ======================================================
-        // 3️⃣ Genera JWT
-        // ======================================================
-        if (!env.JWT_SECRET || env.JWT_SECRET.length === 0) {
-            throw new Error("Configurazione server incompleta: JWT_SECRET mancante.");
-        }
     
         const secret = new TextEncoder().encode(env.JWT_SECRET);
-  
-        // Assicuriamoci che il ruolo sia gestito correttamente, evitando null/undefined in modo esplicito
         const userRole = user.role ? user.role.toString().trim().toLowerCase() : 'user';
    
         const payload = {
             zwid: user.zwid,
             username: user.name,
-            role: userRole, // Usiamo il ruolo pulito e standardizzato
+            role: userRole,
             exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS
         };
    
@@ -94,9 +82,6 @@ export async function onRequestPost({ request, env, data }) {
             .setExpirationTime(`${TOKEN_EXPIRY_SECONDS}s`)
             .sign(secret);
 
-        // ======================================================
-        // 4️⃣ Risposta OK
-        // ======================================================
         return new Response(JSON.stringify({
             message: 'Login effettuato.',
             token: token,
@@ -108,7 +93,7 @@ export async function onRequestPost({ request, env, data }) {
 
     } catch (error) {
         console.error("Login Error:", error);
-        return new Response(JSON.stringify({ message: 'Errore: ' + error.message }), {
+        return new Response(JSON.stringify({ message: 'Errore interno del server.' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

@@ -5,7 +5,7 @@ export async function onRequestGet(context) {
 
     try {
         // 1. Get the most recent active series
-        const series = await env.DB.prepare(`
+        const series = await env.ZRL_DB.prepare(`
             SELECT * FROM series 
             WHERE is_active = 1 
             ORDER BY id DESC LIMIT 1
@@ -28,7 +28,7 @@ export async function onRequestGet(context) {
         }
 
         // 2. Get all rounds for this series with counts
-        const rounds = await env.DB.prepare(`
+        const rounds = await env.ZRL_DB.prepare(`
             SELECT r.*,
                 (SELECT COUNT(*) FROM round_teams rt WHERE rt.round_id = r.id) as team_count,
                 (SELECT COUNT(*) FROM race_lineup rl WHERE rl.round_id = r.id) as lineup_count,
@@ -39,7 +39,7 @@ export async function onRequestGet(context) {
         `).bind(series.id).all();
 
         // 3. Get total teams available in the system
-        const totalTeams = await env.DB.prepare(`SELECT COUNT(*) as count FROM teams`).first();
+        const totalTeams = await env.ZRL_DB.prepare(`SELECT COUNT(*) as count FROM teams`).first();
 
         return new Response(JSON.stringify({
             success: true,
@@ -64,3 +64,4 @@ export async function onRequestGet(context) {
         }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 }
+

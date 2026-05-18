@@ -11,8 +11,8 @@ export async function onRequestGet(context) {
 
   try {
     // 1. Recuperiamo i dettagli della serie attiva e del team
-    const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
-    const targetTeam = await env.DB.prepare("SELECT name, wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(team_id).first();
+    const activeSeries = await env.ZRL_DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
+    const targetTeam = await env.ZRL_DB.prepare("SELECT name, wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(team_id).first();
 
     // 2. SYNC REAL-TIME CON WTRL (se abbiamo i dati necessari)
     if (activeSeries?.external_season_id && targetTeam?.wtrl_team_id) {
@@ -37,7 +37,7 @@ export async function onRequestGet(context) {
               if (!zwid) continue;
 
               // Upsert Atleta con Avatar
-              athleteStatements.push(env.DB.prepare(`
+              athleteStatements.push(env.ZRL_DB.prepare(`
                 INSERT INTO athletes (zwid, name, base_category, avatar_url)
                 VALUES (?, ?, ?, ?)
                 ON CONFLICT(zwid) DO UPDATE SET 
@@ -46,14 +46,14 @@ export async function onRequestGet(context) {
               `).bind(zwid, rider.name, rider.category || 'N/A', rider.avatar || ''));
 
               // Upsert Relazione Team-Membro
-              memberStatements.push(env.DB.prepare(`
+              memberStatements.push(env.ZRL_DB.prepare(`
                 INSERT OR IGNORE INTO team_members (team_id, athlete_id)
                 VALUES (?, ?)
               `).bind(team_id, zwid));
             }
 
-            if (athleteStatements.length > 0) await env.DB.batch(athleteStatements);
-            if (memberStatements.length > 0) await env.DB.batch(memberStatements);
+            if (athleteStatements.length > 0) await env.ZRL_DB.batch(athleteStatements);
+            if (memberStatements.length > 0) await env.ZRL_DB.batch(memberStatements);
           }
         }
       } catch (e) {
@@ -79,7 +79,7 @@ export async function onRequestGet(context) {
       ORDER BY a.name ASC
     `;
 
-    const { results } = await env.DB.prepare(query).bind(...params).all();
+    const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -110,20 +110,20 @@ export async function onRequestPost(context) {
     }
 
     if (user.role === 'captain') {
-      const team = await env.DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(team_id).first();
+      const team = await env.ZRL_DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(team_id).first();
       if (!team || team.captain_id !== user.zwid) {
         return new Response(JSON.stringify({ error: "Forbidden: You can only manage your own teams" }), { status: 403 });
       }
     }
 
     // Verifichiamo il limite del roster (max 12)
-    const count = await env.DB.prepare(`SELECT COUNT(*) as total FROM team_members WHERE team_id = ?`).bind(team_id).first();
+    const count = await env.ZRL_DB.prepare(`SELECT COUNT(*) as total FROM team_members WHERE team_id = ?`).bind(team_id).first();
     if (count.total >= 12) {
       return new Response(JSON.stringify({ error: "Roster is full (max 12 riders)" }), { status: 400 });
     }
 
     // Aggiungiamo l'atleta al roster (Many-to-Many)
-    await env.DB.prepare(`
+    await env.ZRL_DB.prepare(`
       INSERT OR IGNORE INTO team_members (team_id, athlete_id)
       VALUES (?, ?)
     `).bind(team_id, athlete_zwid).run();
@@ -135,3 +135,4 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
+

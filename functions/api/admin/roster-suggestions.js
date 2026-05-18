@@ -10,7 +10,7 @@ export async function onRequestGet(context) {
   try {
     // 1. Recuperiamo tutti gli atleti con le loro preferenze (sia Favorite che Acceptable)
     // Usiamo preference_level >= 1 (quindi escludiamo solo le '⛔' o i non compilati)
-    const { results } = await env.DB.prepare(`
+    const { results } = await env.ZRL_DB.prepare(`
       SELECT 
         a.zwid, 
         a.name, 
@@ -70,3 +70,4 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
+

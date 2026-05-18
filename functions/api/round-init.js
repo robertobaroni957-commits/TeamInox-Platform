@@ -75,57 +75,62 @@ export async function onRequestPost(context) {
             throw new Error("WTRL non ha restituito gare valide per questa stagione (Payload vuoto).");
         }
 
-        // 2. Upsert Serie
-        let series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(wtrlSeasonId).first();
-        let seriesId;
-        if (!series) {
-            const ins = await env.DB.prepare("INSERT INTO series (name, external_season_id, is_active) VALUES (?, ?, 1) RETURNING id")
-                .bind(seriesName, wtrlSeasonId).first();
-            seriesId = ins.id;
-        } else {
-            seriesId = series.id;
-            await env.DB.prepare("UPDATE series SET name = ?, is_active = 1 WHERE id = ?").bind(seriesName, seriesId).run();
-        }
+        const { runMutation } = await import("../../src/services/db/mutation");
+        const { createMutation } = await import("../../src/services/db/mutationDSL");
+        const { runWithGuard } = await import("../../src/services/runWithGuard");
+        const { validateSeasonState } = await import("../../src/services/GuardRails");
         
-        await env.DB.prepare("UPDATE series SET is_active = 0 WHERE id != ?").bind(seriesId).run();
+        return await runWithGuard(context, () => validateSeasonState(env.ZRL_DB, wtrlSeasonId), async (ctx) => {
+            // 2. Upsert Serie (Statements for MutationDSL)
+            const statements = [];
+            let series = await env.ZRL_DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(wtrlSeasonId).first();
+            let seriesId;
+            
+            if (!series) {
+                const ins = await env.ZRL_DB.prepare("INSERT INTO series (name, external_season_id, is_active) VALUES (?, ?, 1) RETURNING id")
+                    .bind(seriesName, wtrlSeasonId).first();
+                seriesId = ins.id;
+            } else {
+                seriesId = series.id;
+                statements.push(env.ZRL_DB.prepare("UPDATE series SET name = ?, is_active = 1 WHERE id = ?").bind(seriesName, seriesId));
+            }
+            
+            statements.push(env.ZRL_DB.prepare("UPDATE series SET is_active = 0 WHERE id != ?").bind(seriesId));
 
-        // 3. Pulizia a cascata
-        const sub = "SELECT id FROM rounds WHERE series_id = ?";
-        await env.DB.batch([
-            env.DB.prepare(`DELETE FROM race_lineup WHERE round_id IN (${sub})`).bind(seriesId),
-            env.DB.prepare(`DELETE FROM availability WHERE round_id IN (${sub})`).bind(seriesId),
-            env.DB.prepare(`DELETE FROM results WHERE round_id IN (${sub})`).bind(seriesId),
-            env.DB.prepare(`DELETE FROM round_teams WHERE round_id IN (${sub})`).bind(seriesId),
-            env.DB.prepare(`DELETE FROM rounds WHERE series_id = ?`).bind(seriesId)
-        ]);
+            // 3. Pulizia a cascata
+            const sub = "SELECT id FROM rounds WHERE series_id = ?";
+            statements.push(env.ZRL_DB.prepare(`DELETE FROM race_lineup WHERE round_id IN (${sub})`).bind(seriesId));
+            statements.push(env.ZRL_DB.prepare(`DELETE FROM availability WHERE round_id IN (${sub})`).bind(seriesId));
+            statements.push(env.ZRL_DB.prepare(`DELETE FROM results WHERE round_id IN (${sub})`).bind(seriesId));
+            statements.push(env.ZRL_DB.prepare(`DELETE FROM round_teams WHERE round_id IN (${sub})`).bind(seriesId));
+            statements.push(env.ZRL_DB.prepare(`DELETE FROM rounds WHERE series_id = ?`).bind(seriesId));
 
-        // 4. Inserimento Round
-        const validRounds = rawRounds.filter(item => item.eventDate || item.date);
-        
-        for (const item of validRounds) {
-            const rName = `Week ${item.race || item.round || '?'}`;
-            const rDate = item.eventDate || item.date;
-            const rWorld = (item.courseWorld || item.world || "TBD").toString().toUpperCase();
-            const rRoute = (item.courseName || item.route || "TBD").toString();
+            // 4. Inserimento Round
+            const validRounds = rawRounds.filter(item => item.eventDate || item.date);
+            for (const item of validRounds) {
+                const rName = `Week ${item.race || item.round || '?'}`;
+                const rDate = item.eventDate || item.date;
+                const rWorld = (item.courseWorld || item.world || "TBD").toString().toUpperCase();
+                const rRoute = (item.courseName || item.route || "TBD").toString();
 
-            const round = await env.DB.prepare(
-                "INSERT INTO rounds (series_id, name, date, world, route, status) VALUES (?, ?, ?, ?, ?, 'planned') RETURNING id"
-            ).bind(seriesId, rName, rDate, rWorld, rRoute).first();
-
-            if (round && round.id) {
-                await env.DB.prepare(`
-                    INSERT INTO round_teams (round_id, team_id, timeslot_id)
-                    SELECT ?, wtrl_team_id, ? FROM teams
-                `).bind(round.id, slotId).run();
+                statements.push(env.ZRL_DB.prepare(
+                    "INSERT INTO rounds (series_id, name, date, world, route, status) VALUES (?, ?, ?, ?, ?, 'planned')"
+                ).bind(seriesId, rName, rDate, rWorld, rRoute));
             }
 
-        }
+            const mutation = createMutation(statements, {
+                eventType: 'ROUND_INIT',
+                payload: { year, round_index, wtrlSeasonId }
+            });
 
-        return new Response(JSON.stringify({
-            success: true,
-            version: "2.2-final",
-            message: `Importati ${validRounds.length} round con successo.`
-        }), { headers: { "Content-Type": "application/json" } });
+            await runMutation(env.ZRL_DB, mutation);
+
+            return new Response(JSON.stringify({
+                success: true,
+                version: "2.2-final",
+                message: `Importati ${validRounds.length} round con successo.`
+            }), { headers: { "Content-Type": "application/json" } });
+        }, 'ROUND_INIT');
 
     } catch (err) {
         console.error("[round-init] CRITICAL:", err);
@@ -139,3 +144,4 @@ export async function onRequestPost(context) {
         });
     }
 }
+

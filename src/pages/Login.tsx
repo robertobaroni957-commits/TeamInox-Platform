@@ -22,6 +22,7 @@ const Login: React.FC = () => {
     setError('');
     setSuccess('');
     setLoading(true);
+    localStorage.removeItem('inox_token'); // Clear old token before login
 
     try {
       const response = await fetch('/api/login_auth', { 

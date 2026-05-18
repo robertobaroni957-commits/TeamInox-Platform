@@ -10,11 +10,11 @@ export async function onRequestGet(context) {
     const hash = await bcrypt.hash(password, 10);
     
     // Eliminiamo se esiste già per evitare conflitti
-    await env.DB.prepare("DELETE FROM athletes WHERE email = ? OR zwid = ?")
+    await env.ZRL_DB.prepare("DELETE FROM athletes WHERE email = ? OR zwid = ?")
       .bind(email, zwid)
       .run();
 
-    await env.DB.prepare(
+    await env.ZRL_DB.prepare(
       "INSERT INTO athletes (zwid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)"
     ).bind(zwid, "Admin Team Inox", email, hash, "admin").run();
 
@@ -27,3 +27,4 @@ export async function onRequestGet(context) {
     });
   }
 }
+

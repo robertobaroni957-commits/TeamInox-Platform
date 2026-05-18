@@ -3,7 +3,7 @@
 
 export async function onRequestGet(context) {
     const { request, env } = context;
-    const db = env.DB; // Assumes D1 binding is named DB in wrangler.toml
+    const db = env.ZRL_DB; // Assumes D1 binding is named DB in wrangler.toml
 
     const url = new URL(request.url);
     const raceId = url.searchParams.get('race_id');

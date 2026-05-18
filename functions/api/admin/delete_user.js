@@ -9,12 +9,12 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Eliminiamo l'atleta e tutti i dati correlati
-        await env.DB.batch([
-            env.DB.prepare("DELETE FROM team_members WHERE athlete_id = ?").bind(userId),
-            env.DB.prepare("DELETE FROM race_lineup WHERE athlete_id = ?").bind(userId),
-            env.DB.prepare("DELETE FROM availability WHERE athlete_id = ?").bind(userId),
-            env.DB.prepare("DELETE FROM user_time_preferences WHERE zwid = ?").bind(userId),
-            env.DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId)
+        await env.ZRL_DB.batch([
+            env.ZRL_DB.prepare("DELETE FROM team_members WHERE athlete_id = ?").bind(userId),
+            env.ZRL_DB.prepare("DELETE FROM race_lineup WHERE athlete_id = ?").bind(userId),
+            env.ZRL_DB.prepare("DELETE FROM availability WHERE athlete_id = ?").bind(userId),
+            env.ZRL_DB.prepare("DELETE FROM user_time_preferences WHERE zwid = ?").bind(userId),
+            env.ZRL_DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId)
         ]);
 
         return new Response(JSON.stringify({ success: true, message: "Utente e dati correlati eliminati correttamente" }));
@@ -23,3 +23,4 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 }
+

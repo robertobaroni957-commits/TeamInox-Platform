@@ -8,11 +8,8 @@ export async function onRequestGet(context) {
       name, 
       category, 
       division, 
-      division_number, 
       captain_id, 
-      club_id, 
-      league, 
-      zrldivision 
+      club_id 
     FROM teams`;
     let params = [];
 
@@ -25,7 +22,7 @@ export async function onRequestGet(context) {
 
     query += ` ORDER BY category ASC, division ASC, name ASC`;
 
-    const { results } = await env.DB.prepare(query).bind(...params).all();
+    const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
 
     return new Response(JSON.stringify({ 
         success: true, 
@@ -50,7 +47,7 @@ export async function onRequestPost(context) {
 
   try {
     const { name, category, division, wtrl_team_id, captain_id, club_id } = await request.json();
-    await env.DB.prepare(
+    await env.ZRL_DB.prepare(
       "INSERT INTO teams (name, category, division, wtrl_team_id, captain_id, club_id) VALUES (?, ?, ?, ?, ?, ?)"
     ).bind(name, category, division, wtrl_team_id, captain_id, club_id).run();
     return new Response(JSON.stringify({ success: true, id: wtrl_team_id }), { status: 201 });
@@ -70,7 +67,7 @@ export async function onRequestPatch(context) {
   try {
     const { id, name, category, division, captain_id, club_id } = await request.json();
     // 'id' qui è il wtrl_team_id
-    await env.DB.prepare(
+    await env.ZRL_DB.prepare(
       "UPDATE teams SET name = ?, category = ?, division = ?, captain_id = ?, club_id = ? WHERE wtrl_team_id = ?"
     ).bind(name, category, division, captain_id, club_id, id).run();
     return new Response(JSON.stringify({ success: true }));
@@ -91,9 +88,10 @@ export async function onRequestDelete(context) {
   const id = url.searchParams.get("id"); // wtrl_team_id
 
   try {
-    await env.DB.prepare("DELETE FROM teams WHERE wtrl_team_id = ?").bind(id).run();
+    await env.ZRL_DB.prepare("DELETE FROM teams WHERE wtrl_team_id = ?").bind(id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

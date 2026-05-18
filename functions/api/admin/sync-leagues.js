@@ -6,7 +6,7 @@ export async function onRequestPost({ request, env }) {
     );
 
     try {
-        if (!env.DB) return errorRes("Database non trovato", 500);
+        if (!env.ZRL_DB) return errorRes("Database non trovato", 500);
 
         const body = await request.json();
         const season = body.season_id || 19;
@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
             const divNum = wt.divnum || 0;
             const wtrlId = wt.id; // ID del team su WTRL
 
-            updates.push(env.DB.prepare(`
+            updates.push(env.ZRL_DB.prepare(`
                 UPDATE teams 
                 SET league = ?, category = ?, division_number = ?, wtrl_team_id = ?
                 WHERE wtrl_team_id = ? OR (name = ? AND (wtrl_team_id IS NULL OR wtrl_team_id = ''))
@@ -70,7 +70,7 @@ export async function onRequestPost({ request, env }) {
 
         // 4. Esecuzione batch
         if (updates.length > 0) {
-            await env.DB.batch(updates);
+            await env.ZRL_DB.batch(updates);
         }
 
         return new Response(JSON.stringify({ 
@@ -83,3 +83,4 @@ export async function onRequestPost({ request, env }) {
         return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
+

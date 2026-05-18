@@ -7,7 +7,7 @@ const CATEGORIE = ['A', 'B', 'C', 'D', 'E'];
 
 export async function onRequestPost(context) {
     const { request, env } = context;
-    const db = env.DB; // Assumes D1 binding is named DB in wrangler.toml
+    const db = env.ZRL_DB; // Assumes D1 binding is named DB in wrangler.toml
 
     try {
         const { race_id, segment_classifications } = await request.json();

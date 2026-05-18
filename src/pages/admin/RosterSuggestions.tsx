@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Users, Clock, Zap, CheckCircle2, ChevronRight, AlertCircle, Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface SuggestedTeam {
   slot_id: string;
@@ -16,16 +17,13 @@ const RosterSuggestions: React.FC = () => {
   const [suggestions, setSuggestions] = useState<SuggestedTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmedProposals, setConfirmedProposals] = useState<SuggestedTeam[]>([]); // State for confirmed proposals
-  const [validationErrors, setValidationErrors] = useState<string[]>([]); // State for validation errors
+  const [confirmedProposals, setConfirmedProposals] = useState<SuggestedTeam[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  
-  // State for total preferences
   const [totalPreferences, setTotalPreferences] = useState<number>(0);
 
   useEffect(() => {
@@ -34,13 +32,11 @@ const RosterSuggestions: React.FC = () => {
         const data = await api.getRosterSuggestions();
         if (data.success) {
           setSuggestions(data.viableTeams);
-          // Populate filter options
-          const uniqueCategories = [...new Set(data.viableTeams.map(s => s.category))].sort();
-          const uniqueSlots = [...new Set(data.viableTeams.map(s => s.slot_name))].sort();
+          const uniqueCategories = [...new Set(data.viableTeams.map((s: any) => s.category))].sort() as string[];
+          const uniqueSlots = [...new Set(data.viableTeams.map((s: any) => s.slot_name))].sort() as string[];
           setAvailableCategories(uniqueCategories);
           setAvailableSlots(uniqueSlots);
           
-          // Capture total_expressed_preferences from the API response
           if (data.total_expressed_preferences !== undefined) {
             setTotalPreferences(data.total_expressed_preferences);
           }
@@ -56,31 +52,22 @@ const RosterSuggestions: React.FC = () => {
     fetchData();
   }, []);
 
-  // Handler to add a selected team proposal to the confirmed list, allowing up to 2 per slot/category
   const handleConfigureTeam = (selectedTeam: SuggestedTeam) => {
-    // Count how many confirmed proposals already exist for the same slot and category.
     const countForSlotAndCategory = confirmedProposals.filter(
       (proposal) => proposal.slot_id === selectedTeam.slot_id && proposal.category === selectedTeam.category
     ).length;
 
-    // If we can still add another team for this slot/category (up to 2)
     if (countForSlotAndCategory < 2) {
       setConfirmedProposals([...confirmedProposals, selectedTeam]);
-      console.log(`Proposal confirmed for Slot: ${selectedTeam.slot_name}, Category: ${selectedTeam.category}. Total confirmed for this slot/cat: ${countForSlotAndCategory + 1}`);
-      // Optionally, provide user feedback here, e.g., a toast notification
     } else {
-      console.log(`Cannot add more than 2 teams for Slot: ${selectedTeam.slot_name}, Category: ${selectedTeam.category}. Already have ${countForSlotAndCategory} confirmed.`);
-      // Optionally, provide user feedback here, e.g., a toast notification indicating the limit has been reached.
+      console.log(`Limit reached for ${selectedTeam.slot_name}`);
     }
   };
 
-  // Function to validate all confirmed proposals against the rules
   const validateRosters = (): string[] => {
     const errors: string[] = [];
-    // Map to track runner assignments: Map<runnerId, Map<category, count>>
     const runnerCategoryAssignments = new Map<number, Map<string, number>>(); 
 
-    // Rule 1: Min/Max runners per team (4-12)
     confirmedProposals.forEach((proposal, index) => {
       const teamIdentifier = `Proposta ${index + 1} (Slot: ${proposal.slot_name}, Cat: ${proposal.category})`;
       if (proposal.athletes.length < 4) {
@@ -91,29 +78,24 @@ const RosterSuggestions: React.FC = () => {
       }
     });
 
-    // Rule 2: Runner max 2 teams of their own category
     confirmedProposals.forEach((proposal) => {
-      const teamCategory = proposal.category; // Category of the slot/team being proposed
-
+      const teamCategory = proposal.category;
       proposal.athletes.forEach(athlete => {
         const runnerId = athlete.zwid;
-        // Assuming athlete.level is the runner's primary category. Convert to string for consistent map keys.
         const runnerPrimaryCategory = String(athlete.level); 
 
-        // Initialize map for runner if not present
         if (!runnerCategoryAssignments.has(runnerId)) {
           runnerCategoryAssignments.set(runnerId, new Map<string, number>());
         }
         const assignmentsForRunner = runnerCategoryAssignments.get(runnerId)!;
 
-        // Only count assignments if the proposal's category matches the runner's primary category
         if (teamCategory === runnerPrimaryCategory) {
           const currentCount = assignmentsForRunner.get(runnerPrimaryCategory) || 0;
           const newCount = currentCount + 1;
           assignmentsForRunner.set(runnerPrimaryCategory, newCount);
 
           if (newCount > 2) {
-            errors.push(`Corridore "${athlete.name}" (ID: ${runnerId}) eccede il limite di 2 team nella categoria ${runnerPrimaryCategory}. Assegnato a ${newCount} team.`);
+            errors.push(`Corridore "${athlete.name}" (ID: ${runnerId}) eccede il limite di 2 team nella categoria ${runnerPrimaryCategory}.`);
           }
         }
       });
@@ -122,15 +104,9 @@ const RosterSuggestions: React.FC = () => {
     return errors;
   };
 
-  // Handler for the validation button click
   const handleValidationClick = () => {
     const errors = validateRosters();
     setValidationErrors(errors);
-    // If no errors, you might proceed to generate the final report or save.
-    if (errors.length === 0) {
-      console.log("Validation successful. Ready to generate report.");
-      // Potentially trigger report generation or save action here
-    }
   };
 
   if (loading) return (
@@ -141,7 +117,6 @@ const RosterSuggestions: React.FC = () => {
     </div>
   );
 
-  // Apply filters to suggestions
   const filteredSuggestions = suggestions.filter(suggestion =>
     (selectedCategory === '' || suggestion.category === selectedCategory) &&
     (selectedSlot === '' || suggestion.slot_name === selectedSlot)
@@ -168,9 +143,7 @@ const RosterSuggestions: React.FC = () => {
         </div>
       </header>
 
-      {/* Filter Controls */}
       <div className="flex flex-wrap gap-6 mb-10 items-center p-6 bg-zinc-900/40 rounded-[2.5rem] border border-zinc-800 shadow-xl backdrop-blur-sm">
-        {/* Category Filter */}
         <div className="flex flex-col gap-1.5">
             <label htmlFor="categoryFilter" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Filtra per Categoria</label>
             <select 
@@ -184,7 +157,6 @@ const RosterSuggestions: React.FC = () => {
             </select>
         </div>
 
-        {/* Slot Filter */}
         <div className="flex flex-col gap-1.5">
             <label htmlFor="slotFilter" className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Filtra per Slot Orario</label>
             <select 
@@ -210,7 +182,6 @@ const RosterSuggestions: React.FC = () => {
         <div className="bg-zinc-900/30 rounded-[3rem] border border-zinc-800 border-dashed p-24 text-center">
           <Users className="mx-auto text-zinc-800 mb-6" size={64} />
           <p className="text-zinc-600 font-black uppercase italic tracking-widest text-2xl">Nessun dato disponibile</p>
-          <p className="text-zinc-700 text-xs mt-3 uppercase font-bold tracking-[0.2em] max-w-sm mx-auto">Gli atleti devono inserire almeno una preferenza positiva (💚 o 💛) per attivare l'ottimizzatore.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -231,24 +202,11 @@ const RosterSuggestions: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <span className="block text-4xl font-black italic text-white leading-none">{team.count}</span>
-                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti Totali</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti</span>
                 </div>
               </div>
 
               <div className="p-8">
-                <div className="flex items-center justify-between mb-6 border-b border-zinc-800/50 pb-4">
-                  <div className="flex gap-5">
-                    <div className="flex items-center gap-2">
-                      <Heart size={12} className="fill-green-500 text-green-500" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{team.favorite_count} Favorite</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Heart size={12} className="fill-yellow-500 text-yellow-500" />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{team.acceptable_count} Acceptable</span>
-                    </div>
-                  </div>
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar">
                   {[...team.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
                     <div key={athlete.zwid} className="flex items-center justify-between p-4 bg-zinc-900/60 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md group/rider">
@@ -275,7 +233,6 @@ const RosterSuggestions: React.FC = () => {
         </div>
       )}
 
-      {/* Section to display confirmed proposals */}
       {confirmedProposals.length > 0 && (
         <section className="mt-16 pt-10 border-t border-zinc-900">
           <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-10">
@@ -297,30 +254,11 @@ const RosterSuggestions: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="block text-4xl font-black italic text-white leading-none">{proposal.count}</span>
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Atleti</span>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-3 max-h-[250px] overflow-y-auto pr-3 custom-scrollbar">
-                  {[...proposal.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
-                    <div key={athlete.zwid} className="flex items-center justify-between p-4 bg-zinc-950/60 rounded-2xl border border-zinc-900 hover:border-zinc-800 transition-all shadow-md">
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-[10px] font-black text-zinc-500 flex-shrink-0">
-                          {athlete.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <span className="text-xs font-black text-zinc-300 uppercase truncate italic tracking-tight">{athlete.name}</span>
-                      </div>
-                      <Heart size={12} className={`${athlete.level === 2 ? 'fill-green-500 text-green-500' : 'fill-yellow-500 text-yellow-500'}`} />
-                    </div>
-                  ))}
                 </div>
               </div>
             ))}
           </div>
           
-          {/* Validation Section */}
           <div className="mt-16 pt-10 border-t border-zinc-900">
             <h2 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase mb-10">
               Validazione <span className="text-zinc-700">Regolamento</span>

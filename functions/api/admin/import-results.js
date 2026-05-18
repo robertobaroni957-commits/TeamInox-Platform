@@ -2,7 +2,7 @@
 import { ZRLService } from '../../../src/services/zrlService';
 
 export async function onRequestPost({ request, env }) {
-    const service = new zrlService(env.DB);
+    const service = new zrlService(env.ZRL_DB);
     try {
         const payload = await request.json();
         const result = await service.importResults(payload);
@@ -16,3 +16,4 @@ export async function onRequestPost({ request, env }) {
         });
     }
 }
+

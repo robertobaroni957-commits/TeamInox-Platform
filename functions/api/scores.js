@@ -28,7 +28,7 @@ export async function onRequestGet({ env, data }) {
         // Nota: Qui recupereresti i dati reali da una tabella 'scores' o 'results' di D1.
         
         // Eseguiremo una query per dimostrazione
-        const { results } = await env.DB.prepare(
+        const { results } = await env.ZRL_DB.prepare(
             "SELECT name as username, role, created_at FROM athletes LIMIT 10"
         ).all();
         

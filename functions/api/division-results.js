@@ -5,11 +5,11 @@ export async function onRequestGet({ request, env }) {
     const league_key = url.searchParams.get("league_key");
 
     try {
-        if (!env.DB) return new Response("Database error", { status: 500 });
+        if (!env.ZRL_DB) return new Response("Database error", { status: 500 });
 
         // 1. Filtri disponibili (Stagioni e Round)
         if (!league_key || !round_group_id) {
-            const { results: options } = await env.DB.prepare(`
+            const { results: options } = await env.ZRL_DB.prepare(`
                 SELECT 
                     rg.id as round_group_id,
                     rg.description as round_name,
@@ -29,7 +29,7 @@ export async function onRequestGet({ request, env }) {
         }
 
         // 2. Recupero Classifica SQUADRE (GC Ufficiale)
-        const { results } = await env.DB.prepare(`
+        const { results } = await env.ZRL_DB.prepare(`
             SELECT * FROM zrl_team_standings 
             WHERE round_group_id = ? AND league_key = ?
             ORDER BY rank ASC
@@ -43,3 +43,4 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

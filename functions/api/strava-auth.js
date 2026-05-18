@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env, data }) {
     }
 
     // Salva i token nel DB
-    await env.DB.prepare(`
+    await env.ZRL_DB.prepare(`
       INSERT INTO strava_tokens (athlete_id, access_token, refresh_token, expires_at, scope)
       VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(athlete_id) DO UPDATE SET
@@ -56,3 +56,4 @@ export async function onRequestPost({ request, env, data }) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

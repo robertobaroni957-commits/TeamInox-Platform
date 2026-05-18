@@ -2,7 +2,7 @@ export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const series_id = url.searchParams.get("series_id");
 
-  if (!env.DB) return new Response("DB non trovato", { status: 500 });
+  if (!env.ZRL_DB) return new Response("DB non trovato", { status: 500 });
 
   try {
     let query = "SELECT * FROM rounds";
@@ -15,9 +15,10 @@ export async function onRequestGet({ request, env }) {
     
     query += " ORDER BY date ASC, id ASC";
 
-    const results = await env.DB.prepare(query).bind(...params).all();
+    const results = await env.ZRL_DB.prepare(query).bind(...params).all();
     return new Response(JSON.stringify(results.results || []), { headers: { "Content-Type": "application/json" } });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

@@ -252,7 +252,7 @@ async function calculateAndStoreRankings(env, raceId, eventId, fetchedData, sele
     const batchOps = [];
 
     // Insert/Update Race
-    batchOps.push(env.DB.prepare(
+    batchOps.push(env.ZRL_DB.prepare(
         "INSERT INTO races (id, zwift_event_id, name, event_date, status, max_times_json) VALUES (?, ?, ?, ?, ?, ?) " +
         "ON CONFLICT(id) DO UPDATE SET zwift_event_id=excluded.zwift_event_id, name=excluded.name, event_date=excluded.event_date, status=excluded.status, max_times_json=excluded.max_times_json"
     ).bind(raceId, eventId, eventDetails.eventName, eventDetails.eventDate, 'published', JSON.stringify(currentRaceMaxTimes)));
@@ -261,12 +261,12 @@ async function calculateAndStoreRankings(env, raceId, eventId, fetchedData, sele
         if (!classGaraSingola[cat]) continue;
         for (const [index, rider] of classGaraSingola[cat].entries()) {
             // Insert/Update Rider
-            batchOps.push(env.DB.prepare(
+            batchOps.push(env.ZRL_DB.prepare(
                 "INSERT INTO riders (zwid, name, flag) VALUES (?, ?, ?) ON CONFLICT(zwid) DO UPDATE SET name=excluded.name, flag=excluded.flag"
             ).bind(rider.zwid, rider.name, rider.flag || null));
 
             // Insert/Update Race Results
-            batchOps.push(env.DB.prepare(
+            batchOps.push(env.ZRL_DB.prepare(
                 "INSERT INTO race_results (race_id, rider_zwid, category, team_name, position, race_time_ms, points_fin, points_fal, points_fts, points_sprint, points_kom, points_total) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(race_id, rider_zwid) DO UPDATE SET " +
                 "category=excluded.category, team_name=excluded.team_name, position=excluded.position, race_time_ms=excluded.race_time_ms, points_fin=excluded.points_fin, points_fal=excluded.points_fal, " +
@@ -278,12 +278,12 @@ async function calculateAndStoreRankings(env, raceId, eventId, fetchedData, sele
         }
     }
     
-    await env.DB.batch(batchOps);
+    await env.ZRL_DB.batch(batchOps);
     console.log(`✅ Dati di gara singola per ${eventId} (Gara ${raceId}) salvati.`);
 
     // --- 4. Recalculate and Update Cumulative Standings from scratch ---
     console.log("Recalcolando classifiche cumulative...");
-    const allRaces = await env.DB.prepare("SELECT id, max_times_json FROM races WHERE status = 'published' ORDER BY id ASC").all();
+    const allRaces = await env.ZRL_DB.prepare("SELECT id, max_times_json FROM races WHERE status = 'published' ORDER BY id ASC").all();
     const cumulativeMaxTimesPerRace = allRaces.results.map(r => JSON.parse(r.max_times_json));
     
     let cumulativeResults = {}; // { cat: { zwid: { ... } } } 
@@ -293,7 +293,7 @@ async function calculateAndStoreRankings(env, raceId, eventId, fetchedData, sele
         const currentRaceId = currentRaceForLoop.id;
         const currentRaceMaxTimesForPenalties = cumulativeMaxTimesPerRace[i];
 
-        const raceResultsForCumulative = await env.DB.prepare(
+        const raceResultsForCumulative = await env.ZRL_DB.prepare(
             `SELECT rr.rider_zwid, rr.category, rr.team_name, rr.points_total, rr.race_time_ms, rr.points_sprint, rr.points_kom, r.name, r.flag FROM race_results rr JOIN riders r ON rr.rider_zwid = r.zwid WHERE rr.race_id = ?`
         ).bind(currentRaceId).all();
 
@@ -338,16 +338,16 @@ async function calculateAndStoreRankings(env, raceId, eventId, fetchedData, sele
     }
 
     // --- Store Cumulative Standings ---
-    const cumulativeBatchOps = [env.DB.prepare("DELETE FROM championship_standings")]; // Clear table before recalculating
+    const cumulativeBatchOps = [env.ZRL_DB.prepare("DELETE FROM championship_standings")]; // Clear table before recalculating
     for (const cat of CATEGORIE) {
         for (const riderZwid in cumulativeResults[cat]) {
             const cum = cumulativeResults[cat][riderZwid];
-            cumulativeBatchOps.push(env.DB.prepare(
+            cumulativeBatchOps.push(env.ZRL_DB.prepare(
                 "INSERT INTO championship_standings (rider_zwid, category, total_points, total_time_ms, total_sprint_points, total_kom_points, races_completed) VALUES (?, ?, ?, ?, ?, ?, ?)"
             ).bind(cum.zwid, cat, cum.total_points, cum.total_time_ms, cum.total_sprint_points, cum.total_kom_points, cum.races_completed));
         }
     }
-    await env.DB.batch(cumulativeBatchOps);
+    await env.ZRL_DB.batch(cumulativeBatchOps);
 
     console.log(`✅ Classifiche cumulative aggiornate.`);
 }
@@ -364,9 +364,9 @@ export async function onRequestPost({ request, env }) {
         const { race_id, zwift_event_id, download_only, calculate_only, segment_mapping } = input;
 
         if (!race_id || !zwift_event_id) throw new Error('race_id e zwift_event_id sono entrambi richiesti.');
-        if (!env.DB || !env.JWT_SECRET || !env.ENCRYPTION_KEY) throw new Error('Errore di configurazione del server (DB/Secrets).');
+        if (!env.ZRL_DB || !env.JWT_SECRET || !env.ENCRYPTION_KEY) throw new Error('Errore di configurazione del server (DB/Secrets).');
 
-        const { results: userCreds } = await env.DB.prepare("SELECT zwift_username, zwift_password_encrypted FROM users WHERE id = ?").bind(payload.userId).all();
+        const { results: userCreds } = await env.ZRL_DB.prepare("SELECT zwift_username, zwift_password_encrypted FROM users WHERE id = ?").bind(payload.userId).all();
         if (!userCreds[0]?.zwift_password_encrypted) throw new Error('Credenziali ZwiftPower non impostate nel profilo.');
         
         const decryptedPassword = await decrypt(userCreds[0].zwift_password_encrypted, env.ENCRYPTION_KEY);

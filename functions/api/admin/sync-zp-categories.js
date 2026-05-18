@@ -45,7 +45,7 @@ export async function onRequestPost({ request, env }) {
 
       // Utilizziamo INSERT INTO ... ON CONFLICT per creare o aggiornare
       queries.push(
-        env.DB.prepare(`
+        env.ZRL_DB.prepare(`
           INSERT INTO athletes (zwid, name, base_category, gender, role) 
           VALUES (?, ?, ?, ?, 'athlete')
           ON CONFLICT(zwid) DO UPDATE SET 
@@ -67,7 +67,7 @@ export async function onRequestPost({ request, env }) {
       // Per sicurezza facciamo dei chunk se l'array è molto grande (> 50)
       const chunkSize = 50;
       for (let i = 0; i < queries.length; i += chunkSize) {
-        await env.DB.batch(queries.slice(i, i + chunkSize));
+        await env.ZRL_DB.batch(queries.slice(i, i + chunkSize));
       }
     }
 
@@ -87,3 +87,4 @@ export async function onRequestPost({ request, env }) {
     });
   }
 }
+

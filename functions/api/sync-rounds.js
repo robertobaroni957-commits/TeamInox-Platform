@@ -5,7 +5,7 @@ export async function onRequestPost(context) {
     let seasonId = "19"; 
     
     // Cerchiamo la serie attiva nel DB
-    const activeSeries = await env.DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
+    const activeSeries = await env.ZRL_DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
     if (activeSeries?.external_season_id) {
       seasonId = activeSeries.external_season_id.toString();
     }
@@ -77,26 +77,26 @@ export async function onRequestPost(context) {
     }
 
     // 1. Gestione Serie (Upsert manuale per compatibilità)
-    let series = await env.DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(parseInt(seasonId)).first();
+    let series = await env.ZRL_DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(parseInt(seasonId)).first();
     
     if (series) {
-        await env.DB.prepare("UPDATE series SET is_active = 1 WHERE id = ?").bind(series.id).run();
+        await env.ZRL_DB.prepare("UPDATE series SET is_active = 1 WHERE id = ?").bind(series.id).run();
     } else {
-        const res = await env.DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1)")
+        const res = await env.ZRL_DB.prepare("INSERT INTO series (external_season_id, name, is_active) VALUES (?, ?, 1)")
             .bind(parseInt(seasonId), `ZRL Season ${seasonId}`).run();
         series = { id: res.meta.lastRowId };
     }
 
     // 2. Aggiornamento Round
     for (const r of uniqueRounds) {
-        const existingRound = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
+        const existingRound = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
             .bind(series.id, r.name).first();
         
         if (existingRound) {
-            await env.DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
+            await env.ZRL_DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
                 .bind(r.date, r.world, r.route, existingRound.id).run();
         } else {
-            await env.DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
+            await env.ZRL_DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
                 .bind(series.id, r.name, r.date, r.world, r.route).run();
         }
     }
@@ -113,3 +113,4 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
+

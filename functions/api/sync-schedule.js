@@ -40,15 +40,15 @@ export async function onRequestGet(context) {
       if (!r.date) continue;
 
       // Update o Insert manuale per evitare conflitti di Foreign Key
-      const existing = await env.DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
+      const existing = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
         .bind(series_id, r.name).first();
         
       if (existing) {
-        await env.DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
+        await env.ZRL_DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
           .bind(r.date, r.world, r.route, existing.id).run();
         results.push({ ...r, status: 'updated' });
       } else {
-        await env.DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
+        await env.ZRL_DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
           .bind(series_id, r.name, r.date, r.world, r.route).run();
         results.push({ ...r, status: 'inserted' });
       }
@@ -70,3 +70,4 @@ export async function onRequestGet(context) {
     });
   }
 }
+

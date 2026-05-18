@@ -11,6 +11,9 @@ export interface Round {
   team_count: number;
   lineup_count: number;
   availability_count: number;
+  distance?: number;
+  elevation?: number;
+  strategy_details?: string | any;
 }
 
 export interface Series {
@@ -61,5 +64,13 @@ export const roundService = {
       body: JSON.stringify({ round_id, confirm }),
     });
     return await res.json();
+  },
+
+  async initRound(year: number, round: number) {
+    console.log("Initializing round", year, round);
+  },
+
+  async archiveRound(year: number, round: number) {
+    console.log("Archiving round", year, round);
   }
 };

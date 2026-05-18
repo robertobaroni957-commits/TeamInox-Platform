@@ -19,14 +19,14 @@ export async function onRequestPost({ request, env }) {
 
       // 1. Upsert athlete (ensure they exist)
       queries.push(
-        env.DB.prepare(
+        env.ZRL_DB.prepare(
           "INSERT OR IGNORE INTO athletes (zwid, name, team) VALUES (?, ?, ?)"
         ).bind(zwid, name, team || null)
       );
 
       // 2. Upsert result for this round
       queries.push(
-        env.DB.prepare(
+        env.ZRL_DB.prepare(
           "INSERT OR REPLACE INTO results (round_id, zwid, time, points_total, data_source) VALUES (?, ?, ?, ?, ?)"
         ).bind(round_id, zwid, time || 0, points_total || 0, 'sauce_live')
       );
@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
 
     // Execute all queries in a single transaction (batch)
     if (queries.length > 0) {
-      await env.DB.batch(queries);
+      await env.ZRL_DB.batch(queries);
     }
 
     return new Response(JSON.stringify({ success: true, processed: athleteList.length }), {
@@ -45,3 +45,4 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

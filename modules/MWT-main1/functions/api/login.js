@@ -14,7 +14,7 @@ async function hashPassword(password) {
 
 export async function onRequestPost(context) {
     const { request, env } = context;
-    const db = env.DB; // Assumes D1 binding is named DB in wrangler.toml
+    const db = env.ZRL_DB; // Assumes D1 binding is named DB in wrangler.toml
     const JWT_SECRET = env.JWT_SECRET; // Bound secret for JWT signing
 
     if (!JWT_SECRET) {

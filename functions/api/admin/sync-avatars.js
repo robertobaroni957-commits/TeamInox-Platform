@@ -9,7 +9,7 @@ export async function onRequestPost({ request, env, data }) {
 
   try {
     // 1. Recuperiamo tutti gli atleti che NON hanno un'avatar_url valida
-    const { results: athletes } = await env.DB.prepare(`
+    const { results: athletes } = await env.ZRL_DB.prepare(`
       SELECT zwid, name FROM athletes 
       WHERE avatar_url IS NULL OR avatar_url = '' OR avatar_url = 'null'
     `).all();
@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env, data }) {
       // Usiamo una tecnica di "probabilità": impostiamo l'URL di Zwift.
       // Se l'immagine non esiste, il browser mostrerà il fallback (iniziali) che abbiamo già nel frontend.
       updates.push(
-        env.DB.prepare("UPDATE athletes SET avatar_url = ? WHERE zwid = ?")
+        env.ZRL_DB.prepare("UPDATE athletes SET avatar_url = ? WHERE zwid = ?")
           .bind(zwiftAvatarUrl, athlete.zwid)
       );
       processedCount++;
@@ -49,7 +49,7 @@ export async function onRequestPost({ request, env, data }) {
       }
 
       for (const chunk of chunks) {
-        await env.DB.batch(chunk);
+        await env.ZRL_DB.batch(chunk);
       }
     }
 
@@ -69,3 +69,4 @@ export async function onRequestPost({ request, env, data }) {
     });
   }
 }
+

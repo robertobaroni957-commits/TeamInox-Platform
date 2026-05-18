@@ -1,0 +1,32 @@
+@echo off
+setlocal EnableExtensions EnableDelayedExpansion
+
+set FRONTEND_PORT=5173
+set WRANGLER_PORT=8788
+
+set WRANGLER_PORT=8788
+set D1_DB_ID=63574bc1-97de-4d3e-8682-0e3b48739252
+
+echo ============================================
+echo INOXTEAM DEV (STABLE MODE)
+echo ============================================
+
+if not exist logs mkdir logs
+
+REM ❌ NON uccidere tutto Node globalmente
+REM taskkill /F /IM node.exe >nul 2>&1
+
+echo [1] Starting Wrangler...
+start cmd /k "npx wrangler pages dev dist --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID%"
+
+timeout /t 3 >nul
+
+echo [2] Starting Vite...
+start cmd /k "npm run dev"
+
+echo ============================================
+echo READY:
+echo Frontend: http://127.0.0.1:%FRONTEND_PORT%
+echo Backend : http://127.0.0.1:%WRANGLER_PORT%
+echo ============================================
+pause

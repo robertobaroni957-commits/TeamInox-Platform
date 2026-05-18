@@ -42,7 +42,7 @@ async function verifyToken(request, env) {
 async function handleGet(context) {
     const { request, env } = context;
     const payload = await verifyToken(request, env);
-    const { results } = await env.DB.prepare("SELECT zwift_username FROM users WHERE id = ?").bind(payload.userId).all();
+    const { results } = await env.ZRL_DB.prepare("SELECT zwift_username FROM users WHERE id = ?").bind(payload.userId).all();
     if (!results || results.length === 0) {
         return new Response(JSON.stringify({ error: 'Utente non trovato.' }), { status: 404 });
     }
@@ -66,9 +66,9 @@ async function handlePost(context) {
     if (zwift_password) {
         if (!env.ENCRYPTION_KEY) throw new Error('ENCRYPTION_KEY non configurata come secret.');
         const encryptedPassword = await encrypt(zwift_password, env.ENCRYPTION_KEY);
-        await env.DB.prepare("UPDATE users SET zwift_username = ?, zwift_password_encrypted = ? WHERE id = ?").bind(zwift_username, encryptedPassword, payload.userId).run();
+        await env.ZRL_DB.prepare("UPDATE users SET zwift_username = ?, zwift_password_encrypted = ? WHERE id = ?").bind(zwift_username, encryptedPassword, payload.userId).run();
     } else {
-        await env.DB.prepare("UPDATE users SET zwift_username = ? WHERE id = ?").bind(zwift_username, payload.userId).run();
+        await env.ZRL_DB.prepare("UPDATE users SET zwift_username = ? WHERE id = ?").bind(zwift_username, payload.userId).run();
     }
     
     return new Response(JSON.stringify({ message: 'Profilo aggiornato con successo.' }), { status: 200 });

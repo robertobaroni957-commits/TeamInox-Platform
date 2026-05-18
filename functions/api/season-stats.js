@@ -3,12 +3,12 @@ export async function onRequestGet({ request, env }) {
     const league_key = url.searchParams.get("league_key");
 
     try {
-        if (!env.DB) return new Response("DB connection lost", { status: 500 });
+        if (!env.ZRL_DB) return new Response("DB connection lost", { status: 500 });
 
         // 1. Fetch results aggregated by ROUND INDEX (1, 2, 3, or 4)
         // We join division_results -> rounds -> series -> zrl_round_groups 
         // using external_season_id to ensure a stable link between races and round groups.
-        const { results: rawResults } = await env.DB.prepare(`
+        const { results: rawResults } = await env.ZRL_DB.prepare(`
             SELECT 
                 dr.team_name, 
                 dr.wtrl_team_id, 
@@ -52,7 +52,7 @@ export async function onRequestGet({ request, env }) {
         });
 
         // 2. Fetch current standings for the active round to show Rank/League Points
-        const { results: standings } = await env.DB.prepare(`
+        const { results: standings } = await env.ZRL_DB.prepare(`
             SELECT team_name, wtrl_team_id, rank, league_points
             FROM zrl_team_standings
             WHERE league_key = ? AND is_inox = 1
@@ -81,3 +81,4 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
+

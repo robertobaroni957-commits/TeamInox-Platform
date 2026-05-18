@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env }) {
   }
 
   try {
-    const { results } = await env.DB.prepare(`
+    const { results } = await env.ZRL_DB.prepare(`
       SELECT r.round_id, r.zwid, a.name, r.time, r.points_total, r.data_source 
       FROM results r
       JOIN athletes a ON r.zwid = a.zwid
@@ -24,3 +24,4 @@ export async function onRequestGet({ request, env }) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
+

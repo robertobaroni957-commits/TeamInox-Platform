@@ -6,7 +6,7 @@ export async function onRequestPost({ request, env }) {
     );
 
     try {
-        if (!env.DB) return errorRes("Database binding 'DB' not found.", 500);
+        if (!env.ZRL_DB) return errorRes("Database binding 'DB' not found.", 500);
 
         const body = await request.json();
         const { round_id, season_id, race_number } = body;
@@ -14,7 +14,7 @@ export async function onRequestPost({ request, env }) {
         if (!round_id) return errorRes("Parametro round_id obbligatorio.", 400);
 
         // 1. Recuperiamo i dati del Round e della Serie usando le nuove tabelle
-        const roundData = await env.DB.prepare(`
+        const roundData = await env.ZRL_DB.prepare(`
             SELECT r.*, s.external_season_id 
             FROM zrl_races r
             JOIN zrl_seasons s ON r.series_id = s.id
@@ -30,8 +30,9 @@ export async function onRequestPost({ request, env }) {
             race = match ? parseInt(match[0]) : 1;
         }
 
+        // HOOK POINT: Inject runWithGuard(context, () => validateRoundState(env.ZRL_DB, round_id, 'ACTIVE'), legacyHandler, 'SYNC_RESULTS')
         // 2. Recuperiamo i team INOX e le loro chiavi di lega
-        const teamsQuery = await env.DB.prepare(`
+        const teamsQuery = await env.ZRL_DB.prepare(`
             SELECT DISTINCT league, category, division_number 
             FROM teams 
             WHERE (name LIKE '%INOX%' OR club_id = 'cef70cde-9149-43a2-b3ae-187643a44703')
@@ -54,7 +55,7 @@ export async function onRequestPost({ request, env }) {
 
         // Pulizia preliminare
         for (const key of leagueKeys) {
-            insertStmts.push(env.DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(round_id, key));
+            insertStmts.push(env.ZRL_DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(round_id, key));
         }
 
         // 3. Interroghiamo WTRL per ogni chiave di lega
@@ -94,7 +95,7 @@ export async function onRequestPost({ request, env }) {
                         const pts_fts = parseInt(r.ftsrp) || 0;
                         const pts_total = parseInt(r.totrp) || 0;
 
-                        insertStmts.push(env.DB.prepare(`
+                        insertStmts.push(env.ZRL_DB.prepare(`
                             INSERT INTO division_results (
                                 round_id, league_key, team_name, rider_name, zwid, 
                                 position, time, points_finish, points_fal, points_fts, 
@@ -114,11 +115,11 @@ export async function onRequestPost({ request, env }) {
             }
         }
 
-        if (insertStmts.length > 0) await env.DB.batch(insertStmts);
+        if (insertStmts.length > 0) await env.ZRL_DB.batch(insertStmts);
 
         // 4. Aggiornamento tabella 'results'
-        await env.DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(round_id).run();
-        await env.DB.prepare(`
+        await env.ZRL_DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(round_id).run();
+        await env.ZRL_DB.prepare(`
             INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
             SELECT round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, 'wtrl'
             FROM division_results
@@ -135,3 +136,4 @@ export async function onRequestPost({ request, env }) {
         return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
+

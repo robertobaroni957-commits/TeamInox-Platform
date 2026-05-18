@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { Save, CheckCircle, AlertCircle, Zap, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { safeString } from '../utils/stringUtils';
 import type { TimeSlot, Round } from '../services/types';
 
 const PREF_LEVELS = [
@@ -132,7 +133,7 @@ const Availability: React.FC = () => {
                     <Clock size={18} />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-[#fc6719] tracking-widest uppercase opacity-70">{slot.id.replace('T_', '')} SLOT</span>
+                    <span className="text-[10px] font-black text-[#fc6719] tracking-widest uppercase opacity-70">{safeString(slot.id).replace('T_', '')} SLOT</span>
                     <h3 className="font-bold text-white uppercase tracking-tight text-lg leading-none">{slot.display_name}</h3>
                   </div>
                 </div>

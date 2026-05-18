@@ -81,7 +81,7 @@ export async function onRequest(context) {
     }
 
     // 4. IDENTIFICAZIONE ROTTE PUBBLICHE (Sempre accessibili senza JWT)
-    if (PUBLIC_ROUTES.includes(path)) {
+    if (path === '/api/login_auth' || PUBLIC_ROUTES.includes(path)) {
         return handleNext(next, traceId);
     }
 
