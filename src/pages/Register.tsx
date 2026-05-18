@@ -4,7 +4,7 @@ import { User, Mail, Lock, Shield, Loader2, ArrowRight, Activity } from 'lucide-
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
-  const [zwid, setZwid] = useState(''); // <-- FIX AGGIUNTO
+  const [zwid, setZwid] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setPasswordConfirm] = useState('');
@@ -35,7 +35,7 @@ const Register: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username,
-          zwid,        // <-- INCLUSO NEL BODY
+          zwid,
           email,
           password
         }),
@@ -144,30 +144,30 @@ const Register: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Minimo 8 caratteri"
-                autocomplete="current-password"
+                autoComplete="current-password"
                 className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
               />
-              </div>
-              </div>
+            </div>
+          </div>
 
-              {/* CONFIRM PASSWORD */}
-              <div>
-              <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
-                Conferma Password
-              </label>
-              <div className="relative">
-                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  required
-                  placeholder="Ripeti la password"
-                  autocomplete="new-password"
-                  className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
-                />
-              </div>
-              </div>
+          {/* CONFIRM PASSWORD */}
+          <div>
+            <label className="block text-zinc-500 text-[10px] font-black mb-2 uppercase tracking-widest ml-1">
+              Conferma Password
+            </label>
+            <div className="relative">
+              <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                required
+                placeholder="Ripeti la password"
+                autoComplete="new-password"
+                className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-800 font-medium"
+              />
+            </div>
+          </div>
 
           {/* SUBMIT */}
           <button

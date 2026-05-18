@@ -1,159 +1,139 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
-import Welcome from './pages/Welcome';
-import Guest from './pages/Guest';
-import Dashboard from './pages/Dashboard';
-import Racing from './pages/Racing';
-import Teams from './pages/Teams';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Ranking from './pages/Ranking';
-import Events from './pages/Events';
-import ZRLDivisionResults from './pages/ZRLDivisionResults';
-import ZRLAnalytics from './pages/ZRLAnalytics';
-import ZRLSeasonStats from './pages/ZRLSeasonStats';
-import StravaCallback from './pages/StravaCallback';
-import ZRLOperations from './pages/admin/ZRLOperations';
-import ZRLRoundManager from './pages/ZRLRoundManager';
-import WinterTourManagement from './pages/WinterTourManagement';
 
-import Availability from './pages/Availability';
-import RosterBuilder from './pages/RosterBuilder';
-import UserManagement from './pages/admin/UserManagement';
-import EventManagement from './pages/admin/EventManagement';
-import AvailabilityManagement from './pages/admin/AvailabilityManagement';
-import RosterSuggestions from './pages/admin/RosterSuggestions';
+import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import { ZRLRealityProvider } from './services/ZRLRealityProvider';
+
+/* =========================
+   🔹 PUBLIC (caricati subito)
+========================= */
+const Welcome = lazy(() => import('./pages/Welcome'));
+const Guest = lazy(() => import('./pages/Guest'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+
+/* =========================
+   🔹 CORE APP
+========================= */
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Racing = lazy(() => import('./pages/Racing'));
+const Teams = lazy(() => import('./pages/Teams'));
+const Ranking = lazy(() => import('./pages/Ranking'));
+const Events = lazy(() => import('./pages/Events'));
+const Availability = lazy(() => import('./pages/Availability'));
+const RosterBuilder = lazy(() => import('./pages/RosterBuilder'));
+
+/* =========================
+   🔹 ZRL MODULES (HEAVY)
+========================= */
+const ZRLDivisionResults = lazy(() => import('./pages/ZRLDivisionResults'));
+const ZRLAnalytics = lazy(() => import('./pages/ZRLAnalytics'));
+const ZRLSeasonStats = lazy(() => import('./pages/ZRLSeasonStats'));
+const ZRLOperations = lazy(() => import('./pages/admin/ZRLOperations'));
+const ZRLOperationsDashboard = lazy(() => import('./pages/ZRLOperationsDashboard'));
+const SeasonInitialization = lazy(() => import('./pages/admin/SeasonInitialization'));
+
+/* =========================
+   🔹 WINTER TOUR
+========================= */
+const WinterTourManagement = lazy(() => import('./pages/WinterTourManagement'));
+
+/* =========================
+   🔹 ADMIN
+========================= */
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
+const EventManagement = lazy(() => import('./pages/admin/EventManagement'));
+const AvailabilityManagement = lazy(() => import('./pages/admin/AvailabilityManagement'));
+const RosterSuggestions = lazy(() => import('./pages/admin/RosterSuggestions'));
+
+/* =========================
+   🔹 INTEGRATIONS
+========================= */
+const StravaCallback = lazy(() => import('./pages/StravaCallback'));
+
+/* =========================
+   🔹 LOADING UI
+========================= */
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="animate-pulse text-gray-500">Loading...</div>
+    </div>
+  );
+}
+
+/* =========================
+   🔹 APP
+========================= */
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Landing Page (Welcome Gate) */}
-        <Route path="/" element={<Welcome />} />
-        <Route path="/guest" element={<Guest />} />
-        
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/registrazione" element={<Navigate to="/register" replace />} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
 
-        {/* Main Platform (Nested in Layout) */}
-        <Route element={<ProtectedRoute allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}><MainLayout /></ProtectedRoute>}>
-          
-          {/* Unified Dashboard - Single Entry Point */}
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="admin" element={<Navigate to="/dashboard" replace />} />
-          
-          {/* Operational Modules */}
-          <Route path="racing" element={
-            <ProtectedRoute permission="racing.view">
-              <Racing />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="ranking" element={
-            <ProtectedRoute permission="wt.view">
-              <Ranking />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="events" element={
-            <ProtectedRoute permission="events.view">
-              <Events />
-            </ProtectedRoute>
-          } />
+          {/* =====================
+              PUBLIC ROUTES
+          ===================== */}
+          <Route path="/" element={<Welcome />} />
+          <Route path="/guest" element={<Guest />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
-          {/* ZRL Modules */}
-          <Route path="availability" element={
-            <ProtectedRoute permission="questionnaire.view">
-              <Availability />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="teams" element={
-            <ProtectedRoute permission="teams.view">
-              <Teams />
-            </ProtectedRoute>
-          } />
+          {/* =====================
+              PROTECTED APP
+          ===================== */}
+          <Route
+            element={
+              <ProtectedRoute
+                allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}
+              >
+                <ZRLRealityProvider>
+                  <MainLayout />
+                </ZRLRealityProvider>
+              </ProtectedRoute>
+            }
+          >
 
-          <Route path="zrl-results" element={
-            <ProtectedRoute permission="zrl.results">
-              <ZRLDivisionResults />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="zrl-analytics" element={
-            <ProtectedRoute permission="analytics.view">
-              <ZRLAnalytics />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="zrl-season-stats" element={
-            <ProtectedRoute permission="analytics.view">
-              <ZRLSeasonStats />
-            </ProtectedRoute>
-          } />
+            {/* CORE */}
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="admin" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Captain/Staff Tools */}
-          <Route path="zrl-operations" element={
-            <ProtectedRoute permission="zrl.lineup">
-              <ZRLOperations />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="roster" element={
-            <ProtectedRoute permission="teams.manage">
-              <RosterBuilder />
-            </ProtectedRoute>
-          } />
+            <Route path="racing" element={<Racing />} />
+            <Route path="ranking" element={<Ranking />} />
+            <Route path="events" element={<Events />} />
+            <Route path="teams" element={<Teams />} />
+            <Route path="availability" element={<Availability />} />
+            <Route path="roster" element={<RosterBuilder />} />
 
-          {/* Moderator/Admin Tools */}
-          <Route path="zrl-round-manager" element={
-            <ProtectedRoute permission="zrl.manage">
-              <ZRLRoundManager />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="winter-tour-management" element={
-            <ProtectedRoute permission="wt.manage">
-              <WinterTourManagement />
-            </ProtectedRoute>
-          } />
+            {/* ZRL */}
+            <Route path="zrl-results" element={<ZRLDivisionResults />} />
+            <Route path="zrl-analytics" element={<ZRLAnalytics />} />
+            <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
+            <Route path="zrl-operations" element={<ZRLOperations />} />
+            <Route path="zrl-round-manager" element={<ZRLOperationsDashboard />} />
+            <Route path="admin/season-init" element={<SeasonInitialization />} />
 
-          {/* Admin System Routes */}
-          <Route path="admin/users" element={
-            <ProtectedRoute permission="admin.system">
-              <UserManagement />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="admin/events" element={
-            <ProtectedRoute permission="events.manage">
-              <EventManagement />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="admin/availability" element={
-            <ProtectedRoute permission="admin.system">
-              <AvailabilityManagement />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="admin/optimizer" element={
-            <ProtectedRoute permission="admin.system">
-              <RosterSuggestions />
-            </ProtectedRoute>
-          } />
+            {/* WINTER TOUR */}
+            <Route path="winter-tour-management" element={<WinterTourManagement />} />
 
-          {/* Integrations */}
-          <Route path="strava-callback" element={<StravaCallback />} />
+            {/* ADMIN */}
+            <Route path="admin/users" element={<UserManagement />} />
+            <Route path="admin/events" element={<EventManagement />} />
+            <Route path="admin/availability" element={<AvailabilityManagement />} />
+            <Route path="admin/optimizer" element={<RosterSuggestions />} />
 
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
-      </Routes>
+            {/* INTEGRATIONS */}
+            <Route path="strava-callback" element={<StravaCallback />} />
+
+            {/* FALLBACK */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };

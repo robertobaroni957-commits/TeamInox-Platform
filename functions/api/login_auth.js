@@ -25,19 +25,19 @@ export async function onRequestPost({ request, env, data }) {
         const isNumeric = /^\d+$/.test(loginId);
 
         if (isNumeric) {
-            user = await env.DB.prepare(
+            user = await env.ZRL_DB.prepare(
                 "SELECT * FROM athletes WHERE zwid = ?"
             ).bind(parseInt(loginId)).first();
         }
 
         if (!user) {
-            user = await env.DB.prepare(
+            user = await env.ZRL_DB.prepare(
                 "SELECT * FROM athletes WHERE LOWER(email) = ?"
             ).bind(loginId.toLowerCase()).first();
         }
 
         if (!user) {
-            user = await env.DB.prepare(
+            user = await env.ZRL_DB.prepare(
                 "SELECT * FROM athletes WHERE LOWER(name) = ?"
             ).bind(loginId.toLowerCase()).first();
         }

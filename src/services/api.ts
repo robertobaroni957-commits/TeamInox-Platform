@@ -21,24 +21,59 @@ const getHeaders = () => {
 
 const handleResponse = async (res: Response) => {
   const contentType = res.headers.get("content-type");
+  
   if (!res.ok) {
     if (res.status === 401) {
       localStorage.removeItem('inox_token');
-      // Non facciamo redirect forzato qui per evitare loop nel mezzo di un render
+      // Dispatch custom event for 401
+      window.dispatchEvent(new CustomEvent('api-unauthorized'));
     }
-    const errorData = (contentType && contentType.includes("application/json")) 
-      ? await res.json() 
-      : { message: `Errore Server: ${res.status}` };
-    throw new Error(errorData.message || errorData.error || 'Errore sconosciuto');
+    
+    let errorMessage = `Errore Server: ${res.status}`;
+    try {
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      }
+    } catch (e) {
+      // Ignora errori nel parsing dell'errore
+    }
+    throw new Error(errorMessage);
   }
   
   if (!contentType || !contentType.includes("application/json")) {
-    console.error("Ricevuta risposta non-JSON:", await res.text());
-    throw new Error("Il server ha risposto con un formato non valido (HTML). Controlla le API.");
+    const text = await res.text();
+    console.error("Ricevuta risposta non-JSON:", text);
+    throw new Error("Il server ha risposto con un formato non valido. Controlla le API.");
   }
   
   return res.json();
 };
+
+let currentTraceId: string | null = null;
+
+export const apiFetch = async <T = any>(url: string, options: RequestInit = {}): Promise<T> => {
+  const token = localStorage.getItem('inox_token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(currentTraceId ? { 'x-debug-trace-id': currentTraceId } : {}),
+    ...(options.headers as Record<string, string>),
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: 'include',
+  });
+
+  const traceId = response.headers.get('x-debug-trace-id');
+  if (traceId) currentTraceId = traceId;
+
+  return handleResponse(response);
+};
+
+export const getCurrentTraceId = () => currentTraceId;
 
 export const api = {
   getSeries: async (): Promise<Series[]> => {

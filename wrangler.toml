@@ -1,8 +1,9 @@
-name = "teaminox-platform"
+name = "inoxteam-platform"
 pages_build_output_dir = "dist"
-compatibility_date = "2024-05-18"
+compatibility_date = "2026-05-18"
 
 [[d1_databases]]
-binding = "DB"
+binding = "ZRL_DB"
 database_name = "team_inox_prod_v2"
 database_id = "63574bc1-97de-4d3e-8682-0e3b48739252"
+preview_database_id = "63574bc1-97de-4d3e-8682-0e3b48739252"

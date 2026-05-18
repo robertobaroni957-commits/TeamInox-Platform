@@ -6,6 +6,7 @@ import { jwtVerify } from 'jose';
 
 const RBAC_POLICY = {
     '/api/admin': ['admin', 'moderator'],
+    '/api/admin/zrl/import': ['admin', 'moderator'],
     '/api/create-admin': ['admin'],
     '/api/events': {
         GET: ['admin', 'moderator', 'captain', 'user'],
@@ -22,7 +23,9 @@ const RBAC_POLICY = {
         POST: ['admin', 'moderator', 'captain'],
         PATCH: ['admin', 'moderator', 'captain'],
         DELETE: ['admin', 'moderator', 'captain']
-    }
+    },
+    '/api/data': ['admin', 'moderator'],
+    '/api/mutation': ['admin']
 };
 
 const PUBLIC_ROUTES = [
@@ -40,9 +43,13 @@ const PUBLIC_ROUTES = [
     '/api/setup-admin',
     '/api/availability-check',
     '/api/zrl-analytics',
-    '/api/season-stats',
-    '/api/admin/ingest-wtrl-team',
-    '/api/admin/import-inox-teams'
+    '/api/season-stats'
+];
+
+// Rotte che permettono l'accesso anonimo in modalità "ridotta" (Redaction Layer)
+const REDACTABLE_ROUTES = [
+    '/api/admin/season/status',
+    '/api/admin/season/logs'
 ];
 
 export async function onRequest(context) {
@@ -56,52 +63,77 @@ export async function onRequest(context) {
         return next();
     }
 
-    // 2. GESTIONE CORS PREFLIGHT
+    // 2. TRACE ID GENERATION / PROPAGATION
+    const traceId = request.headers.get('x-debug-trace-id') || crypto.randomUUID();
+    data.traceId = traceId;
+    data.debugMode = url.searchParams.get('debug') === 'true';
+
+    // 3. GESTIONE CORS PREFLIGHT
     if (method === 'OPTIONS') {
         return new Response(null, {
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, x-debug-trace-id",
                 "Access-Control-Max-Age": "86400",
             }
         });
     }
 
-    // 3. IDENTIFICAZIONE ROTTE PUBBLICHE (Sempre accessibili)
-    const isPublic = PUBLIC_ROUTES.includes(path);
-    
-    if (isPublic) {
-        return handleNext(next);
+    // 4. IDENTIFICAZIONE ROTTE PUBBLICHE (Sempre accessibili senza JWT)
+    if (PUBLIC_ROUTES.includes(path)) {
+        return handleNext(next, traceId);
     }
 
-    // 4. VERIFICA AUTENTICAZIONE (Solo per rotte non pubbliche)
+    // 4. VERIFICA AUTENTICAZIONE
+    const isRedactable = REDACTABLE_ROUTES.includes(path) && method === 'GET';
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return jsonError('Authentication required', 401);
+    
+    // Tentativo di verifica JWT se presente
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+            const token = authHeader.split(' ')[1];
+            if (!env.JWT_SECRET) throw new Error("JWT_SECRET missing");
+            
+            const secret = new TextEncoder().encode(env.JWT_SECRET);
+            const { payload } = await jwtVerify(token, secret);
+
+            if (payload.role === 'athlete') payload.role = 'user';
+            
+            // RBAC Check per rotte admin
+            if (path.startsWith('/api/admin') || path.startsWith('/api/mutation')) {
+                if (!checkPermissions(path, method, payload.role)) {
+                    // Se la rotta è redactable e l'utente ha un token valido ma non è admin,
+                    // lo trattiamo come anonimo (redacted) invece di dargli 403
+                    if (isRedactable) {
+                        data.user = { role: 'anonymous', auth_level: 'anonymous' };
+                        return handleNext(next, traceId);
+                    }
+                    return jsonError(`Forbidden: ${payload.role} role cannot access this resource`, 403);
+                }
+            }
+
+            data.user = { ...payload, auth_level: 'full' };
+            return handleNext(next, traceId);
+
+        } catch (err) {
+            // Token presente ma invalido/scaduto
+            if (isRedactable) {
+                data.user = { role: 'anonymous', auth_level: 'anonymous' };
+                return handleNext(next, traceId);
+            }
+            return jsonError('Unauthorized: Session expired or invalid', 401);
+        }
     }
 
-    try {
-        const token = authHeader.split(' ')[1];
-        if (!env.JWT_SECRET) {
-            throw new Error("JWT_SECRET missing");
-        }
-        const secret = new TextEncoder().encode(env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
-
-        if (payload.role === 'athlete') payload.role = 'user';
-        data.user = payload;
-
-        if (!checkPermissions(path, method, payload.role)) {
-            return jsonError(`Forbidden: ${payload.role} role cannot access this resource`, 403);
-        }
-
-        return handleNext(next);
-
-    } catch (err) {
-        // Se il token è presente ma non valido, restituiamo 401
-        return jsonError('Unauthorized: Session expired or invalid', 401);
+    // 5. GESTIONE MANCANZA JWT
+    if (isRedactable) {
+        data.user = { role: 'anonymous', auth_level: 'anonymous' };
+        return handleNext(next, traceId);
     }
+
+    // Qualsiasi altra rotta admin/protetta senza JWT fallisce con 401
+    return jsonError('Authentication required', 401);
 }
 
 function checkPermissions(path, method, userRole) {
@@ -126,14 +158,18 @@ function jsonError(message, status = 400) {
     });
 }
 
-async function handleNext(next) {
+async function handleNext(next, traceId) {
     try {
         const response = await next();
         const newResponse = new Response(response.body, response);
         newResponse.headers.set('Access-Control-Allow-Origin', '*');
         newResponse.headers.set('Cache-Control', 'no-store');
+        if (traceId) {
+            newResponse.headers.set('x-debug-trace-id', traceId);
+        }
         return newResponse;
     } catch (e) {
         return jsonError(`Server Error: ${e.message}`, 500);
     }
 }
+
