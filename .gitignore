@@ -58,3 +58,9 @@ build/
 .env
 .env.local
 *.sql
+# logs
+logs/
+*.log
+
+# debug / quarantine
+quarantine-root-cleanup/
