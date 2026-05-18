@@ -1,45 +1,26 @@
 {
-  "name": "inox-platform",
-  "private": true,
+  "name": "inoxteam-platform",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "sync": "node scripts/sync-manager.cjs",
-    "sync:zrl": "node scripts/sync_inox_data.cjs"
+    "start:backend": "wrangler pages dev dist --port 8788 --proxy 5173",
+    "start:frontend": "vite --port 5173"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "clsx": "^2.1.1",
-    "framer-motion": "^12.38.0",
-    "html2canvas": "^1.4.1",
-    "jose": "^6.2.2",
-    "lucide-react": "^0.475.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2",
-    "recharts": "^3.8.1",
-    "tailwind-merge": "^3.5.0"
+    "@tanstack/react-query": "^5.100.10",
+    "lucide-react": "^0.378.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sonner": "^1.4.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "@types/node": "^24.12.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.19",
-    "eslint": "^9.17.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.16",
-    "globals": "^15.14.0",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1",
-    "vite": "^6.0.5",
-    "wrangler": "^4.91.0"
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "wrangler": "^3.57.0"
   }
 }
