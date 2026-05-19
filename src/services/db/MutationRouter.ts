@@ -11,7 +11,11 @@ export async function routeMutation(db: any, intent: { type: string, payload: an
     case 'SEASON_ARCHIVE':
       return SeasonRepository.archiveSeason(intent.payload.id);
     case 'SEASON_REACTIVATE':
-      return SeasonRepository.reactivateSeason(intent.payload.id);
+    case 'SEASON_ACTIVATE':
+      return SeasonRepository.reactivateSeason(intent.payload.seasonId || intent.payload.id);
+    case 'SEASON_RESET':
+      // Reset logic (placeholder or reuse archive+reactivate)
+      return SeasonRepository.reactivateSeason(intent.payload.seasonId);
     case 'ROUND_INIT':
       return RoundRepository.createRounds(intent.payload.seasonId, intent.payload.rounds);
     case 'TEAM_IMPORT':

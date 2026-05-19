@@ -1,3 +1,5 @@
+import { requireActiveSeason } from './season/SeasonContextService';
+
 export async function onRequestPost({ request, env }) {
     const errorRes = (msg, status = 500) => new Response(
         JSON.stringify({ success: false, error: msg }), 
@@ -7,8 +9,12 @@ export async function onRequestPost({ request, env }) {
     try {
         if (!env.ZRL_DB) return errorRes("Database non trovato", 500);
 
+        // Enforce season context
+        const season = await requireActiveSeason(env.ZRL_DB);
+        const seasonId = season.id;
+
         const body = await request.json();
-        const teamsData = body.teams || body; // Handle both {teams: [...]} and direct array
+        const teamsData = body.teams || body;
 
         if (!Array.isArray(teamsData) || teamsData.length === 0) {
             return errorRes("Dati team non validi o mancanti.", 400);
@@ -50,10 +56,10 @@ export async function onRequestPost({ request, env }) {
                 }
             }
 
-            // 1. Inserimento/Aggiornamento Team
+            // Inserimento Team con seasonId
             updates.push(env.ZRL_DB.prepare(`
-                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, season_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(wtrl_team_id) DO UPDATE SET 
                     name = excluded.name,
                     category = excluded.category,
@@ -62,45 +68,26 @@ export async function onRequestPost({ request, env }) {
                     tttid = excluded.tttid,
                     league = excluded.league,
                     member_count = excluded.member_count,
-                    is_dev = excluded.is_dev
-            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev));
+                    is_dev = excluded.is_dev,
+                    season_id = excluded.season_id
+            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, seasonId));
 
-            // 2. Sincronizzazione Atleti e Appartenenza
             for (const rider of riders) {
                 const zwid = rider.profileId;
                 if (!zwid) continue;
 
-                // Inserimento/Aggiornamento Atleta
                 updates.push(env.ZRL_DB.prepare(`
-                    INSERT INTO athletes (zwid, name, base_category, avatar_url, zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO athletes (zwid, name, base_category, profile_id, wtrl_user_id)
+                    VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(zwid) DO UPDATE SET
                         name = excluded.name,
-                        base_category = excluded.base_category,
-                        avatar_url = excluded.avatar_url,
-                        zftp = excluded.zftp,
-                        zftpw = excluded.zftpw,
-                        zmap = excluded.zmap,
-                        zmapw = excluded.zmapw,
-                        wtrl_user_id = excluded.wtrl_user_id
-                `).bind(
-                    zwid, 
-                    rider.name, 
-                    rider.category, 
-                    rider.avatar, 
-                    rider.zftp, 
-                    rider.zftpw, 
-                    rider.zmap, 
-                    rider.zmapw, 
-                    zwid, 
-                    rider.userId
-                ));
+                        base_category = excluded.base_category
+                `).bind(zwid, rider.name, rider.category, zwid, rider.userId));
 
-                // Collegamento Team-Atleta (usando wtrl_team_id direttamente)
                 updates.push(env.ZRL_DB.prepare(`
-                    INSERT OR IGNORE INTO team_members (team_id, athlete_id)
-                    VALUES (?, ?)
-                `).bind(wtrl_team_id, zwid));
+                    INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id)
+                    VALUES (?, ?, ?)
+                `).bind(wtrl_team_id, zwid, seasonId));
 
                 processedAthletes++;
             }
@@ -109,20 +96,18 @@ export async function onRequestPost({ request, env }) {
         }
 
         if (updates.length > 0) {
-            // Eseguiamo in batch. Nota: RETURNING potrebbe non funzionare bene in batch D1 
-            // per logiche dipendenti, ma qui usiamo wtrl_team_id per i join successivi.
             await env.ZRL_DB.batch(updates);
         }
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sincronizzazione completata.`,
+            message: `Sincronizzazione stagione ${season.name} completata.`,
             teams: processedTeams,
             athletes: processedAthletes
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
-        return errorRes(`Errore critico: ${err.message}`, 500);
+        return errorRes(`Errore: ${err.message}`, 500);
     }
 }
 

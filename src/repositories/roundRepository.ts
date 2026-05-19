@@ -55,22 +55,48 @@ export const RoundRepository = {
           
           const strategyDetails = {
             category_details: {
-              'A': { world: rA.courseWorld, route: rA.courseName, distance: rA.distance, elevation: rA.elevation },
-              'B': { world: rA.courseWorld, route: rA.courseName, distance: rA.distance, elevation: rA.elevation },
-              'C': { world: rC.courseWorld, route: rC.courseName, distance: rC.distance, elevation: rC.elevation },
-              'D': { world: rC.courseWorld, route: rC.courseName, distance: rC.distance, elevation: rC.elevation }
+              'A': { 
+                world: rA.courseWorld, 
+                route: rA.courseName, 
+                distance: rA.distance, 
+                elevation: rA.elevation,
+                link: `https://zwiftinsider.com/route/${(rA.courseName || "").toLowerCase().replace(/\s+/g, '-')}/`
+              },
+              'B': { 
+                world: rA.courseWorld, 
+                route: rA.courseName, 
+                distance: rA.distance, 
+                elevation: rA.elevation,
+                link: `https://zwiftinsider.com/route/${(rA.courseName || "").toLowerCase().replace(/\s+/g, '-')}/`
+              },
+              'C': { 
+                world: rC.courseWorld, 
+                route: rC.courseName, 
+                distance: rC.distance, 
+                elevation: rC.elevation,
+                link: `https://zwiftinsider.com/route/${(rC.courseName || "").toLowerCase().replace(/\s+/g, '-')}/`
+              },
+              'D': { 
+                world: rC.courseWorld, 
+                route: rC.courseName, 
+                distance: rC.distance, 
+                elevation: rC.elevation,
+                link: `https://zwiftinsider.com/route/${(rC.courseName || "").toLowerCase().replace(/\s+/g, '-')}/`
+              }
             }
           };
 
           stmts.push({
-            sql: `INSERT INTO rounds (series_id, name, date, world, route, status, strategy_details) 
-                  VALUES (?, ?, ?, ?, ?, 'planned', ?)`,
+            sql: `INSERT INTO rounds (series_id, name, date, world, route, distance, elevation, status, strategy_details) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, 'planned', ?)`,
             bind: [
               seasonId, 
               roundName, 
               eventDate, 
               rA.courseWorld || rC.courseWorld || 'TBD', 
               rA.courseName || rC.courseName || 'TBD', 
+              rA.distance || rC.distance || 0,
+              rA.elevation || rC.elevation || 0,
               JSON.stringify(strategyDetails)
             ]
           });

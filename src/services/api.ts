@@ -54,6 +54,8 @@ let currentTraceId: string | null = null;
 
 export const apiFetch = async <T = any>(url: string, options: RequestInit = {}): Promise<T> => {
   const token = localStorage.getItem('inox_token');
+  console.log("[auth-client] attaching token:", token ? "exists" : "none");
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),

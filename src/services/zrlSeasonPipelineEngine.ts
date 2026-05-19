@@ -1,17 +1,20 @@
 import type { PipelineEventName, PipelineCallback, PipelineEventPayload } from "@zrl-contract";
 import { ZRLPipelineStore } from "./zrlPipelineStore";
 import { ZRLPipelineTelemetry } from "./zrlPipelineTelemetry";
+import { runSeasonTransaction } from "./db/seasonTransaction";
 
 export class ZRLSeasonPipelineEngine {
   private services: any;
   private store: ZRLPipelineStore;
   private telemetry: ZRLPipelineTelemetry;
+  private db: any;
   private listeners: Map<PipelineEventName, PipelineCallback[]> = new Map();
 
-  constructor(services: any, store: ZRLPipelineStore, telemetry: ZRLPipelineTelemetry) {
+  constructor(services: any, store: ZRLPipelineStore, telemetry: ZRLPipelineTelemetry, db: any) {
     this.services = services;
     this.store = store;
     this.telemetry = telemetry;
+    this.db = db;
   }
 
   on(event: PipelineEventName, callback: PipelineCallback) {
@@ -54,9 +57,9 @@ export class ZRLSeasonPipelineEngine {
     this.emit("SEASON_START", { round: 0, seasonYear, message: `Inizializzazione stagione ${seasonYear}` });
 
     try {
-      if (this.services.zrlService?.createSeason) {
-        await this.services.zrlService.createSeason(seasonYear);
-      }
+      await runSeasonTransaction(this.db, [
+        async () => this.services.zrlService?.createSeason(seasonYear)
+      ]);
       this.store.setState({ status: 'ACTIVE' });
     } catch (error: any) {
       this.store.setState({ status: 'FAILED' });

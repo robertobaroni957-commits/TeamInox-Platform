@@ -44,8 +44,10 @@ const ZRLOperations: React.FC = () => {
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('A');
   const [selectedRace, setSelectedRace] = useState<RoundInput | null>(null);
 
-  const activeSeason = seasons.data?.find((s: any) => s.is_active);
-  const teams = teamsData.data || [];
+  const activeSeason = (seasons && Array.isArray(seasons.data)) 
+    ? seasons.data.find((s: any) => s.is_active) 
+    : null;
+  const teams = Array.isArray(teamsData?.data) ? teamsData.data : [];
 
   const handleBootstrap = async () => {
     setActionLoading(true);

@@ -1,82 +1,144 @@
 import React, { useState } from 'react';
-import { toast } from 'sonner';
-import { Calendar, Copy, Database, Trophy, Upload, Loader2, Trash2, Zap, RefreshCw } from 'lucide-react';
 import { useZRLReality } from '../../services/ZRLRealityProvider';
-import { useSeasonStatus } from '../../hooks/useSeasonStatus';
-import { LiveLogPanel } from '../../components/admin/LiveLogPanel';
+import { RefreshCw, AlertCircle, Layout, Activity, Terminal } from 'lucide-react';
+import { SeasonInitProvider } from './SeasonInitContext';
 
-const SeasonInitialization: React.FC = () => {
-  const { seasons, mutate: triggerRefresh } = useZRLReality();
-  const activeSeason = Array.isArray(seasons?.data) ? seasons.data.find((s: any) => s.is_active) : null;
-  const seasonId = (activeSeason?.external_season_id ?? 19).toString();
-  
-  // Pure API-driven state
-  const { status, loading: statusLoading } = useSeasonStatus(seasonId);
-  const [loading, setLoading] = useState<string | null>(null);
+// Importazione Componenti Modulari
+import SeasonSelector from '../../components/admin/SeasonSelector';
+import RoundSelector from '../../components/admin/RoundSelector';
+import SeasonRealityPanel from '../../components/admin/SeasonRealityPanel';
+import LifecycleState from '../../components/admin/LifecycleState';
+import ImportProgress from '../../components/admin/ImportProgress';
+import ActivityLog from '../../components/admin/ActivityLog';
+import LifecycleActions from '../../components/admin/LifecycleActions';
+import ImportActions from '../../components/admin/ImportActions';
+import ImportOptions from '../../components/admin/ImportOptions';
+import DangerZone from '../../components/admin/DangerZone';
+import AdminTutorPanel from '../../components/admin/AdminTutorPanel';
 
-  const handleApiAction = async (endpoint: string, method: string = 'POST', body?: any) => {
-    setLoading(endpoint);
-    try {
-      const response = await fetch(endpoint, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined
-      });
-      const data = await response.json();
-      if (!response.ok || (data.error && !data.success)) throw new Error(data.error || 'Operazione fallita');
-      toast.success("Operazione completata con successo");
-      triggerRefresh();
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setLoading(null);
-    }
-  };
+/**
+ * SeasonInitialization - Switchable Workspace System.
+ * Riduzione del carico cognitivo tramite separazione dei contesti operativi.
+ * Navigazione: [ Setup ] [ Pipeline ] [ Audit ]
+ */
+export default function SeasonInitialization() {
+    const { isLoading, isError } = useZRLReality();
+    const [activeWorkspace, setActiveWorkspace] = useState('setup');
 
-  return (
-    <div className="max-w-7xl mx-auto p-8 space-y-8">
-      <header className="flex justify-between items-center">
-        <div>
-            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">Season Initialization</h1>
-            <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest mt-1">Operational Command Center</p>
+    const workspaces = [
+        { id: 'setup', label: 'Setup', icon: Layout },
+        { id: 'pipeline', label: 'Pipeline', icon: Activity },
+        { id: 'audit', label: 'Audit', icon: Terminal },
+    ];
+
+    if (isLoading) return (
+        <div className="flex items-center justify-center min-h-screen bg-[#0f0f0f]">
+            <RefreshCw className="animate-spin text-blue-500" size={48} />
         </div>
-        <div className="text-right">
-            <span className={`text-4xl font-black ${status?.lifecycle?.isReady ? 'text-green-500' : 'text-[#fc6719]'}`}>
-                {status?.lifecycle?.isReady ? 'READY' : 'NOT INITIALIZED'}
-            </span>
+    );
+
+    if (isError) return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f0f] text-red-500 gap-4">
+            <AlertCircle size={48} />
+            <h2 className="text-xl font-bold uppercase tracking-widest text-center">
+                Errore Reality Layer
+            </h2>
         </div>
-      </header>
+    );
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-            {/* 1. Lifecycle Controls */}
-            <section className="bg-zinc-900 p-8 rounded-3xl border border-zinc-800">
-                <h2 className="text-sm font-black uppercase text-zinc-400 mb-6">Season Lifecycle</h2>
-                <div className="flex gap-4">
-                    <button onClick={() => handleApiAction('/api/admin/season/activate')} className="bg-zinc-800 text-white font-black uppercase px-6 py-3 rounded-xl hover:bg-green-900">Activate</button>
-                    <button onClick={() => handleApiAction('/api/admin/season/archive')} className="bg-zinc-800 text-white font-black uppercase px-6 py-3 rounded-xl hover:bg-zinc-700">Archive</button>
-                    <button onClick={() => handleApiAction('/api/admin/season/reset')} className="bg-zinc-800 text-white font-black uppercase px-6 py-3 rounded-xl hover:bg-red-900">Reset</button>
-                </div>
-            </section>
+    return (
+        <SeasonInitProvider>
+            <div className="p-6 bg-[#0f0f0f] min-h-screen text-gray-300 font-sans selection:bg-blue-500/30 flex flex-col gap-6">
+                
+                {/* PAGE HEADER */}
+                <header className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-gray-900 pb-6">
+                    <div>
+                        <h1 className="text-2xl font-black italic text-white tracking-tighter uppercase leading-none">
+                            Season <span className="text-gray-700">Control Center</span>
+                        </h1>
+                        <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-1 italic">Switchable Workspace System v3.2</p>
+                    </div>
 
-            {/* 2, 3, 4. Data Imports */}
-            <section className="bg-zinc-900 p-8 rounded-3xl border border-zinc-800 space-y-6">
-                <h2 className="text-sm font-black uppercase text-zinc-400 mb-6">Data Imports</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button onClick={() => navigator.clipboard.writeText(`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&action=teamlist`)} className="bg-zinc-800 text-white font-bold uppercase p-4 rounded-xl text-xs flex items-center justify-center gap-2"><Copy size={16}/> Copy Teams URL</button>
-                    <button onClick={() => navigator.clipboard.writeText(`https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${seasonId}&action=roster`)} className="bg-zinc-800 text-white font-bold uppercase p-4 rounded-xl text-xs flex items-center justify-center gap-2"><Copy size={16}/> Copy Roster URL</button>
-                    <button onClick={() => handleApiAction('/api/admin/season/sync')} className="bg-[#fc6719] text-black font-black uppercase p-4 rounded-xl text-xs flex items-center justify-center gap-2"><RefreshCw size={16}/> Full Sync</button>
-                </div>
-            </section>
-        </div>
+                    {/* TOP WORKSPACE SWITCHER */}
+                    <nav className="flex bg-[#11131a] p-1.5 rounded-2xl border border-gray-800 shadow-xl">
+                        {workspaces.map((ws) => {
+                            const Icon = ws.icon;
+                            const isActive = activeWorkspace === ws.id;
+                            return (
+                                <button
+                                    key={ws.id}
+                                    onClick={() => setActiveWorkspace(ws.id)}
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                                        isActive 
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' 
+                                        : 'text-gray-500 hover:text-gray-300'
+                                    }`}
+                                >
+                                    <Icon size={14} />
+                                    <span>{ws.label}</span>
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </header>
 
-        {/* 5. Logs */}
-        <aside>
-            <LiveLogPanel logs={status?.logs || []} />
-        </aside>
-      </div>
-    </div>
-  );
-};
+                {/* WORKSPACE CONTENT AREA */}
+                <main className="flex-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    
+                    {/* 1. SETUP WORKSPACE */}
+                    {activeWorkspace === 'setup' && (
+                        <div className="grid grid-cols-12 gap-8 items-start">
+                            <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+                                <SeasonSelector />
+                                <RoundSelector />
+                            </div>
+                            <div className="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SeasonRealityPanel />
+                                <LifecycleState />
+                                <div className="md:col-span-2">
+                                    <LifecycleActions />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-export default SeasonInitialization;
+                    {/* 2. PIPELINE WORKSPACE */}
+                    {activeWorkspace === 'pipeline' && (
+                        <div className="grid grid-cols-12 gap-8 items-start">
+                            <div className="col-span-12 lg:col-span-4">
+                                <ImportOptions />
+                            </div>
+                            <div className="col-span-12 lg:col-span-4">
+                                <ImportActions />
+                            </div>
+                            <div className="col-span-12 lg:col-span-4">
+                                <ImportProgress />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 3. AUDIT WORKSPACE */}
+                    {activeWorkspace === 'audit' && (
+                        <div className="grid grid-cols-12 gap-8 items-start">
+                            <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+                                <AdminTutorPanel />
+                                <ActivityLog />
+                            </div>
+                            <div className="col-span-12 lg:col-span-4">
+                                <DangerZone />
+                            </div>
+                        </div>
+                    )}
+
+                </main>
+
+                {/* FOOTER */}
+                <footer className="mt-auto pt-4 border-t border-gray-900 flex justify-between items-center text-[9px] font-black text-gray-700 uppercase tracking-[0.3em]">
+                    <span>Workspace: {activeWorkspace}</span>
+                    <span>D1 Stable Infrastructure</span>
+                </footer>
+
+            </div>
+        </SeasonInitProvider>
+    );
+}

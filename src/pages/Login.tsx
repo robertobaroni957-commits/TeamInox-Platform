@@ -33,12 +33,17 @@ const Login: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem('inox_token', data.token);
+      if (response.ok && data.success) {
+        // Handle new API response structure: { success, data: { token, role }, ... }
+        const token = data.data?.token;
+        if (!token) throw new Error("Token mancante nella risposta");
+        
+        localStorage.setItem('inox_token', token);
+        console.log("[Login] Token salvato correttamente");
         
         // Redirect based on role
         try {
-          const payload = JSON.parse(atob(data.token.split('.')[1]));
+          const payload = JSON.parse(atob(token.split('.')[1]));
           const role = payload.role;
           if (role === 'admin' || role === 'moderator') {
             navigate('/admin');
@@ -49,7 +54,7 @@ const Login: React.FC = () => {
           navigate('/dashboard');
         }
       } else {
-        setError(data.message || 'Credenziali non valide.');
+        setError(data.error || data.message || 'Credenziali non valide.');
       }
     } catch (err) {
       console.error('Login error:', err);
