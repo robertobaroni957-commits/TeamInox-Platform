@@ -30,13 +30,13 @@ export async function onRequestGet(context) {
         // 2. Get all rounds for this series with counts
         const rounds = await env.ZRL_DB.prepare(`
             SELECT r.*,
+                r.starts_at as date,
                 (SELECT COUNT(*) FROM round_teams rt WHERE rt.round_id = r.id) as team_count,
                 (SELECT COUNT(*) FROM race_lineup rl WHERE rl.round_id = r.id) as lineup_count,
                 (SELECT COUNT(*) FROM availability a WHERE a.round_id = r.id) as availability_count
-            FROM rounds r
-            WHERE r.series_id = ?
-            ORDER BY r.date ASC, r.id ASC
-        `).bind(series.id).all();
+            FROM rounds_v2 r
+            ORDER BY r.starts_at ASC, r.id ASC
+        `).all();
 
         // 3. Get total teams available in the system
         const totalTeams = await env.ZRL_DB.prepare(`SELECT COUNT(*) as count FROM teams`).first();

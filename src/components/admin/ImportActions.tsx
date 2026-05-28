@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Flag, Calendar, Trophy, ArrowRight, Target, Info } from 'lucide-react';
-import { useSeasonInit } from '../../pages/admin/SeasonInitContext';
+import { useRoundControl } from '../../pages/admin/RoundControlContext';
 import { toast } from 'sonner';
 
 /**
@@ -8,15 +8,16 @@ import { toast } from 'sonner';
  * Aggiornato con Functional Tooltips per una UX guidata.
  */
 export default function ImportActions() {
-  const { executeAction, selectedSeasonId, activeRound, isProcessing } = useSeasonInit();
+  const { executeAction, selectedRoundId, selectedWtrlId, activeRound, isProcessing } = useRoundControl();
 
   const handleImport = async (type: string, label: string) => {
-    if (!selectedSeasonId) return;
+    if (!selectedRoundId && !selectedWtrlId) return;
 
-    const toastId = toast.loading(`Avvio importazione: ${label} (Round ${activeRound})...`);
+    const roundLabel = activeRound?.name || `WTRL:${activeRound?.wtrl_id || '---'}`;
+    const toastId = toast.loading(`Avvio importazione: ${label} (${roundLabel})...`);
     try {
       await executeAction(type, {}, label);
-      toast.success(`${label} completato con successo per il Round ${activeRound}`, { id: toastId });
+      toast.success(`${label} completato con successo per ${roundLabel}`, { id: toastId });
     } catch (err: any) {
       toast.error(`Errore durante ${label}: ${err.message}`, { id: toastId });
     }
@@ -73,47 +74,47 @@ export default function ImportActions() {
             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">IMPORT OPERATIONS</h3>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1 bg-blue-600/10 border border-blue-500/20 rounded-lg">
+        <div className="flex items-center gap-2 px-3 py-1 bg-blue-600/10 border border-blue-500/20 rounded-lg text-left">
             <Target size={10} className="text-blue-400" />
-            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
-                Round 0{activeRound}
+            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest text-left">
+                Round {activeRound?.round_number || '---'}
             </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-2">
         {actions.map((action) => (
-          <div key={action.title} className="group/item relative">
+          <div key={action.title} className="group/item relative text-left">
             <button 
                 onClick={() => handleImport(action.type, action.title)}
-                disabled={isProcessing || !selectedSeasonId}
+                disabled={isProcessing || (!selectedRoundId && !selectedWtrlId)}
                 className="w-full flex items-center gap-4 p-3 border border-gray-800 rounded-xl bg-[#090a10] hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group text-left shadow-inner disabled:opacity-30"
             >
-                <div className="p-2 bg-gray-900 rounded-lg text-blue-500 group-hover/item:scale-110 transition-transform">
+                <div className="p-2 bg-gray-900 rounded-lg text-blue-500 group-hover/item:scale-110 transition-transform text-left">
                     <action.icon size={18} />
                 </div>
-                <div className="flex-1">
-                    <span className="block text-[11px] font-black text-white uppercase italic tracking-tight">{action.title}</span>
-                    <span className="block text-[9px] text-gray-500 font-bold uppercase tracking-widest">{action.description}</span>
+                <div className="flex-1 text-left">
+                    <span className="block text-[11px] font-black text-white uppercase italic tracking-tight text-left">{action.title}</span>
+                    <span className="block text-[9px] text-gray-500 font-bold uppercase tracking-widest text-left">{action.description}</span>
                 </div>
-                <ArrowRight size={14} className="text-gray-700 group-hover/item:text-blue-500 group-hover/item:translate-x-1 transition-all" />
+                <ArrowRight size={14} className="text-gray-700 group-hover/item:text-blue-500 group-hover/item:translate-x-1 transition-all text-left" />
             </button>
 
             {/* Functional Tooltip */}
-            <div className="absolute z-50 invisible group-hover/item:visible bg-black border border-gray-700 p-4 rounded-xl w-72 -top-2 left-full ml-4 shadow-2xl pointer-events-none transition-all duration-200 opacity-0 group-hover/item:opacity-100 scale-95 group-hover/item:scale-100">
-                <div className="flex items-center gap-2 mb-2">
+            <div className="absolute z-50 invisible group-hover/item:visible bg-black border border-gray-700 p-4 rounded-xl w-72 -top-2 left-full ml-4 shadow-2xl pointer-events-none transition-all duration-200 opacity-0 group-hover/item:opacity-100 scale-95 group-hover/item:scale-100 text-left">
+                <div className="flex items-center gap-2 mb-2 text-left">
                     <Info size={12} className="text-blue-500" />
-                    <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Config: {action.title}</h4>
+                    <h4 className="text-[10px] font-black text-white uppercase tracking-widest text-left">Config: {action.title}</h4>
                 </div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase leading-tight mb-3 italic">{action.help}</p>
-                <div className="pt-2 border-t border-gray-800">
-                    <span className="block text-[8px] font-black text-gray-600 uppercase mb-1">Effetto Operativo:</span>
-                    <p className="text-[9px] text-gray-500 font-bold uppercase leading-tight">{action.effect}</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase leading-tight mb-3 italic text-left">{action.help}</p>
+                <div className="pt-2 border-t border-gray-800 text-left">
+                    <span className="block text-[8px] font-black text-gray-600 uppercase mb-1 text-left">Effetto Operativo:</span>
+                    <p className="text-[9px] text-gray-500 font-bold uppercase leading-tight text-left">{action.effect}</p>
                 </div>
                 {action.warning && (
-                    <div className="mt-2 pt-2 border-t border-red-900/50 flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse"></div>
-                        <span className="text-[9px] font-black text-red-500 uppercase">{action.warning}</span>
+                    <div className="mt-2 pt-2 border-t border-red-900/50 flex items-center gap-2 text-left">
+                        <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse text-left"></div>
+                        <span className="text-[9px] font-black text-red-500 uppercase text-left">{action.warning}</span>
                     </div>
                 )}
             </div>

@@ -11,8 +11,12 @@ export const SeasonActionService = {
     const { seasonId } = payload;
     let importId = payload.importId || null;
 
-    // 1. Validazione di dominio (Guard)
-    await SeasonLifecycleGuard.assertActionAllowed(db, action, seasonId);
+    // Log per debug
+    console.log(`[SeasonActionService] Executing ${action} for seasonId: ${seasonId} (type: ${typeof seasonId})`);
+
+    // 1. Validazione di dominio (Guard) - Assicuriamoci che seasonId sia un numero
+    console.log(`[LifecycleGuard] Checking action ${action} for seasonId ${seasonId}.`);
+    await SeasonLifecycleGuard.assertActionAllowed(db, action, parseInt(seasonId));
 
     try {
         // 2. Esecuzione Business Logic

@@ -1,5 +1,3 @@
-import { requireActiveSeason } from './season/SeasonContextService';
-
 export async function onRequestPost({ request, env }) {
     const errorRes = (msg, status = 500) => new Response(
         JSON.stringify({ success: false, error: msg }), 
@@ -9,16 +7,22 @@ export async function onRequestPost({ request, env }) {
     try {
         if (!env.ZRL_DB) return errorRes("Database non trovato", 500);
 
-        // Enforce season context
-        const season = await requireActiveSeason(env.ZRL_DB);
-        const seasonId = season.id;
-
         const body = await request.json();
         const teamsData = body.teams || body;
+        const seasonCode = body.season_code; // Allow explicit season context
+
+        if (!seasonCode) return errorRes("season_code richiesto", 400);
 
         if (!Array.isArray(teamsData) || teamsData.length === 0) {
             return errorRes("Dati team non validi o mancanti.", 400);
         }
+
+        // Fetch season id by code
+        const season = await env.ZRL_DB.prepare("SELECT id FROM seasons WHERE code = ?").bind(seasonCode).first();
+        if (!season) return errorRes("Stagione non trovata", 404);
+        const seasonId = season.id;
+        
+        // ... (rest of the logic using seasonId)
 
         const updates = [];
         let processedTeams = 0;

@@ -4,23 +4,19 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const team_id = url.searchParams.get("team_id");
   const round_id = url.searchParams.get("round_id");
+  const season_id = url.searchParams.get("season_id"); // Now explicit
 
   if (!team_id) {
     return new Response(JSON.stringify({ error: "Missing team_id" }), { status: 400 });
   }
 
   try {
-    // 1. Recuperiamo i dettagli della serie attiva e del team
-    const activeSeries = await env.ZRL_DB.prepare("SELECT external_season_id FROM series WHERE is_active = 1").first();
     const targetTeam = await env.ZRL_DB.prepare("SELECT name, wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(team_id).first();
 
-    // 2. SYNC REAL-TIME CON WTRL (se abbiamo i dati necessari)
-    if (activeSeries?.external_season_id && targetTeam?.wtrl_team_id) {
-      const seasonId = activeSeries.external_season_id;
-      const wtrlTeamId = targetTeam.wtrl_team_id;
-      
-      // Chiamata all'API WTRL specifica del team per la stagione
-      const wtrlUrl = `https://www.wtrl.racing/api/zrl/${seasonId}/teams/${wtrlTeamId}`;
+    // WTRL SYNC (Only if explicit season_id provided)
+    if (season_id && targetTeam?.wtrl_team_id) {
+      const wtrlUrl = `https://www.wtrl.racing/api/zrl/${season_id}/teams/${targetTeam.wtrl_team_id}`;
+      // ... (rest of the sync logic remains same)
       
       try {
         const wtrlRes = await fetch(wtrlUrl, { headers: { "accept": "application/json" } });

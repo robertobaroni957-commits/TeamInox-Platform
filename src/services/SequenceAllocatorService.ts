@@ -10,11 +10,10 @@ export const SequenceAllocatorService = {
     // 1. Tenta acquisizione lock (o ripresa se scaduto)
     // Se il lock esiste ma è scaduto, lo sovrascriviamo.
     const lockResult = await db.prepare(`
-        INSERT INTO wtrl_sequence_locks (season_id, owner_id, created_at, expires_at)
-        VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        INSERT INTO zrl_orchestrator_locks (season_id, owner_token, expires_at)
+        VALUES (?, ?, ?)
         ON CONFLICT(season_id) DO UPDATE SET
-            owner_id = excluded.owner_id,
-            created_at = excluded.created_at,
+            owner_token = excluded.owner_token,
             expires_at = excluded.expires_at
         WHERE expires_at < CURRENT_TIMESTAMP
     `).bind(seasonId, workerId, expiresAt.toISOString()).run();
@@ -27,10 +26,10 @@ export const SequenceAllocatorService = {
     const batch = [
         // Incremento sequenza
         db.prepare(
-            "UPDATE wtrl_sequence_tracker SET last_sequence_number = last_sequence_number + 1 WHERE season_id = ? RETURNING last_sequence_number"
+            "UPDATE zrl_sequence_tracker SET last_sequence_number = last_sequence_number + 1 WHERE season_id = ? RETURNING last_sequence_number"
         ).bind(seasonId),
         // Rilascio lock
-        db.prepare("DELETE FROM wtrl_sequence_locks WHERE season_id = ?").bind(seasonId)
+        db.prepare("DELETE FROM zrl_orchestrator_locks WHERE season_id = ?").bind(seasonId)
     ];
 
     try {

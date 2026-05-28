@@ -4,70 +4,74 @@
 
 [36mvite v5.4.21 [32mbuilding for production...[36m[39m
 transforming...
-[32m✓[39m 2963 modules transformed.
+[32m✓[39m 2965 modules transformed.
 rendering chunks...
 computing gzip size...
 [2mdist/[22m[32mindex.html                                 [39m[1m[2m  0.49 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
-[2mdist/[22m[35massets/index-BoCarrXz.css                  [39m[1m[2m 84.84 kB[22m[1m[22m[2m │ gzip:  12.73 kB[22m
+[2mdist/[22m[35massets/index-CFUH8luR.css                  [39m[1m[2m 86.15 kB[22m[1m[22m[2m │ gzip:  12.92 kB[22m
 [2mdist/[22m[36massets/stringUtils-EjLMue4H.js             [39m[1m[2m  0.05 kB[22m[1m[22m[2m │ gzip:   0.07 kB[22m
-[2mdist/[22m[36massets/chevron-left-DKT4Biz0.js            [39m[1m[2m  0.30 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
-[2mdist/[22m[36massets/chevron-down-DnMPfkWi.js            [39m[1m[2m  0.30 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
-[2mdist/[22m[36massets/loader-circle-BaKgRUPd.js           [39m[1m[2m  0.31 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
-[2mdist/[22m[36massets/plus-ETigVS6o.js                    [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
-[2mdist/[22m[36massets/x-CM0Y69I6.js                       [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
-[2mdist/[22m[36massets/clock-CmLON472.js                   [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
-[2mdist/[22m[36massets/search-YDGnW4GT.js                  [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
-[2mdist/[22m[36massets/circle-check-DpvPxuG2.js            [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
-[2mdist/[22m[36massets/info-CVCXiB-5.js                    [39m[1m[2m  0.37 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
-[2mdist/[22m[36massets/circle-x-C99n__kI.js                [39m[1m[2m  0.38 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
-[2mdist/[22m[36massets/activity-CyYi9GrE.js                [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
-[2mdist/[22m[36massets/database-Cg4tFGvu.js                [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
-[2mdist/[22m[36massets/circle-alert-PAZuP0Pa.js            [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
-[2mdist/[22m[36massets/circle-question-mark-DgfqTzQO.js    [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
-[2mdist/[22m[36massets/funnel-DsfPngiS.js                  [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
-[2mdist/[22m[36massets/external-link-C1GzLWEJ.js           [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
-[2mdist/[22m[36massets/calendar-Cug7YaNY.js                [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
-[2mdist/[22m[36massets/flag-CJFXfuzD.js                    [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
-[2mdist/[22m[36massets/zap-gj8NvkGS.js                     [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
-[2mdist/[22m[36massets/shield-CYCEvBsM.js                  [39m[1m[2m  0.44 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
-[2mdist/[22m[36massets/Teams-BcAG4LTr.js                   [39m[1m[2m  0.45 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
-[2mdist/[22m[36massets/hash-Dj_dKK0B.js                    [39m[1m[2m  0.46 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
-[2mdist/[22m[36massets/clipboard-check-B73psYuR.js         [39m[1m[2m  0.47 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
-[2mdist/[22m[36massets/users-DqeGLcgv.js                   [39m[1m[2m  0.47 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
-[2mdist/[22m[36massets/refresh-cw-BsfG_gaO.js              [39m[1m[2m  0.49 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
-[2mdist/[22m[36massets/save-C3zQ65l3.js                    [39m[1m[2m  0.50 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
-[2mdist/[22m[36massets/trash-2-Ddl4pCp4.js                 [39m[1m[2m  0.50 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
-[2mdist/[22m[36massets/star-Bfmy_3nH.js                    [39m[1m[2m  0.64 kB[22m[1m[22m[2m │ gzip:   0.40 kB[22m
-[2mdist/[22m[36massets/trophy-B6QGnVgf.js                  [39m[1m[2m  0.65 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
-[2mdist/[22m[36massets/settings-PcUuzfKn.js                [39m[1m[2m  0.65 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
-[2mdist/[22m[36massets/lock-CZtN9tR6.js                    [39m[1m[2m  0.67 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
-[2mdist/[22m[36massets/user-B_1mhA_P.js                    [39m[1m[2m  0.70 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
-[2mdist/[22m[36massets/target-Bt5-0GlP.js                  [39m[1m[2m  0.71 kB[22m[1m[22m[2m │ gzip:   0.35 kB[22m
-[2mdist/[22m[36massets/StravaCallback-DTy4KoI5.js          [39m[1m[2m  2.52 kB[22m[1m[22m[2m │ gzip:   1.07 kB[22m
-[2mdist/[22m[36massets/Welcome-CuvQWFj_.js                 [39m[1m[2m  3.09 kB[22m[1m[22m[2m │ gzip:   1.42 kB[22m
-[2mdist/[22m[36massets/Login-g5jrmQ9w.js                   [39m[1m[2m  4.04 kB[22m[1m[22m[2m │ gzip:   1.73 kB[22m
-[2mdist/[22m[36massets/index-D4_MgCTp.js                   [39m[1m[2m  4.08 kB[22m[1m[22m[2m │ gzip:   1.93 kB[22m
-[2mdist/[22m[36massets/ZRLSeasonStats-CPXLC1X_.js          [39m[1m[2m  4.37 kB[22m[1m[22m[2m │ gzip:   1.38 kB[22m
-[2mdist/[22m[36massets/ZRLOperationsDashboard-CXyXBQvf.js  [39m[1m[2m  4.58 kB[22m[1m[22m[2m │ gzip:   1.81 kB[22m
-[2mdist/[22m[36massets/Events-KLGImzS9.js                  [39m[1m[2m  4.62 kB[22m[1m[22m[2m │ gzip:   1.68 kB[22m
-[2mdist/[22m[36massets/Racing-rxO0PCEe.js                  [39m[1m[2m  4.67 kB[22m[1m[22m[2m │ gzip:   1.61 kB[22m
-[2mdist/[22m[36massets/Register-BJJj8hxA.js                [39m[1m[2m  5.92 kB[22m[1m[22m[2m │ gzip:   1.86 kB[22m
-[2mdist/[22m[36massets/ZRLOperations-8pL8sehK.js           [39m[1m[2m  6.91 kB[22m[1m[22m[2m │ gzip:   2.89 kB[22m
-[2mdist/[22m[36massets/Ranking-B8HOV28I.js                 [39m[1m[2m  6.96 kB[22m[1m[22m[2m │ gzip:   2.53 kB[22m
-[2mdist/[22m[36massets/Dashboard-BceXvWPw.js               [39m[1m[2m  7.53 kB[22m[1m[22m[2m │ gzip:   2.88 kB[22m
-[2mdist/[22m[36massets/WinterTourManagement-BpG9fZ9G.js    [39m[1m[2m  7.91 kB[22m[1m[22m[2m │ gzip:   2.54 kB[22m
-[2mdist/[22m[36massets/Availability-CAkvqxyF.js            [39m[1m[2m  8.97 kB[22m[1m[22m[2m │ gzip:   3.04 kB[22m
-[2mdist/[22m[36massets/EventManagement-CcuY7Aqu.js         [39m[1m[2m  9.24 kB[22m[1m[22m[2m │ gzip:   2.71 kB[22m
-[2mdist/[22m[36massets/AvailabilityManagement-DkMQghlt.js  [39m[1m[2m 10.55 kB[22m[1m[22m[2m │ gzip:   3.26 kB[22m
-[2mdist/[22m[36massets/RosterSuggestions-DtSGGSfn.js       [39m[1m[2m 11.52 kB[22m[1m[22m[2m │ gzip:   3.28 kB[22m
-[2mdist/[22m[36massets/TeamsPage-BkjwXOCm.js               [39m[1m[2m 12.85 kB[22m[1m[22m[2m │ gzip:   3.98 kB[22m
-[2mdist/[22m[36massets/ZRLDivisionResults-BPtkjVZZ.js      [39m[1m[2m 14.67 kB[22m[1m[22m[2m │ gzip:   4.03 kB[22m
-[2mdist/[22m[36massets/Guest-CrrRRSw4.js                   [39m[1m[2m 15.32 kB[22m[1m[22m[2m │ gzip:   4.44 kB[22m
-[2mdist/[22m[36massets/RosterBuilder-CZu6MLkE.js           [39m[1m[2m 17.74 kB[22m[1m[22m[2m │ gzip:   4.89 kB[22m
-[2mdist/[22m[36massets/UserManagement-USSM7_ZL.js          [39m[1m[2m 22.08 kB[22m[1m[22m[2m │ gzip:   5.66 kB[22m
-[2mdist/[22m[36massets/SeasonInitialization-sRHX9hHc.js    [39m[1m[2m 76.61 kB[22m[1m[22m[2m │ gzip:  19.26 kB[22m
-[2mdist/[22m[36massets/proxy-p5gKHz_J.js                   [39m[1m[2m124.16 kB[22m[1m[22m[2m │ gzip:  40.57 kB[22m
-[2mdist/[22m[36massets/html2canvas.esm-DvfVYDF0.js         [39m[1m[2m201.92 kB[22m[1m[22m[2m │ gzip:  48.33 kB[22m
-[2mdist/[22m[36massets/index-BGx8vE4y.js                   [39m[1m[2m243.20 kB[22m[1m[22m[2m │ gzip:  77.86 kB[22m
-[2mdist/[22m[36massets/ZRLAnalytics-D7lXv-IX.js            [39m[1m[2m381.38 kB[22m[1m[22m[2m │ gzip: 111.20 kB[22m
-[32m✓ built in 12.56s[39m
+[2mdist/[22m[36massets/chevron-left-BVA1bDfb.js            [39m[1m[2m  0.30 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/chevron-down-D6YTFkPO.js            [39m[1m[2m  0.30 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/loader-circle-CtaxzsLV.js           [39m[1m[2m  0.31 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mdist/[22m[36massets/plus-TRx6Vn1t.js                    [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/x-CkBu0tcl.js                       [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/arrow-up-right-BTnPalU6.js          [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mdist/[22m[36massets/clock-CE87LmcY.js                   [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/search-CZvEoQbD.js                  [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/circle-check-dJxgVj9N.js            [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/play-Dj7QbgBf.js                    [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mdist/[22m[36massets/info-DpKKLrGu.js                    [39m[1m[2m  0.37 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mdist/[22m[36massets/circle-x-CtCrAJiD.js                [39m[1m[2m  0.38 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mdist/[22m[36massets/target-CmCgFlmc.js                  [39m[1m[2m  0.40 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/activity-C5yZV0OE.js                [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/circle-alert-DWh7bxM2.js            [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/[22m[36massets/circle-question-mark-B-64-v1a.js    [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/funnel-D8AzMTYd.js                  [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/external-link-5dbEZ218.js           [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/calendar-DEaojucR.js                [39m[1m[2m  0.42 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/zap-BfQdOd_Q.js                     [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/shield-9PR9-7TI.js                  [39m[1m[2m  0.44 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
+[2mdist/[22m[36massets/hash-sDzSSMZS.js                    [39m[1m[2m  0.46 kB[22m[1m[22m[2m │ gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/users-Nkbmp0jy.js                   [39m[1m[2m  0.47 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
+[2mdist/[22m[36massets/refresh-cw-MU_ZTuGk.js              [39m[1m[2m  0.49 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
+[2mdist/[22m[36massets/save-B_AXbnP6.js                    [39m[1m[2m  0.50 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
+[2mdist/[22m[36massets/trash-2-DAvOwjlk.js                 [39m[1m[2m  0.50 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
+[2mdist/[22m[36massets/star-Q9VxBlg2.js                    [39m[1m[2m  0.64 kB[22m[1m[22m[2m │ gzip:   0.40 kB[22m
+[2mdist/[22m[36massets/trophy-ChwEsIIZ.js                  [39m[1m[2m  0.65 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
+[2mdist/[22m[36massets/settings-bnO215sm.js                [39m[1m[2m  0.65 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mdist/[22m[36massets/user-F-3X68Hj.js                    [39m[1m[2m  0.70 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
+[2mdist/[22m[36massets/brain-DUyR6W8k.js                   [39m[1m[2m  0.75 kB[22m[1m[22m[2m │ gzip:   0.42 kB[22m
+[2mdist/[22m[36massets/flag-Cvh9QbXA.js                    [39m[1m[2m  0.85 kB[22m[1m[22m[2m │ gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/map-B1B5jKlE.js                     [39m[1m[2m  0.97 kB[22m[1m[22m[2m │ gzip:   0.46 kB[22m
+[2mdist/[22m[36massets/file-braces-C5TyeBPJ.js             [39m[1m[2m  1.01 kB[22m[1m[22m[2m │ gzip:   0.47 kB[22m
+[2mdist/[22m[36massets/StravaCallback-DVChmZfx.js          [39m[1m[2m  2.52 kB[22m[1m[22m[2m │ gzip:   1.07 kB[22m
+[2mdist/[22m[36massets/RoundControlContext-DpkSRUfK.js     [39m[1m[2m  2.55 kB[22m[1m[22m[2m │ gzip:   1.10 kB[22m
+[2mdist/[22m[36massets/ZRLOperations-DGzGRdz4.js           [39m[1m[2m  3.01 kB[22m[1m[22m[2m │ gzip:   1.50 kB[22m
+[2mdist/[22m[36massets/Welcome-BOIzDvd8.js                 [39m[1m[2m  3.10 kB[22m[1m[22m[2m │ gzip:   1.42 kB[22m
+[2mdist/[22m[36massets/Login-Dz2moEcf.js                   [39m[1m[2m  4.04 kB[22m[1m[22m[2m │ gzip:   1.73 kB[22m
+[2mdist/[22m[36massets/index-bnp39o89.js                   [39m[1m[2m  4.08 kB[22m[1m[22m[2m │ gzip:   1.93 kB[22m
+[2mdist/[22m[36massets/ZRLSeasonStats-BYpxmOpx.js          [39m[1m[2m  4.37 kB[22m[1m[22m[2m │ gzip:   1.38 kB[22m
+[2mdist/[22m[36massets/Events-D3SUaiGO.js                  [39m[1m[2m  4.62 kB[22m[1m[22m[2m │ gzip:   1.67 kB[22m
+[2mdist/[22m[36massets/Racing-BDXnvqj4.js                  [39m[1m[2m  4.67 kB[22m[1m[22m[2m │ gzip:   1.61 kB[22m
+[2mdist/[22m[36massets/AdminTutorPanel-BLV18ZeJ.js         [39m[1m[2m  4.93 kB[22m[1m[22m[2m │ gzip:   1.96 kB[22m
+[2mdist/[22m[36massets/Teams-bG8_IXes.js                   [39m[1m[2m  5.16 kB[22m[1m[22m[2m │ gzip:   2.04 kB[22m
+[2mdist/[22m[36massets/ZRLOperationsDashboard-kvZBE8Gr.js  [39m[1m[2m  5.77 kB[22m[1m[22m[2m │ gzip:   2.16 kB[22m
+[2mdist/[22m[36massets/Register-G7bB1TCg.js                [39m[1m[2m  6.49 kB[22m[1m[22m[2m │ gzip:   2.10 kB[22m
+[2mdist/[22m[36massets/Ranking-DZ3VQ2BI.js                 [39m[1m[2m  6.96 kB[22m[1m[22m[2m │ gzip:   2.54 kB[22m
+[2mdist/[22m[36massets/Dashboard-DgHjOCtX.js               [39m[1m[2m  7.25 kB[22m[1m[22m[2m │ gzip:   2.70 kB[22m
+[2mdist/[22m[36massets/WinterTourManagement-xl1JQefN.js    [39m[1m[2m  7.91 kB[22m[1m[22m[2m │ gzip:   2.54 kB[22m
+[2mdist/[22m[36massets/ZRLStrategy-DPOod6IP.js             [39m[1m[2m  8.09 kB[22m[1m[22m[2m │ gzip:   2.80 kB[22m
+[2mdist/[22m[36massets/Availability-D2zv6MuI.js            [39m[1m[2m  8.97 kB[22m[1m[22m[2m │ gzip:   3.05 kB[22m
+[2mdist/[22m[36massets/EventManagement-BJtEpAHV.js         [39m[1m[2m  9.24 kB[22m[1m[22m[2m │ gzip:   2.71 kB[22m
+[2mdist/[22m[36massets/AvailabilityManagement-UN5Rns-K.js  [39m[1m[2m 10.55 kB[22m[1m[22m[2m │ gzip:   3.26 kB[22m
+[2mdist/[22m[36massets/RosterSuggestions-C0QPKZPM.js       [39m[1m[2m 11.52 kB[22m[1m[22m[2m │ gzip:   3.29 kB[22m
+[2mdist/[22m[36massets/ZRLDivisionResults-DiBDm8rj.js      [39m[1m[2m 14.67 kB[22m[1m[22m[2m │ gzip:   4.03 kB[22m
+[2mdist/[22m[36massets/Guest-2U60W872.js                   [39m[1m[2m 15.36 kB[22m[1m[22m[2m │ gzip:   4.45 kB[22m
+[2mdist/[22m[36massets/RosterBuilder-BZ-67H1J.js           [39m[1m[2m 17.74 kB[22m[1m[22m[2m │ gzip:   4.89 kB[22m
+[2mdist/[22m[36massets/UserManagement-C_mHH0Lv.js          [39m[1m[2m 21.50 kB[22m[1m[22m[2m │ gzip:   5.37 kB[22m
+[2mdist/[22m[36massets/RoundControlCenter-D-K7PlJt.js      [39m[1m[2m 46.01 kB[22m[1m[22m[2m │ gzip:  11.33 kB[22m
+[2mdist/[22m[36massets/proxy-C2MrWLA7.js                   [39m[1m[2m124.16 kB[22m[1m[22m[2m │ gzip:  40.57 kB[22m
+[2mdist/[22m[36massets/html2canvas.esm-KvCGHBtx.js         [39m[1m[2m201.92 kB[22m[1m[22m[2m │ gzip:  48.33 kB[22m
+[2mdist/[22m[36massets/index-DmEnPxZZ.js                   [39m[1m[2m275.78 kB[22m[1m[22m[2m │ gzip:  87.22 kB[22m
+[2mdist/[22m[36massets/ZRLAnalytics-CZRUDJNl.js            [39m[1m[2m380.63 kB[22m[1m[22m[2m │ gzip: 110.81 kB[22m
+[32m✓ built in 10.68s[39m

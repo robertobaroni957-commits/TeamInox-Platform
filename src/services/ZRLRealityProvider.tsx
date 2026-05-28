@@ -1,11 +1,14 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { executeMutation } from './api/mutationClient';
+import { apiFetch } from './api';
 
 interface ZRLRealityContextType {
-  seasons: UseQueryResult<any, Error>;
-  rounds: (seasonId: number) => UseQueryResult<any, Error>;
-  teams: UseQueryResult<any, Error>;
+  rounds: UseQueryResult<any[], Error>;
+  getRound: (id: number | string) => UseQueryResult<any, Error>;
+  seasons: UseQueryResult<any[], Error>;
+  teams: UseQueryResult<any[], Error>;
+  roster: UseQueryResult<any[], Error>;
   mutate: (type: string, payload: any) => Promise<any>;
   isLoading: boolean;
   isError: boolean;
@@ -16,77 +19,93 @@ const ZRLRealityContext = createContext<ZRLRealityContextType | undefined>(undef
 export function ZRLRealityProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
+  const rounds = useQuery({
+    queryKey: ['rounds'],
+    queryFn: async () => {
+      const json = await apiFetch('/api/rounds');
+      return Array.isArray(json) ? json : json?.data || [];
+    },
+    staleTime: 60_000
+  });
+
+  const getRound = (id: number | string) =>
+    useQuery({
+      queryKey: ['round', id],
+      enabled: !!id,
+      queryFn: async () => {
+        return await apiFetch(`/api/rounds/${id}`);
+      }
+    });
+
   const seasons = useQuery({
     queryKey: ['seasons'],
-    queryFn: () => fetch('/api/data/seasons', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
-    }).then(res => {
-      if (!res.ok) throw new Error('Failed to fetch seasons');
-      return res.json();
-    })
+    queryFn: async () => {
+      const json = await apiFetch('/api/data/seasons');
+      return Array.isArray(json) ? json : json?.data || [];
+    },
+    staleTime: 300_000 // Seasons change rarely now
   });
 
   const teams = useQuery({
     queryKey: ['teams'],
-    queryFn: () => fetch('/api/data/teams', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
-    }).then(res => {
-      if (!res.ok) throw new Error('Failed to fetch teams');
-      return res.json();
-    })
+    queryFn: async () => {
+      const json = await apiFetch('/api/data/teams');
+      return Array.isArray(json) ? json : json?.data || [];
+    },
+    staleTime: 60_000
   });
 
-  const rounds = (seasonId: number) => useQuery({
-    queryKey: ['rounds', seasonId],
-    queryFn: () => fetch(`/api/data/rounds?seasonId=${seasonId}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
-    }).then(res => {
-      if (!res.ok) throw new Error('Failed to fetch rounds');
-      return res.json();
-    }),
-    enabled: !!seasonId
+  const roster = useQuery({
+    queryKey: ['roster'],
+    queryFn: async () => {
+      const json = await apiFetch('/api/admin/list_users');
+      return Array.isArray(json) ? json : json?.users || [];
+    },
+    staleTime: 300_000
   });
 
   const mutate = async (type: string, payload: any) => {
-    try {
-      const result = await executeMutation(type, payload);
-      
-      // Centralized Invalidation Mapping
-      const mapping: Record<string, string[]> = {
-        'SEASON_BOOTSTRAP': ['seasons', 'rounds'],
-        'SEASON_ARCHIVE': ['seasons'],
-        'SEASON_REACTIVATE': ['seasons'],
-        'ROUND_INIT': ['rounds'],
-        'TEAM_SYNC': ['teams'],
-        'RESULTS_SYNC': ['results', 'standings'],
-        'METADATA_SYNC': ['seasons', 'rounds', 'teams'],
-        'STANDINGS_SYNC': ['standings']
-      };
+    const result = await executeMutation(type, payload);
 
-      const keysToInvalidate = mapping[type] || ['all'];
-      keysToInvalidate.forEach(key => queryClient.invalidateQueries({ queryKey: [key] }));
-      
-      return result;
-    } catch (error) {
-      console.error(`Mutation ${type} failed:`, error);
-      throw error;
-    }
+    const invalidationMap: Record<string, string[]> = {
+      ROUND_SYNC: ['rounds', 'round'],
+      ROUND_INIT: ['rounds', 'round'],
+      TEAM_SYNC: ['teams'],
+      RESULTS_SYNC: ['results', 'standings'],
+      METADATA_SYNC: ['seasons', 'rounds', 'teams', 'roster'],
+      STANDINGS_SYNC: ['standings']
+    };
+
+    const keys = invalidationMap[type] || [];
+
+    keys.forEach(k => {
+      queryClient.invalidateQueries({ queryKey: [k] });
+    });
+
+    return result;
   };
 
-  const isLoading = seasons.isLoading || teams.isLoading;
-  const isError = seasons.isError || teams.isError;
+  const isLoading = rounds.isLoading || teams.isLoading || roster.isLoading;
+  const isError = rounds.isError || teams.isError || roster.isError;
 
   return (
-    <ZRLRealityContext.Provider value={{ seasons, rounds, teams, mutate, isLoading, isError }}>
+    <ZRLRealityContext.Provider value={{
+      rounds,
+      getRound,
+      seasons,
+      teams,
+      roster,
+      mutate,
+      isLoading,
+      isError
+    }}>
       {children}
     </ZRLRealityContext.Provider>
   );
 }
 
 export function useZRLReality() {
-  const context = useContext(ZRLRealityContext);
-  if (context === undefined) {
-    throw new Error('useZRLReality must be used within a ZRLRealityProvider');
-  }
-  return context;
+  const ctx = useContext(ZRLRealityContext);
+  if (!ctx) throw new Error('useZRLReality must be used within provider');
+  return ctx;
 }

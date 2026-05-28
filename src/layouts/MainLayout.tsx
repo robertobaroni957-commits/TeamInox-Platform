@@ -7,6 +7,7 @@ import {
   LayoutGrid, 
   LogOut,
 } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 const MainLayout: React.FC = () => {
   const [showWarning, setShowWarning] = useState(false);
@@ -50,7 +51,7 @@ const MainLayout: React.FC = () => {
     navigate('/login');
   };
 
-  const isHub = location.pathname === '/dashboard';
+  const isHub = location.pathname === '/zrl-operations';
   const isAdmin = user?.role === 'admin' || user?.role === 'moderator';
 
   return (
@@ -67,7 +68,7 @@ const MainLayout: React.FC = () => {
           {/* Universal Back to Hub */}
           {!isHub && (
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/zrl-operations')}
               className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all text-[10px] font-black uppercase tracking-widest group"
             >
               <LayoutGrid size={14} className="group-hover:rotate-90 transition-transform" />
@@ -80,7 +81,7 @@ const MainLayout: React.FC = () => {
           {/* Mobile Back to Hub */}
           {!isHub && (
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/zrl-operations')}
               className="md:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400"
             >
               <LayoutGrid size={18} />
@@ -139,6 +140,7 @@ const MainLayout: React.FC = () => {
           </div>
         </main>
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 };

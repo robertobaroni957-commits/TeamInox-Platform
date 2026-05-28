@@ -16,7 +16,7 @@ export const SeasonOrchestratorService = {
     if (!requiredStatus) return;
     const current = await SeasonOrchestratorService.getStatus(db, seasonId);
     
-    const order: LifecycleStatus[] = ['METADATA_DONE', 'RACES_DONE', 'TEAMS_DONE', 'ROSTER_DONE', 'READY'];
+    const order: LifecycleStatus[] = ['IDLE', 'METADATA_DONE', 'RACES_DONE', 'TEAMS_DONE', 'ROSTER_DONE', 'READY'];
     const currentIndex = current ? order.indexOf(current.status as LifecycleStatus) : -1;
     const requiredIndex = order.indexOf(requiredStatus) - 1;
 

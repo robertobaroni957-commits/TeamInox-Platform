@@ -1,9 +1,10 @@
 import React from 'react';
 import { Activity, CheckCircle2, Zap } from 'lucide-react';
-import { useSeasonInit } from '../../pages/admin/SeasonInitContext';
+import { useRoundControl } from '../../pages/admin/RoundControlContext';
 
 export default function ImportProgress() {
-  const { activeRound } = useSeasonInit();
+  const { activeRound } = useRoundControl();
+
   
   const bars = [
     { label: "Teams Sync", value: 12, total: 12 },
@@ -37,7 +38,7 @@ export default function ImportProgress() {
         </div>
         <div className="bg-blue-600/10 border border-blue-500/20 px-3 py-1 rounded-lg">
             <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
-                Round 0{activeRound}
+                Round 0{activeRound?.round_number || '---'}
             </span>
         </div>
       </div>

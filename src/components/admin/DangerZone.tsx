@@ -1,16 +1,16 @@
 import React from 'react';
 import { Trash2, AlertTriangle, AlertOctagon, Info } from 'lucide-react';
-import { useSeasonInit } from '../../pages/admin/SeasonInitContext';
+import { useRoundControl } from '../../pages/admin/RoundControlContext';
 import { toast } from 'sonner';
 
 export default function DangerZone() {
-  const { executeAction, selectedSeasonId, isProcessing } = useSeasonInit();
+  const { executeAction, selectedRoundId, selectedWtrlId, isProcessing } = useRoundControl();
 
   const handleWipe = async () => {
-    if (!selectedSeasonId) return;
+    if (!selectedRoundId && !selectedWtrlId) return;
     const toastId = toast.loading("Wipe in corso...");
     try {
-        await executeAction('SEASON_WIPE', {}, "Wipe Totale");
+        await executeAction('ROUND_WIPE', {}, "Wipe Totale");
         toast.success("Wipe completato", { id: toastId });
     } catch (err: any) {
         toast.error(`Errore: ${err.message}`, { id: toastId });
@@ -35,7 +35,7 @@ export default function DangerZone() {
                 ATTENZIONE: Azioni Irreversibili
             </p>
             <p className="text-[10px] text-red-400 font-bold uppercase leading-relaxed text-left">
-                Le operazioni in questa sezione hanno un impatto distruttivo totale. Una volta confermate, i dati non potranno essere recuperati.
+                Le operazioni in questa sezione hanno un impatto distruttivo totale sul Round selezionato. Una volta confermate, i dati non potranno essere recuperati.
             </p>
         </div>
       </div>
@@ -49,19 +49,11 @@ export default function DangerZone() {
           <div className="space-y-3 text-left">
               <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
-                  <span className="text-[10px] font-black text-gray-300 uppercase text-left">Eliminazione Season Globale</span>
+                  <span className="text-[10px] font-black text-gray-300 uppercase text-left">Wipe del Round Selezionato</span>
               </div>
               <div className="flex items-center gap-3 pl-4 border-l border-gray-800">
                   <div className="w-1 h-1 rounded-full bg-red-900 text-left"></div>
-                  <span className="text-[9px] font-bold text-gray-500 uppercase italic text-left">Inclusi metadati, log e classifiche storiche</span>
-              </div>
-              <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] text-left"></div>
-                  <span className="text-[10px] font-black text-gray-300 uppercase text-left">Wipe di tutti i 4 Round (Mini-Seasons)</span>
-              </div>
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-800">
-                  <div className="w-1 h-1 rounded-full bg-red-900 text-left"></div>
-                  <span className="text-[9px] font-bold text-gray-500 uppercase italic text-left">Gare, Roster, Squadre e Risultati per ogni Round</span>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase italic text-left">Gare, Roster, Squadre e Risultati del Round</span>
               </div>
           </div>
       </div>
@@ -69,23 +61,23 @@ export default function DangerZone() {
       <div className="space-y-4 mt-auto text-left">
           <button 
             onClick={handleWipe}
-            disabled={isProcessing || !selectedSeasonId}
+            disabled={isProcessing || (!selectedRoundId && !selectedWtrlId)}
             className="w-full group flex items-center justify-between p-5 bg-red-500/5 border border-red-500/20 rounded-2xl hover:bg-red-500/10 hover:border-red-500/50 transition-all disabled:opacity-50"
           >
               <div className="text-left">
-                  <span className="block text-xs font-black text-red-500 uppercase italic text-left">Wipe All Rounds</span>
-                  <span className="block text-[9px] text-red-900 font-bold uppercase mt-0.5 text-left">Svuota database per la stagione corrente</span>
+                  <span className="block text-xs font-black text-red-500 uppercase italic text-left">Wipe Current Round</span>
+                  <span className="block text-[9px] text-red-900 font-bold uppercase mt-0.5 text-left">Svuota database per il round corrente</span>
               </div>
               <AlertTriangle size={18} className="text-red-900 group-hover:text-red-500 transition-colors" />
           </button>
 
           <button 
-            disabled={isProcessing || !selectedSeasonId}
+            disabled={isProcessing || (!selectedRoundId && !selectedWtrlId)}
             className="w-full group flex items-center justify-between p-5 bg-black border border-gray-800 rounded-2xl hover:border-red-500 transition-all disabled:opacity-50"
           >
               <div className="text-left">
-                  <span className="block text-xs font-black text-gray-400 group-hover:text-white uppercase italic transition-colors text-left">Delete Global Season</span>
-                  <span className="block text-[9px] text-gray-700 font-bold uppercase mt-0.5 text-left">Rimuove interamente la stagione dal sistema</span>
+                  <span className="block text-xs font-black text-gray-400 group-hover:text-white uppercase italic transition-colors text-left">Delete Round Context</span>
+                  <span className="block text-[9px] text-gray-700 font-bold uppercase mt-0.5 text-left">Rimuove interamente il round dal sistema</span>
               </div>
               <Trash2 size={18} className="text-gray-800 group-hover:text-red-500 transition-colors" />
           </button>

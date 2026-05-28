@@ -6,8 +6,9 @@ export async function executeMutation(type: string, payload: any) {
   return apiFetch('/api/mutation/execute', {
     method: 'POST',
     body: JSON.stringify({
-      intent: { type, payload },
-      securityContext: { idempotencyKey }
+      type,
+      payload,
+      idempotencyKey
     })
   });
 }

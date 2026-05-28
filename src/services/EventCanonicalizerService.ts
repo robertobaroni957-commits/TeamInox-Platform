@@ -22,7 +22,7 @@ export const EventCanonicalizerService = {
   ): Promise<CanonicalEvent> => {
     
     // Allocazione centralizzata tramite il Domain Service
-    const sequenceNumber = await SequenceAllocatorService.getNextSequence(db, seasonId);
+    const sequenceNumber = await SequenceAllocatorService.getNextSequence(db, seasonId, crypto.randomUUID());
     
     return {
         id: crypto.randomUUID(),

@@ -1,7 +1,13 @@
 export interface Round {
   id: number;
-  series_id: number;
+  wtrl_id: number;
+  season_code?: string;
+  round_number?: number;
   name: string;
+  starts_at?: string;
+  ends_at?: string;
+  sync_state?: 'PENDING' | 'SYNCING' | 'COMPLETED' | 'FAILED';
+  series_id: number; // Kept for backward compatibility
   date: string;
   world: string;
   route: string;
@@ -29,6 +35,8 @@ export interface Athlete {
   zwid: number;
   name: string;
   category: string;
+  avatar_url?: string;
+  role?: string;
   status?: string; // availability status
 }
 
@@ -69,10 +77,25 @@ export interface RaceResult {
   points_total: number;
 }
 
+export interface RoundDraft {
+  round_number: number;
+  name: string;
+  starts_at: string;
+  ends_at: string;
+  season_code?: string;
+  status: "CREATED";
+}
+
+export interface Season {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface Series {
   id: number;
   name: string;
-  is_active: boolean;
+  is_active?: boolean; // Deprecated
   total_rounds?: number;
   external_season_id?: number;
 }

@@ -1,57 +1,59 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import { ZRLRealityProvider } from './services/ZRLRealityProvider';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
 /* =========================
    🔹 PUBLIC (caricati subito)
 ========================= */
-const Welcome = lazy(() => import('./pages/Welcome'));
-const Guest = lazy(() => import('./pages/Guest'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
+const Welcome = lazyWithRetry(() => import('./pages/Welcome'));
+const Guest = lazyWithRetry(() => import('./pages/Guest'));
+const Login = lazyWithRetry(() => import('./pages/Login'));
+const Register = lazyWithRetry(() => import('./pages/Register'));
 
 /* =========================
    🔹 CORE APP
 ========================= */
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Racing = lazy(() => import('./pages/Racing'));
-const Teams = lazy(() => import('./pages/Teams'));
-const Ranking = lazy(() => import('./pages/Ranking'));
-const Events = lazy(() => import('./pages/Events'));
-const Availability = lazy(() => import('./pages/Availability'));
-const RosterBuilder = lazy(() => import('./pages/RosterBuilder'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const Racing = lazyWithRetry(() => import('./pages/Racing'));
+const Teams = lazyWithRetry(() => import('./pages/Teams'));
+const Ranking = lazyWithRetry(() => import('./pages/Ranking'));
+const Events = lazyWithRetry(() => import('./pages/Events'));
+const Availability = lazyWithRetry(() => import('./pages/Availability'));
+const RosterBuilder = lazyWithRetry(() => import('./pages/RosterBuilder'));
 
 /* =========================
    🔹 ZRL MODULES (HEAVY)
 ========================= */
-const ZRLDivisionResults = lazy(() => import('./pages/ZRLDivisionResults'));
-const ZRLAnalytics = lazy(() => import('./pages/ZRLAnalytics'));
-const ZRLSeasonStats = lazy(() => import('./pages/ZRLSeasonStats'));
-const ZRLOperations = lazy(() => import('./pages/admin/ZRLOperations'));
-const ZRLOperationsDashboard = lazy(() => import('./pages/ZRLOperationsDashboard'));
-const SeasonInitialization = lazy(() => import('./pages/admin/SeasonInitialization'));
+const ZRLDivisionResults = lazyWithRetry(() => import('./pages/ZRLDivisionResults'));
+const ZRLAnalytics = lazyWithRetry(() => import('./pages/ZRLAnalytics'));
+const ZRLSeasonStats = lazyWithRetry(() => import('./pages/ZRLSeasonStats'));
+const ZRLStrategy = lazyWithRetry(() => import('./pages/ZRLStrategy'));
+const ZRLOperations = lazyWithRetry(() => import('./pages/admin/ZRLOperations'));
+const ZRLOperationsDashboard = lazyWithRetry(() => import('./pages/ZRLOperationsDashboard'));
+const SeasonInitialization = lazyWithRetry(() => import('./pages/admin/RoundControlCenter'));
 
 /* =========================
    🔹 WINTER TOUR
 ========================= */
-const WinterTourManagement = lazy(() => import('./pages/WinterTourManagement'));
+const WinterTourManagement = lazyWithRetry(() => import('./pages/WinterTourManagement'));
 
 /* =========================
    🔹 ADMIN
 ========================= */
-const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
-const EventManagement = lazy(() => import('./pages/admin/EventManagement'));
-const AvailabilityManagement = lazy(() => import('./pages/admin/AvailabilityManagement'));
-const RosterSuggestions = lazy(() => import('./pages/admin/RosterSuggestions'));
+const UserManagement = lazyWithRetry(() => import('./pages/admin/UserManagement'));
+const EventManagement = lazyWithRetry(() => import('./pages/admin/EventManagement'));
+const AvailabilityManagement = lazyWithRetry(() => import('./pages/admin/AvailabilityManagement'));
+const RosterSuggestions = lazyWithRetry(() => import('./pages/admin/RosterSuggestions'));
 
 /* =========================
    🔹 INTEGRATIONS
 ========================= */
-const StravaCallback = lazy(() => import('./pages/StravaCallback'));
+const StravaCallback = lazyWithRetry(() => import('./pages/StravaCallback'));
 
 /* =========================
    🔹 LOADING UI
@@ -112,6 +114,7 @@ const App: React.FC = () => {
             <Route path="zrl-results" element={<ZRLDivisionResults />} />
             <Route path="zrl-analytics" element={<ZRLAnalytics />} />
             <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
+            <Route path="zrl-strategy" element={<ZRLStrategy />} />
             <Route path="zrl-operations" element={<ZRLOperations />} />
             <Route path="zrl-round-manager" element={<ZRLOperationsDashboard />} />
             <Route path="admin/season-init" element={<SeasonInitialization />} />

@@ -3,9 +3,7 @@
 // JWT + RBAC + Anti-cache + SeasonContext + Architecture Lock + Auto-Bootstrap
 // ================================
 import { jwtVerify } from 'jose';
-import { ensureActiveSeason } from './api/admin/season/utils';
 import { assertNoFallbackUsage } from '../src/services/architecture/ArchitectureGuard';
-import { assertSeasonInitialized } from '../src/services/architecture/SeasonGuard';
 import { assertAuthValid } from '../src/services/architecture/AuthGuard';
 
 const RBAC_POLICY = {
@@ -26,26 +24,7 @@ export async function onRequest(context) {
     const traceId = request.headers.get('x-debug-trace-id') || crypto.randomUUID();
     context.data.traceId = traceId;
 
-    // 1. FAIL-OPEN SEASON CONTEXT
-    try {
-        const db = env.ZRL_DB;
-        if (db) {
-            const seasonId = await ensureActiveSeason(db);
-            context.data.seasonId = seasonId;
-        }
-    } catch (err) {
-        context.data.seasonId = null;
-    }
-
-    // 2. ARCHITECTURE LOCK
-    try {
-        assertNoFallbackUsage(context, "Global Guard");
-        assertSeasonInitialized(context);
-    } catch (err) {
-        return jsonError(err.message, 403);
-    }
-
-    // CORS
+    // 2. CORS
     if (method === 'OPTIONS') {
         return new Response(null, {
             headers: {

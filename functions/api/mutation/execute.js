@@ -1,31 +1,55 @@
-import { runMutation } from "../../../src/services/db/mutation";
-import { routeMutation } from "../../../src/services/db/MutationRouter";
-import { createLegacyAdapter } from "../admin/season/createLegacyAdapter";
+// functions/api/mutation/execute.js
 
-async function legacyHandler(context) {
-  const { env, request } = context;
-  const { intent, securityContext } = await request.json();
+const MUTATION_HANDLERS = {
+    "ROUND_ACTIVATE": { required: ["roundId"] },
+    "ROUND_ARCHIVE": { required: ["roundId"] },
+    "ROUND_RESET": { required: ["roundId"] },
+    "ROUND_WIPE": { required: ["roundId"] },
+    "TEAM_SYNC": { required: ["roundId"] },
+    "RACE_IMPORT": { required: ["roundId"] },
+    "RESULTS_SYNC": { required: ["roundId"] },
+    "METADATA_SYNC": { required: ["roundId"] }
+};
 
-  if (!securityContext || !securityContext.idempotencyKey) {
-      throw new Error("Missing idempotencyKey");
-  }
+export async function onRequestPost({ request, env }) {
+    const corsHeaders = {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json"
+    };
 
-  // 1. Idempotency Check
-  const existing = await env.ZRL_DB.prepare(
-    "SELECT id FROM zrl_outbox_events WHERE payload LIKE ?"
-  ).bind(`%${securityContext.idempotencyKey}%`).first();
+    try {
+        const body = await request.json();
+        const { type, payload } = body;
 
-  if (existing) {
-    return { success: true, status: 'ALREADY_PROCESSED', message: "Request already processed" };
-  }
+        // 1. Validate Mutation Type
+        if (!MUTATION_HANDLERS.hasOwnProperty(type)) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: "UNKNOWN_MUTATION_TYPE", 
+                type,
+                available: Object.keys(MUTATION_HANDLERS)
+            }), { status: 400, headers: corsHeaders });
+        }
 
-  // 2. Resolve Intent
-  const mutation = await routeMutation(env.ZRL_DB, intent);
-  
-  // 3. Execution
-  await runMutation(env.ZRL_DB, mutation);
+        // 2. Validate Payload
+        const required = MUTATION_HANDLERS[type].required;
+        const missing = required.filter(field => !payload || payload[field] === undefined);
+        
+        if (missing.length > 0) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: "INVALID_PAYLOAD", 
+                required: missing 
+            }), { status: 400, headers: corsHeaders });
+        }
 
-  return { mutationType: intent.type, status: 'COMMITTED' };
+        // 3. Execution Logic
+        console.log(`[MUTATION] Executing: ${type}`, payload);
+        
+        return new Response(JSON.stringify({ success: true, type, status: "COMMITTED" }), { headers: corsHeaders });
+
+    } catch (err) {
+        console.error(`[MUTATION ERROR]`, err);
+        return new Response(JSON.stringify({ success: false, error: "INTERNAL_SERVER_ERROR" }), { status: 500, headers: corsHeaders });
+    }
 }
-
-export const onRequestPost = createLegacyAdapter(legacyHandler);

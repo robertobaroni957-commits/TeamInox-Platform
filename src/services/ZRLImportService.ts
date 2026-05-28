@@ -17,11 +17,16 @@ export const ZRLImportService = {
     if (res.meta.changes === 0) throw new Error("Stato non trovato");
   },
 
+  importRosterPhase1: async (db: D1Database, seasonId: number, data: any[]) => {
+      return await ZRLImportService.importEntity(db, seasonId, 'roster', data);
+  },
+
   // --- Core Generic Import Logic ---
   importEntity: async (db: D1Database, seasonId: number, type: EntityType, data: any[]): Promise<ImportSummary> => {
     const importId = crypto.randomUUID();
-    await db.prepare("INSERT INTO wtrl_import_locks (season_id, type, import_id) VALUES (?, ?, ?)").bind(seasonId, type, importId).run();
-    await db.prepare("INSERT INTO wtrl_import_state (import_id, season_id, type, status) VALUES (?, ?, ?, 'importing')").bind(importId, seasonId, type).run();
+    // Usiamo OR REPLACE per sbloccare eventuali stati di errore precedenti
+    await db.prepare("INSERT OR REPLACE INTO wtrl_import_locks (season_id, type, import_id) VALUES (?, ?, ?)").bind(seasonId, type, importId).run();
+    await db.prepare("INSERT OR REPLACE INTO wtrl_import_state (import_id, season_id, type, status) VALUES (?, ?, ?, 'importing')").bind(importId, seasonId, type).run();
     
     let summary: ImportSummary = { inserted: 0, updated: 0, errors: 0, importId };
     
@@ -44,11 +49,23 @@ export const ZRLImportService = {
             }
         } else if (type === 'roster') {
             for (const entry of data) {
+                // entry contiene { teamExternalId, riders }
                 for (const rider of entry.riders) {
-                    await db.prepare(`INSERT INTO team_members (wtrl_rider_id, team_id, season_id, name, category, is_active, last_import_id) 
-                        VALUES (?, ?, ?, ?, ?, 1, ?) 
-                        ON CONFLICT(wtrl_rider_id, team_id, season_id) DO UPDATE SET name=excluded.name, is_active=1, last_import_id=excluded.last_import_id`)
-                        .bind(rider.wtrlId, entry.teamExternalId, seasonId, rider.name, rider.category, importId).run();
+                    const wtrlRiderId = rider.wtrlId || 0;
+                    const teamId = entry.teamExternalId || 0;
+                    const sid = (seasonId || 0).toString();
+                    const name = rider.name || 'Unknown';
+                    const category = rider.category || 'N/A';
+                    
+                    if (wtrlRiderId === undefined || teamId === undefined || sid === undefined || name === undefined || category === undefined || importId === undefined) {
+                        console.error("[Roster Import] Undefined bind value detected:", { wtrlRiderId, teamId, sid, name, category, importId });
+                        throw new Error("D1_TYPE_ERROR: Attempted to bind undefined value");
+                    }
+
+                    await db.prepare(`INSERT INTO team_members (athlete_id, wtrl_rider_id, team_id, season_id, name, category, is_active, last_import_id) 
+                        VALUES (?, ?, ?, ?, ?, ?, 1, ?) 
+                        ON CONFLICT(athlete_id, team_id, season_id) DO UPDATE SET name=excluded.name, is_active=1, last_import_id=excluded.last_import_id`)
+                        .bind(wtrlRiderId, wtrlRiderId, teamId, sid, name, category, importId).run();
                     summary.inserted++;
                 }
             }

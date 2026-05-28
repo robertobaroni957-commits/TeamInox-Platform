@@ -17,11 +17,18 @@ const STATE_ORDER = ['IDLE', 'METADATA_DONE', 'RACES_DONE', 'TEAMS_DONE', 'ROSTE
 export const SeasonLifecycleGuard = {
     assertActionAllowed: async (db: D1Database, action: Action, seasonId: number) => {
         const current = await SeasonOrchestratorService.getStatus(db, seasonId);
+        
+        // Debugging forzato
+        console.log(`[LifecycleGuard DEBUG] Action: ${action}, SeasonId: ${seasonId}`);
+        console.log(`[LifecycleGuard DEBUG] DB status record:`, current);
+
         const currentState = current?.status || 'IDLE';
         const requiredState = ACTION_REQUIREMENTS[action];
 
         const currentIndex = STATE_ORDER.indexOf(currentState);
         const requiredIndex = STATE_ORDER.indexOf(requiredState);
+
+        console.log(`[LifecycleGuard] Action: ${action}, State: ${currentState} (Idx:${currentIndex}), Required: ${requiredState} (Idx:${requiredIndex})`);
 
         if (currentIndex < requiredIndex) {
             throw new Error(`INVALID_SEASON_STATE: Azione ${action} non permessa nello stato ${currentState}. Richiesto almeno ${requiredState}.`);
