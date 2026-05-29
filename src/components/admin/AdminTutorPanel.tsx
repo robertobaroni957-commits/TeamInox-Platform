@@ -36,7 +36,7 @@ export default function AdminTutorPanel() {
         
         // 4. Roster - Associa gli atleti alle squadre
         if (rosterList.length === 0) {
-            return "4. Squadre caricate: Ingest Roster Atleti (WTRL)";
+            return "4. Squadre caricate: Build Lineup Atleti (WTRL)";
         }
 
         // 5. Attivazione

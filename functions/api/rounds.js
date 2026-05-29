@@ -47,7 +47,25 @@ export async function onRequestGet({ request, env }) {
     query += " ORDER BY starts_at ASC, round_number ASC";
 
     const results = await env.ZRL_DB.prepare(query).bind(...params).all();
-    return new Response(JSON.stringify(results.results || []), { headers: { "Content-Type": "application/json" } });
+    const rounds = results.results || [];
+
+    // ENRICHMENT: Fetch races for each round using the bridge logic
+    const enrichedRounds = await Promise.all(rounds.map(async (r) => {
+      if (!r.wtrl_id) return { ...r, races: [] };
+      
+      const series = await env.ZRL_DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(r.wtrl_id).first();
+      if (!series) return { ...r, races: [] };
+
+      const races = await env.ZRL_DB.prepare("SELECT * FROM rounds WHERE series_id = ?").bind(series.id).all();
+      return { ...r, races: races.results || [] };
+    }));
+
+    return new Response(JSON.stringify(enrichedRounds), { 
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      } 
+    });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }

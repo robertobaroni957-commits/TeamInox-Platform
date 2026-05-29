@@ -60,7 +60,7 @@ const ZRLOperations: React.FC = () => {
 const steps = [
   { id: 1, title: 'Setup Stagione', path: '/admin/season-init', icon: Settings, help: 'Bootstrap Stagione e Round' },
   { id: 2, title: 'Sync Squadre', path: '/teams', icon: Users, help: 'Importa Squadre e Corridori' },
-  { id: 3, title: 'Ingest Roster', path: '/roster', icon: ClipboardCheck, help: 'Gestione Roster e Lineup' },
+  { id: 3, title: 'Build Lineup', path: '/lineup', icon: ClipboardCheck, help: 'Gestione Roster e Lineup' },
   { id: 4, title: 'Ingest Gare', path: '/admin/season-init', icon: Flag, help: 'Importazione Race Data' },
   { id: 5, title: 'Ingest Risultati', path: '/zrl-results', icon: Trophy, help: 'Caricamento JSON WTRL' },
   { id: 6, title: 'AI Optimizer', path: '/admin/optimizer', icon: Brain, help: 'Suggerimenti Strategici' },

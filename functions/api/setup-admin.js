@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 export async function onRequestGet(context) {
   const { env } = context;
   const email = "admin@teaminox.it";
-  const password = "admin123";
+  const password = env.ADMIN_PASSWORD || "CHANGE_THIS_IN_PRODUCTION";
   const zwid = 1;
 
   try {

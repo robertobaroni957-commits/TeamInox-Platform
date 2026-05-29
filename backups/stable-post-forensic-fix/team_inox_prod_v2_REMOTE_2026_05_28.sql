@@ -1,0 +1,747 @@
+PRAGMA defer_foreign_keys=TRUE;
+CREATE TABLE athletes (
+    zwid INTEGER PRIMARY KEY,        
+    name TEXT NOT NULL,
+    email TEXT,
+    password_hash TEXT,              
+    base_category TEXT,              
+    is_registered_tour BOOLEAN DEFAULT 0,
+    role TEXT DEFAULT 'athlete',     
+    avatar_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+, zftp REAL, zftpw INTEGER, zmap REAL, zmapw INTEGER, profile_id INTEGER, wtrl_user_id TEXT, gender TEXT);
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(15737,'Gregg Christy2927',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(35914,'Igor Molino (Team Italy)',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(42382,'Alberto Ianiro',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/fc247ea4-618238','2026-05-14 05:20:19',1.93,150,2.17,169,42382,'75d2a3a5-98d8-4840-b95a-3efb7c27a967','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(47727,'Andrew Robbins [BRAT]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(54521,'Danny Thomson',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(139067,'Nathan Penland [Dragons]🐲',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(164627,'Ricardo Santos',NULL,NULL,'B',0,'athlete','/uploads/profile_picture/1727457203_20240730_080848.jpg','2026-05-14 05:20:19',3.78,333,4.46,393,164627,'b777c4ab-2990-46ba-910a-ae6aaecb21f9','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(199374,'Matteo Casadei [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(209528,'Aaron Barnett',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(213007,'Jerry Freeman',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(214801,'Renato Nardello',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(227084,'Stefano Caffarri',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(260568,'Grzegorz Neubauer [SYN]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(276415,'S tevie Blunder TT1',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(296309,'Norberto Civardi',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(315064,'Capski Buttinski [ZiMA] 70+',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(397261,'Chris Musgrove',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1758559446_6ee2e3116d2aff6d992e70a8ac9c90ea64fb5a97.jpg','2026-05-14 05:20:19',2.73,258,3.45,326,397261,'eabacd43-612e-44dd-b093-c2ee8ecff784','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(409802,'Martin Croxall',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(413798,'Francesco Avesani [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(442021,'Marco Giuradei [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(455992,'Giovanni Nucera',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(456393,'André Kofler [ITA SWAT]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(463325,'R. RICCIO [INOX]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(475715,'Simone Oppezzo',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/3d5b66e3-263432','2026-05-14 05:20:19',3.34,227,4.05,275,475715,'0af9f313-aebc-443a-a7e8-a1c41d1e36d0','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(490979,'David Kellogg-BMTR',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(497406,'Claudio Naselli [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(537810,'Tommaso Conforti',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(673756,'Pasquato ivan [Inox]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(766165,'Adrian Kloster [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(786727,'Alessandro Donetti',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(810115,'Loris Van de kassteele',NULL,NULL,'B',0,'athlete','/uploads/profile_picture/1667772630_5D679C3D-7394-4DDE-B2F8-FDA0BBDB05F7.jpeg','2026-05-14 05:20:19',4.18,280,5,335,810115,'aee9410a-139f-4f1e-a2ce-28302f76f47f','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(819162,'Russell Young',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(831531,'sean moore',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(835079,'T. Claudio ( Italy)',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(846208,'JP Provost [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(848922,'David Crisp',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(898636,'frederich costa[ITA SWATT]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(900612,'Martino Sabia [INOX]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(902450,'Gianpiero Musarò [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(904546,'giuseppe durante',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/e86590d0-465264','2026-05-14 05:20:19',3.66,277,4.6,348,904546,'4c95d405-1c07-4bac-acae-1258e9960f20','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(906430,'Matteo Marsetti',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(931830,'Gaetano Lo verde',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/6a451d47-1122424','2026-05-14 05:20:19',3.93,271,4.74,327,931830,'40c2bebf-ed14-4c6a-9a05-cff60f79bc60','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(943471,'Salvatore Matarazzo',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/007a6588-482373','2026-05-14 05:20:19',2.97,217,3.54,258,943471,'bd9c1aab-9298-4b59-84a9-190408022bb2','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(966756,'Fabio Bertoldi',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/27502d77-495850','2026-05-14 05:20:19',3.12,249,3.74,299,966756,'319a2769-4c46-428a-b9fd-bf2ef3194d3a','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(992889,'Jose Chaves',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(999999,'Admin','admin@teaminox.it','$2b$10$vtpokvVvsEk2Nzr3wzvoseYq3ooGR1pUxJPFWh1N7AJn/WU100GQm',NULL,0,'admin',NULL,'2026-05-02 06:34:04',NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1001244,'Lester of golden Moonlight (ZRG)',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1018362,'Andrea Corbara[inox]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1039041,'J ester',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1047283,'Roberto Vietti [DIRT]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1069919,'Srinivas Gokulnath',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1076112,'Simone Magi [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1101089,'marc carrera',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1105970,'TEWE [INOX/ZTBR]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1110228,'Fabrizio Bicchietti [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1120055,'Andy Jones',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1701113009_IMG_0468.jpeg','2026-05-14 05:20:19',3.13,236,3.89,293,1120055,'b4f015a8-9975-417a-b525-451f76f4b048','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1121337,'LUCA PASTORI',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1141125,'Anthony Howard',NULL,NULL,'B',0,'captain','/uploads/profile_picture/1757366044_Screenshot_20250805_074711_Messenger.jpg','2026-05-14 05:20:19',3.59,240,4.32,289,1141125,'7c4ff949-2cce-44da-aa7e-8b31c607f2dc','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1152951,'Miky Tedesco',NULL,NULL,'B',0,'captain','/uploads/profile_picture/1636451392_ridotta per profilo wtrl.jpg','2026-05-14 05:20:19',3.7,289,4.87,380,1152951,'8991fae8-ec2f-48bb-ba75-1f09d130ad63','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1199129,'Roberto Sambo',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1202409,'Italiafile Johnston',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1210704,'Olaf (INOX) 🤙',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1237268,'Nicola Mancini',NULL,NULL,'C',0,'captain','/uploads/profile_picture/1705991621_dettaglio&nome.jpg','2026-05-14 05:20:19',3.2,237,3.54,262,1237268,'6ab80ffd-ddca-4b1f-82d8-1a481a9418da','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1406131,'Emmanuel CUET [ASVEL] (ZLIT) *VM* 6580',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1461193,'Geordy Daws',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1469978,'Jeff Bolton',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1484672,'Johnni be Good [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1520796,'Mik D''andrea',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/79b46932-1065352','2026-05-14 05:20:19',3.66,256,4.57,320,1520796,'59ce3f0f-4204-4c61-b729-592f3643b74c','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1548408,'Markus Amplatz [ITA]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1564205,'Cristian Marcotto [INOX-ITA]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1573619,'Roberto Regno',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/c7ff7312-2865908','2026-05-14 05:20:19',2.04,153,2.47,185,1573619,'c8223c40-7bd4-4d15-907e-df9cb466c70c','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1628264,'A Brandtoft #KST#',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1644288,'David Kuntz',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1652663,'Graziano Gabrieli',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/6c139b79-890458','2026-05-14 05:20:19',2.44,244,3.16,316,1652663,'dc4b9819-f945-4daa-9626-daddad1b91d2','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1675839,'Manu Lafforgue',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1682095,'Viciu Pacciu',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1757529889_ViciuPacciu.jpeg','2026-05-14 05:20:19',3.14,185,3.68,217,1682095,'c77de6b6-108b-45de-9f59-e492dc1a1acf','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1785306,'Alessandro Visconti[INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1791956,'Cesare Carminati',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1797268,'Paolo Pellegrini',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/fb129a2d-2052931','2026-05-14 05:20:19',2,164,2.24,184,1797268,'eebce669-8481-4d9f-b37d-01a3f4a87618','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1801398,'Maurizio Messeri [ITA5]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1804867,'Hugo Pecellin [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1811855,'Francesco Cisko [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1821578,'Cesare Pisacane',NULL,NULL,'C',0,'captain','/uploads/profile_picture/1631218040_7462D583-9404-4189-9F75-0E59720F0438.jpeg','2026-05-14 05:20:19',2.94,229,3.63,283,1821578,'a21e4f7f-686f-4638-a58a-4f2a5fe8bc16','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1823555,'Matteo Magni (SST)',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1839454,'Matteo Crosa Lenz [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1842490,'luca briccoli',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/159c1777-1007518','2026-05-14 05:20:19',3.51,256,4.07,297,1842490,'8ab3e454-7d18-49e7-9309-28255434ec03','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1867799,'Massimo Fabbri [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1881490,'Daniel Monachello',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1897358,'Giovanni Lisi',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1900916,'Michele Puri',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/761ef5bc-1650164','2026-05-14 05:20:19',3.07,246,3.39,271,1900916,'f7fc88f1-7704-4876-8ec0-294559fbd2be','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1902051,'Pit Conrad [Klub]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1916504,'Alex de Santisteban UAC (TSE)',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1943746,'Massimiliano Casnati',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1992085,'Claudio Varani',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1667507823_ft00000062_26.JPG','2026-05-14 05:20:19',3.15,242,3.66,281,1992085,'80c2b6da-ca8f-44fc-886a-ae1a6ae6f924','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1995551,'Nathan Robertson3518',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(1995882,'Fabio Michele Coratella [ITA 2]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2006706,'Francesco Salis [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2040540,'Mirko Pistolozzi INOX',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2124374,'Paolo Casarini [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2139266,'Matteo Marangoni',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2148682,'Raffaele Santoni',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/6c5cf5f9-1175142','2026-05-14 05:20:19',1.98,143,2.18,157,2148682,'c129a8cb-4d5e-4005-9f53-f2950368a744','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2187820,'Luca Riccio',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2197162,'Dario Paparella',NULL,NULL,'D',0,'athlete','/uploads/profile_picture/1641905657_217c338c-2056385.jpg','2026-05-14 05:20:19',2.33,221,3.05,290,2197162,'8757f7ec-151b-46f0-8ab6-b82ac7dcffbb','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2253341,'MICHELE VIOLA(ITA-INOX-AAB)',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2320632,'Giovanni Guerrera (INOX)',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2332799,'Andrea D@W',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2336555,'Davide Bertin',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/15fdb3b1-1257841','2026-05-14 05:20:19',3.15,214,3.5,238,2336555,'25692f3c-6f03-44f6-98ad-4042a75c4075','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2360782,'2. Davide Rufo (D@W)',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2418694,'luca centioni[SWATTCLUB]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2425903,'Tobi Klesen',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2454868,'Marco Imola [INOX][ITA]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2606135,'SIMONE GENTILI (ITA)',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2690375,'Mario Cavallaro',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/4d307c5e-1459691','2026-05-14 05:20:19',3.55,284,4.4,352,2690375,'b5ce339e-e11b-4e9f-939a-76d7d5d8ec81','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2708681,'The Mighty Shrimp',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2752564,'Roman Hensel',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2846874,'Alessandro Gabrieli [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2886091,'Andrea Bianconcini K31 👻[INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2889372,'Diego Burattini',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/28646f48-1527304','2026-05-14 05:20:19',2.89,258,3.43,306,2889372,'9d0c6ba5-1dac-4278-88be-86bd8aaae522','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2895594,'PIERRE JULIEN [VCO]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(2975361,'Roberto Baroni',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1641197456_bella-tartaruga-sulla-bici-adesivo.jpg','2026-05-14 05:20:19',3.04,252,3.59,298,2975361,'c6ee858b-dc0c-41b6-83bc-8c34e5a49470','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3011267,'Wout van Wannabe',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3017268,'Joel Boelke',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3035490,'Shaun DaBeast',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3049348,'John Peters',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3059451,'claudio ubertini',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/b82ee113-1614260','2026-05-14 05:20:19',3.19,223,3.79,265,3059451,'ecb969cd-9849-4eaa-a82b-7347c4eb6885','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3092045,'Cristian Collesei',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/33d146aa-1617928','2026-05-14 05:20:19',4.02,265,4.91,324,3092045,'9aa0a107-2249-4be7-a5b2-6d3a43a5806f','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3121024,'Dany Bon [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3139160,'Peppe Malinconico INOX',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3165807,'Andrea Castori',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/7c25f383-1714441','2026-05-14 05:20:19',1.98,158,2.18,174,3165807,'d881b121-7aa8-45d0-93fb-44d51cc7c1c8','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3169461,'MARCO FARINA [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3184906,'Martin Rombach',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3194563,'Filippo Scotoni 4524',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3196182,'M. Abisso89 [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3208463,'Luca Bollani [INOX]',NULL,NULL,'C',0,'captain',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3209124,'Angelo Parise',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3251469,'Cosimo Gualano [INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3252657,'Andrea Cerri [INOX]',NULL,NULL,'Aplus',0,'captain','/uploads/profile_picture/1724857026_IMG_5707.jpeg','2026-05-14 05:20:19',5.34,315,6.51,384,3252657,'79995e6c-1f4d-4db6-9243-6a048e60f75d','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3287400,'Filippo Grasso (Team Italy 2)',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3432509,'Andrea Falchetti [INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3499743,'Elvis Gatta [INOX] Sprint Bike Lumezzane',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3509403,'Renato Coco [INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3526308,'Omar Saglietti',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3605633,'Ale Volt [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3617605,'Francesco Ravasi',NULL,NULL,'C',0,'captain','/uploads/profile_picture/1734338820_38ac560823f041f12a73073a48be7f87 - Copia.jpg','2026-05-14 10:53:49',2.76,250,3.29,298,3617605,'7af2a7ad-02d4-48a2-b213-5e284962d12a',NULL);
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3621244,'Peter Brockhaus',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3668635,'Salvatore Cannazza [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(3891733,'Pierpaolo Varvazzo',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/28061bc8-2020867','2026-05-14 05:20:19',3.9,230,4.49,265,3891733,'ef269151-2c5b-4ba7-bbe7-99ed55cdf33d','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4184968,'Panagiotis Manousaridis',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4209127,'Antonio Bove',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/1047df23-2129379','2026-05-14 05:20:19',3.47,257,4.34,321,4209127,'8cd3f897-e384-4514-83cd-8b98cb20efb0','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4314738,'Teto pezz [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4333414,'Paolo Spadaro',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1649167028_WhatsApp Image 2022-04-05 at 15.56.34.jpeg','2026-05-14 05:20:19',3.27,242,3.91,289,4333414,'9a2cd48e-4857-4f66-9fe4-254701700821','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4344470,'Tommaso Scaramuzzino',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4353051,'Emanuele Russo',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4369191,'Luca Adamo',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/addfd74c-3184703','2026-05-14 05:20:19',2.77,244,3.26,287,4369191,'41c47c85-791e-4e93-925f-7ba1ce497394','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4376881,'Mike Donohue',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4379545,'Mirko Gritti [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4383852,'ANDREA CAPRA',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4386482,'Claudio Fioravanti',NULL,NULL,'D',0,'athlete','/uploads/profile_picture/default.png','2026-05-14 05:20:19',2.55,171,2.86,192,4386482,'77e838ec-7999-40a4-9954-c1609417540d','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4430242,'Michele Bonometti',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4431468,'Simone Mingo [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4480037,'Simon Lapierre [Dragons]🐲',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4483917,'Paulin Z. CJ TT1D',NULL,NULL,'D',0,'captain','https://static-cdn.zwift.com/prod/profile/a7d07d6f-3265408','2026-05-14 05:20:19',2.6,244,3.18,299,4483917,'8d66b4bd-0e1f-4e4b-ad1d-265190669951','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4514178,'Robert Schulz',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4562674,'Georgios Filiousis [TSE]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4578777,'3 Mirko [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4583700,'Sandro Giusti',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1727186555_FB_IMG_1727186351400.jpg','2026-05-14 05:20:19',3.15,236,3.73,280,4583700,'c4f34af6-a2de-425f-bfe6-00c7d4049591','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4622555,'Alessio Nisini',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/6fb48741-2789587','2026-05-14 05:20:19',2.84,213,3.51,263,4622555,'82d8de74-ffd5-44a5-ac50-179a252db626','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4645426,'filippo cogiamanian',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4651499,'Sakis Vettis [EPICA]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4651873,'FIORE ROBERTINO',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4661355,'Mattia Ferrini [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4686799,'Roberto Pegoraro [Inox]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4719640,'Ulrich Extermann',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4734277,'Roberto Sciaccaluga [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4834697,'Simone Cianferoni [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4840724,'Kai Mittelmann [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4856666,'Antonio Ceredi (ITA3)',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4870988,'.Mauro (TSE)',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(4899770,'Claudio Scavo',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5015562,'1 Cristian Modolin[INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5023502,'Thomas Fischer',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/1060de29-2484729','2026-05-14 05:20:19',2.72,233,3.55,304,5023502,'8a6b2a88-5ddb-402c-8b4f-7fb8d57f8794','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5061824,'Franco Fiorentino [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5127808,'Sebastian Reeck',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5145191,'Paolo Pontonio [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5153886,'Oz Onder',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/f83b08df-2573797','2026-05-14 05:20:19',2.53,181,3.58,256,5153886,'59e3c179-ee63-400a-9101-249f8b1cb05f','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5191249,'Tiziano Speranza [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5207789,'Live Team Inox',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5214842,'Massimo Pira_1971',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5225516,'S. Erbetta',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5265039,'manuel magnotti',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/e03ab9d8-2576434','2026-05-14 10:53:50',2.27,238,3.04,319,5265039,'c631bc0c-57b9-4a58-92d0-d61c184d8399',NULL);
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5280007,'Massimiliano Caccia [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5281288,'Mathieu Baglan',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5307541,'Mario Belussi',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5311216,'Halil Cetinbas',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5326476,'Jack Regier(OTE)',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5327554,'Norves Lazzarini [INOX]',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5330540,'DAVIDE FACCHIN',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5372432,'Maximilian Mione',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/dd987705-2614080','2026-05-14 05:20:19',3.32,276,3.83,319,5372432,'1b59d09d-9e67-4adb-9b44-389c021eab40','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5376917,'Danilo Mazzola [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5401300,'Giovanni Maria Barbin',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5425127,'Dave OCarroll (ERCC)',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5521222,'Daje 88 ]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5526266,'Paolo Baldas [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5556575,'Daniele Marzari [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5577047,'Mauro Nana',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/f14167eb-2704249','2026-05-14 05:20:19',2.15,146,2.45,167,5577047,'6066e7be-4eca-4d01-b22f-2add152cb365','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5618670,'AGP 21',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5650560,'Andrea Erba',NULL,NULL,'B',0,'captain',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5702975,'Mike Lucinsky INOX',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5783213,'Bruno Biancardi',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5794051,'Valerio Vassallo',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5797700,'Thomas Borghese',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5908339,'Joao Pedro Rodrigues Branquinho',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5917647,'Alan Vector [INOX]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5927549,'roberto castori [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5932502,'Gabriele Conti',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5949065,'Tomer Kenan',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5959655,'Giuseppe Liccardo [INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5965851,'Guido Lamet',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(5985006,'Roberto Capasso',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6012732,'stefano bordi [inox]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6022604,'Valentino Birolini',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6031113,'Andrea Galeotti',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6046042,'Bastiano Coimbra Azevedo',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6057042,'Gero [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6057167,'Federico Garavaglia',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/6137d727-2872471','2026-05-14 05:20:19',3.72,275,4.95,366,6057167,'da190b74-73d9-4960-830e-df5fc52451f3','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6059566,'Antonio Caramia[INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6063066,'David Grosso',NULL,NULL,'D',0,'captain','/uploads/profile_picture/1705438504_370137224_302903635998774_2080740969305295614_n.jpg','2026-05-14 05:20:19',2.55,237,3.03,282,6063066,'7914de4e-d9cc-4e92-957e-4c510693ba3b','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6064280,'Michelangelo Ianzito',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6078848,'Birgit Scheffer',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6105089,'Faris Chihab',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6109036,'Giancarlo Rugolo',NULL,NULL,'C',0,'athlete','/uploads/profile_picture/1730991966_IMG_3831.jpeg','2026-05-14 05:20:19',3.14,220,3.56,249,6109036,'7db82c5e-b465-4a99-b9d6-448d6ff5b770','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6117581,'paul spadaro [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6132334,'federico Zucca[ITA]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6134007,'. Sloth',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6139819,'Luca Durighel [INOX]',NULL,NULL,'B',0,'athlete','/uploads/profile_picture/default.png','2026-05-14 05:20:19',3.54,287,4.62,374,6139819,'115855d2-579a-474e-a034-92e92404a113','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6145554,'Michele Cervellin [INOX]',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6155651,'Graziano Borelli [INOX]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6172044,'umberto dianzani',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/d801d9a8-2977044','2026-05-14 05:20:19',2.92,231,3.34,264,6172044,'0d032764-7c4e-4164-bdb0-194d60ea8b5d','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6272522,'T Om LEVEL 🚀',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6287052,'Pietro Capra',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6291122,'Zeno Sempreboni [ITA]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6306811,'ALESSANDRO SARDO',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6345533,'Mark Tighe',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6354912,'Horse. Crasy[inox]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6426346,'Gigio Santamaria [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6432653,'Cristian Raimo [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6438753,'Facundo Llambias',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6441343,'Vincenzo Larocca',NULL,NULL,'C',0,'captain','https://static-cdn.zwift.com/prod/profile/34dfbabf-3003887','2026-05-14 05:20:19',2.94,268,3.54,323,6441343,'f9e3425f-fbf2-42b8-938b-4b540d9569f0','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6465392,'Ulisse Bellucci',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6486170,'Samantha Forte',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6562494,'Matteo Fumagalli',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/144cb496-3077306','2026-05-14 05:20:19',3.48,268,4.37,336,6562494,'24121fed-6aa9-445c-9c88-d63c7891457f','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6731694,'Alessandro Sozzi',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6745513,'Massimo Picozzi',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6778481,'Giovanni Bettega',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6781105,'Emanuele Andreoni [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6796084,'L Main',NULL,NULL,'A+',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6797127,'Cristian Pelosi',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/d8504895-3086513','2026-05-14 05:20:19',3.11,208,3.84,257,6797127,'ca25c43c-f1c9-4878-8f3a-a86ddb9ee011','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6801312,'Luca Bille',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/e9ecfb8a-3070922','2026-05-14 05:20:19',3.49,230,3.96,261,6801312,'62ec922a-7951-4a0c-b294-51b8938e3817','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6811945,'Marco Esposito [INOX]',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/e8626ad5-3120472','2026-05-14 05:20:19',2.76,229,3.28,272,6811945,'055ca9ab-1739-476c-a765-e7dd9d27441a','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6873542,'Jon Hall',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6922219,'Nico Malvicini [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6940707,'Claudio News',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6944697,'Roberto C. (TSE)',NULL,NULL,'A',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(6965131,'Sebastian Helm',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7001570,'Stefano Caccia [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7072727,'Street Hawk [INOX]',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7101358,'Guido Senzauto',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7121469,'Massimo Spagnoli',NULL,NULL,'B',0,'athlete','https://static-cdn.zwift.com/prod/profile/5b6e0dc5-3171519','2026-05-14 05:20:19',3.36,235,4.22,295,7121469,'aed54c81-a91d-4a03-af98-51ddce82ab27','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7197230,'Giuseppe Carbonari [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7371977,'Roberto Sanna',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/d72b00ef-3228693','2026-05-14 05:20:19',3.01,215,3.79,271,7371977,'1ecf3d63-2aa0-4a1e-87e2-8c9eaa46c54f','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7463714,'Michael Kirscht INOX',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/c1eb2505-3259865','2026-05-14 05:20:19',3.21,231,3.72,268,7463714,'ff674af9-fb20-4adf-aaec-5668ea1d4455','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7480908,'Eveline Decock [WATT]',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7506263,'Mattia Milchick [INOX]',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7553796,'Jonah .M',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7563772,'Samuele Curradi [INOX]',NULL,NULL,'B',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7590897,'Mike Cox',NULL,NULL,'D',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7596532,'Luca SAMPAOLESI',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/e9ef4a67-3271584','2026-05-14 05:20:19',2.75,204,3.2,237,7596532,'810614c2-bfd0-4ffb-8368-5d15724c157b','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7603081,'Giovanni Cingolani',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/7e2b0465-3269089','2026-05-14 05:20:19',2.15,181,2.63,221,7603081,'1a27708b-45d9-4371-ba66-64ef25c066f5','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7659233,'Fabio Ghislotti [INOX]',NULL,NULL,'C',0,'athlete','https://static-cdn.zwift.com/prod/profile/51233565-3281601','2026-05-14 05:20:19',3.11,243,3.34,261,7659233,'6063fe8d-3025-4c38-a0b0-3d06e64258a7','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7670305,'A🚴🚴‍♂️Rosario',NULL,NULL,'',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7735580,'Cristian Bonafé',NULL,NULL,'D',0,'athlete','https://static-cdn.zwift.com/prod/profile/24e1a065-3389049','2026-05-14 05:20:19',2.34,204,2.68,233,7735580,'48167582-f0a6-49c7-b2b4-91b54ce64c50','M');
+INSERT INTO "athletes" ("zwid","name","email","password_hash","base_category","is_registered_tour","role","avatar_url","created_at","zftp","zftpw","zmap","zmapw","profile_id","wtrl_user_id","gender") VALUES(7806825,'Gabriele Forzelin Inox',NULL,NULL,'C',0,'athlete',NULL,'2026-05-14 05:20:19',NULL,NULL,NULL,NULL,NULL,NULL,'M');
+CREATE TABLE series (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,              
+    external_season_id INTEGER,      
+    scoring_type TEXT DEFAULT 'points',
+    is_active BOOLEAN DEFAULT 0,
+    start_date DATETIME,
+    end_date DATETIME
+);
+INSERT INTO "series" ("id","name","external_season_id","scoring_type","is_active","start_date","end_date") VALUES(58,'ZRL Round 19',19,'points',1,'2026-04-07T08:00:00Z','2026-04-28T08:00:00Z');
+CREATE TABLE rounds (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    series_id INTEGER REFERENCES series(id),
+    name TEXT NOT NULL,              
+    date DATETIME,
+    world TEXT,
+    route TEXT,
+    zwift_event_id INTEGER
+, format TEXT DEFAULT 'Scratch', distance REAL DEFAULT 0, elevation REAL DEFAULT 0, powerups TEXT, strategy_details TEXT, category TEXT DEFAULT 'ALL');
+INSERT INTO "rounds" ("id","series_id","name","date","world","route","zwift_event_id","format","distance","elevation","powerups","strategy_details","category") VALUES(294,58,'1','2026-04-07T08:00:00Z','FRANCE','Hell of the North',NULL,'wtrlttt',20.2,241,'forcedpowerupid=1','{"fal_segments":[],"fts_segments":[],"powerup_details":"forcedpowerupid=1","category_details":{"A":{"world":"FRANCE","route":"Hell of the North","distance":20.2,"elevation":241,"fal_segments":[],"fts_segments":[]},"C":{"world":"FRANCE","route":"Hell of the North","distance":20.2,"elevation":241,"fal_segments":[],"fts_segments":[]}}}','ALL');
+INSERT INTO "rounds" ("id","series_id","name","date","world","route","zwift_event_id","format","distance","elevation","powerups","strategy_details","category") VALUES(295,58,'2','2026-04-14T08:00:00Z','WATOPIA','The Classic',NULL,'race',33.2,307,'starting_powerup=0','{"fal_segments":["Jarvis FWD Climb (x6)","Jarvis FWD Sprint (x6)"],"fts_segments":["Jarvis FWD Climb (x6)","Jarvis FWD Sprint (x6)"],"powerup_details":"starting_powerup=0","category_details":{"A":{"world":"WATOPIA","route":"The Classic","distance":33.2,"elevation":307,"fal_segments":["Jarvis FWD Climb (x6)","Jarvis FWD Sprint (x6)"],"fts_segments":["Jarvis FWD Climb (x6)","Jarvis FWD Sprint (x6)"]},"C":{"world":"WATOPIA","route":"The Classic","distance":23.5,"elevation":210,"fal_segments":["Jarvis FWD Climb (x4)","Jarvis FWD Sprint (x4)"],"fts_segments":["Jarvis FWD Climb (x4)","Jarvis FWD Sprint (x4)"]}}}','ALL');
+INSERT INTO "rounds" ("id","series_id","name","date","world","route","zwift_event_id","format","distance","elevation","powerups","strategy_details","category") VALUES(296,58,'3','2026-04-21T08:00:00Z','FRANCE','Croissant',NULL,'scratch',40.3,220,'starting_powerup=1','{"fal_segments":[],"fts_segments":[],"powerup_details":"starting_powerup=1","category_details":{"A":{"world":"FRANCE","route":"Croissant","distance":40.3,"elevation":220,"fal_segments":[],"fts_segments":[]},"C":{"world":"FRANCE","route":"Croissant","distance":31.1,"elevation":171,"fal_segments":[],"fts_segments":[]}}}','ALL');
+INSERT INTO "rounds" ("id","series_id","name","date","world","route","zwift_event_id","format","distance","elevation","powerups","strategy_details","category") VALUES(297,58,'4','2026-04-28T08:00:00Z','NEWYORK','Double Span Spin',NULL,'race',40.7,440,'starting_powerup=5','{"fal_segments":["Manhattan REV Sprint (x6)","Brooklyn Bridge FWD Climb (x5)"],"fts_segments":["Manhattan REV Sprint (x6)","Brooklyn Bridge FWD Climb (x5)"],"powerup_details":"starting_powerup=5","category_details":{"A":{"world":"NEWYORK","route":"Double Span Spin","distance":40.7,"elevation":440,"fal_segments":["Manhattan REV Sprint (x6)","Brooklyn Bridge FWD Climb (x5)"],"fts_segments":["Manhattan REV Sprint (x6)","Brooklyn Bridge FWD Climb (x5)"]},"C":{"world":"NEWYORK","route":"Double Span Spin","distance":26.6,"elevation":280,"fal_segments":["Manhattan REV Sprint (x4)","Brooklyn Bridge FWD Climb (x3)"],"fts_segments":["Manhattan REV Sprint (x4)","Brooklyn Bridge FWD Climb (x3)"]}}}','ALL');
+CREATE TABLE results (
+    round_id INTEGER REFERENCES rounds(id),
+    zwid INTEGER REFERENCES athletes(zwid),
+    time REAL,
+    points_total INTEGER DEFAULT 0,
+    data_source TEXT                 
+, points_finish INTEGER DEFAULT 0, points_fal INTEGER DEFAULT 0, points_fts INTEGER DEFAULT 0, position INTEGER);
+CREATE TABLE availability (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    athlete_id INTEGER REFERENCES athletes(zwid),
+    round_id INTEGER REFERENCES rounds(id),
+    status TEXT DEFAULT 'available', 
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(athlete_id, round_id)
+);
+CREATE TABLE league_times (
+    id TEXT PRIMARY KEY,
+    region TEXT NOT NULL,          
+    start_time_utc TEXT NOT NULL,  
+    display_name TEXT NOT NULL,    
+    slot_order INTEGER
+);
+CREATE TABLE user_time_preferences (
+    zwid INTEGER NOT NULL,
+    time_slot_id TEXT NOT NULL,
+    preference_level INTEGER DEFAULT 1, 
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (zwid, time_slot_id),
+    FOREIGN KEY (zwid) REFERENCES athletes(zwid),
+    FOREIGN KEY (time_slot_id) REFERENCES league_times(id)
+);
+CREATE TABLE inox_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    day_of_week TEXT NOT NULL,       
+    time TEXT NOT NULL,              
+    description TEXT,
+    zwift_link TEXT,
+    category TEXT,                   
+    is_active BOOLEAN DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+, strava_segment_id TEXT);
+INSERT INTO "inox_events" ("id","name","day_of_week","time","description","zwift_link","category","is_active","created_at","strava_segment_id") VALUES(52,'TEST','Lunedì','18:30','','','Race',1,'2026-05-15 22:06:53','');
+INSERT INTO "inox_events" ("id","name","day_of_week","time","description","zwift_link","category","is_active","created_at","strava_segment_id") VALUES(53,'TEST','Lunedì','18:30','','','Race',1,'2026-05-15 22:07:01','');
+CREATE TABLE winter_tour_points (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    series_id INTEGER REFERENCES series(id),
+    position INTEGER,
+    points INTEGER,
+    UNIQUE(series_id, position)
+);
+CREATE TABLE strava_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER REFERENCES inox_events(id),
+    athlete_id INTEGER REFERENCES athletes(zwid),
+    activity_id TEXT,
+    segment_id TEXT,
+    elapsed_time INTEGER, 
+    moving_time INTEGER,
+    average_watts REAL,
+    rank_in_event INTEGER,
+    points_awarded INTEGER,
+    sync_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, athlete_id)
+);
+CREATE TABLE strava_tokens (
+    athlete_id INTEGER PRIMARY KEY REFERENCES athletes(zwid),
+    access_token TEXT,
+    refresh_token TEXT,
+    expires_at INTEGER,
+    scope TEXT
+);
+CREATE TABLE d1_migrations(
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		name       TEXT UNIQUE,
+		applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(1,'20260406_round_management.sql','2026-05-01 16:24:45');
+INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(2,'20260416_wtrl_sync_updates.sql','2026-05-01 16:26:24');
+INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(3,'000_initial_schema.sql','2026-05-12 19:03:07');
+CREATE TABLE IF NOT EXISTS "teams" (
+    wtrl_team_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT,
+    division TEXT,
+    division_number INTEGER,
+    captain_id INTEGER REFERENCES athletes(zwid),
+    club_id TEXT,
+    tttid INTEGER,
+    club_name TEXT,
+    gender TEXT,
+    league TEXT,
+    zrldivision TEXT,
+    league_color TEXT,
+    rec INTEGER,
+    status INTEGER,
+    is_dev INTEGER,
+    rounds TEXT,
+    member_count INTEGER
+);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(74016,'Team INOX FIRE','C','Open Lime League Division C2',2,6441343,'',16604,'','','235','C',NULL,NULL,NULL,0,'["1","2","3","4"]',11);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(74930,'Team INOX Trinacria','B','Open Blue League Division B2',2,1152951,'',18013,'','','241','B',NULL,NULL,NULL,0,'["1","2","3","4"]',10);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75144,'TEAM INOX ELITE','A','WITHDRAWN - UNDER MIN MEMBERS (2410A0)',0,3252657,'',14386,'','','241','A',NULL,NULL,NULL,0,'["1","2","3","4"]',1);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75145,'Team INOX MADNESS','B','Open Emerald League Division B1',1,1141125,'',15021,'','','233','B',NULL,NULL,NULL,0,'["1","2","3","4"]',10);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75149,'Team INOX PRO','C','SUSPENDED - TEAM NO-SHOW (2350C0)(TEAM NO-SHOW)',2,3208463,'',13730,'','','235','C',NULL,NULL,NULL,0,'["1","2","3","4"]',12);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75150,'Team INOX AAB','C','Open Shamrock League Division C3',3,1237268,'',13732,'','','237','C',NULL,NULL,NULL,0,'["1","2","3","4"]',12);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75151,'TEAM INOX MONSTERS','C','Open Emerald League Division C1',1,1821578,'',16868,'','','233','C',NULL,NULL,NULL,0,'["1","2","3","4"]',10);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75152,'Team INOX NIGHTMARE','B','WITHDRAWN - UNDER MIN MEMBERS (2350B0)',0,5650560,'',14596,'','','235','B',NULL,NULL,NULL,0,'["1","2","3","4"]',0);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75258,'TEAM INOX LOL','D','Open Lime League Division D1',1,4483917,'',13973,'','','235','D',NULL,NULL,NULL,0,'["1","2","3","4"]',11);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(75570,'Team INOX TURTLES','D','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)',1,6063066,'',18235,'','','236','D',NULL,NULL,NULL,0,'["1","2","3","4"]',10);
+INSERT INTO "teams" ("wtrl_team_id","name","category","division","division_number","captain_id","club_id","tttid","club_name","gender","league","zrldivision","league_color","rec","status","is_dev","rounds","member_count") VALUES(76139,'Team INOX WARRIORS','B','SUSPENDED - TEAM NO-SHOW (2310B0)(TEAM NO-SHOW)',1,3617605,'',17159,'','','231','B',NULL,NULL,NULL,0,'["2","3","4"]',7);
+CREATE TABLE IF NOT EXISTS "team_members" (
+    team_id INTEGER REFERENCES "teams"(wtrl_team_id),
+    athlete_id INTEGER REFERENCES athletes(zwid),
+    PRIMARY KEY (team_id, athlete_id)
+);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,4622555);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,1120055);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,966756);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,3617605);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,4369191);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,7596532);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,3059451);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,6797127);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,6109036);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,6811945);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,1237268);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75150,1682095);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75144,3252657);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,397261);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,6797127);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,3617605);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,2975361);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,6172044);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,6441343);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,6109036);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,7596532);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,6811945);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,5372432);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74016,1992085);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,3165807);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,4386482);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,6063066);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,5577047);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,4483917);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,1573619);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,7735580);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,2197162);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,1652663);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,2148682);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75258,5265039);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,1141125);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,4209127);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,6139819);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,6801312);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,1520796);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,1120055);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,7121469);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,4333414);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,475715);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75145,931830);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,1821578);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,2889372);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,7463714);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,7371977);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,4583700);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,5023502);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,2336555);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,943471);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,397261);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75151,1900916);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,3059451);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,4369191);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,7596532);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,6811945);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,6172044);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,1682095);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,1992085);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,7659233);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,3617605);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,6109036);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,7463714);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75149,5023502);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,810115);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,1842490);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,2690375);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,1152951);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,4333414);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,3891733);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,164627);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,3092045);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,6801312);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(74930,904546);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,3165807);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,4386482);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,2148682);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,1573619);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,42382);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,6063066);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,7603081);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,5265039);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,1797268);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(75570,4483917);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,2889372);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,6139819);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,7121469);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,6562494);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,6057167);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,5153886);
+INSERT INTO "team_members" ("team_id","athlete_id") VALUES(76139,475715);
+CREATE TABLE IF NOT EXISTS "round_teams" (
+    round_id INTEGER REFERENCES rounds(id),
+    team_id INTEGER REFERENCES "teams"(wtrl_team_id),
+    timeslot_id TEXT REFERENCES league_times(id),
+    PRIMARY KEY (round_id, team_id)
+);
+CREATE TABLE IF NOT EXISTS "race_lineup" (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    round_id INTEGER REFERENCES rounds(id),
+    team_id INTEGER REFERENCES "teams"(wtrl_team_id),
+    athlete_id INTEGER REFERENCES athletes(zwid),
+    role TEXT DEFAULT 'starter',
+    status TEXT DEFAULT 'pending',
+    UNIQUE(round_id, athlete_id)
+);
+CREATE TABLE zrl_seasons (
+                id INTEGER PRIMARY KEY, 
+                name TEXT NOT NULL, 
+                external_season_id INTEGER, 
+                is_active BOOLEAN DEFAULT 0
+            );
+INSERT INTO "zrl_seasons" ("id","name","external_season_id","is_active") VALUES(1,'ZRL Season 2025/26',NULL,1);
+CREATE TABLE zrl_round_groups (
+                id INTEGER PRIMARY KEY, 
+                series_id INTEGER, 
+                round_index INTEGER, 
+                external_season_id INTEGER, 
+                description TEXT, 
+                is_closed BOOLEAN DEFAULT 0,
+                FOREIGN KEY (series_id) REFERENCES zrl_seasons(id)
+            );
+INSERT INTO "zrl_round_groups" ("id","series_id","round_index","external_season_id","description","is_closed") VALUES(1,1,1,19,'ZRL Round 19',0);
+CREATE TABLE zrl_races (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                zrl_round_group_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                date DATETIME,
+                world TEXT,
+                route TEXT,
+                FOREIGN KEY (zrl_round_group_id) REFERENCES zrl_round_groups(id)
+            );
+CREATE TABLE zrl_team_standings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                round_group_id INTEGER NOT NULL, 
+                league_key TEXT NOT NULL, 
+                league_name TEXT,
+                team_name TEXT NOT NULL, 
+                rank INTEGER, 
+                league_points INTEGER, 
+                pts_fal INTEGER, 
+                pts_fts INTEGER, 
+                pts_finish INTEGER, 
+                total_race_points INTEGER,
+                r1 TEXT, r2 TEXT, r3 TEXT, r4 TEXT, r5 TEXT, r6 TEXT, r7 TEXT, r8 TEXT, 
+                is_inox BOOLEAN DEFAULT 0, wtrl_team_id INTEGER,
+                FOREIGN KEY (round_group_id) REFERENCES zrl_round_groups(id)
+            );
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(81,1,'2410B20','Open Blue League Division B2','TBG B',1,20,2199,16,276,2199,'7','4','4','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(82,1,'2410B20','Open Blue League Division B2','KC Drafting Bees',2,18,2656,48,311,2656,'4','5','5','4','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(83,1,'2410B20','Open Blue League Division B2','Team INOX Trinacria',3,12,1754,40,205,1754,'3','3','3','3','0','0','0','0',1,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(84,1,'2410B20','Open Blue League Division B2','Rocacorba Collective Mens B',4,12,1168,16,113,1168,'6','2','2','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(85,1,'2410B20','Open Blue League Division B2','SYN eRacing Team - TERRA',5,7,956,0,104,956,'5','1','0','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(86,1,'2410B20','Open Blue League Division B2','SIBG B',6,2,0,0,0,0,'2','0','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(87,1,'2410B20','Open Blue League Division B2','SYN eRacing Team - STREAM',7,0,0,0,0,0,'0','0','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(88,1,'2330B10','Open Emerald League Division B1','Rush Pack eSRT',1,37,4609,84,673,4609,'9','9','10','9','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(89,1,'2330B10','Open Emerald League Division B1','WattFabrik WattGockel',2,31,3848,4,552,3848,'6','8','9','8','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(90,1,'2330B10','Open Emerald League Division B1','WATT BoiTTE',3,21,2435,0,421,2435,'3','4','8','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(91,1,'2330B10','Open Emerald League Division B1','Foudre Bourgueil',4,21,2321,8,368,2321,'7','6','7','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(92,1,'2330B10','Open Emerald League Division B1','Ride Club Finland B1',5,21,2554,14,344,2554,'10','5','4','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(93,1,'2330B10','Open Emerald League Division B1','SISU Racing Drake',6,17,2496,6,328,2496,'2','7','3','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(94,1,'2330B10','Open Emerald League Division B1','TFC Saints',7,17,1180,0,266,1180,'5','0','5','7','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(95,1,'2330B10','Open Emerald League Division B1','OikR',8,15,668,2,240,668,'8','1','6','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(96,1,'2330B10','Open Emerald League Division B1','BIKES FRANCE - Team Frenchy Burritos',9,12,1657,2,227,1657,'4','3','2','3','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(97,1,'2330B10','Open Emerald League Division B1','Team INOX MADNESS',10,8,1240,0,166,1240,'1','2','1','4','0','0','0','0',1,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(98,1,'2310B10','SUSPENDED - TEAM NO-SHOW (2310B0)(TEAM NO-SHOW)','SISU Racing Naakka',1,2,0,0,0,0,'2','0','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(99,1,'2310B10','SUSPENDED - TEAM NO-SHOW (2310B0)(TEAM NO-SHOW)','TFC Saints',2,0,12,60,1,12,'0','0','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(100,1,'2310B10','SUSPENDED - TEAM NO-SHOW (2310B0)(TEAM NO-SHOW)','Team F3 BSides',3,0,0,0,0,0,'0','0','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(101,1,'2330C10','Open Emerald League Division C1','RuhrRiders C2 Team',1,25,2083,44,401,2083,'7','7','5','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(102,1,'2330C10','Open Emerald League Division C1','SISU Racing Hauru',2,20,1593,20,301,1593,'6','6','6','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(103,1,'2330C10','Open Emerald League Division C1','CSVC Chcipaci',3,19,1402,42,327,1402,'3','4','7','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(104,1,'2330C10','Open Emerald League Division C1','TEAM INOX MONSTERS',4,18,1637,0,299,1637,'5','5','4','4','0','0','0','0',1,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(105,1,'2330C10','Open Emerald League Division C1','Tannheimer SC Cat C',5,13,1081,14,194,1081,'4','3','3','3','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(106,1,'2330C10','Open Emerald League Division C1','SISU Racing Kana',6,4,213,0,58,213,'0','2','2','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(107,1,'2330C10','Open Emerald League Division C1','RuhrRiders C2.1 Team',7,1,406,0,70,406,'0','0','0','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(108,1,'2350C20','Open Lime League Division C2','EVO Core HP',1,42,3840,10,792,3840,'10','11','11','10','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(109,1,'2350C20','Open Lime League Division C2','RR White Rhinos',2,34,3468,24,717,3468,'5','10','10','9','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(110,1,'2350C20','Open Lime League Division C2','Kirchmair  Stinging Bees',3,31,3290,32,675,3290,'2','9','9','11','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(111,1,'2350C20','Open Lime League Division C2','WattFabrik WattLutscher',4,29,2392,48,532,2392,'11','3','8','7','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(112,1,'2350C20','Open Lime League Division C2','CMC Oryx',5,26,2694,0,491,2694,'9','6','3','8','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(113,1,'2350C20','Open Lime League Division C2','Ghost Team - Blinky',6,23,2420,0,439,2420,'3','8','6','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(114,1,'2350C20','Open Lime League Division C2','Team INOX FIRE',7,22,2133,6,418,2133,'6','4','7','5','0','0','0','0',1,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(115,1,'2350C20','Open Lime League Division C2','BIKES FRANCE - TEAM COYOTE',8,22,1951,0,371,1951,'8','7','4','3','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(116,1,'2350C20','Open Lime League Division C2','ZABI IRIDIUM',9,21,2062,0,412,2062,'7','5','5','4','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(117,1,'2350C20','Open Lime League Division C2','CMC Sangria',10,10,1094,0,232,1094,'4','2','2','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(118,1,'2350C20','Open Lime League Division C2','PainCavesHeroes Lime C',11,3,791,0,171,791,'0','1','1','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(119,1,'2370C30','Open Shamrock League Division C3','Team Santysiak Epica FURETTI',1,40,4211,22,796,4211,'8','11','10','11','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(120,1,'2370C30','Open Shamrock League Division C3','Dirty Sea Donkeys',2,36,2912,14,594,2912,'10','9','8','9','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(121,1,'2370C30','Open Shamrock League Division C3','Down n DIRTy Condors',3,35,2982,12,643,2982,'7','7','11','10','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(122,1,'2370C30','Open Shamrock League Division C3','Hercules Lionheart',4,31,2523,18,520,2523,'11','8','5','7','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(123,1,'2370C30','Open Shamrock League Division C3','[DBR] Blizzards',5,27,2265,14,385,2265,'9','10','4','4','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(124,1,'2370C30','Open Shamrock League Division C3','LEQP Maquis',6,24,2418,20,520,2418,'3','6','7','8','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(125,1,'2370C30','Open Shamrock League Division C3','TEAM ITA SWATTATI',7,20,2066,0,496,2066,'1','4','9','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(126,1,'2370C30','Open Shamrock League Division C3','KRT C - Love Guns',8,18,1738,4,393,1738,'5','5','6','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(127,1,'2370C30','Open Shamrock League Division C3','Academia Peta-Z',9,12,1846,0,406,1846,'2','3','2','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(128,1,'2370C30','Open Shamrock League Division C3','Team INOX AAB',10,12,1668,6,312,1668,'6','2','1','3','0','0','0','0',1,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(129,1,'2370C30','Open Shamrock League Division C3','FWP Mocha',11,9,1228,10,305,1228,'4','1','3','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(130,1,'2350D10','Open Lime League Division D1','Foudre Delirium',1,30,2458,18,486,2458,'9','7','8','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(131,1,'2350D10','Open Lime League Division D1','CMC Cheetahs',2,29,2406,16,500,2406,'8','5','9','7','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(132,1,'2350D10','Open Lime League Division D1','Herd of Centaurs',3,27,2110,6,421,2110,'10','6','7','4','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(133,1,'2350D10','Open Lime League Division D1','GTR Ninja Turtles',4,24,2821,58,455,2821,'3','9','4','8','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(134,1,'2350D10','Open Lime League Division D1','Dinos Dryosaurus',6,15,2221,8,390,2221,'0','8','2','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(135,1,'2350D10','Open Lime League Division D1','COALITION INTENSITY',7,15,1264,0,285,1264,'4','3','6','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(136,1,'2350D10','Open Lime League Division D1','WCC Chain Reactions ',8,13,881,0,207,881,'7','2','3','1','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(137,1,'2350D10','Open Lime League Division D1','Swedish Zwift Racers D1',9,12,1868,8,281,1868,'2','10','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(138,1,'2350D10','Open Lime League Division D1','[KLUB] Doppios',10,7,521,2,67,521,'6','1','0','0','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(139,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','EVO Mayhem',1,34,2826,12,575,2826,'7','9','9','9','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(140,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','TFC Ghost Riders',2,24,1944,20,407,1944,'2','6','8','8','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(141,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','HISP VANDALOS Team',3,21,1780,30,342,1780,'4','5','5','7','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(142,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','ZWDL D-LUXE',4,20,1788,2,344,1788,'6','8','3','3','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(143,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','Watt Age',5,20,1485,18,312,1485,'5','3','6','6','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(144,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','Valhalla Aurora',6,19,1694,4,345,1694,'0','7','7','5','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(145,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','Level Devils',7,12,1154,16,265,1154,'4','2','4','2','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(146,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','GTR Dragons',8,11,1408,8,261,1408,'1','4','2','4','0','0','0','0',0,NULL);
+INSERT INTO "zrl_team_standings" ("id","round_group_id","league_key","league_name","team_name","rank","league_points","pts_fal","pts_fts","pts_finish","total_race_points","r1","r2","r3","r4","r5","r6","r7","r8","is_inox","wtrl_team_id") VALUES(147,1,'2360D10','SUSPENDED - TEAM NO-SHOW (2360D0)(TEAM NO-SHOW)','SCANNELLATORI SERIALI DINAMO LOSCA',9,5,1070,10,179,1070,'3','1','1','0','0','0','0','0',0,NULL);
+CREATE TABLE division_results (id INTEGER PRIMARY KEY AUTOINCREMENT, round_id INTEGER NOT NULL, league_key TEXT NOT NULL, team_name TEXT NOT NULL, rider_name TEXT, zwid INTEGER, position INTEGER, time REAL, points_finish INTEGER DEFAULT 0, points_fal INTEGER DEFAULT 0, points_fts INTEGER DEFAULT 0, points_total INTEGER DEFAULT 0, is_inox BOOLEAN DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, zid INTEGER, wtrl_team_id INTEGER, FOREIGN KEY (round_id) REFERENCES rounds(id));
+CREATE TABLE athlete_profile (
+    zwid INTEGER PRIMARY KEY,
+    current_category TEXT,
+    current_ftp INTEGER,
+    current_weight REAL,
+    current_rank REAL,
+    last_result_at DATETIME,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (zwid) REFERENCES athletes(zwid)
+);
+CREATE TABLE competitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL, 
+    season TEXT,
+    is_active BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    competition_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    event_date DATETIME,
+    route_name TEXT,
+    category TEXT,
+    source TEXT, 
+    source_event_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (competition_id) REFERENCES competitions(id)
+);
+CREATE TABLE athlete_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    zwid INTEGER NOT NULL,
+    field_name TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (zwid) REFERENCES athletes(zwid)
+);
+CREATE TABLE zrl_season_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    season_id INTEGER NOT NULL,
+    sequence_number INTEGER NOT NULL,
+    step_name TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload TEXT,
+    trace_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE zrl_orchestrator_locks (
+    season_id INTEGER PRIMARY KEY,
+    owner_token TEXT NOT NULL,
+    expires_at DATETIME NOT NULL
+);
+CREATE TABLE zrl_sequence_tracker (
+    season_id INTEGER PRIMARY KEY,
+    last_sequence_number INTEGER DEFAULT 0
+);
+CREATE TABLE zrl_idempotency_keys (
+    idempotency_key TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    result_payload TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE season_lifecycle_status (season_id INTEGER PRIMARY KEY, status TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO "season_lifecycle_status" ("season_id","status","updated_at") VALUES(1,'READY','2026-05-28 05:01:33');
+CREATE TABLE zrl_outbox_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            payload TEXT NOT NULL,
+            status TEXT DEFAULT 'PENDING',
+            retry_count INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            processed_at DATETIME
+        );
+DELETE FROM sqlite_sequence;
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('inox_events',53);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('series',58);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('rounds',297);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('availability',2020);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('d1_migrations',3);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('race_lineup',12);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('zrl_team_standings',147);
+INSERT INTO "sqlite_sequence" ("name","seq") VALUES('division_results',1911);
+CREATE INDEX idx_availability_round ON availability(round_id);
+CREATE INDEX idx_division_results_wtrl_team_id ON division_results(wtrl_team_id);
+CREATE INDEX idx_zrl_team_standings_wtrl_team_id ON zrl_team_standings(wtrl_team_id);
+CREATE INDEX idx_events_competition ON events(competition_id);
+CREATE INDEX idx_round_groups_series ON zrl_round_groups(series_id);
+CREATE INDEX idx_races_round_group ON zrl_races(zrl_round_group_id);
+CREATE INDEX idx_team_standings_round ON zrl_team_standings(round_group_id);
+CREATE INDEX idx_division_results_round ON division_results(round_id);
+CREATE INDEX idx_events_season_seq ON zrl_season_events(season_id, sequence_number);
+CREATE INDEX idx_events_trace ON zrl_season_events(trace_id);
+CREATE INDEX idx_locks_owner ON zrl_orchestrator_locks(owner_token);

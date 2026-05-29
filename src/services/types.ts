@@ -61,11 +61,13 @@ export interface AvailabilityData {
 
 export interface LineupEntry {
   round_id: number;
+  race_id?: number; // Added to support race-based lineup context
   team_id: number;
   athlete_id: number;
   role: 'starter' | 'reserve';
   status: 'pending' | 'confirmed' | 'rejected';
   athlete_name?: string;
+  athlete_avatar?: string;
   team_name?: string;
 }
 
