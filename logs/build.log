@@ -74,4 +74,4 @@ computing gzip size...
 [2mdist/[22m[36massets/html2canvas.esm-KvCGHBtx.js         [39m[1m[2m201.92 kB[22m[1m[22m[2m │ gzip:  48.33 kB[22m
 [2mdist/[22m[36massets/index-DmEnPxZZ.js                   [39m[1m[2m275.78 kB[22m[1m[22m[2m │ gzip:  87.22 kB[22m
 [2mdist/[22m[36massets/ZRLAnalytics-CZRUDJNl.js            [39m[1m[2m380.63 kB[22m[1m[22m[2m │ gzip: 110.81 kB[22m
-[32m✓ built in 10.68s[39m
+[32m✓ built in 12.95s[39m

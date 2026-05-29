@@ -17,8 +17,26 @@ export const ZRLImportService = {
     if (res.meta.changes === 0) throw new Error("Stato non trovato");
   },
 
+  importTeams: async (db: D1Database, seasonId: number, data: any[]) => {
+      return await ZRLImportService.importEntity(db, seasonId, 'teams', data);
+  },
+
   importRosterPhase1: async (db: D1Database, seasonId: number, data: any[]) => {
       return await ZRLImportService.importEntity(db, seasonId, 'roster', data);
+  },
+
+  performRosterCleanup: async (db: D1Database, seasonId: number, importId: string) => {
+    console.log(`[ZRLImportService] Performing Roster Cleanup for import ${importId}`);
+    // Marciamo come inattivi i membri che non erano nel file appena importato per questa stagione
+    await db.prepare(`
+        UPDATE team_members 
+        SET is_active = 0 
+        WHERE season_id = ? AND last_import_id != ?
+    `).bind(seasonId.toString(), importId).run();
+
+    await ZRLImportService.updateImportStatus(db, importId, 'done');
+    await db.prepare("DELETE FROM wtrl_import_locks WHERE import_id = ?").bind(importId).run();
+    return { success: true };
   },
 
   // --- Core Generic Import Logic ---
@@ -56,12 +74,24 @@ export const ZRLImportService = {
                     const sid = (seasonId || 0).toString();
                     const name = rider.name || 'Unknown';
                     const category = rider.category || 'N/A';
+                    const avatar = rider.avatar || '';
                     
                     if (wtrlRiderId === undefined || teamId === undefined || sid === undefined || name === undefined || category === undefined || importId === undefined) {
                         console.error("[Roster Import] Undefined bind value detected:", { wtrlRiderId, teamId, sid, name, category, importId });
                         throw new Error("D1_TYPE_ERROR: Attempted to bind undefined value");
                     }
 
+                    // 1. UPDATE ATHLETES TABLE (Crucial for Avatars)
+                    await db.prepare(`
+                        INSERT INTO athletes (zwid, name, base_category, avatar_url, created_at)
+                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(zwid) DO UPDATE SET 
+                            name = excluded.name,
+                            base_category = excluded.base_category,
+                            avatar_url = excluded.avatar_url
+                    `).bind(wtrlRiderId, name, category, avatar).run();
+
+                    // 2. UPDATE TEAM_MEMBERS
                     await db.prepare(`INSERT INTO team_members (athlete_id, wtrl_rider_id, team_id, season_id, name, category, is_active, last_import_id) 
                         VALUES (?, ?, ?, ?, ?, ?, 1, ?) 
                         ON CONFLICT(athlete_id, team_id, season_id) DO UPDATE SET name=excluded.name, is_active=1, last_import_id=excluded.last_import_id`)

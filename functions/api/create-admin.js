@@ -8,7 +8,7 @@ export async function onRequestGet({ env }) {
 
     try {
         const email = "admin@teaminox.it";
-        const password = "InoxTeam2026!";
+        const password = env.ADMIN_PASSWORD || "CHANGE_THIS_IN_PRODUCTION";
         const username = "AdminInox";
         const role = "admin";
         const zwid = 1; // ZwiftID fisso per l'Admin di sistema

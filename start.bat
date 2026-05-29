@@ -2,73 +2,54 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 REM ========================================================
-REM INOXTEAM DEV ORCHESTRATOR (STABLE MODE)
+REM INOXTEAM PLATFORM - STABLE VITE-FIRST WORKFLOW
 REM ========================================================
 
 set FRONTEND_PORT=5173
 set WRANGLER_PORT=8788
-
 set D1_DB_ID=63574bc1-97de-4d3e-8682-0e3b48739252
 
 echo ========================================================
-echo INOXTEAM PLATFORM DEV (STABLE MODE)
+echo INOXTEAM PLATFORM - FINAL STABLE FIX
 echo ========================================================
-echo Frontend : http://127.0.0.1:%FRONTEND_PORT%
-echo Backend  : http://127.0.0.1:%WRANGLER_PORT%
-echo ========================================================
-echo.
 
-if not exist logs mkdir logs
+REM 1. CLEANUP
+if exist dist rd /s /q dist
+if exist node_modules\.vite rd /s /q node_modules\.vite
+if exist temp_empty rd /s /q temp_empty
 
-REM ========================================================
-REM STOP PREVIOUS ONLY (SAFE)
-REM ========================================================
-
-echo Stopping previous instances...
+REM 2. STOP PREVIOUS
 taskkill /F /FI "WINDOWTITLE eq WRANGLER*" >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq VITE*" >nul 2>&1
+timeout /t 1 >nul
 
-timeout /t 2 >nul
+REM 3. START BACKEND (WRANGLER) - API only
+echo [1/2] Starting Wrangler (API Backend)...
+REM Note: We don't proxy here to avoid port-confusion in the browser.
+start "WRANGLER" cmd /c "npx wrangler pages dev . --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID% --compatibility-date=2024-04-03"
 
-REM ========================================================
-REM BUILD
-REM ========================================================
-
-echo [1/3] Building frontend...
-call npm run build > logs\build.log 2>&1
-
-IF %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Build failed. Check logs\build.log
-    pause
-    exit /b
-)
-
-echo Build OK.
-echo.
-
-REM ========================================================
-REM START BACKEND (WRANGLER)
-REM ========================================================
-
-echo [2/3] Starting Wrangler (Backend)...
-REM Nota: il binding è ZRL_DB per corrispondere al codice backend
-start "WRANGLER" cmd /k "npx wrangler pages dev dist --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID% --persist-to .wrangler/state"
-
+echo Waiting for API to be ready...
 timeout /t 5 >nul
 
-REM ========================================================
-REM START FRONTEND (VITE)
-REM ========================================================
-
-echo [3/3] Starting Vite (Frontend)...
-start "VITE" cmd /k "npm run dev"
+REM 4. START FRONTEND (VITE) - Main Access Point
+echo [2/2] Starting Vite (Frontend Engine)...
+REM Vite handles all JS/TSX correctly and proxies /api to Wrangler.
+start "VITE" cmd /c "npm run dev -- --port %FRONTEND_PORT%"
 
 echo.
 echo ========================================================
-echo SYSTEM RUNNING
-echo ========================================================
-echo Frontend: http://127.0.0.1:%FRONTEND_PORT%
-echo Backend:  http://127.0.0.1:%WRANGLER_PORT%
+echo SYSTEM READY
+echo.
+echo >> ACCESS POINT: http://localhost:%FRONTEND_PORT% <<
 echo ========================================================
 echo.
-pause
+echo Please use http://localhost:%FRONTEND_PORT% in your browser.
+echo API requests are automatically proxied to port %WRANGLER_PORT%.
+echo.
+pause >nul
+
+echo Stopping processes...
+taskkill /F /FI "WINDOWTITLE eq WRANGLER*" >nul 2>&1
+taskkill /F /FI "WINDOWTITLE eq VITE*" >nul 2>&1
+echo Done.
+exit

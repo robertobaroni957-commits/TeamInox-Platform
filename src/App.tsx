@@ -5,6 +5,7 @@ import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import { ZRLRealityProvider } from './services/ZRLRealityProvider';
+import { ActiveRoundProvider } from './context/ActiveRoundContext';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 /* =========================
@@ -24,7 +25,7 @@ const Teams = lazyWithRetry(() => import('./pages/Teams'));
 const Ranking = lazyWithRetry(() => import('./pages/Ranking'));
 const Events = lazyWithRetry(() => import('./pages/Events'));
 const Availability = lazyWithRetry(() => import('./pages/Availability'));
-const RosterBuilder = lazyWithRetry(() => import('./pages/RosterBuilder'));
+const LineupBuilder = lazyWithRetry(() => import('./pages/LineupBuilder'));
 
 /* =========================
    🔹 ZRL MODULES (HEAVY)
@@ -71,73 +72,75 @@ function PageLoader() {
 ========================= */
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
+    <ActiveRoundProvider>
+      <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
 
-          {/* =====================
-              PUBLIC ROUTES
-          ===================== */}
-          <Route path="/" element={<Welcome />} />
-          <Route path="/guest" element={<Guest />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/registrazione" element={<Navigate to="/register" replace />} />
+            {/* =====================
+                PUBLIC ROUTES
+            ===================== */}
+            <Route path="/" element={<Welcome />} />
+            <Route path="/guest" element={<Guest />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/registrazione" element={<Navigate to="/register" replace />} />
 
-          {/* =====================
-              PROTECTED APP
-          ===================== */}
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}
-              >
-                <ZRLRealityProvider>
-                  <MainLayout />
-                </ZRLRealityProvider>
-              </ProtectedRoute>
-            }
-          >
+            {/* =====================
+                PROTECTED APP
+            ===================== */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}
+                >
+                  <ZRLRealityProvider>
+                    <MainLayout />
+                  </ZRLRealityProvider>
+                </ProtectedRoute>
+              }
+            >
 
-            {/* CORE */}
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="admin" element={<Navigate to="/dashboard" replace />} />
+              {/* CORE */}
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="admin" element={<Navigate to="/dashboard" replace />} />
 
-            <Route path="racing" element={<Racing />} />
-            <Route path="ranking" element={<Ranking />} />
-            <Route path="events" element={<Events />} />
-            <Route path="teams" element={<Teams />} />
-            <Route path="availability" element={<Availability />} />
-            <Route path="roster" element={<RosterBuilder />} />
+              <Route path="racing" element={<Racing />} />
+              <Route path="ranking" element={<Ranking />} />
+              <Route path="events" element={<Events />} />
+              <Route path="teams" element={<Teams />} />
+              <Route path="availability" element={<Availability />} />
+              <Route path="lineup" element={<LineupBuilder />} />
 
-            {/* ZRL */}
-            <Route path="zrl-results" element={<ZRLDivisionResults />} />
-            <Route path="zrl-analytics" element={<ZRLAnalytics />} />
-            <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
-            <Route path="zrl-strategy" element={<ZRLStrategy />} />
-            <Route path="zrl-operations" element={<ZRLOperations />} />
-            <Route path="zrl-round-manager" element={<ZRLOperationsDashboard />} />
-            <Route path="admin/season-init" element={<SeasonInitialization />} />
+              {/* ZRL */}
+              <Route path="zrl-results" element={<ZRLDivisionResults />} />
+              <Route path="zrl-analytics" element={<ZRLAnalytics />} />
+              <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
+              <Route path="zrl-strategy" element={<ZRLStrategy />} />
+              <Route path="zrl-operations" element={<ZRLOperations />} />
+              <Route path="zrl-round-manager" element={<ZRLOperationsDashboard />} />
+              <Route path="admin/season-init" element={<SeasonInitialization />} />
 
-            {/* WINTER TOUR */}
-            <Route path="winter-tour-management" element={<WinterTourManagement />} />
+              {/* WINTER TOUR */}
+              <Route path="winter-tour-management" element={<WinterTourManagement />} />
 
-            {/* ADMIN */}
-            <Route path="admin/users" element={<UserManagement />} />
-            <Route path="admin/events" element={<EventManagement />} />
-            <Route path="admin/availability" element={<AvailabilityManagement />} />
-            <Route path="admin/optimizer" element={<RosterSuggestions />} />
+              {/* ADMIN */}
+              <Route path="admin/users" element={<UserManagement />} />
+              <Route path="admin/events" element={<EventManagement />} />
+              <Route path="admin/availability" element={<AvailabilityManagement />} />
+              <Route path="admin/optimizer" element={<RosterSuggestions />} />
 
-            {/* INTEGRATIONS */}
-            <Route path="strava-callback" element={<StravaCallback />} />
+              {/* INTEGRATIONS */}
+              <Route path="strava-callback" element={<StravaCallback />} />
 
-            {/* FALLBACK */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              {/* FALLBACK */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
 
-          </Route>
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+            </Route>
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </ActiveRoundProvider>
   );
 };
 
