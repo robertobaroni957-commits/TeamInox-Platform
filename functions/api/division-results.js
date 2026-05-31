@@ -51,33 +51,51 @@ export async function onRequestGet({ request, env }) {
 
         if (mode === 'race') {
             // 2. Fetch aggregated Team Results for a specific Race
+            // We use a CTE to handle both the team-level row and the sum of riders
             const { results: teamResults } = await env.ZRL_DB.prepare(`
+                WITH team_aggregation AS (
+                    SELECT 
+                        team_name,
+                        league_key,
+                        is_inox,
+                        SUM(CASE WHEN rider_name IS NOT NULL THEN points_finish ELSE 0 END) as sum_pts_finish,
+                        SUM(CASE WHEN rider_name IS NOT NULL THEN points_fal ELSE 0 END) as sum_pts_fal,
+                        SUM(CASE WHEN rider_name IS NOT NULL THEN points_fts ELSE 0 END) as sum_pts_fts,
+                        SUM(CASE WHEN rider_name IS NOT NULL THEN points_total ELSE 0 END) as sum_total,
+                        MAX(CASE WHEN rider_name IS NULL THEN points_finish ELSE 0 END) as off_pts_finish,
+                        MAX(CASE WHEN rider_name IS NULL THEN points_fal ELSE 0 END) as off_pts_fal,
+                        MAX(CASE WHEN rider_name IS NULL THEN points_fts ELSE 0 END) as off_pts_fts,
+                        MAX(CASE WHEN rider_name IS NULL THEN points_total ELSE 0 END) as off_total,
+                        MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) as off_pos,
+                        MAX(CASE WHEN rider_name IS NULL THEN time ELSE 0 END) as off_time,
+                        MAX(time) as max_time,
+                        COUNT(rider_name) FILTER (WHERE rider_name IS NOT NULL) as rider_count
+                    FROM division_results
+                    WHERE round_id = ? AND league_key = ?
+                    GROUP BY team_name
+                )
                 SELECT 
                     team_name,
                     league_key,
-                    MAX(time) as team_time,
-                    MAX(points_finish) as pts_finish,
-                    MAX(points_fal) as pts_fal,
-                    MAX(points_fts) as pts_fts,
-                    MAX(points_total) as total_race_points,
                     is_inox,
-                    COUNT(rider_name) as rider_count,
-                    MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) as official_position
-                FROM division_results
-                WHERE round_id = ? AND league_key = ?
-                GROUP BY team_name
+                    rider_count,
+                    CASE WHEN off_total > 0 THEN off_pts_finish ELSE sum_pts_finish END as pts_finish,
+                    CASE WHEN off_total > 0 THEN off_pts_fal ELSE sum_pts_fal END as pts_fal,
+                    CASE WHEN off_total > 0 THEN off_pts_fts ELSE sum_pts_fts END as pts_fts,
+                    CASE WHEN off_total > 0 THEN off_total ELSE sum_total END as total_race_points,
+                    CASE WHEN off_pos IS NOT NULL THEN off_pos ELSE NULL END as official_position,
+                    CASE WHEN off_time > 0 THEN off_time ELSE max_time END as team_time
+                FROM team_aggregation
                 ORDER BY 
-                    CASE WHEN MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) IS NOT NULL        
-                         THEN MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) 
-                         ELSE 999 END ASC,
-                    MAX(points_total) DESC,
-                    CASE WHEN MAX(time) > 0 THEN MAX(time) ELSE 999999 END ASC
+                    CASE WHEN official_position IS NOT NULL THEN official_position ELSE 999 END ASC,
+                    total_race_points DESC
             `).bind(round_id, league_key).all();
 
             // 2b. Fetch Rider Details for INOX team specifically
             const { results: riderDetails } = await env.ZRL_DB.prepare(`
                 SELECT 
                     rider_name,
+                    team_name,
                     time,
                     points_finish as pts_finish,
                     points_fal as pts_fal,
@@ -88,14 +106,12 @@ export async function onRequestGet({ request, env }) {
                 ORDER BY points_total DESC, points_finish DESC
             `).bind(round_id, league_key).all();
 
-            // Refined ranking logic for the UI:
+            // Refined ranking logic for the UI fallback
             let currentRank = 1;
             const rankedResults = teamResults.map((r, i) => {
                 if (i > 0) {
                     const prev = teamResults[i-1];
-                    if (r.official_position !== prev.official_position || 
-                        r.total_race_points !== prev.total_race_points || 
-                        Math.abs((r.team_time || 0) - (prev.team_time || 0)) > 0.1) {
+                    if (r.official_position !== prev.official_position || r.total_race_points !== prev.total_race_points) {
                         currentRank = i + 1;
                     }
                 }
