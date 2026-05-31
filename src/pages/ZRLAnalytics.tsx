@@ -45,10 +45,11 @@ interface AnalyticsData {
 
 interface FilterOption {
   round_group_id: number;
-  round_name: string;
+  round_group_name: string;
   season_name: string;
   league_key: string;
   league_display_name: string;
+  inox_team_name: string | null;
 }
 
 const ZRLAnalytics: React.FC = () => {
@@ -68,12 +69,31 @@ const ZRLAnalytics: React.FC = () => {
     fetchOptions();
   }, []);
 
+  const formatLeagueName = (l: any) => {
+    if (!l) return '---';
+    const teamName = l.inox_team_name && l.inox_team_name !== 'NULL' ? ` (${l.inox_team_name})` : '';
+    let displayName = l.league_display_name;
+    
+    if (!displayName || displayName === 'NULL' || displayName === '') {
+      const key = l.league_key;
+      if (key && key.length >= 7) {
+        const lKey = key.substring(1, 4);
+        const cKey = key.substring(4, 5);
+        const dKey = key.substring(5, 6);
+        displayName = `League ${lKey} - ${cKey}${dKey}`;
+      } else {
+        displayName = `League ${key || 'Unknown'}`;
+      }
+    }
+    return `${displayName}${teamName}`;
+  };
+
   const fetchOptions = async () => {
     try {
       const res = await fetch('/api/division-results');
       const json = await res.json();
       if (json.success) {
-        // Mappiamo e deduplichiamo le opzioni
+        // Mappiamo e deduplichiamo le opzioni basandoci su Round Group e Lega
         const uniqueOptions = new Map();
         
         (json.rounds || []).forEach((r: any) => {
@@ -82,10 +102,11 @@ const ZRLAnalytics: React.FC = () => {
             if (!uniqueOptions.has(key)) {
               uniqueOptions.set(key, {
                 round_group_id: r.round_group_id,
-                round_name: r.name,
-                season_name: 'S19', // Default per ora
+                round_group_name: r.round_group_name,
+                season_name: 'S19', 
                 league_key: l.league_key,
-                league_display_name: l.league_display_name
+                league_display_name: l.league_display_name,
+                inox_team_name: l.inox_team_name
               });
             }
           });
