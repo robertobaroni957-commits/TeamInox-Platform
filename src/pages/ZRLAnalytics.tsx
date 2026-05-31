@@ -578,3 +578,5 @@ const ZRLAnalytics: React.FC = () => {
     </div>
   );
 };
+
+export default ZRLAnalytics;
