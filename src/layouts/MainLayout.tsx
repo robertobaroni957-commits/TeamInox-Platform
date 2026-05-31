@@ -6,6 +6,7 @@ import {
   ChevronRight, 
   LayoutGrid, 
   LogOut,
+  Shield,
 } from 'lucide-react';
 import { Toaster } from 'sonner';
 
@@ -52,6 +53,7 @@ const MainLayout: React.FC = () => {
   };
 
   const isHub = location.pathname === '/zrl-operations';
+  const isDashboard = location.pathname === '/dashboard';
   const isAdmin = user?.role === 'admin' || user?.role === 'moderator';
 
   return (
@@ -65,24 +67,38 @@ const MainLayout: React.FC = () => {
             <h2 className="text-xl font-black italic tracking-tighter text-white uppercase leading-none">INOXTEAM</h2>
           </Link>
           
-          {/* Universal Back to Hub */}
-          {!isHub && (
-            <button 
-              onClick={() => navigate('/zrl-operations')}
-              className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all text-[10px] font-black uppercase tracking-widest group"
-            >
-              <LayoutGrid size={14} className="group-hover:rotate-90 transition-transform" />
-              <span>Back to Hub</span>
-            </button>
-          )}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Universal Back to Dashboard */}
+            {!isDashboard && (
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all text-[10px] font-black uppercase tracking-widest group"
+              >
+                <LayoutGrid size={14} className="group-hover:rotate-90 transition-transform" />
+                <span>Dashboard</span>
+              </button>
+            )}
+
+            {/* Universal Back to Hub (Admin only if not on Hub) */}
+            {isAdmin && !isHub && (
+              <button 
+                onClick={() => navigate('/zrl-operations')}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fc6719]/10 border border-[#fc6719]/20 text-[#fc6719] hover:bg-[#fc6719]/20 transition-all text-[10px] font-black uppercase tracking-widest group"
+              >
+                <Shield size={14} />
+                <span>Admin Hub</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 lg:gap-6">
-          {/* Mobile Back to Hub */}
-          {!isHub && (
+          {/* Mobile Navigation */}
+          {!isDashboard && (
             <button 
-              onClick={() => navigate('/zrl-operations')}
+              onClick={() => navigate('/dashboard')}
               className="md:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400"
+              title="Dashboard"
             >
               <LayoutGrid size={18} />
             </button>
@@ -91,12 +107,12 @@ const MainLayout: React.FC = () => {
           {user ? (
             <div className="flex items-center gap-3 lg:gap-4 pl-4 border-l border-zinc-900">
               <div className="hidden lg:flex flex-col items-end">
-                <span className="text-[9px] font-black text-white uppercase tracking-tighter leading-none">{user.username}</span>
-                <span className={`text-[7px] font-black uppercase tracking-widest mt-0.5 ${isAdmin ? 'text-red-500' : 'text-[#fc6719]'}`}>{user.role}</span>
+                <span className="text-[11px] font-black text-white uppercase tracking-tight leading-none">{user.username}</span>
+                <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isAdmin ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]' : 'text-[#fc6719]'}`}>{user.role}</span>
               </div>
               <button 
                 onClick={handleLogout}
-                className="p-2 rounded-xl bg-zinc-900/50 border border-zinc-900 text-zinc-500 hover:text-red-500 hover:border-red-500/30 transition-all"
+                className="p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 text-zinc-500 hover:text-red-500 hover:border-red-500/30 transition-all shadow-lg"
                 title="Logout"
               >
                 <LogOut size={16} />

@@ -7,7 +7,7 @@ REM ========================================================
 
 set FRONTEND_PORT=5173
 set WRANGLER_PORT=8788
-set D1_DB_ID=63574bc1-97de-4d3e-8682-0e3b48739252
+set D1_DB_ID=5bc66f8c-227f-4492-9361-d32f2a07b53a
 
 echo ========================================================
 echo INOXTEAM PLATFORM - FINAL STABLE FIX

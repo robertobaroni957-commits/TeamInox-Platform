@@ -1,0 +1,12 @@
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(1,4,74930,456178,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(2,4,74930,447422,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(3,4,74930,456195,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(4,4,74930,447421,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(5,4,74930,447419,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(6,4,74930,447413,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(7,4,74016,444173,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(8,4,74016,444180,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(9,4,74016,444179,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(10,4,74016,455366,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(11,4,74016,444177,'starter','confirmed',5);
+INSERT INTO "race_lineup" ("id","round_id","team_id","athlete_id","role","status","race_id") VALUES(12,4,74016,444171,'starter','confirmed',5);

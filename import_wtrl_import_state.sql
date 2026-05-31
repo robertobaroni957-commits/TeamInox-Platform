@@ -1,0 +1,7 @@
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('903c5d56-9636-4670-90cc-bfff1429f6fe',19,'roster','failed','2026-05-27 20:06:06','2026-05-27 20:06:06');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('ce71c416-5601-4cab-96af-f42dbe0b0a3c',19,'roster','pending_cleanup','2026-05-27 20:07:49','2026-05-27 20:07:48');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('b01848a4-f2d2-4c78-a487-afcc94fea13d',19,'roster','pending_cleanup','2026-05-27 20:12:44','2026-05-27 20:12:44');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('eeef188f-4fd4-41a2-b0ba-009e3d6ab233',19,'roster','pending_cleanup','2026-05-27 20:17:49','2026-05-27 20:17:49');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('a96f2462-7039-4351-9aef-115b9084e36d',19,'roster','pending_cleanup','2026-05-28 20:09:05','2026-05-28 20:09:04');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('98fc2e02-7e24-4074-85a6-860323e01742',19,'roster','pending_cleanup','2026-05-28 20:35:27','2026-05-28 20:35:26');
+INSERT INTO "wtrl_import_state" ("import_id","season_id","type","status","updated_at","created_at") VALUES('fa0943fb-c48f-4cae-859a-8255c4c29242',19,'roster','pending_cleanup','2026-05-28 20:47:46','2026-05-28 20:47:44');

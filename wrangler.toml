@@ -5,4 +5,4 @@ compatibility_date = "2026-05-18"
 [[d1_databases]]
 binding = "ZRL_DB"
 database_name = "team_inox_prod_v2"
-database_id = "fd0cfbed-61d1-435c-8d57-a6d1dc5cce20"
+database_id = "5bc66f8c-227f-4492-9361-d32f2a07b53a"

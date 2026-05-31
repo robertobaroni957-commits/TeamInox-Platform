@@ -62,10 +62,14 @@ export async function onRequestGet({ env }) {
                 round_id INTEGER NOT NULL,
                 league_key TEXT NOT NULL,
                 team_name TEXT NOT NULL,
-                rider_name TEXT NOT NULL,
+                rider_name TEXT,
                 zwid INTEGER,
                 position INTEGER,
-                points_total INTEGER,
+                time REAL,
+                points_finish INTEGER DEFAULT 0,
+                points_fal INTEGER DEFAULT 0,
+                points_fts INTEGER DEFAULT 0,
+                points_total INTEGER DEFAULT 0,
                 is_inox BOOLEAN DEFAULT 0,
                 FOREIGN KEY (round_id) REFERENCES zrl_races(id)
             )`

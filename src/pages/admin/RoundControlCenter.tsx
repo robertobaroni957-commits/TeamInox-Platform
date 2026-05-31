@@ -192,13 +192,6 @@ function RoundControlCenterContent() {
                             scraperScript={scraperScriptRoster}
                             onSuccess={handleRefresh}
                         />
-                        <JsonIngestor 
-                            title="Sync Results" 
-                            apiEndpoint="/api/admin/import-results" 
-                            description="Ingestione risultati ufficiali di gara" 
-                            scraperScript={scraperScriptResults}
-                            onSuccess={handleRefresh}
-                        />
                     </div>
                 )}
 

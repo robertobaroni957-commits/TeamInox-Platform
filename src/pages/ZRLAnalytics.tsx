@@ -73,9 +73,29 @@ const ZRLAnalytics: React.FC = () => {
       const res = await fetch('/api/division-results');
       const json = await res.json();
       if (json.success) {
-        setOptions(json.options);
-        if (json.options.length > 0) {
-          const first = json.options[0];
+        // Mappiamo e deduplichiamo le opzioni
+        const uniqueOptions = new Map();
+        
+        (json.rounds || []).forEach((r: any) => {
+          (json.leagues || []).forEach((l: any) => {
+            const key = `${r.round_group_id}|${l.league_key}`;
+            if (!uniqueOptions.has(key)) {
+              uniqueOptions.set(key, {
+                round_group_id: r.round_group_id,
+                round_name: r.name,
+                season_name: 'S19', // Default per ora
+                league_key: l.league_key,
+                league_display_name: l.league_display_name
+              });
+            }
+          });
+        });
+        
+        const formattedOptions = Array.from(uniqueOptions.values());
+        
+        setOptions(formattedOptions);
+        if (formattedOptions.length > 0) {
+          const first = formattedOptions[0];
           setSelectedOption(`${first.round_group_id}|${first.league_key}`);
           fetchAnalytics(first.round_group_id, first.league_key);
         }

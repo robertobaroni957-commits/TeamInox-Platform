@@ -12,7 +12,10 @@ export default function AdminTutorPanel() {
     const teamsList = teams?.data || [];
     const rosterList = roster?.data || [];
     const roundsList = rounds || [];
-    const racesList = activeRaces || [];
+    
+    // Deduplicazione gare per nome (percorso unico per evento)
+    const uniqueRaces = activeRaces ? Array.from(new Set(activeRaces.map(r => r.name))) : [];
+    const racesCount = uniqueRaces.length;
     
     const getNextStep = () => {
         if (isProcessing) return "Attendi il completamento della sincronizzazione";
@@ -25,7 +28,7 @@ export default function AdminTutorPanel() {
         }
         
         // 2. Races (Gare del Round attivo) - Definisce i dettagli dei percorsi
-        if (racesList.length === 0) {
+        if (racesCount === 0) {
             return `2. Struttura pronta: Importa Gare per Round ${activeRound?.wtrl_id || 'Selezionato'}`;
         }
 
@@ -89,12 +92,12 @@ export default function AdminTutorPanel() {
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <StatusCard 
                         label="Season" 
-                        value={selectedSeasonCode || activeRound?.season_code || "N/A"} 
+                        value={(selectedSeasonCode || activeRound?.season_code || "N/A").replace('zrl_', '').toUpperCase()} 
                         active={!!(selectedSeasonCode || activeRound?.season_code)} 
                     />
                     <StatusCard label="Round" value={activeRound?.wtrl_id?.toString() || "---"} active={!!activeRound?.wtrl_id} />
-                    <StatusCard label="Races" value={racesList.length.toString()} active={racesList.length > 0} />
-                    <StatusCard label="Pipeline" value={isProcessing ? "Run" : "Idle"} active={isProcessing} />
+                    <StatusCard label="Races" value={racesCount.toString()} active={racesCount > 0} />
+                    <StatusCard label="Pipeline" value={isProcessing ? "Attiva" : "Standby"} active={isProcessing} />
                 </div>
             </div>
 
@@ -117,7 +120,7 @@ export default function AdminTutorPanel() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                     <div className="text-left relative z-10 min-w-0 flex-1">
                         <span className="block text-xs font-black uppercase tracking-[0.2em] text-white/70 mb-2">Step Operativo</span>
-                        <span className="text-xl font-black uppercase text-white tracking-tight leading-tight block truncate">
+                        <span className="text-xl font-black uppercase text-white tracking-tight leading-tight block">
                             {getNextStep()}
                         </span>
                     </div>
@@ -132,9 +135,9 @@ export default function AdminTutorPanel() {
 
 function StatusCard({ label, value, active }: { label: string, value: string, active: boolean }) {
     return (
-        <div className={`p-5 rounded-2xl border transition-colors min-w-0 overflow-hidden ${active ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
-            <span className="text-[10px] font-black text-zinc-500 uppercase block mb-2 tracking-widest truncate">{label}</span>
-            <span className={`text-base font-black uppercase tracking-tight block truncate ${active ? 'text-white' : 'text-zinc-700'}`} title={value}>{value}</span>
+        <div className={`p-5 rounded-2xl border transition-colors min-w-0 ${active ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
+            <span className="text-[10px] font-black text-zinc-500 uppercase block mb-2 tracking-widest">{label}</span>
+            <span className={`text-sm md:text-base font-black uppercase tracking-tight block break-words ${active ? 'text-white' : 'text-zinc-700'}`} title={value}>{value}</span>
         </div>
     );
 }

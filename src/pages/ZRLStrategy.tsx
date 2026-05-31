@@ -91,12 +91,21 @@ function ZRLStrategyContent() {
                                 <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-[0.4em] mb-2">{race.world}</span>
                                 <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-4">{race.route}</h3>
                                 <div className="flex gap-4">
-                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                        <Activity size={14} className="text-zinc-600" /> {race.distance} KM
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                        <ArrowUpRight size={14} className="text-zinc-600" /> {race.elevation} M
-                                    </div>
+                                    {(() => {
+                                        const json = JSON.parse(race.raw_json || '{}');
+                                        const totalDist = (( (json.lapDistanceInMeters || 0) * (race.laps || 1)) + (json.leadinDistanceInMeters || 0)) / 1000;
+                                        const totalElev = ((json.lapAscentInMeters || 0) * (race.laps || 1)) + (json.leadinAscentInMeters || 0);
+                                        return (
+                                            <>
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
+                                                    <Activity size={14} className="text-zinc-600" /> {totalDist.toFixed(1)} KM
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
+                                                    <ArrowUpRight size={14} className="text-zinc-600" /> {Math.round(totalElev)} M
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                             <div className="absolute inset-0 opacity-40 group-hover:scale-110 transition-transform duration-1000">

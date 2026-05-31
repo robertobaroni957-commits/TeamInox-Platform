@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import { ZRLRealityProvider } from './services/ZRLRealityProvider';
 import { ActiveRoundProvider } from './context/ActiveRoundContext';
+import { RoundControlProvider } from './pages/admin/RoundControlContext';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 /* =========================
@@ -35,6 +36,7 @@ const ZRLAnalytics = lazyWithRetry(() => import('./pages/ZRLAnalytics'));
 const ZRLSeasonStats = lazyWithRetry(() => import('./pages/ZRLSeasonStats'));
 const ZRLStrategy = lazyWithRetry(() => import('./pages/ZRLStrategy'));
 const ZRLOperations = lazyWithRetry(() => import('./pages/admin/ZRLOperations'));
+const ZRLResultIngestor = lazyWithRetry(() => import('./pages/admin/ZRLResultIngestor'));
 const ZRLOperationsDashboard = lazyWithRetry(() => import('./pages/ZRLOperationsDashboard'));
 const SeasonInitialization = lazyWithRetry(() => import('./pages/admin/RoundControlCenter'));
 
@@ -42,6 +44,7 @@ const SeasonInitialization = lazyWithRetry(() => import('./pages/admin/RoundCont
    🔹 WINTER TOUR
 ========================= */
 const WinterTourManagement = lazyWithRetry(() => import('./pages/WinterTourManagement'));
+const WinterTourRanking = lazyWithRetry(() => import('./pages/Ranking'));
 
 /* =========================
    🔹 ADMIN
@@ -95,7 +98,9 @@ const App: React.FC = () => {
                   allowedRoles={['user', 'athlete', 'captain', 'moderator', 'admin', 'guest']}
                 >
                   <ZRLRealityProvider>
-                    <MainLayout />
+                    <RoundControlProvider>
+                      <MainLayout />
+                    </RoundControlProvider>
                   </ZRLRealityProvider>
                 </ProtectedRoute>
               }
@@ -114,6 +119,7 @@ const App: React.FC = () => {
 
               {/* ZRL */}
               <Route path="zrl-results" element={<ZRLDivisionResults />} />
+              <Route path="zrl-ingest" element={<ZRLResultIngestor />} />
               <Route path="zrl-analytics" element={<ZRLAnalytics />} />
               <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
               <Route path="zrl-strategy" element={<ZRLStrategy />} />
@@ -123,6 +129,7 @@ const App: React.FC = () => {
 
               {/* WINTER TOUR */}
               <Route path="winter-tour-management" element={<WinterTourManagement />} />
+              <Route path="winter-tour-ranking" element={<WinterTourRanking />} />
 
               {/* ADMIN */}
               <Route path="admin/users" element={<UserManagement />} />

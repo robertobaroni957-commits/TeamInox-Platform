@@ -59,15 +59,14 @@ const ZRLOperations: React.FC = () => {
 
 const steps = [
   { id: 1, title: 'Setup Stagione', path: '/admin/season-init', icon: Settings, help: 'Bootstrap Stagione e Round' },
-  { id: 2, title: 'Sync Squadre', path: '/teams', icon: Users, help: 'Importa Squadre e Corridori' },
+  { id: 2, title: 'Squadre e Roster', path: '/teams', icon: Users, help: 'Visualizza Teams e Roster Round' },
   { id: 3, title: 'Build Lineup', path: '/lineup', icon: ClipboardCheck, help: 'Gestione Roster e Lineup' },
-  { id: 4, title: 'Ingest Gare', path: '/admin/season-init', icon: Flag, help: 'Importazione Race Data' },
-  { id: 5, title: 'Ingest Risultati', path: '/zrl-results', icon: Trophy, help: 'Caricamento JSON WTRL' },
-  { id: 6, title: 'AI Optimizer', path: '/admin/optimizer', icon: Brain, help: 'Suggerimenti Strategici' },
-  { id: 7, title: 'Classifiche', path: '/ranking', icon: LayoutGrid, help: 'Classifiche Divisione' },
-  { id: 8, title: 'Analytics', path: '/zrl-analytics', icon: BarChart3, help: 'Analisi Tattica' },
-  { id: 9, title: 'Recap Stagione', path: '/zrl-season-stats', icon: TrendingUp, help: 'Statistiche Performance' },
-  { id: 10, title: 'Mappa Strategica', path: '/zrl-strategy', icon: MapIcon, help: 'Briefing Percorsi' },
+  { id: 4, title: 'Ingest Risultati', path: '/zrl-ingest', icon: Trophy, help: 'Caricamento JSON WTRL' },
+  { id: 5, title: 'AI Optimizer', path: '/admin/optimizer', icon: Brain, help: 'Suggerimenti Strategici' },
+  { id: 6, title: 'Classifiche', path: '/zrl-results', icon: LayoutGrid, help: 'Classifiche Divisione' },
+  { id: 7, title: 'Analytics', path: '/zrl-analytics', icon: BarChart3, help: 'Analisi Tattica' },
+  { id: 8, title: 'Recap Stagione', path: '/zrl-season-stats', icon: TrendingUp, help: 'Statistiche Performance' },
+  { id: 9, title: 'Mappa Strategica', path: '/zrl-strategy', icon: MapIcon, help: 'Briefing Percorsi' },
 ];
 
 // ... (dentro return)
@@ -76,13 +75,11 @@ return (
 
     {/* 1. HERO SECTION */}
     <section className="h-72">
-      <RoundControlProvider>
-        <AdminTutorPanel />
-      </RoundControlProvider>
+      <AdminTutorPanel />
     </section>
 
     {/* 2. NAVIGATION GRID */}
-    <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {steps.map((step) => {
         const Icon = step.icon;
         return (
