@@ -191,6 +191,11 @@ export const api = {
     return apiFetch(`${API_BASE}/events`);
   },
 
+  checkZRLParticipation: async (): Promise<boolean> => {
+    const data = await apiFetch(`${API_BASE}/check-zrl-participation`);
+    return data.isZRLParticipant || false;
+  },
+
   getRoster: async (teamId: number = 0, roundId?: number): Promise<Athlete[]> => {
     const url = roundId 
       ? `${API_BASE}/roster?team_id=${teamId}&round_id=${roundId}`

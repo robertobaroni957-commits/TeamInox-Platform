@@ -38,11 +38,10 @@ const Dashboard: React.FC = () => {
         // Check questionnaire status and ZRL participation
         Promise.all([
             api.checkAvailabilityStatus(),
-            api.getRoster(0) // Fetching with 0 to get all memberships potentially
-        ]).then(([status, rosters]) => {
+            api.checkZRLParticipation()
+        ]).then(([status, isParticipant]) => {
           setNeedsQuestionnaire(status.missing);
-          // Check if user is in any ZRL roster
-          setIsZRLParticipant(rosters.some(r => r.zwid === userObj.zwid));
+          setIsZRLParticipant(isParticipant);
         }).catch(err => console.error("Error fetching dashboard data:", err));
 
         // Fetch Stats
