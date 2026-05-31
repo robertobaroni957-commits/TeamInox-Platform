@@ -12,7 +12,7 @@ export async function onRequestPost({ request, env }) {
         await env.ZRL_DB.batch([
             env.ZRL_DB.prepare("DELETE FROM team_members WHERE athlete_id = ?").bind(userId),
             env.ZRL_DB.prepare("DELETE FROM race_lineup WHERE athlete_id = ?").bind(userId),
-            env.ZRL_DB.prepare("DELETE FROM availability WHERE athlete_id = ?").bind(userId),
+            env.ZRL_DB.prepare("DELETE FROM availability WHERE zwid = ?").bind(userId),
             env.ZRL_DB.prepare("DELETE FROM user_time_preferences WHERE zwid = ?").bind(userId),
             env.ZRL_DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId)
         ]);
