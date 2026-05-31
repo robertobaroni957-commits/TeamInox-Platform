@@ -11,6 +11,17 @@ export async function onRequestGet(context) {
   }
 
   try {
+    // SECURITY: Ensure athlete can only view their own team(s) unless admin/moderator
+    if (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain') {
+      const membership = await env.ZRL_DB.prepare(
+        "SELECT 1 FROM team_members WHERE team_id = ? AND athlete_id = ?"
+      ).bind(team_id, user.zwid).first();
+
+      if (!membership) {
+        return new Response(JSON.stringify({ error: "Forbidden: Not a member of this team" }), { status: 403 });
+      }
+    }
+
     const targetTeam = await env.ZRL_DB.prepare("SELECT name, wtrl_team_id FROM teams WHERE wtrl_team_id = ?").bind(team_id).first();
 
     // WTRL SYNC (Only if explicit season_id provided)

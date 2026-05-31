@@ -1,11 +1,24 @@
 // functions/api/lineup.js
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { request, env, data } = context;
+  const user = data?.user;
   const url = new URL(request.url);
   const round_id = url.searchParams.get("round_id");
   const race_id = url.searchParams.get("race_id");
   const team_id = url.searchParams.get("team_id");
 
   try {
+    // SECURITY: Ensure athlete can only view their own team(s) lineup unless admin/moderator/captain
+    if (team_id && user?.role !== 'admin' && user?.role !== 'moderator' && user?.role !== 'captain') {
+      const membership = await env.ZRL_DB.prepare(
+        "SELECT 1 FROM team_members WHERE team_id = ? AND athlete_id = ?"
+      ).bind(team_id, user.zwid).first();
+
+      if (!membership) {
+        return new Response(JSON.stringify({ error: "Forbidden: Not a member of this team" }), { status: 403 });
+      }
+    }
+
     let query = `
       SELECT rl.*, ath.name as athlete_name, ath.avatar_url as athlete_avatar, t.name as team_name
       FROM race_lineup rl
