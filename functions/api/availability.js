@@ -27,7 +27,7 @@ export async function onRequestGet(context) {
 
             const results = await env.ZRL_DB.batch([
                 env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
-                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.athlete_id = a.zwid`),
+                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.zwid = a.zwid`),
                 env.ZRL_DB.prepare(`
                     SELECT a.zwid, a.name, a.base_category, 
                            GROUP_CONCAT(t.name, ', ') as team
@@ -62,7 +62,7 @@ export async function onRequestGet(context) {
             env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid),
             env.ZRL_DB.prepare(`
                 SELECT r.id, r.name, r.date, r.world, r.route,
-                    (SELECT status FROM availability WHERE athlete_id = ? AND round_id = r.id) as status
+                    (SELECT status FROM availability WHERE zwid = ? AND round_id = r.id) as status
                 FROM rounds r
                 WHERE r.series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
                 ORDER BY r.date ASC
@@ -143,7 +143,7 @@ export async function onRequestPost(context) {
 
             await env.ZRL_DB.prepare(`
                 INSERT OR REPLACE INTO availability 
-                (athlete_id, round_id, status, updated_at) 
+                (zwid, round_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             `).bind(zwid, payload.roundId, payload.status).run();
 
