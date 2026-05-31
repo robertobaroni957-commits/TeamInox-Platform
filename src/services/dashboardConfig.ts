@@ -42,6 +42,18 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     size: "lg",
     permission: 'zrl.lineup'
   },
+  // NEW: ZRL Participant Hub
+  {
+    id: 'zrl-participant-hub',
+    title: "ZRL Hub",
+    subtitle: "Team & Lineups",
+    desc: "Consulta le lineup di gara e le statistiche delle tue squadre.",
+    icon: Shield,
+    path: "/zrl-results",
+    color: "from-cyan-500 to-blue-600",
+    size: "md",
+    permission: 'zrl.view'
+  },
   // ZRL MODULES (For all roles)
   {
     id: 'zrl-questionnaire',
