@@ -29,12 +29,13 @@ export async function onRequestGet(context) {
     const suggestions = {};
     
     results.forEach(row => {
-      const key = `${row.slot_id}_${row.category}`;
+      const category = row.category || 'N/A';
+      const key = `${row.slot_id}_${category}`;
       if (!suggestions[key]) {
         suggestions[key] = {
           slot_id: row.slot_id,
           slot_name: row.preferred_time,
-          category: row.category,
+          category: category,
           count: 0,
           favorite_count: 0,
           acceptable_count: 0,
