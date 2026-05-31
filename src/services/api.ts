@@ -191,7 +191,7 @@ export const api = {
     return apiFetch(`${API_BASE}/events`);
   },
 
-  getRoster: async (teamId: number, roundId?: number): Promise<Athlete[]> => {
+  getRoster: async (teamId: number = 0, roundId?: number): Promise<Athlete[]> => {
     const url = roundId 
       ? `${API_BASE}/roster?team_id=${teamId}&round_id=${roundId}`
       : `${API_BASE}/roster?team_id=${teamId}`;
