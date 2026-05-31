@@ -61,7 +61,6 @@ const ZRLDivisionResults: React.FC = () => {
   const [results, setResults] = useState<TeamStanding[]>([]);
   const [inoxRiders, setInoxRiders] = useState<RiderStanding[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showRoundFilters, setShowRoundFilters] = useState(false);
   const [showLeagueFilters, setShowLeagueFilters] = useState(false);
   const [snapshotMode, setSnapshotMode] = useState(false);
@@ -94,7 +93,6 @@ const ZRLDivisionResults: React.FC = () => {
         }
       }
     } catch (err) {
-      setError("Impossibile caricare i filtri.");
       setLoading(false);
     }
   };
@@ -109,7 +107,7 @@ const ZRLDivisionResults: React.FC = () => {
         setInoxRiders(data.inoxRiders || []);
       }
     } catch (err) {
-      setError("Errore nel caricamento dei risultati.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -143,9 +141,9 @@ const ZRLDivisionResults: React.FC = () => {
     const teamName = l.inox_team_name && l.inox_team_name !== 'NULL' ? ` (${l.inox_team_name})` : '';
     let displayName = l.league_display_name;
     
-    if (!displayName || displayName === 'NULL') {
+    if (!displayName || displayName === 'NULL' || displayName === '') {
       const key = l.league_key;
-      if (key.length >= 7) {
+      if (key && key.length >= 7) {
         const lKey = key.substring(1, 4);
         const cKey = key.substring(4, 5);
         const dKey = key.substring(5, 6);
@@ -166,375 +164,142 @@ const ZRLDivisionResults: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen ${snapshotMode ? 'bg-black p-16' : 'bg-[#0a0a0a] text-white p-6 md:p-12'} font-sans relative overflow-hidden`}>
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-inox-orange/5 rounded-full blur-[180px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-inox-cyan/5 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-
-      <main ref={contentRef} className="max-w-[1800px] mx-auto space-y-12 relative z-10">
+    <div className={`min-h-screen ${snapshotMode ? 'bg-black p-4' : 'bg-[#0a0a0a] text-white p-4 md:p-6'} font-sans`}>
+      <main ref={contentRef} className="max-w-[1400px] mx-auto space-y-6">
         
         {/* HEADER & FILTERS */}
-        <section className="flex flex-col gap-10">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="px-5 py-2 bg-inox-orange/10 border border-inox-orange/20 rounded-full">
-                  <span className="text-[12px] font-black text-inox-orange uppercase tracking-[0.4em]">WTRL GC Engine</span>
-                </div>
-                <div className="px-5 py-2 bg-zinc-900 border border-zinc-800 rounded-full">
-                  <span className="text-[12px] font-black text-zinc-500 uppercase tracking-[0.4em]">Official Standings</span>
-                </div>
-              </div>
-              <h1 className={`font-black italic tracking-tighter uppercase leading-none text-white ${snapshotMode ? 'text-9xl' : 'text-7xl lg:text-9xl'}`}>
-                ZRL <span className="text-zinc-800">RESULTS</span>
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div className="space-y-1">
+              <h1 className="text-4xl lg:text-5xl font-black italic tracking-tighter uppercase leading-none text-white">
+                ZRL <span className="text-zinc-700">RESULTS</span>
               </h1>
-              <p className="text-zinc-500 text-lg font-bold uppercase tracking-[0.2em] max-w-2xl leading-relaxed">
-                Visualizza i risultati delle gare e la classifica generale ufficiale del team.
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-lg">
+                Visualizza i risultati delle gare e la classifica generale ufficiale.
               </p>
             </div>
 
             {!snapshotMode && (
-              <div className="flex flex-col sm:flex-row gap-6 w-full md:w-auto">
-                <div className="bg-zinc-900/50 p-2 rounded-[2rem] border border-zinc-800 flex shadow-2xl backdrop-blur-md">
-                  <button 
-                    onClick={() => setViewMode('race')}
-                    className={`px-12 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all ${viewMode === 'race' ? 'bg-inox-cyan text-black shadow-[0_0_25px_rgba(0,255,255,0.3)]' : 'text-zinc-500 hover:text-white'}`}
-                  >
-                    Gara
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('gc')}
-                    className={`px-12 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all ${viewMode === 'gc' ? 'bg-inox-orange text-black shadow-[0_0_25px_rgba(252,103,25,0.3)]' : 'text-zinc-500 hover:text-white'}`}
-                  >
-                    GC
-                  </button>
-                </div>
+              <div className="flex gap-2 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800">
+                <button 
+                  onClick={() => setViewMode('race')}
+                  className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === 'race' ? 'bg-inox-cyan text-black' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  Gara
+                </button>
+                <button 
+                  onClick={() => setViewMode('gc')}
+                  className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === 'gc' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  GC
+                </button>
               </div>
             )}
           </div>
 
           {!snapshotMode && (
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* ROUND SELECTOR */}
-              <div className="relative flex-1 md:flex-none md:w-[400px]">
-                <button 
-                  onClick={() => { setShowRoundFilters(!showRoundFilters); setShowLeagueFilters(false); }}       
-                  className="w-full px-10 py-7 bg-zinc-900/60 border border-zinc-800 rounded-[2rem] flex items-center justify-between text-left group hover:border-inox-cyan/50 transition-all shadow-2xl"
-                >
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em] leading-none mb-3">Seleziona Round</span>
-                    <span className="text-xl font-black uppercase text-white truncate tracking-widest">      
-                      {currentRound ? currentRound.name : 'Scegli...'}
-                    </span>
-                  </div>
-                  <ChevronDown size={24} className={`text-zinc-500 shrink-0 transition-transform ${showRoundFilters ? 'rotate-180' : ''}`} />
-                </button>
+            <div className="flex flex-col md:flex-row gap-4">
+              <button 
+                onClick={() => { setShowRoundFilters(!showRoundFilters); setShowLeagueFilters(false); }}       
+                className="flex-1 px-4 py-3 bg-zinc-900/60 border border-zinc-800 rounded-xl flex items-center justify-between text-left hover:border-inox-cyan/50 transition-all shadow-md"
+              >
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-0.5">Round</span>
+                  <span className="text-[11px] font-black uppercase text-white truncate tracking-widest">      
+                    {currentRound ? currentRound.name : 'Seleziona...'}
+                  </span>
+                </div>
+                <ChevronDown size={14} className="text-zinc-500" />
+              </button>
 
-                <AnimatePresence>
-                  {showRoundFilters && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 15 }}
-                      className="absolute top-full left-0 right-0 mt-4 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[500px] overflow-y-auto custom-scrollbar"
-                    >
-                       {rounds.map((r) => (
-                         <button
-                           key={r.id}
-                           onClick={() => { setSelectedRound(r.id); setShowRoundFilters(false); }}
-                           className={`w-full px-10 py-7 text-left hover:bg-inox-cyan/10 border-b border-zinc-800/50 last:border-0 transition-all ${selectedRound === r.id ? 'bg-inox-cyan/5' : ''}`}
-                         >
-                           <p className={`text-lg font-black uppercase ${selectedRound === r.id ? 'text-inox-cyan' : 'text-white'}`}>{r.name}</p>
-                           <p className="text-[11px] font-bold text-zinc-500 mt-2 tracking-widest uppercase">{r.round_group_name}</p>     
-                         </button>
-                       ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* LEAGUE SELECTOR */}
-              <div className="relative flex-1 md:flex-none md:w-[550px]">
-                <button 
-                  onClick={() => { setShowLeagueFilters(!showLeagueFilters); setShowRoundFilters(false); }}      
-                  className="w-full px-10 py-7 bg-zinc-900/60 border border-zinc-800 rounded-[2rem] flex items-center justify-between text-left group hover:border-inox-orange/50 transition-all shadow-2xl"
-                >
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em] leading-none mb-3">Seleziona Divisione</span>
-                    <span className="text-xl font-black uppercase text-white truncate tracking-widest">      
-                      {currentLeague ? formatLeagueName(currentLeague) : 'Scegli...'}
-                    </span>
-                  </div>
-                  <ChevronDown size={24} className={`text-zinc-500 shrink-0 transition-transform ${showLeagueFilters ? 'rotate-180' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                  {showLeagueFilters && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 15 }}
-                      className="absolute top-full left-0 right-0 mt-4 z-[100] bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[500px] overflow-y-auto custom-scrollbar"
-                    >
-                       {leagues.map((l) => (
-                         <button
-                           key={l.league_key}
-                           onClick={() => { setSelectedLeague(l.league_key); setShowLeagueFilters(false); }}     
-                           className={`w-full px-10 py-7 text-left hover:bg-inox-orange/10 border-b border-zinc-800/50 last:border-0 transition-all ${selectedLeague === l.league_key ? 'bg-inox-orange/5' : ''}`}
-                         >
-                           <p className={`text-lg font-black uppercase ${selectedLeague === l.league_key ? 'text-inox-orange' : 'text-white'}`}>
-                              {l.league_display_name || `League ${l.league_key}`}
-                           </p>
-                           {l.inox_team_name && l.inox_team_name !== 'NULL' && (
-                             <p className="text-[11px] font-black text-inox-orange mt-2 italic tracking-[0.2em] uppercase">TEAM: {l.inox_team_name}</p>
-                           )}
-                         </button>
-                       ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <button 
+                onClick={() => { setShowLeagueFilters(!showLeagueFilters); setShowRoundFilters(false); }}      
+                className="flex-1 px-4 py-3 bg-zinc-900/60 border border-zinc-800 rounded-xl flex items-center justify-between text-left hover:border-inox-orange/50 transition-all shadow-md"
+              >
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-0.5">Divisione</span>
+                  <span className="text-[11px] font-black uppercase text-white truncate tracking-widest">      
+                    {currentLeague ? formatLeagueName(currentLeague) : 'Seleziona...'}
+                  </span>
+                </div>
+                <ChevronDown size={14} className="text-zinc-500" />
+              </button>
             </div>
           )}
         </section>
 
         {/* INOX RIDERS RECAP (Only for Race mode) */}
         {viewMode === 'race' && inoxRiders.length > 0 && !loading && (
-          <section className="animate-in fade-in slide-in-from-top-6 duration-1000">
-            <div className="bg-zinc-900/40 border border-inox-cyan/40 rounded-[4rem] p-12 backdrop-blur-md relative overflow-hidden group hover:border-inox-cyan/60 transition-all shadow-[0_0_50px_rgba(0,0,0,0.4)]">
-              <div className="absolute top-0 right-0 p-16 opacity-[0.06] group-hover:opacity-[0.12] transition-opacity">
-                 <Zap size={200} className="text-inox-cyan" />
-              </div>
-              <div className="flex items-center gap-10 mb-12">
-                 <div className="w-24 h-24 bg-inox-cyan rounded-[2rem] flex items-center justify-center text-black shadow-[0_0_40px_rgba(0,255,255,0.4)]">
-                    <Users size={48} />
-                 </div>
-                 <div>
-                    <h3 className="text-5xl font-black italic uppercase text-white leading-none tracking-tighter">RIDER BREAKDOWN</h3>
-                    <p className="text-inox-cyan text-sm font-black uppercase tracking-[0.5em] mt-3">Dettaglio punti squadra INOX</p>
-                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-8">
+          <section className="bg-zinc-900/40 border border-inox-cyan/20 rounded-2xl p-4 shadow-lg">
+              <h3 className="text-sm font-black italic uppercase text-white mb-4">RIDER BREAKDOWN</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {inoxRiders.map((rider, i) => (
-                  <div key={i} className="bg-black/60 border border-zinc-800/60 rounded-[2rem] p-8 space-y-6 hover:border-inox-cyan/40 hover:bg-black/80 transition-all group/card">
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest leading-none">Corridore</p>
-                      <p className="text-xl font-black uppercase text-white truncate group-hover/card:text-inox-cyan transition-colors">{rider.rider_name}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <p className="text-[9px] font-black text-zinc-600 uppercase">Finish</p>
-                        <p className="text-3xl font-black italic text-white">{rider.pts_finish}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[9px] font-black text-zinc-600 uppercase">Total</p>
-                        <p className="text-3xl font-black italic text-inox-cyan">{rider.total}</p>
-                      </div>
-                    </div>
-                    <div className="pt-5 border-t border-zinc-800/80 flex justify-between">
-                       <div className="flex flex-col gap-1">
-                          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">FAL</span>
-                          <span className="text-lg font-bold text-zinc-300">{rider.pts_fal}</span>
-                       </div>
-                       <div className="flex flex-col gap-1 text-right">
-                          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">FTS</span>
-                          <span className="text-lg font-bold text-zinc-300">{rider.pts_fts}</span>
-                       </div>
+                  <div key={i} className="bg-black/40 border border-zinc-800 rounded-lg p-3">
+                    <p className="text-[8px] font-black uppercase text-zinc-500 truncate">{rider.rider_name}</p>
+                    <div className="flex justify-between mt-2">
+                        <span className="text-[9px] font-bold text-white">Fin: {rider.pts_finish}</span>
+                        <span className="text-[9px] font-black text-inox-cyan">Tot: {rider.total}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </section>
+            </section>
         )}
 
-        {/* STATS OVERVIEW */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
-              <Users size={32} className="text-zinc-600 mb-2" />
-              <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>   
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>{results.length} Teams</p>
-           </div>
-           
-           <div className={`p-12 rounded-[4rem] border flex flex-col gap-4 relative overflow-hidden group transition-all shadow-2xl backdrop-blur-sm ${viewMode === 'gc' ? 'bg-inox-orange/10 border-inox-orange/30 hover:border-inox-orange/50' : 'bg-inox-cyan/10 border-inox-cyan/30 hover:border-inox-cyan/50'}`}>
-              <div className="absolute -top-2 -right-2 p-12 opacity-[0.04] group-hover:opacity-[0.1] transition-opacity">
-                 {viewMode === 'gc' ? <Star size={150} /> : <Zap size={150} />}
-              </div>
-              {viewMode === 'gc' ? <Star size={32} className="text-inox-orange mb-2" /> : <Zap size={32} className="text-inox-cyan mb-2" />}
-              <p className={`text-[12px] font-black uppercase tracking-widest ${viewMode === 'gc' ? 'text-inox-orange/70' : 'text-inox-cyan/70'}`}>INOX Position</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic tracking-tighter ${viewMode === 'gc' ? 'text-inox-orange' : 'text-inox-cyan'}`}>{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
-           </div>
-
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
-              <Trophy size={32} className="text-zinc-600 mb-2" />
-              <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">{viewMode === 'gc' ? 'League Points (J)' : 'Finish Pts'}</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
-                {inoxTeam ? (viewMode === 'gc' ? inoxTeam.league_points : inoxTeam.pts_finish) : '0'}
-              </p>
-           </div>
-
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
-              <Activity size={32} className="text-zinc-600 mb-2" />
-              <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">{viewMode === 'gc' ? 'Total Race Pts (Σ)' : 'Bonus Pts (F/F)'}</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
-                {inoxTeam ? (viewMode === 'gc' ? inoxTeam.total_race_points : (inoxTeam.pts_fal + inoxTeam.pts_fts)) : '0'}
-              </p>
-           </div>
-        </section>
-
         {/* RESULTS TABLE */}
-        <section className={`flex-1 bg-zinc-900/30 border border-zinc-800 rounded-[5rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.5)] relative backdrop-blur-md ${snapshotMode ? 'max-h-[1000px]' : ''}`}>
+        <section className="flex-1 bg-zinc-900/30 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg">
           {loading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-xl z-50">
-              <RefreshCw size={80} className={`${viewMode === 'gc' ? 'text-inox-orange shadow-[0_0_50px_rgba(252,103,25,0.5)]' : 'text-inox-cyan shadow-[0_0_50px_rgba(0,255,255,0.5)]'} animate-spin mb-10`} />
-              <p className="text-lg font-black uppercase tracking-[0.6em] text-zinc-400 italic animate-pulse">Synchronizing Intelligence...</p>
-            </div>
-          ) : results.length === 0 ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-24 text-center">      
-               <div className="p-20 rounded-full bg-zinc-900 border border-zinc-800 mb-12 shadow-inner">        
-                  <AlertCircle size={100} className="text-zinc-700" />
-               </div>
-               <p className="text-5xl font-black italic text-zinc-500 uppercase tracking-tighter leading-none">No Data Intel Available</p>
-               <p className="text-zinc-600 text-lg font-bold uppercase mt-8 tracking-[0.2em] max-w-xl mx-auto leading-relaxed">Ensure official WTRL telemetry has been processed to populate this division viewport.</p>
-            </div>
+            <div className="p-10 text-center"><RefreshCw size={24} className="text-inox-orange animate-spin mx-auto" /></div>
           ) : (
-            <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left border-collapse min-w-[1200px]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr className="text-[13px] font-black uppercase tracking-[0.5em] text-zinc-400 border-b border-zinc-800">
-                    <th className="px-16 py-12 text-center w-48 bg-black/40">RANK</th>
-                    <th className="px-16 py-12">SQUADRON NAME</th>
+                  <tr className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+                    <th className="px-4 py-4 text-center">RANK</th>
+                    <th className="px-4 py-4">SQUADRON</th>
                     {viewMode === 'gc' ? (
                       <>
-                        <th className="px-12 py-12 text-center text-inox-orange">LP (J)</th>
-                        <th className="px-12 py-12 text-center">TRP (Σ)</th>
+                        <th className="px-2 py-4 text-center">LP</th>
+                        <th className="px-2 py-4 text-center">TRP</th>
                       </>
                     ) : (
                       <>
-                        <th className="px-12 py-12 text-center">TIME</th>
-                        <th className="px-12 py-12 text-center">FINISH</th>
-                        <th className="px-12 py-12 text-center">FAL</th>
-                        <th className="px-12 py-12 text-center">FTS</th>
-                        <th className="px-12 py-12 text-center text-inox-cyan">TOTAL</th>
+                        <th className="px-2 py-4 text-center">TIME</th>
+                        <th className="px-2 py-4 text-center">FIN</th>
+                        <th className="px-2 py-4 text-center">FAL</th>
+                        <th className="px-2 py-4 text-center">FTS</th>
+                        <th className="px-2 py-4 text-center">TOT</th>
                       </>
                     )}
-                    {!snapshotMode && viewMode === 'gc' && <th className="px-16 py-12 text-center">MISSION HISTORY</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
-                  {results.map((team) => {
-                    const isFirst = team.rank === 1;
-                    const accentColor = viewMode === 'gc' ? 'inox-orange' : 'inox-cyan';
-                    const accentHex = viewMode === 'gc' ? 'rgba(252,103,25,0.6)' : 'rgba(0,255,255,0.6)';      
-
-                    return (
-                      <motion.tr
-                        key={`${team.team_name}-${team.rank}`}
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className={`group transition-all ${team.is_inox ? `bg-${accentColor}/10 border-l-8 border-l-${accentColor}` : 'hover:bg-zinc-800/40 border-l-8 border-l-transparent'}`}
-                      >
-                        <td className="px-16 py-12 text-center">
-                          <span className={`text-7xl font-black italic ${
-                            isFirst ? `text-${accentColor} drop-shadow-[0_0_30px_${accentHex}]` : 'text-zinc-800 group-hover:text-zinc-600'
-                          }`}>
-                            #{team.rank}
-                          </span>
-                        </td>
-                        <td className="px-16 py-12">
-                          <div className="flex flex-col gap-2">
-                            <span className={`text-3xl font-black italic uppercase tracking-tighter ${team.is_inox ? `text-${accentColor}` : 'text-white'}`}>
-                              {team.team_name}
-                            </span>
-                            {team.is_inox === 1 && (
-                              <div className="flex items-center gap-4 mt-5">
-                                 <span className={`bg-${accentColor} text-black px-6 py-2 rounded-[12px] text-xs font-black uppercase tracking-widest italic shadow-[0_10px_30px_rgba(0,0,0,0.5)]`}>Official Squadron</span>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        {viewMode === 'gc' ? (
-                          <>
-                            <td className="px-12 py-12 text-center">
-                               <div className="inline-flex items-center justify-center w-28 h-24 rounded-[2.5rem] bg-zinc-950 border border-zinc-800 group-hover:border-inox-orange/50 transition-all shadow-inner">
-                                 <span className="text-5xl font-black italic text-inox-orange">
-                                   {team.league_points}
-                                 </span>
-                               </div>
-                            </td>
-                            <td className="px-12 py-12 text-center">
-                              <span className="text-4xl font-black text-white group-hover:scale-110 transition-transform inline-block">{team.total_race_points}</span>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="px-12 py-12 text-center font-mono text-xl text-zinc-400">
-                                {formatTime(team.team_time)}
-                            </td>
-                            <td className="px-12 py-12 text-center text-3xl font-black text-white">{team.pts_finish}</td>
-                            <td className="px-12 py-12 text-center text-3xl font-bold text-zinc-600 group-hover:text-zinc-400">{team.pts_fal}</td>  
-                            <td className="px-12 py-12 text-center text-3xl font-bold text-zinc-600 group-hover:text-zinc-400">{team.pts_fts}</td>  
-                            <td className="px-12 py-12 text-center">
-                               <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-zinc-950 border border-zinc-800 group-hover:border-inox-cyan/50 transition-all">
-                                 <span className="text-4xl font-black italic text-inox-cyan">
-                                   {team.total_race_points}
-                                 </span>
-                               </div>
-                            </td>
-                          </>
-                        )}
-                        {!snapshotMode && viewMode === 'gc' && (
-                          <td className="px-16 py-12">
-                            <div className="flex justify-center items-center gap-4">
-                              {[team.r1, team.r2, team.r3, team.r4, team.r5, team.r6].map((pts, i) => (        
-                                pts !== "0" && pts !== null && pts !== "" && (
-                                  <div key={i} className="flex flex-col items-center gap-3 group/race">      
-                                    <span className="text-[10px] font-black text-zinc-700 uppercase tracking-tighter group-hover/race:text-zinc-500 transition-colors">R{i+1}</span>
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-950 border border-zinc-800 flex items-center justify-center shadow-2xl group-hover/race:border-inox-orange/40 transition-all">
-                                      <span className="text-lg font-black italic text-white">{pts}</span>
-                                    </div>
-                                  </div>
-                                )
-                              ))}
-                            </div>
-                          </td>
-                        )}
-                      </motion.tr>
-                    );
-                  })}
+                <tbody className="divide-y divide-zinc-800/40">
+                  {results.map((team) => (
+                    <tr key={`${team.team_name}-${team.rank}`} className={`text-[10px] ${team.is_inox ? 'bg-white/5' : ''}`}>
+                      <td className="px-4 py-3 text-center font-black italic text-zinc-600">#{team.rank}</td>
+                      <td className="px-4 py-3 font-bold text-zinc-300">{team.team_name}</td>
+                      {viewMode === 'gc' ? (
+                        <>
+                          <td className="px-2 py-3 text-center text-inox-orange font-black">{team.league_points}</td>
+                          <td className="px-2 py-3 text-center font-bold text-white">{team.total_race_points}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-2 py-3 text-center text-zinc-400 font-mono">{formatTime(team.team_time)}</td>
+                          <td className="px-2 py-3 text-center font-bold text-white">{team.pts_finish}</td>
+                          <td className="px-2 py-3 text-center text-zinc-500">{team.pts_fal}</td>  
+                          <td className="px-2 py-3 text-center text-zinc-500">{team.pts_fts}</td>  
+                          <td className="px-2 py-3 text-center font-black text-inox-cyan">{team.total_race_points}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </section>
-
-        {/* FOOTER INFO */}
-        {snapshotMode && (
-          <div className="absolute bottom-24 left-24 flex items-center gap-8">
-             <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800 shadow-inner">
-                <Info size={32} className={viewMode === 'gc' ? 'text-inox-orange' : 'text-inox-cyan'} />       
-             </div>
-             <div>
-                <p className="text-xl font-black text-zinc-500 uppercase tracking-[0.4em]">Inoxteam Division Analysis Engine</p>
-                <p className="text-xs font-bold text-zinc-700 uppercase tracking-widest mt-2">Enterprise Telemetry v2.5 • Real-time Cloudflare Integration</p>
-             </div>
-          </div>
-        )}
       </main>
-
-      {/* FLOATING CAPTURE BUTTON */}
-      {!snapshotMode && (
-        <div className="fixed bottom-12 right-12 flex gap-6 z-[200]">
-          <button
-            onClick={() => setSnapshotMode(!snapshotMode)}
-            className="w-20 h-20 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 hover:text-white transition-all group"
-          >
-            {snapshotMode ? <X size={32} /> : <LayoutGrid size={32} className="group-hover:rotate-90 transition-transform duration-500" />}
-          </button>
-          <button
-            onClick={handleCapture}
-            className={`px-16 py-8 ${viewMode === 'gc' ? 'bg-inox-orange shadow-[0_0_40px_rgba(252,103,25,0.3)]' : 'bg-inox-cyan shadow-[0_0_40px_rgba(0,255,255,0.3)]'} text-black font-black italic rounded-full hover:scale-105 transition-all uppercase text-2xl tracking-tighter border border-black/10`}
-          >
-            SAVE RANKING
-          </button>
-        </div>
-      )}
     </div>
   );
 };
