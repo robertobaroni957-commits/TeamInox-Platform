@@ -31,14 +31,13 @@ export async function onRequestGet({ request, env }) {
             return new Response(JSON.stringify({ success: true, analytics: [], mvps: [] }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // 3. Find ALL races (rounds table) that belong to this WTRL Season
+        // 3. Find ALL races (zrl_races table) that belong to this Round Group
         const { results: relevantRounds } = await env.ZRL_DB.prepare(`
-            SELECT DISTINCT r.id as round_id, r.name as round_name
-            FROM rounds r
-            JOIN series s ON r.series_id = s.id
-            WHERE s.external_season_id = ?
-            ORDER BY r.id ASC
-        `).bind(extSeasonId).all();
+            SELECT id as round_id, name as round_name
+            FROM zrl_races
+            WHERE zrl_round_group_id = ?
+            ORDER BY id ASC
+        `).bind(round_group_id).all();
 
         const roundIds = relevantRounds.map(r => r.round_id);
 
