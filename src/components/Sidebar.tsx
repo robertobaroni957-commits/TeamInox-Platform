@@ -108,11 +108,13 @@ const Sidebar: React.FC = () => {
                 {isCaptain ? (
                   <>
                     <NavItem to="/zrl-operations" icon={Briefcase} label="ZRL Operations" special="zrl" />
+                    <NavItem to="/zrl-season-stats" icon={TrendingUp} label="ZRL Season Stats" special="zrl" />
                     <NavItem to="/zrl-results" icon={Star} label="ZRL Results" special="zrl" />
                   </>
                 ) : (
                   <>
                     <NavItem to="/availability" icon={Calendar} label="Mia Disponibilità ZRL" />
+                    <NavItem to="/zrl-season-stats" icon={TrendingUp} label="Stagione ZRL" />
                     <NavItem to="/zrl-results" icon={Trophy} label="Classifiche ZRL" />
                   </>
                 )}
