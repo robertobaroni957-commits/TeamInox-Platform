@@ -93,7 +93,6 @@ const ZRLAnalytics: React.FC = () => {
       const res = await fetch('/api/division-results');
       const json = await res.json();
       if (json.success) {
-        // Mappiamo e deduplichiamo le opzioni basandoci su Round Group e Lega
         const uniqueOptions = new Map();
         
         (json.rounds || []).forEach((r: any) => {
@@ -102,7 +101,7 @@ const ZRLAnalytics: React.FC = () => {
             if (!uniqueOptions.has(key)) {
               uniqueOptions.set(key, {
                 round_group_id: r.round_group_id,
-                round_group_name: r.round_group_name,
+                round_group_name: r.round_group_name, // Usa il nome del gruppo, non della singola gara
                 season_name: 'S19', 
                 league_key: l.league_key,
                 league_display_name: l.league_display_name,
@@ -113,16 +112,20 @@ const ZRLAnalytics: React.FC = () => {
         });
         
         const formattedOptions = Array.from(uniqueOptions.values());
-        
         setOptions(formattedOptions);
+
         if (formattedOptions.length > 0) {
           const first = formattedOptions[0];
-          setSelectedOption(`${first.round_group_id}|${first.league_key}`);
+          const initialKey = `${first.round_group_id}|${first.league_key}`;
+          setSelectedOption(initialKey);
           fetchAnalytics(first.round_group_id, first.league_key);
+        } else {
+          setLoading(false);
         }
       }
     } catch (err) {
       console.error("Error fetching filters", err);
+      setLoading(false);
     }
   };
 
@@ -171,9 +174,10 @@ const ZRLAnalytics: React.FC = () => {
     }
   };
 
+  // FIX: Selettore corretto
+  const selectedOptionData = options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption);
   const currentTeamData = data?.analytics.find(t => t.team_name === selectedTeam);
   const inoxTeams = data?.analytics.filter(t => t.is_inox === 1) || [];
-  const selectedOptionData = options.find(o => `${o.round_group_id}|${o.league_key}` === selectedOption);
 
   if (loading && options.length === 0) return (
     <div className="min-h-screen flex items-center justify-center bg-black/20">
@@ -232,13 +236,13 @@ const ZRLAnalytics: React.FC = () => {
               <div className="flex p-1 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl">
                  <button 
                   onClick={() => setViewType('round')}
-                  className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all bg-inox-orange text-black"
+                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewType === 'round' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-white'}`}
                  >
                    Round
                  </button>
                  <button 
                   onClick={() => setViewType('season')}
-                  className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-zinc-300"
+                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${viewType === 'season' ? 'bg-inox-orange text-black' : 'text-zinc-500 hover:text-white'}`}
                  >
                    Season
                  </button>
@@ -247,12 +251,14 @@ const ZRLAnalytics: React.FC = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-4 px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-white hover:border-inox-orange transition-all shadow-xl min-w-[200px]"
+                  className="flex items-center gap-4 px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-white hover:border-inox-orange transition-all shadow-xl min-w-[250px]"
                 >
                    <Filter size={14} className="text-[#fc6719]" />
-                   <div className="flex flex-col items-start">
+                   <div className="flex flex-col items-start min-w-0">
                       <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Active Division</span>
-                      <span className="text-xs font-bold uppercase italic truncate max-w-[150px]">{selectedOptionData?.league_display_name || 'Select...'}</span>
+                      <span className="text-xs font-bold uppercase italic truncate max-w-[200px]">
+                        {selectedOptionData ? formatLeagueName(selectedOptionData) : 'Select...'}
+                      </span>
                    </div>
                    <ChevronDown size={14} className={`ml-auto transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                 </button>
@@ -263,16 +269,16 @@ const ZRLAnalytics: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full mt-2 left-0 right-0 z-[100] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto"
+                      className="absolute top-full mt-2 left-0 right-0 z-[100] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar"
                     >
                       {options.map((opt) => (
                         <button
                           key={`${opt.round_group_id}|${opt.league_key}`}
                           onClick={() => handleOptionChange(`${opt.round_group_id}|${opt.league_key}`)}
-                          className={`w-full text-left px-6 py-4 hover:bg-zinc-800 flex flex-col transition-all ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'bg-zinc-800 border-l-4 border-inox-orange' : ''}`}
+                          className={`w-full text-left px-6 py-4 hover:bg-zinc-800 flex flex-col transition-all border-b border-zinc-800/50 last:border-0 ${selectedOption === `${opt.round_group_id}|${opt.league_key}` ? 'bg-zinc-800 border-l-4 border-inox-orange' : ''}`}
                         >
-                           <span className="text-[10px] font-black uppercase text-zinc-500">{opt.round_name}</span>
-                           <span className="text-xs font-bold text-white uppercase italic">{opt.league_display_name}</span>
+                           <span className="text-[10px] font-black uppercase text-zinc-500">{opt.round_group_name}</span>
+                           <span className="text-xs font-bold text-white uppercase italic">{formatLeagueName(opt)}</span>
                         </button>
                       ))}
                     </motion.div>
@@ -331,7 +337,7 @@ const ZRLAnalytics: React.FC = () => {
                  {currentTeamData?.team_name} <span className="text-zinc-700">INTEL</span>
                </h2>
                <p className="text-[#fc6719] font-black uppercase tracking-[0.4em] text-[10px] mt-2 italic">
-                 {selectedOptionData?.round_name} • {selectedOptionData?.league_display_name}
+                 {selectedOptionData?.round_group_name} • {selectedOptionData ? formatLeagueName(selectedOptionData) : ''}
                </p>
             </div>
           </div>
@@ -343,7 +349,7 @@ const ZRLAnalytics: React.FC = () => {
               <div className="bg-zinc-950/50 border border-zinc-900 rounded-[3rem] p-10 shadow-inner group/radar relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#fc6719]/5 to-transparent opacity-0 group-hover/radar:opacity-100 transition-opacity rounded-[3rem]" />
                 <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-full aspect-square max-h-[400px]">
+                  <div className="w-full h-[400px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius="70%" data={currentTeamData.dna}>
                         <PolarGrid stroke="#27272a" />
@@ -396,7 +402,7 @@ const ZRLAnalytics: React.FC = () => {
                             <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">Strategic Breakdown</h3>
                          </div>
                          
-                         <div className="h-[300px] w-full">
+                         <div className="h-[400px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={currentTeamData.dna}>
                                 <defs>
@@ -572,5 +578,3 @@ const ZRLAnalytics: React.FC = () => {
     </div>
   );
 };
-
-export default ZRLAnalytics;
