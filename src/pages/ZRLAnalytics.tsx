@@ -89,29 +89,46 @@ const ZRLAnalytics: React.FC = () => {
   };
 
   const fetchOptions = async () => {
+    setLoading(true);
     try {
       const res = await fetch('/api/division-results');
       const json = await res.json();
+      console.log("[Analytics] Filters API response:", json);
+
       if (json.success) {
         const uniqueOptions = new Map();
+        const rounds = json.rounds || [];
+        const leagues = json.leagues || [];
+
+        if (rounds.length === 0 || leagues.length === 0) {
+          console.warn("[Analytics] No rounds or leagues found");
+          setOptions([]);
+          setLoading(false);
+          return;
+        }
         
-        (json.rounds || []).forEach((r: any) => {
-          (json.leagues || []).forEach((l: any) => {
-            const key = `${r.round_group_id}|${l.league_key}`;
+        rounds.forEach((r: any) => {
+          leagues.forEach((l: any) => {
+            const rgid = r.round_group_id || 1;
+            const lk = l.league_key;
+            if (!lk) return;
+
+            const key = `${rgid}|${lk}`;
             if (!uniqueOptions.has(key)) {
               uniqueOptions.set(key, {
-                round_group_id: r.round_group_id,
-                round_group_name: r.round_group_name, // Usa il nome del gruppo, non della singola gara
+                round_group_id: rgid,
+                round_group_name: r.round_group_name || `Round ${rgid}`,
                 season_name: 'S19', 
-                league_key: l.league_key,
-                league_display_name: l.league_display_name,
-                inox_team_name: l.inox_team_name
+                league_key: lk,
+                league_display_name: l.league_display_name || null,
+                inox_team_name: l.inox_team_name || null
               });
             }
           });
         });
         
         const formattedOptions = Array.from(uniqueOptions.values());
+        console.log("[Analytics] Formatted options:", formattedOptions);
         setOptions(formattedOptions);
 
         if (formattedOptions.length > 0) {
@@ -122,9 +139,11 @@ const ZRLAnalytics: React.FC = () => {
         } else {
           setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
     } catch (err) {
-      console.error("Error fetching filters", err);
+      console.error("[Analytics] Error fetching filters:", err);
       setLoading(false);
     }
   };
@@ -136,12 +155,13 @@ const ZRLAnalytics: React.FC = () => {
       const json = await res.json();
       if (json.success) {
         setData(json);
-        const inox = json.analytics.find((t: any) => t.is_inox === 1);
+        const analytics = json.analytics || [];
+        const inox = analytics.find((t: any) => t.is_inox === 1);
         if (inox) setSelectedTeam(inox.team_name);
-        else if (json.analytics.length > 0) setSelectedTeam(json.analytics[0].team_name);
+        else if (analytics.length > 0) setSelectedTeam(analytics[0].team_name);
       }
     } catch (err) {
-      console.error("Error fetching analytics", err);
+      console.error("[Analytics] Error fetching analytics:", err);
     } finally {
       setLoading(false);
     }
