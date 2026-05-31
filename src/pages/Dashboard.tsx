@@ -71,6 +71,8 @@ const Dashboard: React.FC = () => {
     // Permission check with participant context
     const hasPerm = hasPermission(user?.role, item.permission, isZRLParticipant);
     
+    console.log(`[DEBUG] Item: ${item.id}, Permission: ${item.permission}, HasPerm: ${hasPerm}, Role: ${user?.role}, IsParticipant: ${isZRLParticipant}`);
+    
     // Admin specific exclusion
     if (user?.role === 'admin' && item.id === 'zrl-questionnaire') {
       return false;
@@ -78,6 +80,10 @@ const Dashboard: React.FC = () => {
     
     return hasPerm;
   });
+
+  useEffect(() => {
+    console.log("[DEBUG] Dashboard state:", { user, isZRLParticipant, needsQuestionnaire });
+  }, [user, isZRLParticipant, needsQuestionnaire]);
 
   if (loading) return null;
 
