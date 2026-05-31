@@ -17,10 +17,15 @@ export async function onRequestPost({ request, env }) {
             env.ZRL_DB.prepare("DELETE FROM athletes WHERE zwid = ?").bind(userId)
         ]);
 
-        return new Response(JSON.stringify({ success: true, message: "Utente e dati correlati eliminati correttamente" }));
+        return new Response(JSON.stringify({ success: true, message: "Utente e dati correlati eliminati correttamente" }), {
+            headers: { "Content-Type": "application/json" }
+        });
 
     } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: e.message }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+        });
     }
 }
 
