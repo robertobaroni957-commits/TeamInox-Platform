@@ -87,9 +87,9 @@ export async function onRequestGet({ request, env }) {
                     SELECT rider_name, zwid as zid, round_id, points_fal, points_fts, points_finish, points_total
                     FROM division_results
                     WHERE round_id IN (${placeholders})
-                      AND (wtrl_team_id = ? OR (wtrl_team_id IS NULL AND team_name = ?))
+                      AND team_name = ?
                 `;
-                const { results } = await env.ZRL_DB.prepare(query).bind(...roundIds, team.wtrl_team_id, team.team_name).all();
+                const { results } = await env.ZRL_DB.prepare(query).bind(...roundIds, team.team_name).all();
                 rawResults = results;
             }
 
