@@ -16,8 +16,9 @@ import type { Role } from '../services/permissions';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{username: string, role: Role} | null>(null);
+  const [user, setUser] = useState<{username: string, role: Role, zwid: number} | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isZRLParticipant, setIsZRLParticipant] = useState(false);
   const [needsQuestionnaire, setNeedsQuestionnaire] = useState(false);
   const [stats, setStats] = useState({
     users: 0,
@@ -31,12 +32,18 @@ const Dashboard: React.FC = () => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setUser({ username: payload.username, role: payload.role as Role });
+        const userObj = { username: payload.username, role: payload.role as Role, zwid: payload.zwid };
+        setUser(userObj);
         
-        // Check questionnaire status
-        api.checkAvailabilityStatus().then(status => {
+        // Check questionnaire status and ZRL participation
+        Promise.all([
+            api.checkAvailabilityStatus(),
+            api.getRoster(0) // Fetching with 0 to get all memberships potentially
+        ]).then(([status, rosters]) => {
           setNeedsQuestionnaire(status.missing);
-        }).catch(err => console.error("Error checking availability:", err));
+          // Check if user is in any ZRL roster
+          setIsZRLParticipant(rosters.some(r => r.zwid === userObj.zwid));
+        }).catch(err => console.error("Error fetching dashboard data:", err));
 
         // Fetch Stats
         Promise.all([
@@ -49,7 +56,7 @@ const Dashboard: React.FC = () => {
             users: users.length,
             teams: teams.length,
             activeSeries: active ? active.name : 'N/A',
-            nextRace: 'Tues 19:30' // Fallback or logic to find next race
+            nextRace: 'Tues 19:30'
           });
         });
 
@@ -61,10 +68,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const filteredMenuItems = DASHBOARD_CONFIG.filter(item => {
-    // Permission check
-    const hasPerm = hasPermission(user?.role, item.permission);
+    // Permission check with participant context
+    const hasPerm = hasPermission(user?.role, item.permission, isZRLParticipant);
     
-    // Admin specific exclusion for Questionnaire card
+    // Admin specific exclusion
     if (user?.role === 'admin' && item.id === 'zrl-questionnaire') {
       return false;
     }

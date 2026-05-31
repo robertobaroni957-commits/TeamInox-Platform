@@ -73,8 +73,14 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ]
 };
 
-export const hasPermission = (role: string | undefined, permission: Permission): boolean => {
+export const hasPermission = (role: string | undefined, permission: Permission, isZRLParticipant: boolean = false): boolean => {
   if (!role) return false;
+  
+  // Rule: ZRL functions require participant status
+  if (permission.startsWith('zrl.') && !isZRLParticipant && role !== 'admin') {
+    return false;
+  }
+  
   const userRole = role as Role;
   return ROLE_PERMISSIONS[userRole]?.includes(permission) || false;
 };
