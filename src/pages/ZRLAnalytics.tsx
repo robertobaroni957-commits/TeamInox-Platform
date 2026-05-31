@@ -343,9 +343,9 @@ const ZRLAnalytics: React.FC = () => {
               <div className="bg-zinc-950/50 border border-zinc-900 rounded-[3rem] p-10 shadow-inner group/radar relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#fc6719]/5 to-transparent opacity-0 group-hover/radar:opacity-100 transition-opacity rounded-[3rem]" />
                 <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-full h-[300px]">
+                    <div className="w-full aspect-square max-h-[400px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={currentTeamData.dna}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={currentTeamData.dna}>
                         <PolarGrid stroke="#27272a" />
                         <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: '900' }} />
                         <Radar

@@ -6,12 +6,10 @@ export async function onRequestGet({ request, env }) {
         if (!env.ZRL_DB) return new Response("DB connection lost", { status: 500 });
 
         // 1. Fetch results aggregated by ROUND INDEX (1, 2, 3, or 4)
-        // We join division_results -> rounds -> series -> zrl_round_groups 
-        // using external_season_id to ensure a stable link between races and round groups.
+        // We join division_results -> zrl_races -> zrl_round_groups 
         const { results: rawResults } = await env.ZRL_DB.prepare(`
             SELECT 
                 dr.team_name, 
-                dr.wtrl_team_id, 
                 dr.is_inox,
                 rg.round_index,
                 SUM(dr.points_finish) as pts_finish,
@@ -19,17 +17,16 @@ export async function onRequestGet({ request, env }) {
                 SUM(dr.points_fts) as pts_fts,
                 SUM(dr.points_total) as total_points
             FROM division_results dr
-            JOIN rounds r ON dr.round_id = r.id
-            JOIN series s ON r.series_id = s.id
-            JOIN zrl_round_groups rg ON s.external_season_id = rg.external_season_id
+            JOIN zrl_races r ON dr.round_id = r.id
+            JOIN zrl_round_groups rg ON r.zrl_round_group_id = rg.id
             WHERE dr.league_key = ?
-            GROUP BY dr.wtrl_team_id, dr.team_name, rg.round_index
+            GROUP BY dr.team_name, rg.round_index
         `).bind(league_key).all();
 
         const teamStatsMap = {};
 
         rawResults.forEach(row => {
-            const teamId = row.wtrl_team_id || row.team_name;
+            const teamId = row.team_name;
             if (!teamStatsMap[teamId]) {
                 teamStatsMap[teamId] = {
                     team_name: row.team_name,
@@ -38,22 +35,20 @@ export async function onRequestGet({ request, env }) {
                 };
             }
             
-            // Map the aggregated data to the round index (1, 2, 3, or 4)
-            if (row.round_index >= 1 && row.round_index <= 4) {
-                teamStatsMap[teamId].history[row.round_index] = {
-                    pts: row.total_points,
-                    details: {
-                        finish: row.pts_finish,
-                        fal: row.pts_fal,
-                        fts: row.pts_fts
-                    }
-                };
-            }
+            // Map the aggregated data to the round index
+            teamStatsMap[teamId].history[row.round_index] = {
+                pts: row.total_points,
+                details: {
+                    finish: row.pts_finish,
+                    fal: row.pts_fal,
+                    fts: row.pts_fts
+                }
+            };
         });
 
         // 2. Fetch current standings for the active round to show Rank/League Points
         const { results: standings } = await env.ZRL_DB.prepare(`
-            SELECT team_name, wtrl_team_id, rank, league_points
+            SELECT team_name, rank, league_points
             FROM zrl_team_standings
             WHERE league_key = ? AND is_inox = 1
         `).bind(league_key).all();
@@ -61,8 +56,8 @@ export async function onRequestGet({ request, env }) {
         const finalData = Object.values(teamStatsMap)
             .filter(t => t.is_inox === 1)
             .map(t => {
-                const teamId = t.wtrl_team_id || t.team_name;
-                const standing = standings.find(s => (s.wtrl_team_id || s.team_name) === teamId);
+                const teamId = t.team_name;
+                const standing = standings.find(s => s.team_name === teamId);
                 return {
                     team_name: t.team_name,
                     overall_rank: standing ? standing.rank : null,
