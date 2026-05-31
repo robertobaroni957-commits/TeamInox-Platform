@@ -51,8 +51,7 @@ export async function onRequestGet({ request, env }) {
 
         if (mode === 'race') {
             // 2. Fetch aggregated Team Results for a specific Race
-            // We prioritize official_position for sorting as requested by the user.
-            const { results } = await env.ZRL_DB.prepare(`
+            const { results: teamResults } = await env.ZRL_DB.prepare(`
                 SELECT 
                     team_name,
                     league_key,
@@ -68,30 +67,46 @@ export async function onRequestGet({ request, env }) {
                 WHERE round_id = ? AND league_key = ?
                 GROUP BY team_name
                 ORDER BY 
-                    CASE WHEN MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) IS NOT NULL 
+                    CASE WHEN MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) IS NOT NULL        
                          THEN MAX(CASE WHEN rider_name IS NULL THEN position ELSE NULL END) 
                          ELSE 999 END ASC,
                     MAX(points_total) DESC,
                     CASE WHEN MAX(time) > 0 THEN MAX(time) ELSE 999999 END ASC
             `).bind(round_id, league_key).all();
 
+            // 2b. Fetch Rider Details for INOX team specifically
+            const { results: riderDetails } = await env.ZRL_DB.prepare(`
+                SELECT 
+                    rider_name,
+                    time,
+                    points_finish as pts_finish,
+                    points_fal as pts_fal,
+                    points_fts as pts_fts,
+                    points_total as total
+                FROM division_results
+                WHERE round_id = ? AND league_key = ? AND is_inox = 1 AND rider_name IS NOT NULL
+                ORDER BY points_total DESC, points_finish DESC
+            `).bind(round_id, league_key).all();
+
             // Refined ranking logic for the UI:
             let currentRank = 1;
-            const rankedResults = results.map((r, i) => {
+            const rankedResults = teamResults.map((r, i) => {
                 if (i > 0) {
-                    const prev = results[i-1];
-                    // If the primary sort values are different, increment the fallback rank
+                    const prev = teamResults[i-1];
                     if (r.official_position !== prev.official_position || 
                         r.total_race_points !== prev.total_race_points || 
                         Math.abs((r.team_time || 0) - (prev.team_time || 0)) > 0.1) {
                         currentRank = i + 1;
                     }
                 }
-                // Use official position as the primary rank, fallback to our calculated rank
                 return { ...r, rank: r.official_position || currentRank };
             });
 
-            return new Response(JSON.stringify({ success: true, results: rankedResults }), {
+            return new Response(JSON.stringify({ 
+                success: true, 
+                results: rankedResults,
+                inoxRiders: riderDetails 
+            }), {
                 headers: { "Content-Type": "application/json" }
             });
         } else {
