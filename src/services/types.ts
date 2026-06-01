@@ -128,4 +128,5 @@ export interface UserData {
   gender?: string;
   avatar_url?: string;
   created_at: string;
+  zrl_teams?: string;
 }

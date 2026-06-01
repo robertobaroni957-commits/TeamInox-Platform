@@ -168,19 +168,31 @@ export async function onRequestPost({ request, env }) {
       }
 
       // AGGIORNAMENTO DATI SQUADRA DA META (Dati più precisi)
-      if (metaData && metaData.competition) {
-        await env.ZRL_DB.prepare(`
-          UPDATE teams SET 
-            category = ?, 
-            division = ?,
-            member_count = ?
-          WHERE wtrl_team_id = ?
-        `).bind(
-          metaData.competition.division || t.division || '', // Categoria reale (A, B, C, D)
-          metaData.division || t.zrldivision || '',          // Divisione reale (es: Open Lime B1)
-          metaData.memberCount || parseInt(t.members) || 0,
-          internalTeamId
-        ).run();
+      if (metaData) {
+        const updateFields = [];
+        const updateParams = [];
+
+        if (metaData.competition) {
+          updateFields.push("category = ?", "division = ?");
+          updateParams.push(metaData.competition.division || t.division || '', metaData.division || t.zrldivision || '');
+        }
+
+        if (metaData.memberCount) {
+          updateFields.push("member_count = ?");
+          updateParams.push(parseInt(metaData.memberCount));
+        }
+
+        if (metaData.captainId) {
+          updateFields.push("captain_id = ?");
+          updateParams.push(parseInt(metaData.captainId));
+        }
+
+        if (updateFields.length > 0) {
+          updateParams.push(internalTeamId);
+          await env.ZRL_DB.prepare(`
+            UPDATE teams SET ${updateFields.join(", ")} WHERE wtrl_team_id = ?
+          `).bind(...updateParams).run();
+        }
       }
 
       const statements = [];
@@ -188,19 +200,30 @@ export async function onRequestPost({ request, env }) {
       // PULIZIA ROSTER ATTUALE (Per rendere WTRL l'unica fonte di verità)
       statements.push(env.ZRL_DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
+      const captainId = metaData?.captainId ? parseInt(metaData.captainId) : null;
+
       for (const m of members) {
         const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
         if (!zwid) continue;
 
+        const isCaptain = zwid === captainId;
+        const newRole = isCaptain ? 'captain' : 'athlete';
+
         // 1. Upsert Atleta con dati estesi
+        // Nota: Il ruolo viene aggiornato a 'captain' solo se l'atleta non è già admin/moderator
         statements.push(env.ZRL_DB.prepare(`
           INSERT INTO athletes (
             zwid, name, role, base_category, avatar_url, 
             zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id
           )
-          VALUES (?, ?, 'athlete', ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(zwid) DO UPDATE SET 
             name = excluded.name,
+            role = CASE 
+              WHEN athletes.role IN ('admin', 'moderator') THEN athletes.role
+              WHEN excluded.role = 'captain' THEN 'captain'
+              ELSE athletes.role
+            END,
             base_category = excluded.base_category,
             avatar_url = excluded.avatar_url,
             zftp = excluded.zftp,
@@ -212,6 +235,7 @@ export async function onRequestPost({ request, env }) {
         `).bind(
           zwid, 
           m.name, 
+          newRole,
           m.category || '', 
           m.avatar || '',
           parseFloat(m.zftp) || 0,

@@ -472,13 +472,26 @@ const UserManagement: React.FC = () => {
                 <tr key={user.id} className="hover:bg-zinc-800/20 transition-all group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 group-hover:border-inox-orange group-hover:text-inox-orange transition-all">
-                        <User size={24} />
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 group-hover:border-inox-orange group-hover:text-inox-orange transition-all overflow-hidden">
+                        {user.avatar_url ? (
+                          <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={24} />
+                        )}
                       </div>
                       <div>
-                        <div className="text-white font-black uppercase tracking-tight text-lg leading-none">{user.username}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-white font-black uppercase tracking-tight text-lg leading-none">{user.username}</div>
+                          {user.zrl_teams && (
+                            <span className="bg-inox-orange text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest italic">ZRL</span>
+                          )}
+                        </div>
                         <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 italic opacity-70">
-                           {user.zwift_power_id ? `ZWID: ${user.zwift_power_id}` : `ZWID: ${user.id}`} • Registered: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                           {user.zrl_teams ? (
+                             <span className="text-inox-cyan">{user.zrl_teams}</span>
+                           ) : (
+                             `ZWID: ${user.id}`
+                           )} • Registered: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                         </div>
                       </div>
                     </div>

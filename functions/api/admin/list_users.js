@@ -6,9 +6,20 @@ export async function onRequestGet({ env, data }) {
     }
 
     try {
-        const { results } = await env.ZRL_DB.prepare(
-            "SELECT zwid as id, name as username, email, role, base_category, gender, created_at FROM athletes ORDER BY created_at DESC"
-        ).all();
+        const { results } = await env.ZRL_DB.prepare(`
+            SELECT 
+                a.zwid as id, 
+                a.name as username, 
+                a.email, 
+                a.role, 
+                a.base_category, 
+                a.gender, 
+                a.created_at,
+                a.avatar_url,
+                (SELECT GROUP_CONCAT(t.name) FROM team_members tm JOIN teams t ON tm.team_id = t.wtrl_team_id WHERE tm.athlete_id = a.zwid) as zrl_teams
+            FROM athletes a 
+            ORDER BY a.name ASC
+        `).all();
 
         return new Response(JSON.stringify(results), { 
             status: 200,

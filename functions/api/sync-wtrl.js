@@ -35,14 +35,38 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
     const members = data.riders || data.members || []; 
+    const metaData = data.meta;
+
+    // AGGIORNAMENTO DATI SQUADRA DA META
+    if (metaData) {
+        const updateFields = [];
+        const updateParams = [];
+        if (metaData.captainId) {
+            updateFields.push("captain_id = ?");
+            updateParams.push(parseInt(metaData.captainId));
+        }
+        if (metaData.memberCount) {
+            updateFields.push("member_count = ?");
+            updateParams.push(parseInt(metaData.memberCount));
+        }
+        if (updateFields.length > 0) {
+            updateParams.push(internalTeamId);
+            await env.ZRL_DB.prepare(`UPDATE teams SET ${updateFields.join(", ")} WHERE wtrl_team_id = ?`).bind(...updateParams).run();
+        }
+    }
     
     const statements = [];
     // Pulizia roster attuale per questo team
     statements.push(env.ZRL_DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
+    const captainId = metaData?.captainId ? parseInt(metaData.captainId) : null;
+
     for (const m of members) {
       const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
       if (!zwid) continue;
+
+      const isCaptain = zwid === captainId;
+      const newRole = isCaptain ? 'captain' : 'athlete';
 
       // 1. Upsert Atleta con dati estesi
       statements.push(env.ZRL_DB.prepare(`
@@ -50,9 +74,14 @@ export async function onRequestPost(context) {
           zwid, name, role, base_category, avatar_url, 
           zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id
         )
-        VALUES (?, ?, 'athlete', ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(zwid) DO UPDATE SET 
           name = excluded.name,
+          role = CASE 
+            WHEN athletes.role IN ('admin', 'moderator') THEN athletes.role
+            WHEN excluded.role = 'captain' THEN 'captain'
+            ELSE athletes.role
+          END,
           base_category = excluded.base_category,
           avatar_url = excluded.avatar_url,
           zftp = excluded.zftp,
@@ -64,6 +93,7 @@ export async function onRequestPost(context) {
       `).bind(
         zwid, 
         m.name, 
+        newRole,
         m.category || '', 
         m.avatar || '',
         parseFloat(m.zftp) || 0,
