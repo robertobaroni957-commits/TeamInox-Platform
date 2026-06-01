@@ -244,5 +244,13 @@ export const api = {
 
   checkAvailabilityStatus: async (): Promise<{ missing: boolean }> => {
     return apiFetch(`${API_BASE}/availability-check`);
+  },
+
+  getDivisionFilters: async (): Promise<{ rounds: any[], leagues: any[] }> => {
+    return apiFetch(`${API_BASE}/division-results`);
+  },
+
+  getDivisionResults: async (roundId: number, leagueKey: string, mode: string = 'gc'): Promise<any> => {
+    return apiFetch(`${API_BASE}/division-results?round_id=${roundId}&league_key=${leagueKey}&mode=${mode}`);
   }
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { api } from '../services/api';
 import { 
   Trophy, Users, Target, RefreshCw, Filter, Award, Star, Zap, Activity,
   ChevronDown, LayoutGrid, BarChart3, Clock, MapPin, Hash, AlertCircle,
@@ -80,9 +81,8 @@ const ZRLDivisionResults: React.FC = () => {
 
   const fetchFilters = async () => {
     try {
-      const res = await fetch('/api/division-results');
-      const data = await res.json();
-      if (data.success) {
+      const data = await api.getDivisionFilters();
+      if (data) {
         setRounds(data.rounds || []);
         setLeagues(data.leagues || []);
         
@@ -102,9 +102,8 @@ const ZRLDivisionResults: React.FC = () => {
   const fetchResults = async (roundId: number, leagueKey: string, mode: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/division-results?round_id=${roundId}&league_key=${leagueKey}&mode=${mode}`);
-      const data = await res.json();
-      if (data.success) {
+      const data = await api.getDivisionResults(roundId, leagueKey, mode);
+      if (data) {
         setResults(data.results || []);
         setInoxRiders(data.inoxRiders || []);
       }

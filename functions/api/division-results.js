@@ -1,5 +1,7 @@
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+    const { request, env, data } = context;
+    const user = data?.user;
     const url = new URL(request.url);
     const round_id = url.searchParams.get("round_id");
     const league_key = url.searchParams.get("league_key");
@@ -22,7 +24,7 @@ export async function onRequestGet({ request, env }) {
             `).all();
 
             // Available Leagues for the first round or general
-            const { results: leagues } = await env.ZRL_DB.prepare(`
+            let leaguesQuery = `
                 SELECT 
                     league_key, 
                     GROUP_CONCAT(DISTINCT league_display_name) as league_display_name,
@@ -42,7 +44,28 @@ export async function onRequestGet({ request, env }) {
                 )
                 WHERE league_key IS NOT NULL
                 GROUP BY league_key
-            `).all();
+            `;
+
+            let { results: leagues } = await env.ZRL_DB.prepare(leaguesQuery).all();
+            
+            // Filter leagues if user is NOT admin/moderator
+            if (user && user.role !== 'admin' && user.role !== 'moderator' && user.zwid) {
+                const { results: userTeams } = await env.ZRL_DB.prepare(`
+                    SELECT t.name 
+                    FROM team_members tm 
+                    JOIN teams t ON tm.team_id = t.wtrl_team_id 
+                    WHERE tm.athlete_id = ? AND tm.is_active = 1
+                `).bind(user.zwid).all();
+
+                if (userTeams.length > 0) {
+                    const teamNames = userTeams.map(t => t.name);
+                    leagues = leagues.filter(l => {
+                        if (!l.inox_team_name) return false;
+                        const inoxTeams = l.inox_team_name.split(',');
+                        return inoxTeams.some(tn => teamNames.includes(tn));
+                    });
+                }
+            }
             
             return new Response(JSON.stringify({ success: true, rounds, leagues }), {
                 headers: { "Content-Type": "application/json" }
