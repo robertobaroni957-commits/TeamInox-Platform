@@ -35,26 +35,22 @@ export async function onRequestGet(context) {
         
         // 2. Verifichiamo se ha espresso almeno una preferenza oraria
         const prefs = await env.ZRL_DB.prepare(`
-            SELECT COUNT(*) as count FROM user_time_preferences WHERE zwid = ? AND preference_level >= 1
+            SELECT COUNT(*) as count FROM user_time_preferences WHERE zwid = ? AND preference_level >= 0
         `).bind(user.zwid).first();
 
-        // 3. Verifichiamo se ha risposto ad almeno un round della serie attiva
-        const rsvp = await env.ZRL_DB.prepare(`
-            SELECT COUNT(*) as count 
-            FROM availability a
-            JOIN rounds r ON a.round_id = r.id
-            WHERE a.athlete_id = ? AND r.series_id = ?
-        `).bind(user.zwid, activeSeries.id).first();
+        // Se mancano le preferenze orarie, è missing
+        if (!prefs || prefs.count === 0) {
+            return jsonResponse({ missing: true, reason: 'prefs_missing' });
+        }
 
-        const isMissing = (prefs?.count === 0 || rsvp?.count === 0);
-
+        // Se ha espresso l'intento e gli orari, per noi il "sondaggio" è completato.
+        // La disponibilità alle singole gare è un extra opzionale se il calendario esiste.
+        
         return jsonResponse({
-            missing: isMissing,
-            reason: isMissing ? 'details_missing' : null,
+            missing: false,
             details: {
-                intent: !!intent.intent,
-                prefs: prefs?.count || 0,
-                rsvp: rsvp?.count || 0
+                intent: true,
+                prefs: prefs.count
             }
         });
     } catch (err) {

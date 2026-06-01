@@ -117,7 +117,7 @@ const Availability: React.FC = () => {
     }
   };
 
-  const handleSaveAll = async () => {
+  const handleSavePreferences = async (goToNext: boolean) => {
     setSaving(true);
     setError(null);
     try {
@@ -128,7 +128,29 @@ const Availability: React.FC = () => {
       const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
       await api.updateTimePreferences(prefsPayload);
 
-      // 3. Salviamo le presenze per ogni round
+      if (goToNext && races.length > 0) {
+        setCurrentStep(2);
+      } else {
+        setSuccess(true);
+        setTimeout(() => navigate('/dashboard'), 2000);
+      }
+    } catch (e: any) {
+      setError('Errore durante il salvataggio delle preferenze.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      // Salviamo tutto (compreso l'ultimo step delle gare)
+      await api.updateIntent(true);
+      
+      const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
+      await api.updateTimePreferences(prefsPayload);
+
       const presencePromises = Object.entries(presences).map(([roundId, status]) => 
         api.updateRaceAvailability(parseInt(roundId), status)
       );
@@ -137,7 +159,7 @@ const Availability: React.FC = () => {
       setSuccess(true);
       setTimeout(() => navigate('/dashboard'), 2000);
     } catch (e: any) {
-      setError('Errore durante il salvataggio dei dati.');
+      setError('Errore durante il salvataggio finale.');
     } finally {
       setSaving(false);
     }
@@ -251,8 +273,18 @@ const Availability: React.FC = () => {
                <button onClick={() => setCurrentStep(0)} className="flex items-center gap-2 text-zinc-500 font-black uppercase italic text-sm hover:text-white transition-colors">
                   <ChevronLeft size={20} /> Indietro
                </button>
-               <button onClick={() => setCurrentStep(2)} className="bg-white text-black px-10 py-4 rounded-2xl font-black italic uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
-                  Avanti <ChevronRight size={20} />
+               <button 
+                onClick={() => handleSavePreferences(true)} 
+                disabled={saving}
+                className="bg-white text-black px-10 py-4 rounded-2xl font-black italic uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
+               >
+                  {saving ? 'Salvataggio...' : (
+                    races.length > 0 ? (
+                      <>Salva e Prosegui <ChevronRight size={20} /></>
+                    ) : (
+                      <>Salva e Invia <CheckCircle size={20} /></>
+                    )
+                  )}
                </button>
             </div>
           </motion.div>
