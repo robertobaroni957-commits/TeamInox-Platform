@@ -155,6 +155,13 @@ export const api = {
     });
   },
 
+  updateIntent: async (intent: boolean): Promise<any> => {
+    return apiFetch(`${API_BASE}/availability`, {
+      method: 'POST',
+      body: JSON.stringify({ type: 'intent', payload: { intent } }),
+    });
+  },
+
   updateRaceAvailability: async (roundId: number, status: string): Promise<any> => {
     return apiFetch(`${API_BASE}/availability`, {
       method: 'POST',

@@ -113,19 +113,19 @@ const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => navigate('/availability')}
-          className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between cursor-pointer group"
+          className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between cursor-pointer group hover:bg-orange-500/20 transition-all"
         >
           <div className="flex items-center gap-6">
-            <div className="p-4 rounded-2xl bg-orange-500 text-white shadow-xl">
+            <div className="p-4 rounded-2xl bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]">
               <AlertCircle size={24} />
             </div>
             <div>
-              <h4 className="text-xl font-black italic text-white uppercase tracking-tighter">Azione Richiesta: ZRL RSVP</h4>
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Non hai ancora completato il questionario di disponibilità per il prossimo round.</p>
+              <h4 className="text-xl font-black italic text-white uppercase tracking-tighter">ZRL 2026: Azione Richiesta</h4>
+              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Conferma la tua partecipazione e le tue disponibilità per il prossimo round.</p>
             </div>
           </div>
           <div className="flex items-center gap-3 text-orange-500 font-black italic uppercase text-sm group-hover:gap-5 transition-all">
-            Completa Ora <ArrowUpRight size={18} />
+            Vai al Questionario <ArrowUpRight size={18} />
           </div>
         </motion.div>
       )}

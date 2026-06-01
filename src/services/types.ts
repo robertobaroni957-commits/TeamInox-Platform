@@ -56,6 +56,7 @@ export interface AvailabilityData {
   timeSlots: TimeSlot[];
   preferences: TimePreference[];
   rounds: (Round & { status?: string })[];
+  intent?: boolean;
   error?: string;
 }
 

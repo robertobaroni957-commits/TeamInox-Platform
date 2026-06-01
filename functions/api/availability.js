@@ -67,15 +67,20 @@ export async function onRequestGet(context) {
                 WHERE r.series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
                 GROUP BY r.name, r.date
                 ORDER BY r.date ASC
+            `).bind(zwid),
+            env.ZRL_DB.prepare(`
+                SELECT intent FROM zrl_participation_intent 
+                WHERE zwid = ? AND series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
             `).bind(zwid)
         ]);
 
-        console.log(`[DEBUG] Query risultati User: timeSlots=${results[0].results.length}, preferences=${results[1].results.length}, rounds=${results[2].results.length}`);
+        console.log(`[DEBUG] Query risultati User: timeSlots=${results[0].results.length}, preferences=${results[1].results.length}, rounds=${results[2].results.length}, intent=${results[3].results.length}`);
 
         return new Response(JSON.stringify({
             timeSlots: results[0].results,
             preferences: results[1].results,
-            rounds: results[2].results
+            rounds: results[2].results,
+            intent: results[3].results[0]?.intent === 1
         }), {
             headers: { "Content-Type": "application/json" }
         });
@@ -104,6 +109,24 @@ export async function onRequestPost(context) {
         const { type, payload } = body;
 
         console.log(`[DEBUG] POST Availability - zwid=${zwid}, type=${type}, payload=${JSON.stringify(payload)}`);
+
+        // ============================
+        // Intent
+        // ============================
+        if (type === 'intent') {
+            const intentValue = payload.intent === true ? 1 : 0;
+            console.log(`[DEBUG] Inserimento intent: value=${intentValue}`);
+            
+            await env.ZRL_DB.prepare(`
+                INSERT OR REPLACE INTO zrl_participation_intent 
+                (zwid, series_id, intent) 
+                VALUES (?, (SELECT id FROM series WHERE is_active = 1 LIMIT 1), ?)
+            `).bind(zwid, intentValue).run();
+
+            return new Response(JSON.stringify({ success: true, message: "Intent updated" }), {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
         // ============================
         // Preferences
