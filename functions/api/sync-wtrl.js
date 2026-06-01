@@ -60,13 +60,18 @@ export async function onRequestPost(context) {
     statements.push(env.ZRL_DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
 
     const captainId = metaData?.captainId ? parseInt(metaData.captainId) : null;
+    const managerId = metaData?.managerId ? parseInt(metaData.managerId) : null;
 
     for (const m of members) {
       const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
       if (!zwid) continue;
 
       const isCaptain = zwid === captainId;
-      const newRole = isCaptain ? 'captain' : 'athlete';
+      const isManager = zwid === managerId;
+      
+      let newRole = 'athlete';
+      if (isManager) newRole = 'moderator';
+      else if (isCaptain) newRole = 'captain';
 
       // 1. Upsert Atleta con dati estesi
       statements.push(env.ZRL_DB.prepare(`
@@ -78,8 +83,9 @@ export async function onRequestPost(context) {
         ON CONFLICT(zwid) DO UPDATE SET 
           name = excluded.name,
           role = CASE 
-            WHEN athletes.role IN ('admin', 'moderator') THEN athletes.role
-            WHEN excluded.role = 'captain' THEN 'captain'
+            WHEN athletes.role = 'admin' THEN 'admin'
+            WHEN excluded.role = 'moderator' THEN 'moderator'
+            WHEN excluded.role = 'captain' AND athletes.role NOT IN ('admin', 'moderator') THEN 'captain'
             ELSE athletes.role
           END,
           base_category = excluded.base_category,
