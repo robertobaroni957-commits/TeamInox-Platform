@@ -1,11 +1,24 @@
 export async function onRequestPost(context) {
-  const { request, env } = context;
-  
+  const { request, env, data } = context;
+  const user = data?.user;
+
+  if (!user || (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain')) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+  }
+
   try {
     const { seasonId, teamId } = await request.json();
 
     if (!seasonId || !teamId) {
       return new Response(JSON.stringify({ error: "Dati mancanti (seasonId o teamId)" }), { status: 400 });
+    }
+
+    // SECURITY: Captain can only sync their own team
+    if (user.role === 'captain') {
+        const team = await env.ZRL_DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(teamId).first();
+        if (!team || team.captain_id !== user.zwid) {
+            return new Response(JSON.stringify({ error: "Forbidden: You can only sync your own team" }), { status: 403 });
+        }
     }
 
     // Costruiamo l'URL WTRL

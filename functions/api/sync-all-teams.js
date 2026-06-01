@@ -1,4 +1,15 @@
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env, data } = context;
+  const user = data?.user;
+
+  // SECURITY: Only admin and moderator can trigger full sync
+  if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
+    return new Response(JSON.stringify({ error: "Forbidden: Admin or Moderator access required" }), { 
+      status: 403, 
+      headers: { 'Content-Type': 'application/json' } 
+    });
+  }
+
   try {
     const INOX_CLUB_ID = 'cef70cde-9149-43a2-b3ae-187643a44703';
     let SEASON_ID = "19";

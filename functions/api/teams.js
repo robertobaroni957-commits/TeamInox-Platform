@@ -13,11 +13,10 @@ export async function onRequestGet(context) {
     FROM teams`;
     let params = [];
 
-    if (!user || user.role === 'admin' || user.role === 'moderator' || user.role === 'user') {
-      // Nessun filtro
-    } else if (user.role === 'captain') {
-      query += ` WHERE captain_id = ?`;
-      params.push(user.zwid);
+    // SECURITY: Everyone (authenticated) can see the list of teams
+    // But only Admin/Moderator can add/edit/delete (handled in POST/PATCH/DELETE)
+    if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
     query += ` ORDER BY category ASC, division ASC, name ASC`;

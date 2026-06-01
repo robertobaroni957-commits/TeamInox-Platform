@@ -11,14 +11,24 @@ export async function onRequestGet(context) {
   }
 
   try {
-    // SECURITY: Ensure athlete can only view their own team(s) unless admin/moderator
-    if (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'captain') {
-      const membership = await env.ZRL_DB.prepare(
-        "SELECT 1 FROM team_members WHERE team_id = ? AND athlete_id = ?"
-      ).bind(team_id, user.zwid).first();
+    // SECURITY: Ensure athlete can only view their own team(s)
+    // Admin/Moderator can see everything
+    // Captain can see their own team (the one they are captain of)
+    if (user.role !== 'admin' && user.role !== 'moderator') {
+      if (user.role === 'captain') {
+         const team = await env.ZRL_DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(team_id).first();
+         if (!team || team.captain_id !== user.zwid) {
+            return new Response(JSON.stringify({ error: "Forbidden: You can only view your own team's roster" }), { status: 403 });
+         }
+      } else {
+        // Regular user: must be a member
+        const membership = await env.ZRL_DB.prepare(
+          "SELECT 1 FROM team_members WHERE team_id = ? AND athlete_id = ?"
+        ).bind(team_id, user.zwid).first();
 
-      if (!membership) {
-        return new Response(JSON.stringify({ error: "Forbidden: Not a member of this team" }), { status: 403 });
+        if (!membership) {
+          return new Response(JSON.stringify({ error: "Forbidden: Not a member of this team" }), { status: 403 });
+        }
       }
     }
 
