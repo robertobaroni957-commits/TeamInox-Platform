@@ -19,9 +19,9 @@ import { safeString } from '../utils/stringUtils';
 import type { TimeSlot, Round } from '../services/types';
 
 const PREF_LEVELS = [
-  { id: 0, label: 'MAI', desc: 'Impossibile', color: 'border-red-900 text-red-500 bg-red-950/20', active: 'bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]' },
-  { id: 1, label: 'OK', desc: 'Disponibile', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-yellow-500 text-black border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]' },
-  { id: 2, label: 'FAV', desc: 'Preferito', color: 'border-zinc-800 text-zinc-500 bg-zinc-900', active: 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]' }
+  { id: 0, label: 'MAI', desc: 'Impossibile', color: 'border-zinc-800 text-zinc-600 bg-transparent', active: 'bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.4)]' },
+  { id: 1, label: 'OK', desc: 'Disponibile', color: 'border-zinc-800 text-zinc-600 bg-transparent', active: 'bg-yellow-500 text-black border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]' },
+  { id: 2, label: 'FAV', desc: 'Preferito', color: 'border-zinc-800 text-zinc-600 bg-transparent', active: 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)]' }
 ];
 
 const STEPS = [
@@ -236,7 +236,7 @@ const Availability: React.FC = () => {
                         <button
                           key={lvl.id}
                           onClick={() => setUserPrefs(prev => ({ ...prev, [slot.id]: lvl.id }))}
-                          className={`flex-1 py-3.5 rounded-2xl border font-black text-[10px] transition-all transform active:scale-95 ${isActive ? lvl.active : lvl.color + ' hover:border-zinc-600'}`}
+                          className={`flex-1 py-4 rounded-2xl border font-black text-xs md:text-sm transition-all transform active:scale-95 ${isActive ? lvl.active : lvl.color + ' hover:border-zinc-600'}`}
                         >
                           {lvl.label}
                         </button>
