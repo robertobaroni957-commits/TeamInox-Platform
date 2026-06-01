@@ -66,10 +66,10 @@ const Availability: React.FC = () => {
       }
 
       // Inizializziamo le preferenze in modo sicuro
-      const prefs: Record<string, number> = {};
+      const prefs: Record<string, number | null> = {};
       slots.forEach(slot => {
         const existing = data.preferences?.find(p => p.time_slot_id === slot.id);
-        prefs[slot.id] = existing ? existing.preference_level : 1;
+        prefs[slot.id] = existing ? existing.preference_level : null;
       });
       setUserPrefs(prefs);
 
