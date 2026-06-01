@@ -31,11 +31,20 @@ export async function onRequestPost(context) {
             // Gestione flessibile per {key, data} o direttamente l'oggetto API
             const entry = item.data || item;
             
+            // Debug: ispezione struttura
+            console.log("[ImportRoster] Processing entry:", JSON.stringify(entry).substring(0, 100));
+
+            const riders = entry.riders || entry.members || [];
+            if (!Array.isArray(riders)) {
+                console.error("[ImportRoster] Invalid riders structure for entry:", entry);
+                return { teamExternalId: parseInt(entry.meta?.team?.teamid || 0), riders: [] };
+            }
+            
             return {
                 teamExternalId: parseInt(entry.meta?.team?.teamid || 0),
                 captainId: entry.meta?.captainId ? parseInt(entry.meta.captainId) : null,
                 managerId: entry.meta?.managerId ? parseInt(entry.meta.managerId) : null,
-                riders: (entry.riders || entry.members || []).map(r => ({
+                riders: riders.map(r => ({
                     wtrlId: parseInt(r.tmuid || r.wtrlId || r.zwid || r.profileId || 0),
                     name: String(r.name || 'Unknown'),
                     category: String(r.category || 'N/A'),
