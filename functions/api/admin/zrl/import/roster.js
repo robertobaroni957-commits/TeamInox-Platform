@@ -13,8 +13,21 @@ export async function onRequestPost(context) {
             throw new Error("Formato JSON non valido: payload mancante");
         }
 
-        // Normalizzazione rigorosa dei dati per evitare D1_TYPE_ERROR
-        const processedData = data.payload.map(item => {
+        // Debug log
+        console.log("[ImportRoster] Data structure:", typeof data, Array.isArray(data), data?.payload ? typeof data.payload : "no payload");
+
+        // Normalizzazione flessibile
+        let rawPayload = data.payload || data;
+        if (rawPayload && !Array.isArray(rawPayload) && rawPayload.payload) {
+             rawPayload = rawPayload.payload;
+        }
+
+        if (!Array.isArray(rawPayload)) {
+            console.error("[ImportRoster] Invalid data structure:", rawPayload);
+            throw new Error(`Formato JSON non valido: atteso array nel payload, trovato ${typeof rawPayload}`);
+        }
+
+        const processedData = rawPayload.map(item => {
             // Gestione flessibile per {key, data} o direttamente l'oggetto API
             const entry = item.data || item;
             
