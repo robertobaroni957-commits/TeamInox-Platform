@@ -29,7 +29,16 @@ export async function onRequestPost(context) {
             throw new Error("Formato JSON non valido: il payload deve essere un array di squadre");
         }
 
-        const inoxTeams = rawTeams.filter(team => team.clubId === INOX_CLUB_ID);
+        // Debug: log the first 5 teams and their clubIds
+        console.log("[ImportTeams] Sample:", rawTeams.slice(0, 5).map(t => ({ name: t.teamname, clubId: t.clubId })));
+
+        const inoxTeams = rawTeams.filter(team => {
+            const cid = (team.clubId || '').toLowerCase();
+            const name = (team.teamname || team.name || '').toUpperCase();
+            const isMatch = cid === INOX_CLUB_ID.toLowerCase() || (name.includes("INOX") && !name.includes("EQUINOX"));
+            if (!isMatch) console.log(`[ImportTeams] Escludo team: ${name} (ClubID: ${cid})`);
+            return isMatch;
+        });
 
         if (inoxTeams.length === 0) {
             return new Response(JSON.stringify({ success: false, error: "Nessun team Inox trovato." }), { status: 400 });
