@@ -67,35 +67,48 @@ export const ZRLImportService = {
             }
         } else if (type === 'roster') {
             for (const entry of data) {
-                // entry contiene { teamExternalId, riders }
+                // 1. Update team captain
+                if (entry.captainId) {
+                    await db.prepare("UPDATE teams SET captain_id = ? WHERE wtrl_team_id = ?")
+                        .bind(entry.captainId, entry.teamExternalId).run();
+                }
+
+                // 2. Process riders and assign roles
                 for (const rider of entry.riders) {
                     const wtrlRiderId = rider.wtrlId || 0;
-                    const teamId = entry.teamExternalId || 0;
                     const sid = (seasonId || 0).toString();
                     const name = rider.name || 'Unknown';
                     const category = rider.category || 'N/A';
                     const avatar = rider.avatar || '';
                     
-                    if (wtrlRiderId === undefined || teamId === undefined || sid === undefined || name === undefined || category === undefined || importId === undefined) {
-                        console.error("[Roster Import] Undefined bind value detected:", { wtrlRiderId, teamId, sid, name, category, importId });
-                        throw new Error("D1_TYPE_ERROR: Attempted to bind undefined value");
-                    }
+                    const isCaptain = (wtrlRiderId === entry.captainId);
+                    const isManager = (wtrlRiderId === entry.managerId);
+                    
+                    let newRole = 'athlete';
+                    if (isManager) newRole = 'moderator';
+                    else if (isCaptain) newRole = 'captain';
 
-                    // 1. UPDATE ATHLETES TABLE (Crucial for Avatars)
+                    // 1. UPDATE ATHLETES TABLE with role logic
                     await db.prepare(`
-                        INSERT INTO athletes (zwid, name, base_category, avatar_url, created_at)
-                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        INSERT INTO athletes (zwid, name, base_category, avatar_url, role)
+                        VALUES (?, ?, ?, ?, ?)
                         ON CONFLICT(zwid) DO UPDATE SET 
                             name = excluded.name,
                             base_category = excluded.base_category,
-                            avatar_url = excluded.avatar_url
-                    `).bind(wtrlRiderId, name, category, avatar).run();
+                            avatar_url = excluded.avatar_url,
+                            role = CASE 
+                                WHEN athletes.role = 'admin' THEN 'admin'
+                                WHEN excluded.role = 'moderator' THEN 'moderator'
+                                WHEN excluded.role = 'captain' AND athletes.role NOT IN ('admin', 'moderator') THEN 'captain'
+                                ELSE athletes.role
+                            END
+                    `).bind(wtrlRiderId, name, category, avatar, newRole).run();
 
                     // 2. UPDATE TEAM_MEMBERS
                     await db.prepare(`INSERT INTO team_members (athlete_id, wtrl_rider_id, team_id, season_id, name, category, is_active, last_import_id) 
                         VALUES (?, ?, ?, ?, ?, ?, 1, ?) 
                         ON CONFLICT(athlete_id, team_id, season_id) DO UPDATE SET name=excluded.name, is_active=1, last_import_id=excluded.last_import_id`)
-                        .bind(wtrlRiderId, wtrlRiderId, teamId, sid, name, category, importId).run();
+                        .bind(wtrlRiderId, wtrlRiderId, entry.teamExternalId, sid, name, category, importId).run();
                     summary.inserted++;
                 }
             }

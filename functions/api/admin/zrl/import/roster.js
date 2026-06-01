@@ -14,15 +14,22 @@ export async function onRequestPost(context) {
         }
 
         // Normalizzazione rigorosa dei dati per evitare D1_TYPE_ERROR
-        const processedData = data.payload.map(entry => ({
-            teamExternalId: parseInt(entry.meta?.team?.teamid || 0),
-            riders: (entry.riders || []).map(r => ({
-                wtrlId: parseInt(r.tmuid || r.wtrlId || 0),
-                name: String(r.name || 'Unknown'),
-                category: String(r.category || 'N/A'),
-                avatar: String(r.avatar || '')
-            }))
-        }));
+        const processedData = data.payload.map(item => {
+            // Gestione flessibile per {key, data} o direttamente l'oggetto API
+            const entry = item.data || item;
+            
+            return {
+                teamExternalId: parseInt(entry.meta?.team?.teamid || 0),
+                captainId: entry.meta?.captainId ? parseInt(entry.meta.captainId) : null,
+                managerId: entry.meta?.managerId ? parseInt(entry.meta.managerId) : null,
+                riders: (entry.riders || entry.members || []).map(r => ({
+                    wtrlId: parseInt(r.tmuid || r.wtrlId || r.zwid || r.profileId || 0),
+                    name: String(r.name || 'Unknown'),
+                    category: String(r.category || 'N/A'),
+                    avatar: String(r.avatar || '')
+                }))
+            };
+        });
 
         const sid = parseInt(seasonId || wtrl_id || 19);
 
