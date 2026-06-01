@@ -1,6 +1,12 @@
 // functions/api/admin/update_role.js
-export async function onRequestPost({ request, env }) {
-    // Il middleware ha già verificato il ruolo 'admin'
+export async function onRequestPost({ request, env, data }) {
+    const user = data?.user;
+    
+    // SECURITY: Only admin can update roles
+    if (!user || user.role !== 'admin') {
+        return new Response(JSON.stringify({ error: 'Access denied: Admin privileges required' }), { status: 403 });
+    }
+
     if (!env.ZRL_DB) {
         return new Response(JSON.stringify({ error: 'Database binding missing' }), { status: 500 });
     }
