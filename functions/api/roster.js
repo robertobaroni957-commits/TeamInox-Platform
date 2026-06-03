@@ -65,7 +65,7 @@ export async function onRequestGet(context) {
 
     // 3. Recuperiamo i dati aggiornati dal DB locale
     let query = `
-      SELECT a.zwid, a.name, a.base_category as category, a.role, a.avatar_url
+      SELECT DISTINCT a.zwid, a.name, a.base_category as category, a.role, a.avatar_url
     `;
     let params = [team_id];
 
