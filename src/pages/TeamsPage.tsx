@@ -117,28 +117,32 @@ export default function TeamsPage() {
                   expandedTeam === team.id ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'
                 }`}
               >
-                <div className="flex items-center gap-6">
-                    <img src="https://cdn.zwift.com/static/zc/JERSEYS/INOX2025_thumb.png" alt="Jersey" className="w-16 h-16 object-contain" />
+                <div className="flex items-center gap-6 flex-1">
+                    <img src="https://cdn.zwift.com/static/zc/JERSEYS/INOX2025_thumb.png" alt="Jersey" className="w-14 h-14 md:w-16 md:h-16 object-contain shrink-0" />
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                         <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-[0.2em]">{team.category} • {team.division}</span>
                     </div>
                     <h3 className="text-2xl md:text-3xl font-black italic text-white uppercase tracking-tighter leading-none">{team.name}</h3>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-8 md:gap-12">
                     {(() => {
                         const captain = team.roster.find(a => a.zwid === team.captain_id);
                         return captain ? (
-                            <div className="mt-4 pt-4 border-t border-white/5">
+                            <div className="text-right hidden sm:block">
                                 <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1">Team Captain</span>
-                                <span className="text-2xl md:text-3xl font-black italic text-inox-cyan uppercase tracking-tighter leading-none">
+                                <span className="text-xl md:text-3xl font-black italic text-inox-cyan uppercase tracking-tighter leading-none block">
                                     {captain.name}
                                 </span>
                             </div>
                         ) : null;
                     })()}
-                  </div>
-                </div>
-                <div className="text-zinc-500">
-                  {expandedTeam === team.id ? <ChevronUp size={32} /> : <ChevronDown size={32} />}
+                    
+                    <div className="text-zinc-500 shrink-0">
+                        {expandedTeam === team.id ? <ChevronUp size={32} /> : <ChevronDown size={32} />}
+                    </div>
                 </div>
               </div>
 
