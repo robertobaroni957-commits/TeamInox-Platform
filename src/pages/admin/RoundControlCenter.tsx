@@ -172,24 +172,34 @@ function RoundControlCenterContent() {
                 {activeWorkspace === 'pipeline' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <JsonIngestor 
-                            title="Sync Teams" 
+                            title="1. Lega: Lista Team" 
                             apiEndpoint="/api/admin/zrl/import/teams" 
-                            description="Sincronizza l'elenco delle squadre InoxTeam" 
+                            description="Sincronizza l'elenco delle squadre della Lega" 
                             scraperScript={scraperScriptTeams}
+                            expectedType="teams"
                             onSuccess={handleRefresh}
                         />
                         <JsonIngestor 
-                            title="Sync Races" 
+                            title="2. Calendario: Gare" 
                             apiEndpoint="/api/admin/import-races-json" 
-                            description="Importa il calendario gare WTRL" 
+                            description="Importa il calendario gare WTRL per il round" 
                             scraperScript={scraperScriptRaces}
+                            expectedType="races"
                             onSuccess={handleRefresh}
                         />
                         <JsonIngestor 
-                            title="Sync Roster" 
+                            title="3. Roster: Atleti" 
                             apiEndpoint="/api/admin/zrl/import/roster" 
-                            description="Aggiorna i roster atleti per ogni lega" 
+                            description="Aggiorna gli atleti Inox per ogni lega" 
                             scraperScript={scraperScriptRoster}
+                            expectedType="roster"
+                            onSuccess={handleRefresh}
+                        />
+                        <JsonIngestor 
+                            title="INOX MASTER SYNC" 
+                            apiEndpoint="/api/admin/import-inox-teams" 
+                            description="Importazione combinata Team + Roster (File Inox)" 
+                            expectedType="master"
                             onSuccess={handleRefresh}
                         />
                     </div>

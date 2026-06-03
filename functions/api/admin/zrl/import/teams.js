@@ -3,10 +3,13 @@
 /**
  * Ingestione Squadre Inox via JSON.
  * Mappa i campi WTRL sulla tabella D1 'teams'.
+ * Supporta sia il formato flat (teamlist) che il formato dettagliato (meta/riders).
  */
 export async function onRequestPost(context) {
     const { request, env } = context;
     const body = await request.json();
+    
+    // Il JsonIngestor avvolge il file in { data: { payload: [...] } }
     const { data, season_code } = body;
 
     const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
@@ -16,35 +19,72 @@ export async function onRequestPost(context) {
             throw new Error("Dati mancanti nel corpo della richiesta");
         }
 
-        // Estrazione flessibile del payload (gestisce annidamenti multipli da frontend/scraper)
-        let rawTeams = data.payload || data;
-        
-        // Se è ancora un oggetto con .payload (doppio annidamento), scendiamo di un livello
-        if (rawTeams && !Array.isArray(rawTeams) && rawTeams.payload) {
-            rawTeams = rawTeams.payload;
+        // Estrazione flessibile del payload
+        let rawItems = data.payload || data;
+        if (rawItems && !Array.isArray(rawItems) && rawItems.payload) {
+            rawItems = rawItems.payload;
         }
 
-        if (!Array.isArray(rawTeams)) {
-            console.error("[ImportTeams] Data is not an array:", rawTeams);
-            throw new Error("Formato JSON non valido: il payload deve essere un array di squadre");
+        if (!Array.isArray(rawItems)) {
+            console.error("[ImportTeams] Data is not an array:", rawItems);
+            throw new Error("Formato JSON non valido: il payload deve essere un array");
         }
 
-        // Debug: log the first 5 teams and their clubIds
-        console.log("[ImportTeams] Sample:", rawTeams.slice(0, 5).map(t => ({ name: t.teamname, clubId: t.clubId })));
+        console.log(`[ImportTeams] Elaborazione di ${rawItems.length} elementi.`);
 
-        const inoxTeams = rawTeams.filter(team => {
+        const inoxTeams = rawItems.filter(item => {
+            const team = item.meta?.team || item;
             const cid = (team.clubId || '').toLowerCase();
             const name = (team.teamname || team.name || '').toUpperCase();
             const isMatch = cid === INOX_CLUB_ID.toLowerCase() || (name.includes("INOX") && !name.includes("EQUINOX"));
-            if (!isMatch) console.log(`[ImportTeams] Escludo team: ${name} (ClubID: ${cid})`);
+            if (!isMatch) {
+                // console.log(`[ImportTeams] Escludo team: ${name} (ClubID: ${cid})`);
+            }
             return isMatch;
         });
 
         if (inoxTeams.length === 0) {
-            return new Response(JSON.stringify({ success: false, error: "Nessun team Inox trovato." }), { status: 400 });
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: "Nessun team Inox trovato nel file. Verifica che il file contenga team del club Inox o con 'INOX' nel nome." 
+            }), { status: 400, headers: { "Content-Type": "application/json" } });
         }
 
-        const queries = inoxTeams.map(team => {
+        const queries = inoxTeams.map(item => {
+            const team = item.meta?.team || item;
+            const meta = item.meta || {};
+            const comp = meta.competition || {};
+            
+            // Mapping robusto
+            const wtrl_team_id = parseInt(team.id || team.teamid || meta.trc || 0);
+            const teamname = team.teamname || team.name;
+            const category = comp.division || team.division;
+            const zrldivision = meta.division || team.zrldivision;
+            
+            // Estrazione Division Number (es. da "2370C30" -> 3)
+            const leagueKey = comp.class || '';
+            let divNum = parseInt(team.divnum || 0);
+            if (!divNum && leagueKey) {
+                const match = leagueKey.match(/^(\d+)0([A-D])(\d+)0$/);
+                if (match) divNum = parseInt(match[3]);
+            }
+
+            const clubId = team.clubId || INOX_CLUB_ID;
+            const tttid = parseInt(team.tttid || 0);
+            const clubName = team.clubName || team.jerseyname || 'InoxTeam';
+            const gender = team.gender || (category && category.includes('Women') ? 'Women' : 'Mixed');
+            const league = team.league || comp.wtrlid || 'ZRL';
+            const leagueColor = team.leagueColor || '';
+            const rec = parseInt(team.rec || (team.recruiting ? 1 : 0) || 0);
+            const status = parseInt(team.status || (comp.status === 'ACTIVE' ? 1 : 0) || 0);
+            const isdev = parseInt(team.isdev || (team.isdev ? 1 : 0) || 0);
+            const rounds = team.rounds || (comp.registered ? comp.registered.join(',') : '');
+            const member_count = parseInt(team.members || meta.memberCount || 0);
+
+            if (!wtrl_team_id || !teamname) {
+                console.warn("[ImportTeams] Dati team incompleti:", item);
+            }
+
             return env.ZRL_DB.prepare(`
                 INSERT INTO teams (
                     wtrl_team_id, name, category, division, division_number, 
@@ -71,28 +111,49 @@ export async function onRequestPost(context) {
                     member_count = excluded.member_count,
                     season_code = excluded.season_code
             `).bind(
-                parseInt(team.id),
-                team.teamname,
-                team.division,
-                team.zrldivision,
-                parseInt(team.divnum) || 0,
-                team.clubId,
-                parseInt(team.tttid) || 0,
-                team.clubName,
-                team.gender,
-                team.league,
-                team.zrldivision,
-                team.leagueColor,
-                parseInt(team.rec) || 0,
-                parseInt(team.status) || 0,
-                parseInt(team.isdev) || 0,
-                team.rounds,
-                parseInt(team.members) || 0,
+                wtrl_team_id,
+                teamname,
+                category,
+                zrldivision, 
+                divNum,
+                clubId,
+                tttid,
+                clubName,
+                gender,
+                league,
+                zrldivision,
+                leagueColor,
+                rec,
+                status,
+                isdev,
+                rounds,
+                member_count,
                 season_code || 'zrl_25_26'
             );
         });
 
-        await env.ZRL_DB.batch(queries);
+        // Filtraggio query nulle per sicurezza
+        const validQueries = queries.filter(q => q !== null);
+        
+        // Se abbiamo un seasonId (passato come seasonId o wtrl_id dal frontend)
+        // o se possiamo trovarlo tramite season_code, aggiorniamo il lifecycle
+        let seasonId = parseInt(body.seasonId || body.wtrl_id || 0);
+        if (!seasonId && season_code) {
+            const season = await env.ZRL_DB.prepare("SELECT id FROM seasons WHERE code = ?").bind(season_code).first();
+            if (season) seasonId = season.id;
+        }
+
+        if (seasonId) {
+            validQueries.push(
+                env.ZRL_DB.prepare(`
+                    INSERT INTO season_lifecycle_status (season_id, status) 
+                    VALUES (?, 'TEAMS_DONE') 
+                    ON CONFLICT(season_id) DO UPDATE SET status = 'TEAMS_DONE', updated_at = CURRENT_TIMESTAMP
+                `).bind(seasonId)
+            );
+        }
+
+        await env.ZRL_DB.batch(validQueries);
 
         return new Response(JSON.stringify({
             success: true,
@@ -100,9 +161,11 @@ export async function onRequestPost(context) {
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
+        console.error("[ImportTeams Error]", err);
         return new Response(JSON.stringify({ success: false, error: err.message }), { 
             status: 500,
             headers: { "Content-Type": "application/json" }
         });
     }
 }
+

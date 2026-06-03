@@ -26,10 +26,18 @@ export async function onRequestPost({ request, env }) {
             seriesId = series.id;
         }
 
-        const updates = [];
-        // Pulizia gare precedenti
-        updates.push(env.ZRL_DB.prepare("DELETE FROM rounds WHERE series_id = ?").bind(seriesId));
+        // Recuperiamo i round esistenti per evitare cancellazioni distruttive che romperebbero i vincoli FK
+        const existingRounds = await env.ZRL_DB.prepare("SELECT id, name, category FROM rounds WHERE series_id = ?")
+            .bind(seriesId).all();
+        
+        const roundsMap = new Map();
+        if (existingRounds.results) {
+            existingRounds.results.forEach(r => {
+                roundsMap.set(`${r.name}-${r.category}`, r.id);
+            });
+        }
 
+        const updates = [];
         let minDate = null;
         let maxDate = null;
 
@@ -49,32 +57,31 @@ export async function onRequestPost({ request, env }) {
                 const distance = race.lapDistanceInMeters ? (race.lapDistanceInMeters / 1000).toFixed(1) : 0;
                 const elevation = race.lapAscentInMeters || 0;
                 const laps = race.duration || 1;
+                const raceName = `Race ${race.race}`;
 
-                // Query esplicita senza ambiguità di posizionamento
-                updates.push(env.ZRL_DB.prepare(`
-                    INSERT INTO rounds (
-                        series_id, name, date, world, route, 
-                        status, category, distance, elevation, laps, raw_json
-                    ) VALUES (
-                        ?, ?, ?, ?, ?, 
-                        'planned', ?, ?, ?, ?, ?
-                    )
-                `).bind(
-                    seriesId, 
-                    `Race ${race.race}`, 
-                    d, 
-                    world, 
-                    route, 
-                    cat, 
-                    distance, 
-                    elevation, 
-                    laps, 
-                    JSON.stringify(race)
-                ));
+                const existingId = roundsMap.get(`${raceName}-${cat}`);
+
+                if (existingId) {
+                    // UPDATE surgical
+                    updates.push(env.ZRL_DB.prepare(`
+                        UPDATE rounds SET 
+                            date = ?, world = ?, route = ?, 
+                            distance = ?, elevation = ?, laps = ?, raw_json = ?, status = 'planned'
+                        WHERE id = ?
+                    `).bind(d, world, route, distance, elevation, laps, JSON.stringify(race), existingId));
+                } else {
+                    // INSERT new
+                    updates.push(env.ZRL_DB.prepare(`
+                        INSERT INTO rounds (
+                            series_id, name, date, world, route, 
+                            status, category, distance, elevation, laps, raw_json
+                        ) VALUES (?, ?, ?, ?, ?, 'planned', ?, ?, ?, ?, ?)
+                    `).bind(seriesId, raceName, d, world, route, cat, distance, elevation, laps, JSON.stringify(race)));
+                }
             }
         }
 
-        // Aggiorniamo rounds_v2
+        // Aggiorniamo rounds_v2 
         updates.push(env.ZRL_DB.prepare(`
             UPDATE rounds_v2 
             SET starts_at = ?, ends_at = ?, sync_state = 'COMPLETED', updated_at = CURRENT_TIMESTAMP
@@ -87,10 +94,11 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sincronizzazione completata per ${Object.keys(actualData).length} categorie.` 
+            message: `Sincronizzazione completata. Aggiornati/Inseriti ${updates.length - 1} round.` 
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
+        console.error("[ImportRaces Error]", err);
         return errorRes(err.message, 500);
     }
 }
