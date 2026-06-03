@@ -118,10 +118,20 @@ export default function TeamsPage() {
                 }`}
               >
                 <div className="flex items-center gap-6">
-                    {/* ... jersey ... */}
                     <img src="https://cdn.zwift.com/static/zc/JERSEYS/INOX2025_thumb.png" alt="Jersey" className="w-12 h-12 object-contain" />
                   <div>
                     <h3 className="text-xl md:text-2xl font-black italic text-white uppercase tracking-tighter leading-none">{team.name}</h3>
+                    <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-widest">{team.category} • {team.division}</span>
+                        {(() => {
+                            const captain = team.roster.find(a => a.zwid === team.captain_id);
+                            return captain ? (
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight">
+                                    <span className="text-zinc-600 mr-1">/</span> Capitano: <span className="text-zinc-400">{captain.name}</span>
+                                </span>
+                            ) : null;
+                        })()}
+                    </div>
                   </div>
                 </div>
                 <div className="text-zinc-500">
@@ -133,20 +143,53 @@ export default function TeamsPage() {
                 <div className="p-8 bg-zinc-950/50 border-t border-zinc-800">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {team.roster.map((athlete) => (
-                        <div key={athlete.zwid} className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4 hover:border-zinc-700 transition-all">
-                            {athlete.avatar_url ? (
-                                <img src={athlete.avatar_url} alt={athlete.name} className="w-12 h-12 rounded-full border-2 border-zinc-700 bg-zinc-800" />
-                            ) : (
-                                <div className="w-12 h-12 rounded-full border-2 border-zinc-700 bg-zinc-800 flex items-center justify-center text-xs font-black text-zinc-500 uppercase">
-                                    {athlete.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                                </div>
-                            )}
+                        <div key={athlete.zwid} className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4 hover:border-[#fc6719]/30 transition-all group/card">
+                            <div className="relative">
+                                {athlete.avatar_url ? (
+                                    <img src={athlete.avatar_url} alt={athlete.name} className="w-14 h-14 rounded-2xl border-2 border-zinc-700 bg-zinc-800 object-cover shadow-lg group-hover/card:border-[#fc6719]/50 transition-colors" />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-2xl border-2 border-zinc-700 bg-zinc-800 flex items-center justify-center text-sm font-black text-zinc-500 uppercase group-hover/card:border-[#fc6719]/50 transition-colors">
+                                        {athlete.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                    </div>
+                                )}
+                                {athlete.role === 'captain' && (
+                                    <div className="absolute -top-2 -right-2 bg-[#fc6719] text-white p-1 rounded-lg shadow-lg border border-white/20" title="Team Captain">
+                                        <Trophy size={10} className="fill-white" />
+                                    </div>
+                                )}
+                                {athlete.role === 'moderator' && (
+                                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1 rounded-lg shadow-lg border border-white/20" title="Team Manager / Moderator">
+                                        <Shield size={10} className="fill-white" />
+                                    </div>
+                                )}
+                            </div>
+                            
                             <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-black text-white uppercase tracking-tight truncate">{athlete.name}</h4>
+                                <h4 className="text-sm font-black text-white uppercase tracking-tight truncate group-hover/card:text-[#fc6719] transition-colors">{athlete.name}</h4>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] font-bold bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded uppercase">{athlete.category}</span>
-                                    {athlete.role && (
-                                        <span className="text-[10px] font-black text-blue-500 uppercase">{athlete.role}</span>
+                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase border ${
+                                        athlete.category === 'A' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                        athlete.category === 'B' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                        athlete.category === 'C' ? 'bg-sky-500/10 text-sky-500 border-sky-500/20' :
+                                        'bg-zinc-800 text-zinc-500 border-zinc-700'
+                                    }`}>
+                                        CAT {athlete.category}
+                                    </span>
+                                    
+                                    {athlete.role === 'captain' && (
+                                        <span className="text-[9px] font-black bg-[#fc6719]/10 text-[#fc6719] px-2 py-0.5 rounded uppercase border border-[#fc6719]/20 italic">
+                                            Captain
+                                        </span>
+                                    )}
+                                    {athlete.role === 'moderator' && (
+                                        <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded uppercase border border-emerald-500/20 italic">
+                                            Moderator
+                                        </span>
+                                    )}
+                                    {athlete.role === 'admin' && (
+                                        <span className="text-[9px] font-black bg-red-500/10 text-red-500 px-2 py-0.5 rounded uppercase border border-red-500/20 italic">
+                                            Admin
+                                        </span>
                                     )}
                                 </div>
                             </div>
