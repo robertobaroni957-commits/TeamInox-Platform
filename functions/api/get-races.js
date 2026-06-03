@@ -1,4 +1,4 @@
-import { roundBridge } from "../utils/roundBridge";
+import { roundBridge } from "./utils/roundBridge";
 
 export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
