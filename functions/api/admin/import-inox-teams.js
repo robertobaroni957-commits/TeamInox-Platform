@@ -71,9 +71,7 @@ export async function onRequestPost({ request, env }) {
                 ? admins.managers.map(m => parseInt(m.profileId)) 
                 : [];
 
-            console.log(`[ImportMaster] Team: ${name} (ID: ${wtrl_team_id}), Captain: ${captain_id}, Managers: ${managerIds.join(',')}`);
-
-            // 1. UPSERT ADMINS (Capitani e Manager potrebbero non essere tra i riders)
+            // 1. UPSERT ADMINS
             const staff = [];
             if (admins.captain) staff.push({ ...admins.captain, role: 'captain' });
             if (Array.isArray(admins.managers)) {
@@ -119,7 +117,6 @@ export async function onRequestPost({ request, env }) {
                 const zwid = parseInt(rider.profileId || rider.zwid || rider.tmuid);
                 if (!zwid) continue;
 
-                // Calcolo ruolo per questo atleta nel contesto di questo team
                 const isCaptain = (zwid === captain_id);
                 const isManager = managerIds.includes(zwid);
                 
@@ -142,7 +139,6 @@ export async function onRequestPost({ request, env }) {
                         END
                 `).bind(zwid, rider.name, rider.category, rider.avatar, newRole));
 
-                // Per team_members season_id è una stringa (TEXT)
                 updates.push(env.ZRL_DB.prepare(`
                     INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id, name, category, is_active)
                     VALUES (?, ?, ?, ?, ?, 1)
@@ -150,12 +146,15 @@ export async function onRequestPost({ request, env }) {
 
                 processedAthletes++;
             }
-            
             processedTeams++;
         }
 
-        if (updates.length > 0) {
-            await env.ZRL_DB.batch(updates);
+        // --- ESECUZIONE A BLOCCHI (Importante per limiti D1) ---
+        const CHUNK_SIZE = 50;
+        for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+            const chunk = updates.slice(i, i + CHUNK_SIZE);
+            await env.ZRL_DB.batch(chunk);
+            console.log(`[ImportMaster] Processato chunk ${i / CHUNK_SIZE + 1}/${Math.ceil(updates.length / CHUNK_SIZE)}`);
         }
 
         return new Response(JSON.stringify({ 
