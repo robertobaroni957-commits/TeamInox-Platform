@@ -118,24 +118,27 @@ export default function TeamsPage() {
                 }`}
               >
                 <div className="flex items-center gap-6">
-                    <img src="https://cdn.zwift.com/static/zc/JERSEYS/INOX2025_thumb.png" alt="Jersey" className="w-12 h-12 object-contain" />
+                    <img src="https://cdn.zwift.com/static/zc/JERSEYS/INOX2025_thumb.png" alt="Jersey" className="w-16 h-16 object-contain" />
                   <div>
-                    <h3 className="text-xl md:text-2xl font-black italic text-white uppercase tracking-tighter leading-none">{team.name}</h3>
-                    <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-widest">{team.category} • {team.division}</span>
-                        {(() => {
-                            const captain = team.roster.find(a => a.zwid === team.captain_id);
-                            return captain ? (
-                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight">
-                                    <span className="text-zinc-600 mr-1">/</span> Capitano: <span className="text-zinc-400">{captain.name}</span>
-                                </span>
-                            ) : null;
-                        })()}
+                    <div className="flex items-center gap-3 mb-1">
+                        <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-[0.2em]">{team.category} • {team.division}</span>
                     </div>
+                    <h3 className="text-2xl md:text-3xl font-black italic text-white uppercase tracking-tighter leading-none">{team.name}</h3>
+                    {(() => {
+                        const captain = team.roster.find(a => a.zwid === team.captain_id);
+                        return captain ? (
+                            <div className="mt-4 pt-4 border-t border-white/5">
+                                <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1">Team Captain</span>
+                                <span className="text-2xl md:text-3xl font-black italic text-inox-cyan uppercase tracking-tighter leading-none">
+                                    {captain.name}
+                                </span>
+                            </div>
+                        ) : null;
+                    })()}
                   </div>
                 </div>
                 <div className="text-zinc-500">
-                  {expandedTeam === team.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                  {expandedTeam === team.id ? <ChevronUp size={32} /> : <ChevronDown size={32} />}
                 </div>
               </div>
 

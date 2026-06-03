@@ -10,7 +10,8 @@ export async function onRequestGet(context) {
       division, 
       captain_id, 
       club_id 
-    FROM teams`;
+    FROM teams
+    WHERE season_code = 'zrl_25_26'`;
     let params = [];
 
     // SECURITY: Everyone (authenticated) can see the list of teams
