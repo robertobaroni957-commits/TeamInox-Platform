@@ -81,14 +81,17 @@ export const ZRLImportService = {
                     const category = rider.category || 'N/A';
                     const avatar = rider.avatar || '';
                     
+                    // Verifica ruoli speciali
                     const isCaptain = (wtrlRiderId === entry.captainId);
-                    const isManager = (wtrlRiderId === entry.managerId);
+                    const isManager = entry.managerIds && Array.isArray(entry.managerIds) 
+                        ? entry.managerIds.includes(wtrlRiderId) 
+                        : (wtrlRiderId === entry.managerId);
                     
                     let newRole = 'athlete';
                     if (isManager) newRole = 'moderator';
                     else if (isCaptain) newRole = 'captain';
 
-                    // 1. UPDATE ATHLETES TABLE with role logic
+                    // 1. UPDATE ATHLETES TABLE with role logic (escalation only)
                     await db.prepare(`
                         INSERT INTO athletes (zwid, name, base_category, avatar_url, role)
                         VALUES (?, ?, ?, ?, ?)

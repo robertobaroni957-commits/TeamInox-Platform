@@ -30,6 +30,7 @@ export async function onRequestPost(context) {
         const processedData = rawPayload.map(item => {
             // Gestione flessibile per {key, data} o direttamente l'oggetto API
             const entry = item.data || item;
+            const meta = entry.meta || {};
             
             // Debug: ispezione struttura
             console.log("[ImportRoster] Processing entry:", JSON.stringify(entry).substring(0, 100));
@@ -37,13 +38,20 @@ export async function onRequestPost(context) {
             const riders = entry.riders || entry.members || [];
             if (!Array.isArray(riders)) {
                 console.error("[ImportRoster] Invalid riders structure for entry:", entry);
-                return { teamExternalId: parseInt(entry.meta?.team?.teamid || 0), riders: [] };
+                return { teamExternalId: parseInt(meta.team?.teamid || 0), riders: [] };
             }
             
+            // Estrazione manager (moderators) e capitano dai metadati WTRL
+            const admins = meta.administrators || {};
+            const captainId = admins.captain?.profileId ? parseInt(admins.captain.profileId) : null;
+            const managerIds = Array.isArray(admins.managers) 
+                ? admins.managers.map((m: any) => parseInt(m.profileId)) 
+                : [];
+            
             return {
-                teamExternalId: parseInt(entry.meta?.team?.teamid || 0),
-                captainId: entry.meta?.captainId ? parseInt(entry.meta.captainId) : null,
-                managerId: entry.meta?.managerId ? parseInt(entry.meta.managerId) : null,
+                teamExternalId: parseInt(meta.team?.teamid || 0),
+                captainId: captainId,
+                managerIds: managerIds, // Passiamo l'array di manager
                 riders: riders.map(r => ({
                     wtrlId: parseInt(r.tmuid || r.wtrlId || r.zwid || r.profileId || 0),
                     name: String(r.name || 'Unknown'),
