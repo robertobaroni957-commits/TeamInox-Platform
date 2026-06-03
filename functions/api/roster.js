@@ -64,22 +64,23 @@ export async function onRequestGet(context) {
     }
 
     // 3. Recuperiamo i dati aggiornati dal DB locale
+    // Usiamo DISTINCT sulla coppia athlete_id, team_id per evitare duplicati inaspettati
     let query = `
       SELECT DISTINCT a.zwid, a.name, a.base_category as category, a.role, a.avatar_url
+      FROM athletes a
+      JOIN team_members tm ON a.zwid = tm.athlete_id
+      WHERE tm.team_id = ?
     `;
     let params = [team_id];
 
     if (round_id) {
-      query += `, (SELECT status FROM availability WHERE athlete_id = a.zwid AND round_id = ?) as availability_status `;
-      params.unshift(round_id);
+      query += ` AND tm.athlete_id IN (SELECT athlete_id FROM availability WHERE round_id = ?) `;
+      params.push(round_id);
     }
 
-    query += `
-      FROM athletes a
-      JOIN team_members tm ON a.zwid = tm.athlete_id
-      WHERE tm.team_id = ?
-      ORDER BY a.name ASC
-    `;
+    query += ` ORDER BY a.name ASC `;
+
+    const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
 
     const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
 
