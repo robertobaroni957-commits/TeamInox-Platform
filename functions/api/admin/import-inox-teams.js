@@ -73,7 +73,31 @@ export async function onRequestPost({ request, env }) {
 
             console.log(`[ImportMaster] Team: ${name} (ID: ${wtrl_team_id}), Captain: ${captain_id}, Managers: ${managerIds.join(',')}`);
 
-            // Inserimento Team. NOTA: 'season_id' non esiste nella tabella 'teams', usiamo 'season_code'.
+            // 1. UPSERT ADMINS (Capitani e Manager potrebbero non essere tra i riders)
+            const staff = [];
+            if (admins.captain) staff.push({ ...admins.captain, role: 'captain' });
+            if (Array.isArray(admins.managers)) {
+                admins.managers.forEach(m => staff.push({ ...m, role: 'moderator' }));
+            }
+
+            for (const person of staff) {
+                const pid = parseInt(person.profileId);
+                if (!pid) continue;
+                updates.push(env.ZRL_DB.prepare(`
+                    INSERT INTO athletes (zwid, name, role)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(zwid) DO UPDATE SET
+                        name = excluded.name,
+                        role = CASE 
+                            WHEN COALESCE(athletes.role, 'athlete') = 'admin' THEN 'admin'
+                            WHEN excluded.role = 'moderator' THEN 'moderator'
+                            WHEN excluded.role = 'captain' AND COALESCE(athletes.role, 'athlete') NOT IN ('admin', 'moderator') THEN 'captain'
+                            ELSE COALESCE(athletes.role, excluded.role)
+                        END
+                `).bind(pid, `${person.firstName} ${person.lastName}`, person.role));
+            }
+
+            // 2. Inserimento Team
             updates.push(env.ZRL_DB.prepare(`
                 INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, captain_id, season_code) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -90,6 +114,7 @@ export async function onRequestPost({ request, env }) {
                     season_code = excluded.season_code
             `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, captain_id, seasonCode));
 
+            // 3. Inserimento Riders
             for (const rider of riders) {
                 const zwid = parseInt(rider.profileId || rider.zwid || rider.tmuid);
                 if (!zwid) continue;
