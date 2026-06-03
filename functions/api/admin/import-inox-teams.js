@@ -73,10 +73,10 @@ export async function onRequestPost({ request, env }) {
 
             console.log(`[ImportMaster] Team: ${name} (ID: ${wtrl_team_id}), Captain: ${captain_id}, Managers: ${managerIds.join(',')}`);
 
-            // Inserimento Team con seasonId e captain_id
+            // Inserimento Team. NOTA: 'season_id' non esiste nella tabella 'teams', usiamo 'season_code'.
             updates.push(env.ZRL_DB.prepare(`
-                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, season_id, captain_id, season_code) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, captain_id, season_code) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(wtrl_team_id) DO UPDATE SET 
                     name = excluded.name,
                     category = excluded.category,
@@ -86,10 +86,9 @@ export async function onRequestPost({ request, env }) {
                     league = excluded.league,
                     member_count = excluded.member_count,
                     is_dev = excluded.is_dev,
-                    season_id = excluded.season_id,
                     captain_id = excluded.captain_id,
                     season_code = excluded.season_code
-            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, seasonId, captain_id, seasonCode));
+            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, captain_id, seasonCode));
 
             for (const rider of riders) {
                 const zwid = parseInt(rider.profileId || rider.zwid || rider.tmuid);
@@ -118,10 +117,11 @@ export async function onRequestPost({ request, env }) {
                         END
                 `).bind(zwid, rider.name, rider.category, zwid, rider.userId, rider.avatar, newRole));
 
+                // Per team_members invece season_id esiste ed è una stringa (TEXT)
                 updates.push(env.ZRL_DB.prepare(`
-                    INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id)
-                    VALUES (?, ?, ?)
-                `).bind(wtrl_team_id, zwid, seasonId.toString()));
+                    INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id, name, category, is_active)
+                    VALUES (?, ?, ?, ?, ?, 1)
+                `).bind(wtrl_team_id, zwid, seasonId.toString(), rider.name, rider.category));
 
                 processedAthletes++;
             }
