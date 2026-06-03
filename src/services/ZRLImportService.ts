@@ -100,10 +100,10 @@ export const ZRLImportService = {
                             base_category = excluded.base_category,
                             avatar_url = excluded.avatar_url,
                             role = CASE 
-                                WHEN athletes.role = 'admin' THEN 'admin'
+                                WHEN COALESCE(athletes.role, 'athlete') = 'admin' THEN 'admin'
                                 WHEN excluded.role = 'moderator' THEN 'moderator'
-                                WHEN excluded.role = 'captain' AND athletes.role NOT IN ('admin', 'moderator') THEN 'captain'
-                                ELSE athletes.role
+                                WHEN excluded.role = 'captain' AND COALESCE(athletes.role, 'athlete') NOT IN ('admin', 'moderator') THEN 'captain'
+                                ELSE COALESCE(athletes.role, excluded.role)
                             END
                     `).bind(wtrlRiderId, name, category, avatar, newRole).run();
 
