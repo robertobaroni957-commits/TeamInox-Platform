@@ -81,6 +81,9 @@ export async function onRequestPost(context) {
             const rounds = team.rounds || (comp.registered ? comp.registered.join(',') : '');
             const member_count = parseInt(team.members || meta.memberCount || 0);
 
+            // Estrazione Capitano
+            const captain_id = meta.administrators?.captain?.profileId ? parseInt(meta.administrators.captain.profileId) : null;
+
             if (!wtrl_team_id || !teamname) {
                 console.warn("[ImportTeams] Dati team incompleti:", item);
             }
@@ -90,8 +93,8 @@ export async function onRequestPost(context) {
                     wtrl_team_id, name, category, division, division_number, 
                     club_id, tttid, club_name, gender, league, 
                     zrldivision, league_color, rec, status, is_dev, 
-                    rounds, member_count, season_code
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    rounds, member_count, season_code, captain_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(wtrl_team_id) DO UPDATE SET
                     name = excluded.name,
                     category = excluded.category,
@@ -109,7 +112,8 @@ export async function onRequestPost(context) {
                     is_dev = excluded.is_dev,
                     rounds = excluded.rounds,
                     member_count = excluded.member_count,
-                    season_code = excluded.season_code
+                    season_code = excluded.season_code,
+                    captain_id = excluded.captain_id
             `).bind(
                 wtrl_team_id,
                 teamname,
@@ -128,7 +132,8 @@ export async function onRequestPost(context) {
                 isdev,
                 rounds,
                 member_count,
-                season_code || 'zrl_25_26'
+                season_code || 'zrl_25_26',
+                captain_id
             );
         });
 
