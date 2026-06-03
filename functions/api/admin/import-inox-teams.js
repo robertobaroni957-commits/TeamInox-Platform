@@ -128,8 +128,8 @@ export async function onRequestPost({ request, env }) {
                 else if (isCaptain) newRole = 'captain';
 
                 updates.push(env.ZRL_DB.prepare(`
-                    INSERT INTO athletes (zwid, name, base_category, profile_id, wtrl_user_id, avatar_url, role)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO athletes (zwid, name, base_category, avatar_url, role)
+                    VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(zwid) DO UPDATE SET
                         name = excluded.name,
                         base_category = excluded.base_category,
@@ -140,9 +140,9 @@ export async function onRequestPost({ request, env }) {
                             WHEN excluded.role = 'captain' AND COALESCE(athletes.role, 'athlete') NOT IN ('admin', 'moderator') THEN 'captain'
                             ELSE COALESCE(athletes.role, excluded.role)
                         END
-                `).bind(zwid, rider.name, rider.category, zwid, rider.userId, rider.avatar, newRole));
+                `).bind(zwid, rider.name, rider.category, rider.avatar, newRole));
 
-                // Per team_members invece season_id esiste ed è una stringa (TEXT)
+                // Per team_members season_id è una stringa (TEXT)
                 updates.push(env.ZRL_DB.prepare(`
                     INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id, name, category, is_active)
                     VALUES (?, ?, ?, ?, ?, 1)
