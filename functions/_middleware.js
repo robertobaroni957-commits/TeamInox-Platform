@@ -10,6 +10,8 @@ const PUBLIC_ROUTES = new Set([
   '/api/register',
   '/api/setup-admin',
   '/api/create-admin',
+  '/api/get-races',
+  '/api/rounds',
 ]);
 
 function jsonError(message, status = 500) {
