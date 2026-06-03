@@ -92,13 +92,14 @@ export function RoundControlProvider({ children }: { children: ReactNode }) {
   // -----------------------------
   useEffect(() => {
     async function loadRaces() {
-        if (!selectedRoundId) {
+        const targetId = selectedRoundId || activeRound?.id;
+        if (!targetId) {
             setActiveRaces([]);
             return;
         }
         try {
             // Aggiornato per usare round_v2_id come richiesto dal nuovo endpoint
-            const res = await fetch(`/api/admin/get-races?round_v2_id=${selectedRoundId}`);
+            const res = await fetch(`/api/admin/get-races?round_v2_id=${targetId}`);
             if (res.ok) {
                 const data = await res.json();
                 setActiveRaces(data);
@@ -108,7 +109,14 @@ export function RoundControlProvider({ children }: { children: ReactNode }) {
         }
     }
     loadRaces();
-  }, [selectedRoundId, selectedWtrlId, roundsQuery.data]);
+  }, [selectedRoundId, activeRound?.id, selectedWtrlId, roundsQuery.data]);
+
+  useEffect(() => {
+    if (activeRound && (!selectedRoundId || !selectedWtrlId)) {
+        setSelectedRoundId(activeRound.id);
+        setSelectedWtrlId(activeRound.wtrl_id);
+    }
+  }, [activeRound, selectedRoundId, selectedWtrlId]);
 
   useEffect(() => {
     const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
