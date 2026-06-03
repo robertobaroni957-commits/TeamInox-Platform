@@ -149,7 +149,7 @@ export default function TeamsPage() {
               {expandedTeam === team.id && (
                 <div className="p-8 bg-zinc-950/50 border-t border-zinc-800">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {team.roster.map((athlete) => (
+                    {Array.from(new Map(team.roster.map(a => [a.zwid, a])).values()).map((athlete) => (
                         <div key={athlete.zwid} className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 flex items-center gap-4 hover:border-[#fc6719]/30 transition-all group/card">
                             <div className="relative">
                                 {athlete.avatar_url ? (
