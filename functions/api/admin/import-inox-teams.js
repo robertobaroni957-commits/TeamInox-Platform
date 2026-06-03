@@ -8,21 +8,30 @@ export async function onRequestPost({ request, env }) {
         if (!env.ZRL_DB) return errorRes("Database non trovato", 500);
 
         const body = await request.json();
-        const teamsData = body.teams || body;
+        
+        // Estrazione flessibile (JsonIngestor avvolge in { data: { payload: [...] } })
+        let teamsData = body.data?.payload || body.teams || body;
+        
+        // Ulteriore discesa se ancora annidato
+        if (teamsData && !Array.isArray(teamsData) && teamsData.payload) {
+            teamsData = teamsData.payload;
+        }
+
         const seasonCode = body.season_code; // Allow explicit season context
 
         if (!seasonCode) return errorRes("season_code richiesto", 400);
 
         if (!Array.isArray(teamsData) || teamsData.length === 0) {
+            console.error("[ImportMaster] Invalid teamsData:", teamsData);
             return errorRes("Dati team non validi o mancanti.", 400);
         }
 
         // Fetch season id by code
         const season = await env.ZRL_DB.prepare("SELECT id FROM seasons WHERE code = ?").bind(seasonCode).first();
-        if (!season) return errorRes("Stagione non trovata", 404);
+        if (!season) return errorRes(`Stagione con codice '${seasonCode}' non trovata`, 404);
         const seasonId = season.id;
         
-        // ... (rest of the logic using seasonId)
+        console.log(`[ImportMaster] Elaborazione di ${teamsData.length} team per la stagione ${season.name} (ID: ${seasonId})`);
 
         const updates = [];
         let processedTeams = 0;
@@ -33,30 +42,25 @@ export async function onRequestPost({ request, env }) {
             if (!meta || !meta.team) continue;
 
             const team = meta.team;
-            const comp = meta.competition;
-            const riders = entry.riders || [];
+            const comp = meta.competition || {};
+            const riders = entry.riders || entry.members || [];
             
             const name = team.name;
-            const wtrl_team_id = meta.trc || team.teamid;
-            const tttid = team.tttid;
-            const category = comp.division;
-            const division = meta.division;
+            const wtrl_team_id = parseInt(meta.trc || team.teamid || team.id);
+            const tttid = parseInt(team.tttid || 0);
+            const category = comp.division || team.division;
+            const division = meta.division || team.zrldivision;
             const leagueKey = comp.class || '';
-            const member_count = meta.memberCount || 0;
-            const is_dev = team.isdev ? 1 : 0;
+            const member_count = parseInt(meta.memberCount || team.members || 0);
+            const is_dev = (team.isdev || team.is_dev) ? 1 : 0;
 
-            let league = '';
-            let divNum = null;
+            let league = team.league || comp.wtrlid || 'ZRL';
+            let divNum = parseInt(team.divnum || 0);
 
-            const match = leagueKey.match(/^(\d+)0([A-D])(\d+)0$/);
-            if (match) {
-                league = match[1];
-                divNum = parseInt(match[3]);
-            } else {
-                const simpleMatch = leagueKey.match(/^(\d+)0([A-D])(\d*)$/);
-                if (simpleMatch) {
-                    league = simpleMatch[1];
-                    divNum = simpleMatch[3] ? parseInt(simpleMatch[3]) : null;
+            if (!divNum && leagueKey) {
+                const match = leagueKey.match(/^(\d+)0([A-D])(\d+)0$/);
+                if (match) {
+                    divNum = parseInt(match[3]);
                 }
             }
 
@@ -67,10 +71,12 @@ export async function onRequestPost({ request, env }) {
                 ? admins.managers.map(m => parseInt(m.profileId)) 
                 : [];
 
+            console.log(`[ImportMaster] Team: ${name} (ID: ${wtrl_team_id}), Captain: ${captain_id}, Managers: ${managerIds.join(',')}`);
+
             // Inserimento Team con seasonId e captain_id
             updates.push(env.ZRL_DB.prepare(`
-                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, season_id, captain_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, season_id, captain_id, season_code) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(wtrl_team_id) DO UPDATE SET 
                     name = excluded.name,
                     category = excluded.category,
@@ -81,11 +87,12 @@ export async function onRequestPost({ request, env }) {
                     member_count = excluded.member_count,
                     is_dev = excluded.is_dev,
                     season_id = excluded.season_id,
-                    captain_id = excluded.captain_id
-            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, seasonId, captain_id));
+                    captain_id = excluded.captain_id,
+                    season_code = excluded.season_code
+            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, seasonId, captain_id, seasonCode));
 
             for (const rider of riders) {
-                const zwid = parseInt(rider.profileId || rider.zwid);
+                const zwid = parseInt(rider.profileId || rider.zwid || rider.tmuid);
                 if (!zwid) continue;
 
                 // Calcolo ruolo per questo atleta nel contesto di questo team
@@ -114,7 +121,7 @@ export async function onRequestPost({ request, env }) {
                 updates.push(env.ZRL_DB.prepare(`
                     INSERT OR IGNORE INTO team_members (team_id, athlete_id, season_id)
                     VALUES (?, ?, ?)
-                `).bind(wtrl_team_id, zwid, seasonId));
+                `).bind(wtrl_team_id, zwid, seasonId.toString()));
 
                 processedAthletes++;
             }
@@ -128,13 +135,13 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sincronizzazione stagione ${season.name} completata.`,
+            message: `Sincronizzazione stagione ${season.name} completata. Processati ${processedTeams} team e ${processedAthletes} atleti.`,
             teams: processedTeams,
             athletes: processedAthletes
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
+        console.error("[ImportMaster Error]", err);
         return errorRes(`Errore: ${err.message}`, 500);
     }
 }
-
