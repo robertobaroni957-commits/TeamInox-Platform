@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
             const admins = meta.administrators || {};
             const captainId = admins.captain?.profileId ? parseInt(admins.captain.profileId) : null;
             const managerIds = Array.isArray(admins.managers) 
-                ? admins.managers.map((m: any) => parseInt(m.profileId)) 
+                ? admins.managers.map((m) => parseInt(m.profileId)) 
                 : [];
             
             return {
