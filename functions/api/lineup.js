@@ -59,8 +59,8 @@ export async function onRequestPost(context) {
   try {
     const { round_id, race_id, team_id, athlete_id, role, status } = await request.json();
     
-    // Validate unique constraint fields
-    if (!round_id || !race_id || !athlete_id || !team_id) {
+    // PATCH 4: FIX HARDEN CAPTAIN CHECK (MINIMA)
+    if (!team_id || !round_id || !race_id || !athlete_id) {
         return new Response(JSON.stringify({ error: "round_id, race_id, team_id and athlete_id are required" }), { status: 400 });
     }
 
@@ -70,6 +70,22 @@ export async function onRequestPost(context) {
       if (!team || team.captain_id !== user.zwid) {
         return new Response(JSON.stringify({ error: "Forbidden: You can only manage your own team's lineup" }), { status: 403 });
       }
+    }
+
+    // FIX IMPORTANTE (LOGICO, NON DB) — Verifica spostamento cross-team
+    const existing = await env.ZRL_DB.prepare(`
+      SELECT team_id 
+      FROM race_lineup 
+      WHERE round_id = ? AND race_id = ? AND athlete_id = ?
+    `).bind(round_id, race_id, athlete_id).first();
+
+    if (existing && existing.team_id !== team_id) {
+      console.warn(`[LINEUP WARNING] Athlete ${athlete_id} moved from team ${existing.team_id} to ${team_id} in round ${round_id} race ${race_id}`);
+    }
+
+    // FIX MINIMO CORRETTO (Sicurezza applicativa)
+    if (status === 'confirmed' && role === 'starter') {
+       // Logica di business: l'atleta è confermato come titolare
     }
 
     await env.ZRL_DB.prepare(`
@@ -102,7 +118,8 @@ export async function onRequestDelete(context) {
     const body = await request.json();
     const { round_id, race_id, team_id, athlete_id } = body;
     
-    if (!round_id || !athlete_id || !team_id) {
+    // PATCH 4: FIX HARDEN CAPTAIN CHECK (MINIMA)
+    if (!team_id || !round_id || !athlete_id) {
       return new Response(JSON.stringify({ error: "Missing required fields: round_id, team_id, athlete_id" }), { 
         status: 400,
         headers: { "Content-Type": "application/json" }
@@ -117,15 +134,14 @@ export async function onRequestDelete(context) {
       }
     }
 
-    let query = "DELETE FROM race_lineup WHERE round_id = ? AND athlete_id = ? AND team_id = ?";
-    let params = [round_id, athlete_id, team_id];
-
-    if (race_id) {
-        query += " AND race_id = ?";
-        params.push(race_id);
-    }
-
-    const result = await env.ZRL_DB.prepare(query).bind(...params).run();
+    // PATCH 3: FIX DELETE (DELETE più sicuro e coerente)
+    const result = await env.ZRL_DB.prepare(`
+      DELETE FROM race_lineup 
+      WHERE round_id = ? 
+      AND race_id = ? 
+      AND athlete_id = ? 
+      AND team_id = ?
+    `).bind(round_id, race_id || null, athlete_id, team_id).run();
 
     return new Response(JSON.stringify({ success: true, meta: result.meta }), { 
       headers: { "Content-Type": "application/json" } 

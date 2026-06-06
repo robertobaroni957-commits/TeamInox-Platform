@@ -1,147 +1,73 @@
-// functions/api/round-init.js (DEPLOY-PAGES-FORCED-08:50)
 export async function onRequestPost(context) {
-    const { env, request } = context;
+  const { env, request, data } = context;
 
-    try {
-        const body = await request.json();
-        const { year, round_index, default_timeslot_id } = body;
+  const user = data?.user;
 
-        if (!year || !round_index) {
-            return new Response(JSON.stringify({ success: false, error: "Dati mancanti (Anno/Round)." }), { 
-                status: 200, headers: { "Content-Type": "application/json" } 
-            });
-        }
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+    });
+  }
 
-        // Calcolo ID Stagione WTRL
-        let wtrlSeasonId;
-        const y = parseInt(year);
-        const r = parseInt(round_index);
-        if (y === 2025) {
-            wtrlSeasonId = 19 + (r - 4);
-        } else {
-            wtrlSeasonId = (y - 2026) * 4 + 20 + (r - 1);
-        }
+  try {
+    const body = await request.json();
 
-        const seriesName = `ZRL ${year} Round ${round_index}`;
-        const slotId = default_timeslot_id || 'EMEA_C';
+    const {
+      wtrl_id,
+      name,
+      starts_at,
+      season_code
+    } = body;
 
-        // Pulizia cookie centralizzata: preferiamo tenere tutto se fornito, 
-        // per evitare blocchi Cloudflare che spesso richiedono cookie specifici (__cf_bm, etc.)
-        const cleanCookie = (env.WTRL_COOKIE || "").trim();
-
-        // 1. Fetch da WTRL (con cookie e gestione HTML)
-        const wtrlUrl = `https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=${wtrlSeasonId}&category=A&action=schedule&test=c2NoZWR1bGU%3D`;
-        
-        console.log(`[round-init] Fetching WTRL Season ${wtrlSeasonId} for ${seriesName}`);
-
-        const wtrlRes = await fetch(wtrlUrl, {
-            headers: { 
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json",
-                "Cookie": cleanCookie
-            }
-        });
-
-        const contentType = wtrlRes.headers.get("content-type") || "";
-        const responseText = await wtrlRes.text();
-
-        if (!wtrlRes.ok) {
-            throw new Error(`WTRL API error ${wtrlRes.status}: ${responseText.substring(0, 100)}`);
-        }
-
-        if (contentType.includes("text/html") || responseText.trim().startsWith("<")) {
-            console.error("[round-init] Ricevuto HTML invece di JSON. Primi 200 caratteri:", responseText.substring(0, 200));
-            
-            let extraHint = "Controlla il WTRL_COOKIE nelle impostazioni di Cloudflare.";
-            if (responseText.includes("cloudflare") || responseText.includes("ray-id")) {
-                extraHint = "Bloccato da Cloudflare (Challenge/WAF). L'IP dei server Cloudflare Workers è stato respinto.";
-            } else if (responseText.includes("login") || responseText.includes("signin")) {
-                extraHint = "Sessione WTRL scaduta. Aggiorna il WTRL_COOKIE.";
-            }
-
-            throw new Error(`WTRL ha restituito HTML (possibile errore di sessione o blocco). ${extraHint}`);
-        }
-
-        let wtrlData;
-        try {
-            wtrlData = JSON.parse(responseText);
-        } catch (e) {
-            throw new Error(`Errore parsing JSON WTRL: ${e.message}. Risposta: ${responseText.substring(0, 50)}`);
-        }
-
-        const rawRounds = wtrlData.payload || (Array.isArray(wtrlData) ? wtrlData : []);
-        
-        if (!Array.isArray(rawRounds) || rawRounds.length === 0) {
-            throw new Error("WTRL non ha restituito gare valide per questa stagione (Payload vuoto).");
-        }
-
-        const { runMutation } = await import("../../src/services/db/mutation");
-        const { createMutation } = await import("../../src/services/db/mutationDSL");
-        const { runWithGuard } = await import("../../src/services/runWithGuard");
-        const { validateSeasonState } = await import("../../src/services/GuardRails");
-        
-        return await runWithGuard(context, () => validateSeasonState(env.ZRL_DB, wtrlSeasonId), async (ctx) => {
-            // 2. Upsert Serie (Statements for MutationDSL)
-            const statements = [];
-            let series = await env.ZRL_DB.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(wtrlSeasonId).first();
-            let seriesId;
-            
-            if (!series) {
-                const ins = await env.ZRL_DB.prepare("INSERT INTO series (name, external_season_id, is_active) VALUES (?, ?, 1) RETURNING id")
-                    .bind(seriesName, wtrlSeasonId).first();
-                seriesId = ins.id;
-            } else {
-                seriesId = series.id;
-                statements.push(env.ZRL_DB.prepare("UPDATE series SET name = ?, is_active = 1 WHERE id = ?").bind(seriesName, seriesId));
-            }
-            
-            statements.push(env.ZRL_DB.prepare("UPDATE series SET is_active = 0 WHERE id != ?").bind(seriesId));
-
-            // 3. Pulizia a cascata
-            const sub = "SELECT id FROM rounds WHERE series_id = ?";
-            statements.push(env.ZRL_DB.prepare(`DELETE FROM race_lineup WHERE round_id IN (${sub})`).bind(seriesId));
-            statements.push(env.ZRL_DB.prepare(`DELETE FROM availability WHERE round_id IN (${sub})`).bind(seriesId));
-            statements.push(env.ZRL_DB.prepare(`DELETE FROM results WHERE round_id IN (${sub})`).bind(seriesId));
-            statements.push(env.ZRL_DB.prepare(`DELETE FROM round_teams WHERE round_id IN (${sub})`).bind(seriesId));
-            statements.push(env.ZRL_DB.prepare(`DELETE FROM rounds WHERE series_id = ?`).bind(seriesId));
-
-            // 4. Inserimento Round
-            const validRounds = rawRounds.filter(item => item.eventDate || item.date);
-            for (const item of validRounds) {
-                const rName = `Week ${item.race || item.round || '?'}`;
-                const rDate = item.eventDate || item.date;
-                const rWorld = (item.courseWorld || item.world || "TBD").toString().toUpperCase();
-                const rRoute = (item.courseName || item.route || "TBD").toString();
-
-                statements.push(env.ZRL_DB.prepare(
-                    "INSERT INTO rounds (series_id, name, date, world, route, status) VALUES (?, ?, ?, ?, ?, 'planned')"
-                ).bind(seriesId, rName, rDate, rWorld, rRoute));
-            }
-
-            const mutation = createMutation(statements, {
-                eventType: 'ROUND_INIT',
-                payload: { year, round_index, wtrlSeasonId }
-            });
-
-            await runMutation(env.ZRL_DB, mutation);
-
-            return new Response(JSON.stringify({
-                success: true,
-                version: "2.2-final",
-                message: `Importati ${validRounds.length} round con successo.`
-            }), { headers: { "Content-Type": "application/json" } });
-        }, 'ROUND_INIT');
-
-    } catch (err) {
-        console.error("[round-init] CRITICAL:", err);
-        return new Response(JSON.stringify({ 
-            success: false, 
-            version: "2.2-final",
-            error: "[API-v2.2] Errore Import: " + err.message 
-        }), { 
-            status: 200, 
-            headers: { "Content-Type": "application/json" }
-        });
+    if (!wtrl_id || !name || !season_code) {
+      return new Response(JSON.stringify({
+        error: "Missing required fields"
+      }), { status: 400 });
     }
-}
 
+    // 🔥 SINGLE SOURCE OF TRUTH (V3 ONLY)
+    const query = `
+      INSERT INTO rounds_v2 (
+        wtrl_id,
+        name,
+        starts_at,
+        season_code
+      )
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(wtrl_id)
+      DO UPDATE SET
+        name = excluded.name,
+        starts_at = excluded.starts_at,
+        season_code = excluded.season_code
+    `;
+
+    await env.ZRL_DB
+      .prepare(query)
+      .bind(
+        wtrl_id,
+        name,
+        starts_at || null,
+        season_code
+      )
+      .run();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Round saved in V3 (rounds_v2)",
+      wtrl_id
+    }), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store"
+      }
+    });
+
+  } catch (err) {
+    console.error("[ROUND INIT ERROR]", err);
+
+    return new Response(JSON.stringify({
+      error: "Failed to initialize round",
+      detail: err?.message
+    }), { status: 500 });
+  }
+}

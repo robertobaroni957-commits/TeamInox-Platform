@@ -62,11 +62,14 @@ const ZRLAnalytics: React.FC = () => {
   const [snapshotMode, setSnapshotMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'strategy' | 'roster'>('strategy');
   const [viewType, setViewType] = useState<'round' | 'season'>('round');
+  const [isMounted, setIsMounted] = useState(false);
   
   const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchOptions();
+    const timer = setTimeout(() => setIsMounted(true), 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const formatLeagueName = (l: any) => {
@@ -369,20 +372,22 @@ const ZRLAnalytics: React.FC = () => {
               <div className="bg-zinc-950/50 border border-zinc-900 rounded-[3rem] p-10 shadow-inner group/radar relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#fc6719]/5 to-transparent opacity-0 group-hover/radar:opacity-100 transition-opacity rounded-[3rem]" />
                 <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-full h-[400px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={currentTeamData.dna}>
-                        <PolarGrid stroke="#27272a" />
-                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: '900' }} />
-                        <Radar
-                          name={currentTeamData.team_name}
-                          dataKey="A"
-                          stroke="#fc6719"
-                          fill="#fc6719"
-                          fillOpacity={0.6}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
+                  <div className="w-full h-[400px]" style={{ minWidth: 0, minHeight: 0 }}>
+                    {isMounted && (
+                      <ResponsiveContainer width="100%" height={400} minWidth={0} minHeight={0} debounce={200}>
+                        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={currentTeamData.dna}>
+                          <PolarGrid stroke="#27272a" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: '900' }} />
+                          <Radar
+                            name={currentTeamData.team_name}
+                            dataKey="A"
+                            stroke="#fc6719"
+                            fill="#fc6719"
+                            fillOpacity={0.6}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                   <div className="text-center mt-6">
                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Tactical Archetype</p>
@@ -422,24 +427,26 @@ const ZRLAnalytics: React.FC = () => {
                             <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">Strategic Breakdown</h3>
                          </div>
                          
-                         <div className="h-[400px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart data={currentTeamData.dna}>
-                                <defs>
-                                  <linearGradient id="colorA" x1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00bcd4" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#00bcd4" stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <XAxis dataKey="subject" hide />
-                                <YAxis hide />
-                                <Tooltip 
-                                  contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '12px' }}
-                                  itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: 'bold' }}
-                                />
-                                <Area type="monotone" dataKey="A" stroke="#00bcd4" strokeWidth={4} fillOpacity={1} fill="url(#colorA)" />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                         <div className="h-[400px] w-full" style={{ minWidth: 0, minHeight: 0 }}>
+                            {isMounted && (
+                              <ResponsiveContainer width="100%" height={400} minWidth={0} minHeight={0} debounce={200}>
+                                <AreaChart data={currentTeamData.dna}>
+                                  <defs>
+                                    <linearGradient id="colorA" x1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#00bcd4" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#00bcd4" stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <XAxis dataKey="subject" hide />
+                                  <YAxis hide />
+                                  <Tooltip 
+                                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '12px' }}
+                                    itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: 'bold' }}
+                                  />
+                                  <Area type="monotone" dataKey="A" stroke="#00bcd4" strokeWidth={4} fillOpacity={1} fill="url(#colorA)" />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            )}
                          </div>
 
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">

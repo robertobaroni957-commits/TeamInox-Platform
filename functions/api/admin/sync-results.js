@@ -15,15 +15,20 @@ export async function onRequestPost({ request, env }) {
 
         // 1. Recuperiamo i dati del Round e della Serie usando le nuove tabelle
         const roundData = await env.ZRL_DB.prepare(`
-            SELECT r.*, s.external_season_id 
+            SELECT 
+                r.*,
+                g.zrl_season_id,
+                s.external_season_id
             FROM zrl_races r
-            JOIN zrl_seasons s ON r.series_id = s.id
+            JOIN zrl_round_groups g ON r.zrl_round_group_id = g.id
+            JOIN zrl_seasons s ON g.zrl_season_id = s.id
             WHERE r.id = ?
         `).bind(round_id).first();
 
         if (!roundData) return errorRes("Gara non trovata.", 404);
 
-        const season = season_id || roundData.external_season_id || 19;
+        const season = season_id || roundData.external_season_id || roundData.zrl_season_id;
+        if (!season) return errorRes("Season non determinata.", 500);
         let race = race_number;
         if (!race) {
             const match = roundData.name.match(/\d+/);

@@ -1,3 +1,5 @@
+import { reconcileRoster } from "./utils/roster-reconciler.js";
+
 export async function onRequestPost(context) {
   const { request, env, data } = context;
   const user = data?.user;
@@ -34,7 +36,7 @@ export async function onRequestPost(context) {
     const response = await fetch(wtrlUrl, {
       headers: {
         "accept": "application/json",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "user-agent": "Mozilla/5.0"
       }
     });
 
@@ -68,13 +70,11 @@ export async function onRequestPost(context) {
         }
     }
     
-    const statements = [];
-    // Pulizia roster attuale per questo team
-    statements.push(env.ZRL_DB.prepare(`DELETE FROM team_members WHERE team_id = ?`).bind(internalTeamId));
-
+    // 1. Aggiornamento Atleti (Source of Truth)
     const captainId = metaData?.captainId ? parseInt(metaData.captainId) : null;
     const managerId = metaData?.managerId ? parseInt(metaData.managerId) : null;
-
+    const athleteStatements = [];
+    
     for (const m of members) {
       const zwid = parseInt(m.profileId || m.zwiftId || m.zwid);
       if (!zwid) continue;
@@ -86,8 +86,7 @@ export async function onRequestPost(context) {
       if (isManager) newRole = 'moderator';
       else if (isCaptain) newRole = 'captain';
 
-      // 1. Upsert Atleta con dati estesi
-      statements.push(env.ZRL_DB.prepare(`
+      athleteStatements.push(env.ZRL_DB.prepare(`
         INSERT INTO athletes (
           zwid, name, role, base_category, avatar_url, 
           zftp, zftpw, zmap, zmapw, profile_id, wtrl_user_id
@@ -122,17 +121,15 @@ export async function onRequestPost(context) {
         parseInt(m.profileId) || null,
         m.userId || ''
       ));
-
-      // 2. Inserimento nel Roster
-      statements.push(env.ZRL_DB.prepare(`
-        INSERT INTO team_members (team_id, athlete_id)
-        VALUES (?, ?)
-      `).bind(internalTeamId, zwid));
     }
+    await env.ZRL_DB.batch(athleteStatements);
 
-    if (statements.length > 0) {
-      await env.ZRL_DB.batch(statements);
-    }
+    // 2. FASE: Usa Reconciler per team_members
+    await reconcileRoster(env, {
+        teamId: internalTeamId,
+        wtrlRoster: members
+    });
+
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -146,4 +143,5 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
+
 
