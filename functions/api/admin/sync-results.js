@@ -13,11 +13,11 @@ export async function onRequestPost({ request, env }) {
 
         if (!round_id) return errorRes("Parametro round_id obbligatorio.", 400);
 
-        // 1. Recuperiamo i dati del Round e della Serie usando le nuove tabelle
+        // 1. Recuperiamo i dati del Round e della Serie usando esclusivamente V2/V3
         const roundData = await env.ZRL_DB.prepare(`
             SELECT 
-                r.*,
-                g.zrl_season_id,
+                r.id,
+                r.name,
                 s.external_season_id
             FROM zrl_races r
             JOIN zrl_round_groups g ON r.zrl_round_group_id = g.id
@@ -25,17 +25,17 @@ export async function onRequestPost({ request, env }) {
             WHERE r.id = ?
         `).bind(round_id).first();
 
-        if (!roundData) return errorRes("Gara non trovata.", 404);
+        if (!roundData) return errorRes("Gara non trovata nel sistema V3.", 404);
 
-        const season = season_id || roundData.external_season_id || roundData.zrl_season_id;
+        const season = season_id || roundData.external_season_id;
         if (!season) return errorRes("Season non determinata.", 500);
+        
         let race = race_number;
         if (!race) {
             const match = roundData.name.match(/\d+/);
             race = match ? parseInt(match[0]) : 1;
         }
 
-        // HOOK POINT: Inject runWithGuard(context, () => validateRoundState(env.ZRL_DB, round_id, 'ACTIVE'), legacyHandler, 'SYNC_RESULTS')
         // 2. Recuperiamo i team INOX e le loro chiavi di lega
         const teamsQuery = await env.ZRL_DB.prepare(`
             SELECT DISTINCT league, category, division_number 
@@ -58,12 +58,7 @@ export async function onRequestPost({ request, env }) {
         const syncLog = [];
         const insertStmts = [];
 
-        // Pulizia preliminare
-        for (const key of leagueKeys) {
-            insertStmts.push(env.ZRL_DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(round_id, key));
-        }
-
-        // 3. Interroghiamo WTRL per ogni chiave di lega
+        // 3. Interroghiamo WTRL e salviamo in division_results (V2)
         for (const key of leagueKeys) {
             const url = `https://www.wtrl.racing/api/zrl/results/${season}/${key}/${race}`;
             try {
@@ -83,6 +78,9 @@ export async function onRequestPost({ request, env }) {
                 const data = await response.json();
                 const teamPayload = data.payload || [];
                 let riderCount = 0;
+
+                // Pulizia per questa lega prima dell'inserimento
+                insertStmts.push(env.ZRL_DB.prepare(`DELETE FROM division_results WHERE round_id = ? AND league_key = ?`).bind(round_id, key));
 
                 for (const team of teamPayload) {
                     const teamName = team.teamname || "Unknown Team";
@@ -122,7 +120,8 @@ export async function onRequestPost({ request, env }) {
 
         if (insertStmts.length > 0) await env.ZRL_DB.batch(insertStmts);
 
-        // 4. Aggiornamento tabella 'results'
+        // 4. 🔥 AGGIORNAMENTO CACHE 'results' (V1 Legacy Cache)
+        // Leggiamo da division_results (V2) e scriviamo in results (V1)
         await env.ZRL_DB.prepare(`DELETE FROM results WHERE round_id = ? AND data_source = 'wtrl'`).bind(round_id).run();
         await env.ZRL_DB.prepare(`
             INSERT INTO results (round_id, zwid, time, points_total, points_finish, points_fal, points_fts, position, data_source)
@@ -133,7 +132,7 @@ export async function onRequestPost({ request, env }) {
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sync completato per ${leagueKeys.length} divisioni.`,
+            message: `Sincronizzazione completata per ${leagueKeys.length} divisioni. Cache V1 aggiornata.`,
             log: syncLog
         }), { headers: { "Content-Type": "application/json" } });
 
@@ -141,4 +140,3 @@ export async function onRequestPost({ request, env }) {
         return errorRes(`Errore critico: ${err.message}`, 500);
     }
 }
-

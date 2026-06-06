@@ -130,8 +130,8 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
     setSaving(true);
     setError(null);
     try {
-      await api.removeFromLineup(entry.round_id, entry.team_id, entry.athlete_id);
-      setLineup(prev => prev.filter(e => e.athlete_id !== entry.athlete_id));
+      await api.removeFromLineup(entry.round_id, entry.race_id!, entry.team_id, entry.athlete_id);
+      setLineup(prev => prev.filter(e => !(e.athlete_id === entry.athlete_id && e.race_id === entry.race_id)));
     } catch (e: any) {
       setError(e.message || 'Failed to remove athlete');
     } finally {
@@ -143,9 +143,7 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
 
   const resolveAvatarUrl = (url?: string) => {
     if (!url || url === '' || url.includes('default.png')) return null;
-    // If it's already an absolute URL (like Zwift CDN), use it as is
     if (url.startsWith('http')) return url;
-    // If it's a relative path from WTRL, prefix it
     if (url.startsWith('/')) return `https://www.wtrl.racing${url}`;
     return url;
   };
@@ -283,60 +281,57 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
               </div>
             </div>
             
-            <div className="p-10 flex-1 grid grid-cols-2 gap-6 content-start">
-                <AnimatePresence>
-                    {lineup.map((entry, idx) => (
-                        <motion.div 
-                            key={entry.athlete_id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className="flex items-center justify-between p-6 bg-zinc-900/60 border border-zinc-800 rounded-[2.5rem] group hover:border-orange-500 transition-all relative overflow-hidden shadow-xl"
-                        >
-                            <div className="flex items-center gap-5 relative z-10">
-                                <div className="w-16 h-16 rounded-[1.5rem] bg-black border border-zinc-800 flex items-center justify-center text-orange-500 font-black text-2xl shadow-xl overflow-hidden group-hover:border-orange-500/30 transition-all">
-                                    {resolveAvatarUrl(entry.athlete_avatar) ? (
-                                        <img 
-                                            src={resolveAvatarUrl(entry.athlete_avatar)!} 
-                                            alt={entry.athlete_name} 
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        entry.athlete_name?.substring(0, 2).toUpperCase()
-                                    )}
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-xl font-black text-white uppercase italic tracking-tighter block group-hover:text-orange-500 transition-colors leading-none">{entry.athlete_name}</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Confirmed Starter</span>
+            <div className="p-10 flex-1 grid grid-cols-1 gap-6 content-start max-w-2xl w-full">
+                {Array.from({ length: 6 }).map((_, idx) => {
+                    const entry = lineup[idx];
+                    
+                    if (entry) {
+                        return (
+                            <motion.div 
+                                key={`${entry.athlete_id}-${entry.race_id}`}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="w-full flex items-center justify-between p-4 bg-zinc-900 border border-zinc-700 rounded-[2rem] shadow-xl relative h-[90px]"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-[1.5rem] bg-zinc-800 border border-zinc-700 flex items-center justify-center text-orange-500 font-black text-lg shadow-inner overflow-hidden shrink-0">
+                                        {resolveAvatarUrl(entry.athlete_avatar) ? (
+                                            <img src={resolveAvatarUrl(entry.athlete_avatar)!} alt={entry.athlete_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            entry.athlete_name?.substring(0, 2).toUpperCase()
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-white uppercase tracking-tight leading-none mb-1.5">{entry.athlete_name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Confirmed Starter</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {!snapshotMode && (
-                                <button 
-                                    onClick={() => removeFromLineup(entry)} 
-                                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-600 hover:text-red-500 hover:border-red-500 transition-all z-20 shadow-md"
-                                    disabled={saving}
-                                >
-                                    <Trash2 size={18} />
-                                </button>
-                            )}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-                
-                {/* Empty Slots */}
-                {Array.from({ length: Math.max(0, 6 - lineup.length) }).map((_, idx) => (
-                    <div 
-                        key={`empty-${idx}`}
-                        className="border-2 border-dashed border-zinc-800 rounded-[2.5rem] p-6 flex flex-col items-center justify-center opacity-40 gap-2 hover:opacity-100 hover:border-zinc-700 transition-all group cursor-default"
-                    >
-                        <Plus size={24} className="text-zinc-600 group-hover:text-zinc-400 transition-colors" />
-                        <span className="text-[10px] font-black text-zinc-600 group-hover:text-zinc-400 uppercase tracking-[0.2em] transition-colors">Add Rider</span>
-                    </div>
-                ))}
+                                {!snapshotMode && (
+                                    <button 
+                                        onClick={() => removeFromLineup(entry)} 
+                                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-zinc-950 border border-zinc-700 text-zinc-600 hover:text-red-500 hover:border-red-500 transition-all shadow-md"
+                                        disabled={saving}
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                )}
+                            </motion.div>
+                        );
+                    }
+                    
+                    return (
+                        <div 
+                            key={`empty-${idx}`}
+                            className="h-[90px] w-full border-2 border-dashed border-zinc-800 rounded-[2rem] p-4 flex flex-col items-center justify-center opacity-40 gap-2 cursor-default"
+                        >
+                            <Plus size={24} className="text-zinc-600" />
+                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em]">Empty</span>
+                        </div>
+                    );
+                })}
             </div>
 
             {snapshotMode && selectedRace && (

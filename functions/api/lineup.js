@@ -5,7 +5,7 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const round_id = url.searchParams.get("round_id");
   const race_id = url.searchParams.get("race_id");
-  const team_id = url.searchParams.get("team_id");
+  const team_id = url.searchParams.get("team_id"); // Atteso WTRL ID
 
   try {
     // SECURITY: Ensure athlete can only view their own team(s) lineup unless admin/moderator/captain
@@ -59,12 +59,12 @@ export async function onRequestPost(context) {
   try {
     const { round_id, race_id, team_id, athlete_id, role, status } = await request.json();
     
-    // PATCH 4: FIX HARDEN CAPTAIN CHECK (MINIMA)
+    // VALIDATION: WTRL ID e ZWID obbligatori
     if (!team_id || !round_id || !race_id || !athlete_id) {
         return new Response(JSON.stringify({ error: "round_id, race_id, team_id and athlete_id are required" }), { status: 400 });
     }
 
-    // SECURITY: Captains can only manage their own team
+    // SECURITY: Captains can only manage their own team (matching on wtrl_team_id)
     if (user.role === 'captain') {
       const team = await env.ZRL_DB.prepare(`SELECT captain_id FROM teams WHERE wtrl_team_id = ?`).bind(team_id).first();
       if (!team || team.captain_id !== user.zwid) {
@@ -72,22 +72,7 @@ export async function onRequestPost(context) {
       }
     }
 
-    // FIX IMPORTANTE (LOGICO, NON DB) — Verifica spostamento cross-team
-    const existing = await env.ZRL_DB.prepare(`
-      SELECT team_id 
-      FROM race_lineup 
-      WHERE round_id = ? AND race_id = ? AND athlete_id = ?
-    `).bind(round_id, race_id, athlete_id).first();
-
-    if (existing && existing.team_id !== team_id) {
-      console.warn(`[LINEUP WARNING] Athlete ${athlete_id} moved from team ${existing.team_id} to ${team_id} in round ${round_id} race ${race_id}`);
-    }
-
-    // FIX MINIMO CORRETTO (Sicurezza applicativa)
-    if (status === 'confirmed' && role === 'starter') {
-       // Logica di business: l'atleta è confermato come titolare
-    }
-
+    // 🔥 V3 ALIGNMENT: race_lineup usa team_id come WTRL ID e athlete_id come ZWID
     await env.ZRL_DB.prepare(`
       INSERT INTO race_lineup (round_id, race_id, team_id, athlete_id, role, status)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -118,7 +103,6 @@ export async function onRequestDelete(context) {
     const body = await request.json();
     const { round_id, race_id, team_id, athlete_id } = body;
     
-    // PATCH 4: FIX HARDEN CAPTAIN CHECK (MINIMA)
     if (!team_id || !round_id || !athlete_id) {
       return new Response(JSON.stringify({ error: "Missing required fields: round_id, team_id, athlete_id" }), { 
         status: 400,
@@ -134,7 +118,7 @@ export async function onRequestDelete(context) {
       }
     }
 
-    // PATCH 3: FIX DELETE (DELETE più sicuro e coerente)
+    // DELETE basato su identità stabili
     const result = await env.ZRL_DB.prepare(`
       DELETE FROM race_lineup 
       WHERE round_id = ? 
@@ -153,4 +137,3 @@ export async function onRequestDelete(context) {
     });
   }
 }
-

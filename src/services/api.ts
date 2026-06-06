@@ -133,10 +133,10 @@ export const api = {
     });
   },
 
-  removeFromLineup: async (round_id: number, team_id: number, athlete_id: number): Promise<any> => {
+  removeFromLineup: async (round_id: number, race_id: number, team_id: number, athlete_id: number): Promise<any> => {
     return apiFetch(`${API_BASE}/lineup`, {
       method: 'DELETE',
-      body: JSON.stringify({ round_id, team_id, athlete_id }),
+      body: JSON.stringify({ round_id, race_id, team_id, athlete_id }),
     });
   },
 

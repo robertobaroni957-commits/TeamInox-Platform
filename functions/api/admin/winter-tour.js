@@ -4,7 +4,7 @@ export async function onRequestGet({ env, request }) {
   const series_id = url.searchParams.get("series_id");
 
   if (!series_id) {
-    // Ritorna tutte le serie di tipo Winter Tour
+    // Ritorna tutte le serie di tipo Winter Tour (Legacy Read)
     const { results } = await env.ZRL_DB.prepare(
       "SELECT * FROM series WHERE name LIKE '%Winter Tour%' ORDER BY start_date DESC"
     ).all();
@@ -27,38 +27,9 @@ export async function onRequestGet({ env, request }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  try {
-    const { action, payload } = await request.json();
-
-    if (action === "create_series") {
-      const { name, start_date, end_date } = payload;
-      const result = await env.ZRL_DB.prepare(
-        "INSERT INTO series (name, start_date, end_date, is_active) VALUES (?, ?, ?, 1)"
-      ).bind(name, start_date, end_date).run();
-      return new Response(JSON.stringify({ success: true, id: result.meta.lastRowId }));
-    }
-
-    if (action === "update_points") {
-      const { series_id, point_map } = payload; // point_map: [{position: 1, points: 100}, ...]
-      
-      const statements = [
-        env.ZRL_DB.prepare("DELETE FROM winter_tour_points WHERE series_id = ?").bind(series_id)
-      ];
-      
-      point_map.forEach(p => {
-        statements.push(
-          env.ZRL_DB.prepare("INSERT INTO winter_tour_points (series_id, position, points) VALUES (?, ?, ?)")
-            .bind(series_id, p.position, p.points)
-        );
-      });
-
-      await env.ZRL_DB.batch(statements);
-      return new Response(JSON.stringify({ success: true }));
-    }
-
-    return new Response(JSON.stringify({ error: "Action not recognized" }), { status: 400 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-  }
+  // ❄️ FREEZE V1: Disabilitiamo la creazione di nuove serie legacy in produzione
+  return new Response(JSON.stringify({ 
+    error: "Forbidden: Legacy write operations are frozen. Use V3 Management instead.",
+    code: "V1_FREEZE"
+  }), { status: 403, headers: { "Content-Type": "application/json" } });
 }
-

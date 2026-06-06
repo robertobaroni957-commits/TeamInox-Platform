@@ -113,6 +113,7 @@ export default function JsonIngestor({
           });
           if (onSuccess) onSuccess();
         } else {
+          toast.dismiss(toastId);
           throw new Error(resData.error || "Errore importazione");
         }
       } catch (err: any) {
