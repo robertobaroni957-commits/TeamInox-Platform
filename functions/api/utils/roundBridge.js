@@ -12,8 +12,14 @@ export const roundBridge = {
         JOIN zrl_round_groups zrg ON zr.zrl_round_group_id = zrg.id
     `).all();
     
-    // 3. Filtra in JS
-    return (races.results || []).filter(r => r.external_season_id === round.wtrl_id);
+    // 3. Filtra e Arricchisci in JS
+    return (races.results || []).filter(r => r.external_season_id === round.wtrl_id).map(r => {
+        const match = r.name.match(/\(([A-D])\)/);
+        return {
+            ...r,
+            category: match ? match[1] : 'Unknown'
+        };
+    });
   },
 
   async validateAndPersistRaces(db, round_v2_id, data) {
