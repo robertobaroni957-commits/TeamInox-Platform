@@ -7,7 +7,7 @@ export const roundBridge = {
 
     // 2. Prendi tutte le gare dal gruppo di round corrispondente
     const races = await db.prepare(`
-        SELECT zr.id, zr.name, zr.date as scheduled_at, zr.world, zr.route, zrg.external_season_id
+        SELECT zr.id, zr.name, zr.date as scheduled_at, zr.world, zr.route, zr.raw_json, zrg.external_season_id
         FROM zrl_races zr
         JOIN zrl_round_groups zrg ON zr.zrl_round_group_id = zrg.id
     `).all();
