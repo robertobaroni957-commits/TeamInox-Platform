@@ -1,13 +1,11 @@
 // functions/api/utils/roundBridge.js
 export const roundBridge = {
   async getRacesByRoundV2(db, round_v2_id) {
-    const round = await db.prepare("SELECT wtrl_id FROM rounds_v2 WHERE id = ?").bind(round_v2_id).first();
-    if (!round) return [];
-
-    const series = await db.prepare("SELECT id FROM series WHERE external_season_id = ?").bind(round.wtrl_id).first();
-    if (!series) return [];
-
-    const races = await db.prepare("SELECT * FROM rounds WHERE series_id = ?").bind(series.id).all();
+    // We now query the 'races' table directly which links to 'rounds_v2' via round_id
+    // Note: The schema defines `CREATE TABLE races (id ..., round_id INTEGER NOT NULL ... FOREIGN KEY (round_id) REFERENCES rounds(id))`
+    // If 'rounds' table was deleted, this foreign key might be broken.
+    // Assuming 'races' table's 'round_id' now conceptually refers to 'rounds_v2(id)'.
+    const races = await db.prepare("SELECT * FROM races WHERE round_id = ?").bind(round_v2_id).all();
     return races.results || [];
   },
 
