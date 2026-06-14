@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env }) {
 
     try {
         const races = await roundBridge.getRacesByRoundV2(env.ZRL_DB, parseInt(round_v2_id, 10));
-        return new Response(JSON.stringify({ races: races }), { 
+        return new Response(JSON.stringify(races), { 
             headers: { 
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache"
