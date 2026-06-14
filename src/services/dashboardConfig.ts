@@ -12,7 +12,8 @@ import {
   Shield,
   Activity,
   ClipboardCheck,
-  Settings
+  Settings,
+  Sparkles
 } from 'lucide-react';
 import type { Permission } from './permissions';
 
@@ -42,17 +43,17 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     size: "lg",
     permission: 'zrl.lineup'
   },
-  // NEW: ZRL Participant Hub
+  // AI NARRATIVE
   {
-    id: 'zrl-participant-hub',
-    title: "ZRL Hub",
-    subtitle: "Team & Lineups",
-    desc: "Consulta le lineup di gara e le statistiche delle tue squadre.",
-    icon: Shield,
-    path: "/zrl-results",
-    color: "from-cyan-500 to-blue-600",
+    id: 'ai-narrative',
+    title: "AI Narrative",
+    subtitle: "Storyteller Layer",
+    desc: "Genera report e insight basati sui dati sportivi ufficiali.",
+    icon: Sparkles,
+    path: "/ai/narrative",
+    color: "from-purple-500 to-indigo-600",
     size: "md",
-    permission: 'zrl.view'
+    permission: 'ai.narrative'
   },
   // ZRL MODULES (For all roles)
   {
@@ -80,26 +81,15 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
   },
   // SOCIAL / EVENTS
   {
-    id: 'events',
-    title: "Events",
-    subtitle: "Calendario Sociale",
-    desc: "Allenamenti, corse di gruppo e appuntamenti settimanali.",
+    id: 'events-center',
+    title: "Events Center",
+    subtitle: "Calendario & Gestione",
+    desc: "Calendario sociale e configurazione eventi unificata.",
     icon: Calendar,
     path: "/events",
-    color: "from-emerald-500 to-teal-600",
+    color: "from-emerald-500 to-teal-700",
     size: "sm",
     permission: 'events.view'
-  },
-  {
-    id: 'events-manage',
-    title: "Events Lab",
-    subtitle: "Configuration",
-    desc: "Gestione calendario corse sociali e allenamenti di gruppo.",
-    icon: LayoutGrid,
-    path: "/admin/events",
-    color: "from-emerald-600 to-teal-700",
-    size: "sm",
-    permission: 'events.manage'
   },
   // ADMIN / SYSTEM
   {

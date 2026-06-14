@@ -1,9 +1,9 @@
 export async function onRequestGet(context) {
-  const { env, data } = context;
-  const user = data?.user;
+  const { env } = context;
 
   try {
     let query = `SELECT 
+      wtrl_team_id,
       wtrl_team_id as id, 
       name, 
       category, 
@@ -14,12 +14,6 @@ export async function onRequestGet(context) {
     WHERE season_code = 'zrl_25_26'`;
     let params = [];
 
-    // SECURITY: Everyone (authenticated) can see the list of teams
-    // But only Admin/Moderator can add/edit/delete (handled in POST/PATCH/DELETE)
-    if (!user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
-
     query += ` ORDER BY category ASC, division ASC, name ASC`;
 
     const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
@@ -28,7 +22,10 @@ export async function onRequestGet(context) {
         success: true, 
         teams: results 
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=3600"
+      }
     });
 
   } catch (err) {

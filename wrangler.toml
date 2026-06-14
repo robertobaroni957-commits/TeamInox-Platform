@@ -6,3 +6,6 @@ compatibility_date = "2026-05-18"
 binding = "ZRL_DB"
 database_name = "team_inox_prod_v2"
 database_id = "5bc66f8c-227f-4492-9361-d32f2a07b53a"
+
+[ai]
+binding = "AI"
