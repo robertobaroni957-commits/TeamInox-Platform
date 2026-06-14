@@ -24,7 +24,8 @@ const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
 const Racing = lazyWithRetry(() => import('./pages/Racing'));
 const Teams = lazyWithRetry(() => import('./pages/Teams'));
 const Ranking = lazyWithRetry(() => import('./pages/Ranking'));
-const Events = lazyWithRetry(() => import('./pages/Events'));
+const EventsCenter = lazyWithRetry(() => import('./pages/EventsCenter'));
+const NarrativePage = lazyWithRetry(() => import('./pages/NarrativePage'));
 const Availability = lazyWithRetry(() => import('./pages/Availability'));
 const LineupBuilder = lazyWithRetry(() => import('./pages/LineupBuilder'));
 
@@ -50,7 +51,6 @@ const WinterTourRanking = lazyWithRetry(() => import('./pages/Ranking'));
    🔹 ADMIN
 ========================= */
 const UserManagement = lazyWithRetry(() => import('./pages/admin/UserManagement'));
-const EventManagement = lazyWithRetry(() => import('./pages/admin/EventManagement'));
 const AvailabilityManagement = lazyWithRetry(() => import('./pages/admin/AvailabilityManagement'));
 const RosterSuggestions = lazyWithRetry(() => import('./pages/admin/RosterSuggestions'));
 
@@ -112,7 +112,8 @@ const App: React.FC = () => {
 
               <Route path="racing" element={<Racing />} />
               <Route path="ranking" element={<Ranking />} />
-              <Route path="events" element={<Events />} />
+              <Route path="events" element={<EventsCenter />} />
+              <Route path="ai/narrative" element={<NarrativePage />} />
               <Route path="teams" element={<Teams />} />
               <Route path="availability" element={<Availability />} />
               <Route path="lineup" element={<LineupBuilder />} />
@@ -133,7 +134,6 @@ const App: React.FC = () => {
 
               {/* ADMIN */}
               <Route path="admin/users" element={<UserManagement />} />
-              <Route path="admin/events" element={<EventManagement />} />
               <Route path="admin/availability" element={<AvailabilityManagement />} />
               <Route path="admin/optimizer" element={<RosterSuggestions />} />
 
@@ -152,3 +152,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

@@ -139,9 +139,9 @@ const Sidebar: React.FC = () => {
               <NavItem to="/admin" icon={Shield} label="Command Center" special="admin" />
               <SectionTitle>Global Management</SectionTitle>
               <NavItem to="/admin/users" icon={Users} label="Database Atleti" special="admin" />
-              <NavItem to="/admin/events" icon={Settings} label="Configurazione Eventi" special="admin" />
-            </>
-          )}
+              <NavItem to="/events" icon={Settings} label="Configurazione Eventi" special="admin" />
+              </>
+              )}
 
           <div className="mt-6 pt-4 border-t border-zinc-900">
             {isGuest ? (

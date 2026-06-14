@@ -16,7 +16,8 @@ export type Permission =
   | 'events.view'
   | 'events.manage'
   | 'analytics.view'
-  | 'racing.view';
+  | 'racing.view'
+  | 'ai.narrative';
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   admin: [
@@ -27,7 +28,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'admin.system',
     'events.view', 'events.manage',
     'analytics.view',
-    'racing.view'
+    'racing.view',
+    'ai.narrative'
   ],
   moderator: [
     'zrl.view', 'zrl.manage', 'zrl.lineup', 'zrl.results',

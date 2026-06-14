@@ -61,12 +61,11 @@ export async function onRequestGet(context) {
             env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`),
             env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid),
             env.ZRL_DB.prepare(`
-                SELECT MIN(r.id) as id, r.name, r.date, r.world, r.route,
+                SELECT r.id, r.name, r.starts_at as date,
                     (SELECT status FROM availability WHERE zwid = ? AND round_id = r.id) as status
-                FROM rounds r
-                WHERE r.series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
-                GROUP BY r.name, r.date
-                ORDER BY r.date ASC
+                FROM rounds_v2 r
+                WHERE r.season_code = 'zrl_25_26'
+                ORDER BY r.starts_at ASC
             `).bind(zwid),
             env.ZRL_DB.prepare(`
                 SELECT intent FROM zrl_participation_intent 
