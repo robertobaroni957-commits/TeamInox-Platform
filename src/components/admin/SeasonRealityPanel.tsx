@@ -91,8 +91,8 @@ export default function RoundRealityPanel() {
 
                 <div className="space-y-3 max-h-[350px] overflow-y-auto pr-3 custom-scrollbar">
                     {displayRaces.length > 0 ? (
-                        displayRaces.map((race, idx) => (
-                            <div key={race.id || idx} className="bg-zinc-900/50 border border-zinc-800/50 p-4 rounded-2xl flex items-center justify-between group hover:border-zinc-700 transition-all shadow-sm">
+                        displayRaces.map((race) => (
+                            <div key={race.name} className="bg-zinc-900/50 border border-zinc-800/50 p-4 rounded-2xl flex items-center justify-between group hover:border-zinc-700 transition-all shadow-sm">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-1">
                                         <span className="text-xs font-black text-white italic uppercase tracking-wider">{race.name}</span>
