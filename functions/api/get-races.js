@@ -15,6 +15,14 @@ export async function onRequestGet({ request, env }) {
             } 
         });
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+        console.error("[API get-races Error]", err);
+        return new Response(JSON.stringify({ 
+            error: "Errore nel bridge", 
+            details: err.message,
+            stack: err.stack 
+        }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" } 
+        });
     }
 }
