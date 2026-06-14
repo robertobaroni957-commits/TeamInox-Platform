@@ -10,12 +10,9 @@ export async function onRequestPost({ request, env }) {
 
         if (!data || !wtrl_id) return errorRes("Dati o WTRL ID mancanti", 400);
 
-        // Se i dati sono incapsulati in .payload (come fa JsonIngestor.tsx), li estraiamo
         const actualData = data.payload ? data.payload : data;
-
         const wtrlIdInt = parseInt(wtrl_id, 10);
 
-        // 1. Cerchiamo o creiamo il Round Group (V2/V3 Bridge)
         let roundGroup = await env.ZRL_DB.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(wtrlIdInt).first();
         
         let roundGroupId;
@@ -27,17 +24,16 @@ export async function onRequestPost({ request, env }) {
             roundGroupId = roundGroup.id;
         }
 
-        // 2. Recuperiamo le gare esistenti per questo gruppo per gestire l'UPSERT (evitiamo FK constraint error)
         const existingRaces = await env.ZRL_DB.prepare("SELECT id, name FROM zrl_races WHERE zrl_round_group_id = ?").bind(roundGroupId).all();
         const racesMap = new Map();
         if (existingRaces.results) {
             existingRaces.results.forEach(r => racesMap.set(r.name, r.id));
         }
 
-        // 3. Prepariamo le query di aggiornamento/inserimento
         let minDate = null;
         let maxDate = null;
         const raceQueries = [];
+        const processedRaceNames = new Set();
 
         const categories = Object.keys(actualData);
         if (categories.length === 0) return errorRes("Nessuna categoria trovata nei dati", 400);
@@ -57,17 +53,18 @@ export async function onRequestPost({ request, env }) {
                 const route = race.courseName || "UNKNOWN";
                 const raceName = `Race ${race.race} (${cat})`;
 
+                if (processedRaceNames.has(raceName)) continue;
+                processedRaceNames.add(raceName);
+
                 const existingId = racesMap.get(raceName);
 
                 if (existingId) {
-                    // UPDATE: Aggiorniamo i dettagli senza distruggere l'ID (sicuro per FK)
                     raceQueries.push(env.ZRL_DB.prepare(`
                         UPDATE zrl_races 
                         SET date = ?, world = ?, route = ?
                         WHERE id = ?
                     `).bind(d || null, world, route, existingId));
                 } else {
-                    // INSERT: Nuova gara
                     raceQueries.push(env.ZRL_DB.prepare(`
                         INSERT INTO zrl_races (zrl_round_group_id, name, date, world, route)
                         VALUES (?, ?, ?, ?, ?)
@@ -76,7 +73,6 @@ export async function onRequestPost({ request, env }) {
             }
         }
 
-        // 4. Aggiorniamo rounds_v2 (SSOT)
         if (minDate && maxDate) {
             raceQueries.push(env.ZRL_DB.prepare(`
                 UPDATE rounds_v2 
@@ -85,15 +81,13 @@ export async function onRequestPost({ request, env }) {
             `).bind(minDate, maxDate, wtrlIdInt));
         }
 
-        // Esecuzione batch
         if (raceQueries.length > 0) {
             await env.ZRL_DB.batch(raceQueries);
         }
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message: `Sincronizzazione V3 completata (UPSERT).`,
-            count: raceQueries.length - 1
+            message: `Sincronizzazione completata. Gare processate: ${processedRaceNames.size}.`,
         }), { headers: { "Content-Type": "application/json" } });
 
     } catch (err) {
