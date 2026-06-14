@@ -123,6 +123,7 @@ function ZRLStrategyContent() {
                         {/* Tactical Details */}
                         <div className="flex-1 p-10 lg:p-12 flex flex-col justify-between">
                             <div className="space-y-8">
+                                <div className="flex justify-between items-start">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Event Timing</p>
                                         <p className="text-lg font-black text-white italic">
