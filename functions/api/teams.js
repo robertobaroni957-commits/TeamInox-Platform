@@ -1,5 +1,5 @@
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { env, request } = context;
 
   try {
     const url = new URL(request.url);
