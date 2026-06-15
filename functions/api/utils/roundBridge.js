@@ -13,13 +13,20 @@ export const roundBridge = {
     `).all();
     
     // 3. Filtra e Arricchisci in JS
-    return (races.results || []).filter(r => r.external_season_id === round.wtrl_id).map(r => {
-        const match = r.name.match(/\(([A-D])\)/);
-        return {
-            ...r,
-            category: match ? match[1] : 'Unknown'
-        };
-    });
+    return (races.results || [])
+        .filter(r => r.external_season_id === round.wtrl_id)
+        .map(r => {
+            const match = r.name.match(/\(([A-D])\)/);
+            return {
+                ...r,
+                category: match ? match[1] : 'Unknown'
+            };
+        })
+        .filter(r => 
+            r.category !== 'Unknown' && 
+            !r.name.toUpperCase().includes('ARCHIVED') && 
+            !r.name.toUpperCase().includes('TBD')
+        );
   },
 
   async validateAndPersistRaces(db, round_v2_id, data) {

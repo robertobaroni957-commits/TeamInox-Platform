@@ -16,16 +16,35 @@ export default function RoundRealityPanel() {
 
   const displayRaces = React.useMemo(() => {
     const map = new Map<string, any>();
-    activeRaces.forEach(r => {
-      if (!map.has(r.name)) {
-        map.set(r.name, { ...r, categories: [r.category] });
-      } else {
-        const existing = map.get(r.name);
-        if (!existing.categories.includes(r.category)) {
-            existing.categories.push(r.category);
+
+    if (!activeRaces || !Array.isArray(activeRaces)) return [];
+
+    activeRaces
+      .filter(r => {
+        if (!r || !r.name) return false;
+        const n = r.name.toUpperCase();
+        // Filtro ultra-aggressivo
+        const isGarbage = n.includes('ARCHIVED') || n.includes('TBD') || n.includes('UNKNOWN') || n.includes('ROUND');
+        const hasValidCategory = r.category && r.category !== 'Unknown';
+        return !isGarbage && hasValidCategory;
+      })
+      .forEach(r => {
+        // Pulizia profonda del nome: "Race 1 (A)" -> "RACE 1"
+        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
+
+        if (!map.has(cleanName)) {
+          // Usiamo il nome originale senza categoria per la visualizzazione
+          const displayName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim();
+          map.set(cleanName, { ...r, name: displayName, categories: [r.category] });
+        } else {
+          const existing = map.get(cleanName);
+          if (!existing.categories.includes(r.category)) {
+              existing.categories.push(r.category);
+              existing.categories.sort();
+          }
         }
-      }
-    });
+      });
+
     return Array.from(map.values()).sort((a, b) => {
         const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
         const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
@@ -35,6 +54,7 @@ export default function RoundRealityPanel() {
 
   return (
     <div className="bg-[#11131a] border border-gray-800 p-10 rounded-[2.5rem] shadow-xl h-full backdrop-blur-sm relative overflow-hidden flex flex-col">
+        {/* ... (rest of the component) */}
         <div className="flex justify-between items-start mb-10 text-left">
             <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500">
