@@ -31,25 +31,26 @@ export async function onRequestGet(context) {
 
     for (const item of rawRounds) {
       const r = {
+        wtrl_id: parseInt(item.wtrlid) || 0,
+        round_number: parseInt(item.race) || 0,
         name: `Round ${item.race || '?'}`,
-        date: item.eventDate || "",
-        world: item.courseWorld || "TBD",
-        route: item.courseName || "TBD"
+        starts_at: item.eventDate || "",
+        season_code: 'zrl_25_26'
       };
 
-      if (!r.date) continue;
+      if (!r.starts_at || !r.wtrl_id) continue;
 
-      // Update o Insert manuale per evitare conflitti di Foreign Key
-      const existing = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE series_id = ? AND name = ?")
-        .bind(series_id, r.name).first();
+      // Update o Insert manuale su rounds_v2
+      const existing = await env.ZRL_DB.prepare("SELECT id FROM rounds_v2 WHERE wtrl_id = ?")
+        .bind(r.wtrl_id).first();
         
       if (existing) {
-        await env.ZRL_DB.prepare("UPDATE rounds SET date = ?, world = ?, route = ? WHERE id = ?")
-          .bind(r.date, r.world, r.route, existing.id).run();
+        await env.ZRL_DB.prepare("UPDATE rounds_v2 SET starts_at = ?, round_number = ?, name = ? WHERE id = ?")
+          .bind(r.starts_at, r.round_number, r.name, existing.id).run();
         results.push({ ...r, status: 'updated' });
       } else {
-        await env.ZRL_DB.prepare("INSERT INTO rounds (series_id, name, date, world, route) VALUES (?, ?, ?, ?, ?)")
-          .bind(series_id, r.name, r.date, r.world, r.route).run();
+        await env.ZRL_DB.prepare("INSERT INTO rounds_v2 (wtrl_id, round_number, name, starts_at, season_code) VALUES (?, ?, ?, ?, ?)")
+          .bind(r.wtrl_id, r.round_number, r.name, r.starts_at, r.season_code).run();
         results.push({ ...r, status: 'inserted' });
       }
     }
