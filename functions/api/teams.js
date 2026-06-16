@@ -16,18 +16,9 @@ export async function onRequestGet(context) {
       club_id 
     FROM teams`;
     
-    let params = [];
-    if (seasonId) {
-      query += ` WHERE season_id = ?`;
-      params.push(seasonId);
-    } else {
-      query += ` WHERE season_code = ?`;
-      params.push(seasonCode);
-    }
-
     query += ` ORDER BY category ASC, division ASC, name ASC`;
 
-    const { results } = await env.ZRL_DB.prepare(query).bind(...params).all();
+    const { results } = await env.ZRL_DB.prepare(query).all();
 
     return new Response(JSON.stringify({ 
         success: true, 
