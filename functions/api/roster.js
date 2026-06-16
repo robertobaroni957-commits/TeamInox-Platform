@@ -15,12 +15,6 @@ export async function onRequestGet(context) {
     });
   }
 
-  if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
-  }
-
   try {
     const query = `
       SELECT
