@@ -3,7 +3,7 @@
 // ==================================================
 
 import { jwtVerify } from 'jose';
-import { assertAuthValid } from '../src/services/architecture/AuthGuard';
+import { assertAuthValid } from './api/utils/auth.js';
 
 const PUBLIC_ROUTES = new Set([
   '/api/login_auth',
@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = new Set([
   '/api/get-races',
   '/api/rounds',
   '/api/teams',
+  '/api/roster',
 ]);
 
 function jsonError(message, status = 500) {
