@@ -1,7 +1,6 @@
 name = "teaminox-platform"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-18"
-account_id = "d250c28da80a5b0a5f0a4bbd9d4b0e18"
 
 [[d1_databases]]
 binding = "ZRL_DB"
