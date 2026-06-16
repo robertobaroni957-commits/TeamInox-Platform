@@ -77,10 +77,19 @@ export const apiFetch = async <T = any>(
     const traceId = response.headers.get('x-debug-trace-id');
     if (traceId) currentTraceId = traceId;
 
+    // Standard handleResponse handles 4xx/5xx by throwing Error
     return await handleResponse(response);
-  } catch (error) {
-    // Retry on network errors or transient failures
-    if (retries > 0) {
+  } catch (error: any) {
+    // ONLY RETRY if:
+    // 1. It's a network error (no response)
+    // 2. It's a 5xx Server Error (transient)
+    // DO NOT retry on 4xx (Client Errors like 400 Bad Request, 401, 403, 404)
+    
+    const isNetworkError = !error.status; // fetch throw doesn't usually have status
+    const isServerError = error.status >= 500;
+    const isAuthError = error.status === 401 || error.status === 403;
+
+    if (retries > 0 && (isNetworkError || isServerError) && !isAuthError) {
       console.warn(`Fetch failed for ${url}, retrying in ${backoff}ms... (${retries} left)`, error);
       await new Promise(resolve => setTimeout(resolve, backoff));
       return apiFetch(url, options, retries - 1, backoff * 2);

@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useActiveRound } from '../context/ActiveRoundContext';
 import { 
   AlertTriangle, 
   ChevronRight, 
   LayoutGrid, 
   LogOut,
   Shield,
+  Trophy,
+  Users
 } from 'lucide-react';
 import { Toaster } from 'sonner';
 
@@ -15,6 +18,7 @@ const MainLayout: React.FC = () => {
   const [user, setUser] = useState<{username: string, role: string} | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { rounds, activeRound, setActiveRound, teams, activeTeam, setActiveTeam } = useActiveRound();
 
   useEffect(() => {
     const token = localStorage.getItem('inox_token');
