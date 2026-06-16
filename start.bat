@@ -7,7 +7,7 @@ REM ========================================================
 
 set FRONTEND_PORT=5173
 set WRANGLER_PORT=8788
-set D1_DB_ID=5bc66f8c-227f-4492-9361-d32f2a07b53a
+set D1_DB_ID=c61ac3e9-4a68-4834-9f6e-297a7437451f
 
 echo ========================================================
 echo INOXTEAM PLATFORM - STARTUP ENGINE
@@ -23,8 +23,8 @@ timeout /t 1 >nul
 
 REM 3. START BACKEND (WRANGLER)
 echo [1/2] Starting Wrangler (API Backend)...
-REM Usiamo la data di compatibilità corretta e l'IP esplicito
-start "WRANGLER" cmd /k "npx wrangler pages dev . --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID% --compatibility-date=2026-05-18 --ip 127.0.0.1"
+REM Usiamo wrangler pages dev con --proxy=false per evitare il tentativo di connessione remota.
+start "WRANGLER" cmd /k "npx wrangler pages dev . --port %WRANGLER_PORT% --proxy=false --compatibility-date=2026-05-18"
 
 echo Waiting for API to be ready (5s)...
 timeout /t 5 >nul
