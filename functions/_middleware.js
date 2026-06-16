@@ -3,7 +3,13 @@
 // ==================================================
 
 import { jwtVerify } from 'jose';
-import { assertAuthValid } from './api/utils/auth.js';
+
+function assertAuthValid(context) {
+  const { user } = context.data || {};
+  if (user !== undefined && user !== null && typeof user !== 'object') {
+    throw new Error("UNAUTHORIZED: Invalid auth context structure");
+  }
+}
 
 const PUBLIC_ROUTES = new Set([
   '/api/login_auth',
