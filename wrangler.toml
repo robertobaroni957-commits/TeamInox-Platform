@@ -8,7 +8,7 @@ database_name = "team_inox_prod_v3"
 database_id = "c61ac3e9-4a68-4834-9f6e-297a7437451f"
 
 [[d1_databases]]
-binding = "ZRL_DB_V2"
+binding = "ZRL_DB_V2_LEGACY"
 database_name = "team_inox_prod_v2"
 database_id = "5bc66f8c-227f-4492-9361-d32f2a07b53a"
 
