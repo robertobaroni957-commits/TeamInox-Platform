@@ -3,7 +3,8 @@ export async function onRequestGet(context) {
 
   try {
     const url = new URL(request.url);
-    const seasonId = url.searchParams.get("season_id") || 19;
+    const seasonId = url.searchParams.get("season_id");
+    const seasonCode = url.searchParams.get("season_code") || 'zrl_25_26';
 
     let query = `SELECT 
       wtrl_team_id,
@@ -13,9 +14,16 @@ export async function onRequestGet(context) {
       division, 
       captain_id, 
       club_id 
-    FROM teams
-    WHERE season_id = ?`;
-    let params = [seasonId];
+    FROM teams`;
+    
+    let params = [];
+    if (seasonId) {
+      query += ` WHERE season_id = ?`;
+      params.push(seasonId);
+    } else {
+      query += ` WHERE season_code = ?`;
+      params.push(seasonCode);
+    }
 
     query += ` ORDER BY category ASC, division ASC, name ASC`;
 
@@ -46,11 +54,12 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const { name, category, division, wtrl_team_id, captain_id, club_id, season_id } = await request.json();
+    const { name, category, division, wtrl_team_id, captain_id, club_id, season_id, season_code } = await request.json();
     const sid = season_id || 19;
+    const sc = season_code || 'zrl_25_26';
     await env.ZRL_DB.prepare(
-      "INSERT INTO teams (name, category, division, wtrl_team_id, captain_id, club_id, season_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).bind(name, category, division, wtrl_team_id, captain_id, club_id, sid).run();
+      "INSERT INTO teams (name, category, division, wtrl_team_id, captain_id, club_id, season_id, season_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(name, category, division, wtrl_team_id, captain_id, club_id, sid, sc).run();
     return new Response(JSON.stringify({ success: true, id: wtrl_team_id }), { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -66,12 +75,13 @@ export async function onRequestPatch(context) {
   }
 
   try {
-    const { id, name, category, division, captain_id, club_id, season_id } = await request.json();
+    const { id, name, category, division, captain_id, club_id, season_id, season_code } = await request.json();
     const sid = season_id || 19;
+    const sc = season_code || 'zrl_25_26';
     // 'id' qui è il wtrl_team_id
     await env.ZRL_DB.prepare(
-      "UPDATE teams SET name = ?, category = ?, division = ?, captain_id = ?, club_id = ? WHERE wtrl_team_id = ? AND season_id = ?"
-    ).bind(name, category, division, captain_id, club_id, id, sid).run();
+      "UPDATE teams SET name = ?, category = ?, division = ?, captain_id = ?, club_id = ?, season_id = ?, season_code = ? WHERE wtrl_team_id = ?"
+    ).bind(name, category, division, captain_id, club_id, sid, sc, id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -88,13 +98,11 @@ export async function onRequestDelete(context) {
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id"); // wtrl_team_id
-  const season_id = url.searchParams.get("season_id") || 19;
 
   try {
-    await env.ZRL_DB.prepare("DELETE FROM teams WHERE wtrl_team_id = ? AND season_id = ?").bind(id, season_id).run();
+    await env.ZRL_DB.prepare("DELETE FROM teams WHERE wtrl_team_id = ?").bind(id).run();
     return new Response(JSON.stringify({ success: true }));
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
-

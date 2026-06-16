@@ -7,6 +7,5 @@ binding = "ZRL_DB"
 database_name = "team_inox_prod_v3"
 database_id = "0a88961d-ab35-4a32-88aa-6e3579b2ea0c"
 
-
 [ai]
 binding = "AI"
