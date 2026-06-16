@@ -93,15 +93,18 @@ function ZRLStrategyContent() {
                                 <div className="flex gap-4">
                                     {(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        const totalDist = (( (json.lapDistanceInMeters || 0) * (race.laps || 1)) + (json.leadinDistanceInMeters || 0)) / 1000;
-                                        const totalElev = ((json.lapAscentInMeters || 0) * (race.laps || 1)) + (json.leadinAscentInMeters || 0);
+                                        // Calcolo robusto basato su lapDistance/Ascent direttamente dal JSON
+                                        const laps = race.laps || 1;
+                                        const totalDist = (( (json.lapDistanceInMeters || 0) * laps) + (json.leadinDistanceInMeters || 0)) / 1000;
+                                        const totalElev = ((json.lapAscentInMeters || 0) * laps) + (json.leadinAscentInMeters || 0);
+                                        
                                         return (
                                             <>
                                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                                    <Activity size={14} className="text-zinc-600" /> {totalDist.toFixed(1)} KM
+                                                    <Activity size={14} className="text-zinc-600" /> {totalDist > 0 ? totalDist.toFixed(1) : '---'} KM
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                                    <ArrowUpRight size={14} className="text-zinc-600" /> {Math.round(totalElev)} M
+                                                    <ArrowUpRight size={14} className="text-zinc-600" /> {totalElev > 0 ? Math.round(totalElev) : '---'} M
                                                 </div>
                                             </>
                                         );
@@ -123,7 +126,12 @@ function ZRLStrategyContent() {
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Event Timing</p>
-                                        <p className="text-lg font-black text-white italic">{new Date(race.date).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                        <p className="text-lg font-black text-white italic">
+                                            {(() => {
+                                                const json = JSON.parse(race.raw_json || '{}');
+                                                return json.eventDate ? new Date(json.eventDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Data non disponibile';
+                                            })()}
+                                        </p>
                                     </div>
                                     <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
                                         Race {idx + 1}

@@ -1,0 +1,275 @@
+
+ ⛅️ wrangler 4.95.0
+───────────────────
+Resource location: local 
+
+Use --remote if you want to access the remote instance.
+
+🌀 Executing on local database team_inox_prod_v2 (5bc66f8c-227f-4492-9361-d32f2a07b53a) from .wrangler\state\v3\d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "type": "index",
+        "name": "idx_availability_round",
+        "sql": "CREATE INDEX idx_availability_round ON availability(round_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_events_season_seq",
+        "sql": "CREATE INDEX idx_events_season_seq ON zrl_season_events(season_id, sequence_number)"
+      },
+      {
+        "type": "index",
+        "name": "idx_events_trace",
+        "sql": "CREATE INDEX idx_events_trace ON zrl_season_events(trace_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_locks_owner",
+        "sql": "CREATE INDEX idx_locks_owner ON zrl_orchestrator_locks(owner_token)"
+      },
+      {
+        "type": "index",
+        "name": "idx_race_lineup_round",
+        "sql": "CREATE INDEX idx_race_lineup_round ON race_lineup(round_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_race_lineup_unique",
+        "sql": "CREATE UNIQUE INDEX idx_race_lineup_unique ON race_lineup(round_id, race_id, athlete_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_round_teams_round",
+        "sql": "CREATE INDEX idx_round_teams_round ON round_teams(round_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_team_member",
+        "sql": "CREATE UNIQUE INDEX idx_team_member ON team_members(team_id, athlete_id)"
+      },
+      {
+        "type": "index",
+        "name": "idx_zrl_intent_series",
+        "sql": "CREATE INDEX idx_zrl_intent_series ON zrl_participation_intent(series_id)"
+      },
+      {
+        "type": "table",
+        "name": "_cf_METADATA",
+        "sql": "CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )"
+      },
+      {
+        "type": "table",
+        "name": "athletes",
+        "sql": "CREATE TABLE athletes (zwid INTEGER PRIMARY KEY, name TEXT, email TEXT, password_hash TEXT, role TEXT, base_category TEXT, gender TEXT, created_at DATETIME, avatar_url TEXT)"
+      },
+      {
+        "type": "table",
+        "name": "availability",
+        "sql": "CREATE TABLE availability (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    zwid INTEGER REFERENCES athletes(zwid),\r\n    round_id INTEGER REFERENCES rounds(id),\r\n    status TEXT DEFAULT 'available',\r\n    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "d1_migrations",
+        "sql": "CREATE TABLE d1_migrations(\n\t\tid         INTEGER PRIMARY KEY AUTOINCREMENT,\n\t\tname       TEXT UNIQUE,\n\t\tapplied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "division_results",
+        "sql": "CREATE TABLE division_results (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                round_id INTEGER NOT NULL,\n                league_key TEXT NOT NULL,\n                team_name TEXT NOT NULL,\n                rider_name TEXT,\n                zwid INTEGER,\n                position INTEGER,\n                time REAL,\n                points_finish INTEGER DEFAULT 0,\n                points_fal INTEGER DEFAULT 0,\n                points_fts INTEGER DEFAULT 0,\n                points_total INTEGER DEFAULT 0,\n                is_inox BOOLEAN DEFAULT 0,\n                FOREIGN KEY (round_id) REFERENCES zrl_races(id)\n            )"
+      },
+      {
+        "type": "table",
+        "name": "graph_edges",
+        "sql": "CREATE TABLE graph_edges (\r\n    source_type TEXT NOT NULL,\r\n    source_id INTEGER NOT NULL,\r\n    target_type TEXT NOT NULL,\r\n    target_id INTEGER NOT NULL,\r\n    edge_type TEXT NOT NULL,\r\n    PRIMARY KEY (source_type, source_id, target_type, target_id, edge_type)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "inox_events",
+        "sql": "CREATE TABLE inox_events (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    name TEXT NOT NULL,\r\n    day_of_week TEXT NOT NULL,\r\n    time TEXT NOT NULL,\r\n    description TEXT,\r\n    zwift_link TEXT,\r\n    category TEXT,\r\n    is_active BOOLEAN DEFAULT 1,\r\n    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\r\n    strava_segment_id TEXT\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "league_times",
+        "sql": "CREATE TABLE league_times (\r\n    id TEXT PRIMARY KEY,\r\n    region TEXT NOT NULL,\r\n    start_time_utc TEXT NOT NULL,\r\n    display_name TEXT NOT NULL,\r\n    slot_order INTEGER\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "race_lineup",
+        "sql": "CREATE TABLE race_lineup (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    round_id INTEGER REFERENCES rounds(id),\r\n    team_id INTEGER REFERENCES teams(wtrl_team_id),\r\n    athlete_id INTEGER REFERENCES athletes(zwid),\r\n    role TEXT DEFAULT 'starter',\r\n    status TEXT DEFAULT 'pending'\r\n, race_id INTEGER)"
+      },
+      {
+        "type": "table",
+        "name": "races",
+        "sql": "CREATE TABLE races (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    round_id INTEGER NOT NULL,\r\n    name TEXT NOT NULL,\r\n    race_type TEXT,\r\n    scheduled_at TEXT,\r\n    FOREIGN KEY (round_id) REFERENCES rounds(id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "results",
+        "sql": "CREATE TABLE results (\r\n    round_id INTEGER REFERENCES rounds(id),\r\n    zwid INTEGER REFERENCES athletes(zwid),\r\n    time REAL,\r\n    points_total INTEGER DEFAULT 0,\r\n    data_source TEXT,\r\n    points_finish INTEGER DEFAULT 0,\r\n    points_fal INTEGER DEFAULT 0,\r\n    points_fts INTEGER DEFAULT 0,\r\n    position INTEGER\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "rider_race_results",
+        "sql": "CREATE TABLE rider_race_results (\r\n    race_id INTEGER NOT NULL,\r\n    rider_id INTEGER NOT NULL,\r\n    team_id INTEGER NOT NULL,\r\n    position INTEGER,\r\n    time REAL,\r\n    points INTEGER,\r\n    PRIMARY KEY (race_id, rider_id),\r\n    FOREIGN KEY (race_id) REFERENCES races(id),\r\n    FOREIGN KEY (rider_id) REFERENCES riders(id),\r\n    FOREIGN KEY (team_id) REFERENCES teams(id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "riders",
+        "sql": "CREATE TABLE riders (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    zwid INTEGER UNIQUE NOT NULL,\r\n    name TEXT NOT NULL\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "round_teams",
+        "sql": "CREATE TABLE round_teams (\r\n    round_id INTEGER REFERENCES rounds(id),\r\n    team_id INTEGER REFERENCES teams(wtrl_team_id),\r\n    timeslot_id TEXT REFERENCES league_times(id),\r\n    PRIMARY KEY (round_id, team_id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "rounds",
+        "sql": "CREATE TABLE rounds (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    series_id INTEGER REFERENCES series(id),\r\n    name TEXT NOT NULL,\r\n    date DATETIME,\r\n    world TEXT,\r\n    route TEXT,\r\n    zwift_event_id INTEGER,\r\n    format TEXT DEFAULT 'Scratch',\r\n    distance REAL DEFAULT 0,\r\n    elevation REAL DEFAULT 0,\r\n    powerups TEXT,\r\n    strategy_details TEXT,\r\n    category TEXT DEFAULT 'ALL'\r\n, raw_json TEXT, laps INTEGER, status TEXT)"
+      },
+      {
+        "type": "table",
+        "name": "rounds_table",
+        "sql": "CREATE TABLE rounds_table (\r\n    id TEXT PRIMARY KEY,\r\n    season_id TEXT NOT NULL,\r\n    name TEXT NOT NULL,\r\n    start_date TEXT NOT NULL,\r\n    end_date TEXT NOT NULL,\r\n    wtrl_id INTEGER NOT NULL,\r\n    FOREIGN KEY (season_id) REFERENCES season_table(id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "rounds_v2",
+        "sql": "CREATE TABLE rounds_v2 (id INTEGER PRIMARY KEY AUTOINCREMENT, wtrl_id INTEGER, season_code TEXT, round_number INTEGER, name TEXT NOT NULL, starts_at TEXT, ends_at TEXT, sync_state TEXT DEFAULT 'PENDING', created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+      },
+      {
+        "type": "table",
+        "name": "season_action_log",
+        "sql": "CREATE TABLE season_action_log (id TEXT PRIMARY KEY, action TEXT NOT NULL, season_id INTEGER NOT NULL, status TEXT NOT NULL, payload TEXT, import_id TEXT, sequence_number INTEGER, version INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
+      },
+      {
+        "type": "table",
+        "name": "season_lifecycle_status",
+        "sql": "CREATE TABLE season_lifecycle_status (season_id INTEGER PRIMARY KEY, status TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
+      },
+      {
+        "type": "table",
+        "name": "season_table",
+        "sql": "CREATE TABLE season_table (\r\n    id TEXT PRIMARY KEY,\r\n    label TEXT NOT NULL,\r\n    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "series",
+        "sql": "CREATE TABLE series (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    name TEXT NOT NULL,\r\n    external_season_id INTEGER,\r\n    scoring_type TEXT DEFAULT 'points',\r\n    is_active BOOLEAN DEFAULT 0,\r\n    start_date DATETIME,\r\n    end_date DATETIME\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "sqlite_sequence",
+        "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+      },
+      {
+        "type": "table",
+        "name": "team_members",
+        "sql": "CREATE TABLE team_members (athlete_id INTEGER, wtrl_rider_id INTEGER, team_id INTEGER, season_id TEXT, name TEXT, category TEXT, is_active INTEGER DEFAULT 1, last_import_id TEXT, PRIMARY KEY(athlete_id, team_id, season_id))"
+      },
+      {
+        "type": "table",
+        "name": "team_race_results",
+        "sql": "CREATE TABLE team_race_results (\r\n    race_id INTEGER NOT NULL,\r\n    team_id INTEGER NOT NULL,\r\n    position INTEGER,\r\n    points INTEGER,\r\n    PRIMARY KEY (race_id, team_id),\r\n    FOREIGN KEY (race_id) REFERENCES races(id),\r\n    FOREIGN KEY (team_id) REFERENCES teams(id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "teams",
+        "sql": "CREATE TABLE teams (\r\n    wtrl_team_id INTEGER PRIMARY KEY,\r\n    name TEXT NOT NULL,\r\n    category TEXT,\r\n    division TEXT,\r\n    division_number INTEGER,\r\n    captain_id INTEGER REFERENCES athletes(zwid),\r\n    club_id TEXT,\r\n    tttid INTEGER,\r\n    club_name TEXT,\r\n    gender TEXT,\r\n    league TEXT,\r\n    zrldivision TEXT,\r\n    league_color TEXT,\r\n    rec INTEGER,\r\n    status INTEGER,\r\n    is_dev INTEGER,\r\n    rounds TEXT,\r\n    member_count INTEGER\r\n, season_code TEXT)"
+      },
+      {
+        "type": "table",
+        "name": "user_time_preferences",
+        "sql": "CREATE TABLE user_time_preferences (\r\n    zwid INTEGER REFERENCES athletes(zwid),\r\n    time_slot_id TEXT REFERENCES league_times(id),\r\n    preference_level INTEGER DEFAULT 1,\r\n    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\r\n    PRIMARY KEY (zwid, time_slot_id)\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "wtrl_import_locks",
+        "sql": "CREATE TABLE wtrl_import_locks (season_id INTEGER, type TEXT, import_id TEXT, PRIMARY KEY(season_id, type))"
+      },
+      {
+        "type": "table",
+        "name": "wtrl_import_logs",
+        "sql": "CREATE TABLE wtrl_import_logs (id TEXT PRIMARY KEY, type TEXT, season_id INTEGER, imported_count INTEGER, raw_snapshot TEXT, status TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
+      },
+      {
+        "type": "table",
+        "name": "wtrl_import_state",
+        "sql": "CREATE TABLE wtrl_import_state (import_id TEXT PRIMARY KEY, season_id INTEGER, type TEXT, status TEXT, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_ai_reports",
+        "sql": "CREATE TABLE zrl_ai_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, round_id INTEGER NOT NULL, team_id INTEGER NOT NULL, report_type TEXT NOT NULL CHECK(report_type IN ('race', 'round', 'season', 'rider')), content TEXT NOT NULL, model TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, hash TEXT UNIQUE NOT NULL)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_idempotency_keys",
+        "sql": "CREATE TABLE zrl_idempotency_keys (\r\n    idempotency_key TEXT PRIMARY KEY,\r\n    status TEXT NOT NULL,\r\n    result_payload TEXT,\r\n    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_orchestrator_locks",
+        "sql": "CREATE TABLE zrl_orchestrator_locks (\r\n    season_id INTEGER PRIMARY KEY,\r\n    owner_token TEXT NOT NULL,\r\n    expires_at DATETIME NOT NULL\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_outbox_events",
+        "sql": "CREATE TABLE zrl_outbox_events (\n            id INTEGER PRIMARY KEY AUTOINCREMENT,\n            event_type TEXT NOT NULL,\n            payload TEXT NOT NULL,\n            status TEXT DEFAULT 'PENDING',\n            retry_count INTEGER DEFAULT 0,\n            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n            processed_at DATETIME\n        )"
+      },
+      {
+        "type": "table",
+        "name": "zrl_participation_intent",
+        "sql": "CREATE TABLE zrl_participation_intent (zwid INTEGER NOT NULL, series_id INTEGER NOT NULL, intent BOOLEAN NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (zwid, series_id), FOREIGN KEY (zwid) REFERENCES athletes(zwid), FOREIGN KEY (series_id) REFERENCES series(id))"
+      },
+      {
+        "type": "table",
+        "name": "zrl_races",
+        "sql": "CREATE TABLE zrl_races (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                zrl_round_group_id INTEGER NOT NULL,\n                name TEXT NOT NULL,\n                date DATETIME,\n                world TEXT,\n                route TEXT, series_id INTEGER,\n                FOREIGN KEY (zrl_round_group_id) REFERENCES zrl_round_groups(id)\n            )"
+      },
+      {
+        "type": "table",
+        "name": "zrl_round_groups",
+        "sql": "CREATE TABLE zrl_round_groups (\n                id INTEGER PRIMARY KEY, \n                series_id INTEGER, \n                round_index INTEGER, \n                external_season_id INTEGER, \n                description TEXT, \n                is_closed BOOLEAN DEFAULT 0,\n                FOREIGN KEY (series_id) REFERENCES zrl_seasons(id)\n            )"
+      },
+      {
+        "type": "table",
+        "name": "zrl_season_events",
+        "sql": "CREATE TABLE zrl_season_events (\r\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    season_id INTEGER NOT NULL,\r\n    sequence_number INTEGER NOT NULL,\r\n    step_name TEXT NOT NULL,\r\n    event_type TEXT NOT NULL,\r\n    payload TEXT,\r\n    trace_id TEXT,\r\n    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_seasons",
+        "sql": "CREATE TABLE zrl_seasons (\n                id INTEGER PRIMARY KEY, \n                name TEXT NOT NULL, \n                external_season_id INTEGER, \n                is_active BOOLEAN DEFAULT 0\n            , status TEXT, scoring_type TEXT DEFAULT 'points', start_date DATETIME, end_date DATETIME)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_sequence_tracker",
+        "sql": "CREATE TABLE zrl_sequence_tracker (\r\n    season_id INTEGER PRIMARY KEY,\r\n    last_sequence_number INTEGER DEFAULT 0\r\n)"
+      },
+      {
+        "type": "table",
+        "name": "zrl_team_standings",
+        "sql": "CREATE TABLE zrl_team_standings (\n                id INTEGER PRIMARY KEY AUTOINCREMENT, \n                round_group_id INTEGER NOT NULL, \n                league_key TEXT NOT NULL, \n                league_name TEXT,\n                team_name TEXT NOT NULL, \n                rank INTEGER, \n                league_points INTEGER, \n                pts_fal INTEGER, \n                pts_fts INTEGER, \n                pts_finish INTEGER, \n                total_race_points INTEGER,\n                r1 TEXT, r2 TEXT, r3 TEXT, r4 TEXT, r5 TEXT, r6 TEXT, r7 TEXT, r8 TEXT, \n                is_inox BOOLEAN DEFAULT 0,\n                FOREIGN KEY (round_group_id) REFERENCES zrl_round_groups(id)\n            )"
+      },
+      {
+        "type": "view",
+        "name": "race_derived_view",
+        "sql": "CREATE VIEW race_derived_view AS\r\nSELECT \r\n    r.id as race_id,\r\n    COUNT(rrr.rider_id) as participant_count,\r\n    SUM(rrr.points) as total_team_points\r\nFROM races r\r\nLEFT JOIN rider_race_results rrr ON r.id = rrr.race_id\r\nGROUP BY r.id"
+      },
+      {
+        "type": "view",
+        "name": "seasons",
+        "sql": "CREATE VIEW seasons AS SELECT id, 'zrl_25_26' AS code, name FROM zrl_seasons"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 1
+    }
+  }
+]

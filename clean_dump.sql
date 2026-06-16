@@ -1,21 +1,5 @@
 PRAGMA defer_foreign_keys=TRUE;
-CREATE TABLE d1_migrations(
-		id         INTEGER PRIMARY KEY AUTOINCREMENT,
-		name       TEXT UNIQUE,
-		applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(1,'0000_init_season_schema.sql','2026-05-27 05:47:37');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(2,'0001_add_password_hash.sql','2026-06-05 07:19:21');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(3,'0002_add_email_column.sql','2026-06-05 07:19:21');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(4,'0003_add_status_to_zrl_seasons.sql','2026-06-05 07:19:41');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(5,'0004_zrl_migration.sql','2026-06-05 07:22:38');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(6,'0005_zrl_core.sql','2026-06-05 07:22:38');
-INSERT INTO "d1_migrations" ("id","name","applied_at") VALUES(7,'20260406_round_management.sql','2026-06-08 06:50:41');
-CREATE TABLE season_table (
-    id TEXT PRIMARY KEY,
-    label TEXT NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+
 CREATE TABLE rounds_table (
     id TEXT PRIMARY KEY,
     season_id TEXT NOT NULL,
@@ -2194,16 +2178,7 @@ CREATE TABLE graph_edges (
     edge_type TEXT NOT NULL,
     PRIMARY KEY (source_type, source_id, target_type, target_id, edge_type)
 );
-DELETE FROM sqlite_sequence;
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('d1_migrations',7);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('series',1);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('rounds_v2',4);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('rounds',9);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('race_lineup',38);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('zrl_races',14);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('division_results',1777);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('zrl_team_standings',32);
-INSERT INTO "sqlite_sequence" ("name","seq") VALUES('zrl_ai_reports',155);
+
 CREATE INDEX idx_events_season_seq ON zrl_season_events(season_id, sequence_number);
 CREATE INDEX idx_events_trace ON zrl_season_events(trace_id);
 CREATE INDEX idx_locks_owner ON zrl_orchestrator_locks(owner_token);

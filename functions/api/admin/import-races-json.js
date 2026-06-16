@@ -57,18 +57,20 @@ export async function onRequestPost({ request, env }) {
                 processedRaceNames.add(raceName);
 
                 const existingId = racesMap.get(raceName);
+                const rawJsonString = JSON.stringify(race);
+                const laps = (race.segments && race.segments.length > 0) ? race.segments[0].segmentVisits : 1;
 
                 if (existingId) {
                     raceQueries.push(env.ZRL_DB.prepare(`
                         UPDATE zrl_races 
-                        SET date = ?, world = ?, route = ?
+                        SET date = ?, world = ?, route = ?, raw_json = ?, laps = ?
                         WHERE id = ?
-                    `).bind(d || null, world, route, existingId));
+                    `).bind(d || null, world, route, rawJsonString, laps, existingId));
                 } else {
                     raceQueries.push(env.ZRL_DB.prepare(`
-                        INSERT INTO zrl_races (zrl_round_group_id, name, date, world, route)
-                        VALUES (?, ?, ?, ?, ?)
-                    `).bind(roundGroupId, raceName, d || null, world, route));
+                        INSERT INTO zrl_races (zrl_round_group_id, name, date, world, route, raw_json, laps)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    `).bind(roundGroupId, raceName, d || null, world, route, rawJsonString, laps));
                 }
             }
         }

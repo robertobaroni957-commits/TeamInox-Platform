@@ -51,7 +51,7 @@ export const ZRLImportService = {
     try {
         if (type === 'teams') {
             for (const team of data) {
-                await db.prepare(`INSERT INTO teams (wtrl_team_id, season_id, name, division, league, zrldivision, members_count, import_id) 
+                await db.prepare(`INSERT INTO teams (wtrl_team_id, season_id, name, division, league, zrldivision, member_count, import_id) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
                     ON CONFLICT(wtrl_team_id, season_id) DO UPDATE SET name=excluded.name, import_id=excluded.import_id`)
                     .bind(team.externalId, seasonId, team.name, team.division, team.league, team.zrldivision, team.membersCount, importId).run();

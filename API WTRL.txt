@@ -1,0 +1,23 @@
+Lista di tutti i team iscritti alla ZRL
+
+https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=18&action=teamlist    
+
+
+Lista gare del Round 
+
+https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=18&category=A&action=schedule
+https://www.wtrl.racing/api/wtrlruby/?wtrlid=zrl&season=18&category=C&action=schedule
+
+Lista Roster
+
+https://www.wtrl.racing/api/zrl/rosters/" + season + "/" + key); (da verificare al momento della chiusura iscrizioni)
+
+Risultati gara
+
+https://www.wtrl.racing/api/zrl/results/19/2120A10/4
+
+
+Classifica Generale
+
+https://www.wtrl.racing/api/zrl/league/19/2350A10/4
+

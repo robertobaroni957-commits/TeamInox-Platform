@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
       
       // Arricchimento per singolo round
       const races = await env.ZRL_DB.prepare(`
-          SELECT r.* 
+          SELECT r.id, r.name, r.date as scheduled_at, r.world, r.route
           FROM zrl_races r
           JOIN zrl_round_groups g ON r.zrl_round_group_id = g.id
           WHERE g.external_season_id = ?
@@ -52,7 +52,7 @@ export async function onRequestGet({ request, env }) {
       
       // Cerchiamo le gare collegate al WTRL ID del round
       const races = await env.ZRL_DB.prepare(`
-          SELECT r.id, r.name, r.date, r.world, r.route
+          SELECT r.id, r.name, r.date as scheduled_at, r.world, r.route
           FROM zrl_races r
           JOIN zrl_round_groups g ON r.zrl_round_group_id = g.id
           WHERE g.external_season_id = ?

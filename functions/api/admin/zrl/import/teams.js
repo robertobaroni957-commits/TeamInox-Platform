@@ -10,7 +10,8 @@ export async function onRequestPost(context) {
     const body = await request.json();
     
     // Il JsonIngestor avvolge il file in { data: { payload: [...] } }
-    const { data, season_code } = body;
+    const { data, season_code, seasonId: bodySeasonId, wtrl_id } = body;
+    const seasonId = parseInt(bodySeasonId || wtrl_id || 19);
 
     const INOX_CLUB_ID = "cef70cde-9149-43a2-b3ae-187643a44703";
 
@@ -30,16 +31,13 @@ export async function onRequestPost(context) {
             throw new Error("Formato JSON non valido: il payload deve essere un array");
         }
 
-        console.log(`[ImportTeams] Elaborazione di ${rawItems.length} elementi.`);
+        console.log(`[ImportTeams] Elaborazione di ${rawItems.length} elementi per seasonId ${seasonId}.`);
 
         const inoxTeams = rawItems.filter(item => {
             const team = item.meta?.team || item;
             const cid = (team.clubId || '').toLowerCase();
             const name = (team.teamname || team.name || '').toUpperCase();
             const isMatch = cid === INOX_CLUB_ID.toLowerCase() || (name.includes("INOX") && !name.includes("EQUINOX"));
-            if (!isMatch) {
-                // console.log(`[ImportTeams] Escludo team: ${name} (ClubID: ${cid})`);
-            }
             return isMatch;
         });
 
@@ -90,12 +88,12 @@ export async function onRequestPost(context) {
 
             return env.ZRL_DB.prepare(`
                 INSERT INTO teams (
-                    wtrl_team_id, name, category, division, division_number, 
+                    wtrl_team_id, season_id, name, category, division, division_number, 
                     club_id, tttid, club_name, gender, league, 
                     zrldivision, league_color, rec, status, is_dev, 
-                    rounds, member_count, season_code, captain_id
+                    rounds, member_count, captain_id
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(wtrl_team_id) DO UPDATE SET
+                ON CONFLICT(wtrl_team_id, season_id) DO UPDATE SET
                     name = excluded.name,
                     category = excluded.category,
                     division = excluded.division,
@@ -112,10 +110,10 @@ export async function onRequestPost(context) {
                     is_dev = excluded.is_dev,
                     rounds = excluded.rounds,
                     member_count = excluded.member_count,
-                    season_code = excluded.season_code,
                     captain_id = excluded.captain_id
             `).bind(
                 wtrl_team_id,
+                seasonId,
                 teamname,
                 category,
                 zrldivision, 
@@ -132,7 +130,6 @@ export async function onRequestPost(context) {
                 isdev,
                 rounds,
                 member_count,
-                season_code || 'zrl_25_26',
                 captain_id
             );
         });
@@ -140,14 +137,6 @@ export async function onRequestPost(context) {
         // Filtraggio query nulle per sicurezza
         const validQueries = queries.filter(q => q !== null);
         
-        // Se abbiamo un seasonId (passato come seasonId o wtrl_id dal frontend)
-        // o se possiamo trovarlo tramite season_code, aggiorniamo il lifecycle
-        let seasonId = parseInt(body.seasonId || body.wtrl_id || 0);
-        if (!seasonId && season_code) {
-            const season = await env.ZRL_DB.prepare("SELECT id FROM seasons WHERE code = ?").bind(season_code).first();
-            if (season) seasonId = season.id;
-        }
-
         if (seasonId) {
             validQueries.push(
                 env.ZRL_DB.prepare(`

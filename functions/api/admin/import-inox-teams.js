@@ -97,9 +97,9 @@ export async function onRequestPost({ request, env }) {
 
             // 2. Inserimento Team
             updates.push(env.ZRL_DB.prepare(`
-                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, captain_id, season_code) 
+                INSERT INTO teams (wtrl_team_id, name, category, division, division_number, tttid, league, member_count, is_dev, captain_id, season_id) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(wtrl_team_id) DO UPDATE SET 
+                ON CONFLICT(wtrl_team_id, season_id) DO UPDATE SET 
                     name = excluded.name,
                     category = excluded.category,
                     division = excluded.division,
@@ -108,9 +108,8 @@ export async function onRequestPost({ request, env }) {
                     league = excluded.league,
                     member_count = excluded.member_count,
                     is_dev = excluded.is_dev,
-                    captain_id = excluded.captain_id,
-                    season_code = excluded.season_code
-            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, captain_id, seasonCode));
+                    captain_id = excluded.captain_id
+            `).bind(wtrl_team_id, name, category, division, divNum, tttid, league, member_count, is_dev, captain_id, seasonId));
 
             // 3. Inserimento Riders
             for (const rider of riders) {

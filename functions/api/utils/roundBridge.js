@@ -7,13 +7,26 @@ export const roundBridge = {
 
     // 2. Prendi tutte le gare dal gruppo di round corrispondente
     const races = await db.prepare(`
-        SELECT zr.id, zr.name, zr.date as scheduled_at, zr.world, zr.route, zrg.external_season_id
+        SELECT zr.id, zr.name, zr.date as scheduled_at, zr.world, zr.route, zr.raw_json, zr.laps, zrg.external_season_id
         FROM zrl_races zr
         JOIN zrl_round_groups zrg ON zr.zrl_round_group_id = zrg.id
     `).all();
     
-    // 3. Filtra in JS
-    return (races.results || []).filter(r => r.external_season_id === round.wtrl_id);
+    // 3. Filtra e Arricchisci in JS
+    return (races.results || [])
+        .filter(r => r.external_season_id === round.wtrl_id)
+        .map(r => {
+            const match = r.name.match(/\(([A-D])\)/);
+            return {
+                ...r,
+                category: match ? match[1] : 'Unknown'
+            };
+        })
+        .filter(r => 
+            r.category !== 'Unknown' && 
+            !r.name.toUpperCase().includes('ARCHIVED') && 
+            !r.name.toUpperCase().includes('TBD')
+        );
   },
 
   async validateAndPersistRaces(db, round_v2_id, data) {
