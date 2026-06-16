@@ -5,7 +5,7 @@ compatibility_date = "2026-05-18"
 [[d1_databases]]
 binding = "ZRL_DB"
 database_name = "team_inox_prod_v3"
-database_id = "c61ac3e9-4a68-4834-9f6e-297a7437451f"
+database_id = "0a88961d-ab35-4a32-88aa-6e3579b2ea0c"
 
 [[d1_databases]]
 binding = "ZRL_DB_V2_LEGACY"
