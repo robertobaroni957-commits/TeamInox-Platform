@@ -32,7 +32,15 @@ export async function onRequestGet(context) {
 
   } catch (err) {
     console.error("Errore recupero teams locali:", err.message);
-    return new Response(JSON.stringify({ error: err.message, teams: [] }), { status: 500 });
+    return new Response(JSON.stringify({ 
+      error: err.message, 
+      teams: [], 
+      debug: {
+        hasDb: !!env.ZRL_DB,
+        dbType: typeof env.ZRL_DB,
+        url: request.url
+      }
+    }), { status: 500 });
   }
 }
 
