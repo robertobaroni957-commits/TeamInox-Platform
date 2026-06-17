@@ -67,10 +67,26 @@ export const ZRLImportService = {
             }
         } else if (type === 'roster') {
             for (const entry of data) {
-                // 1. Update team captain
+                const teamId = entry.teamExternalId;
+                
+                // 1. Resolve Team and Update Captain
                 if (entry.captainId) {
-                    await db.prepare("UPDATE teams SET captain_id = ? WHERE wtrl_team_id = ?")
-                        .bind(entry.captainId, entry.teamExternalId).run();
+                    const capId = parseInt(entry.captainId);
+                    
+                    // Update the team's captain_id
+                    await db.prepare("UPDATE teams SET captain_id = ? WHERE wtrl_team_id = ?").bind(capId, teamId).run();
+
+                    // Ensure the athlete has the 'captain' role (escalation only)
+                    await db.prepare(`
+                        INSERT INTO athletes (zwid, name, role)
+                        VALUES (?, 'Capitano Pendente', 'captain')
+                        ON CONFLICT(zwid) DO UPDATE SET
+                            role = CASE 
+                                WHEN COALESCE(athletes.role, 'athlete') = 'admin' THEN 'admin'
+                                WHEN COALESCE(athletes.role, 'athlete') = 'moderator' THEN 'moderator'
+                                ELSE 'captain'
+                            END
+                    `).bind(capId).run();
                 }
 
                 // 2. Process riders and assign roles

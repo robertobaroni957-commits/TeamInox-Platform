@@ -7,16 +7,18 @@ export async function onRequestGet(context) {
     const seasonCode = url.searchParams.get("season_code") || 'zrl_25_26';
 
     let query = `SELECT 
-      wtrl_team_id,
-      wtrl_team_id as id, 
-      name, 
-      category, 
-      division, 
-      captain_id, 
-      club_id 
-    FROM teams`;
+      t.wtrl_team_id,
+      t.wtrl_team_id as id, 
+      t.name, 
+      t.category, 
+      t.division, 
+      t.captain_id, 
+      t.club_id,
+      a.name as captain_name
+    FROM teams t
+    LEFT JOIN athletes a ON t.captain_id = a.zwid`;
     
-    query += ` ORDER BY category ASC, division ASC, name ASC`;
+    query += ` ORDER BY t.category ASC, t.division ASC, t.name ASC`;
 
     const { results } = await env.ZRL_DB.prepare(query).all();
 

@@ -9,7 +9,8 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  QrCode
+  QrCode,
+  Shield
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Team, Athlete } from '../services/types';
@@ -128,17 +129,14 @@ export default function TeamsPage() {
                 </div>
 
                 <div className="flex items-center gap-8 md:gap-12">
-                    {(() => {
-                        const captain = team.roster.find(a => a.zwid === team.captain_id);
-                        return captain ? (
-                            <div className="text-right hidden sm:block">
-                                <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1">Team Captain</span>
-                                <span className="text-xl md:text-3xl font-black italic text-inox-cyan uppercase tracking-tighter leading-none block">
-                                    {captain.name}
-                                </span>
-                            </div>
-                        ) : null;
-                    })()}
+                    {(team.captain_name || team.captain_id) && (
+                        <div className="text-right hidden sm:block">
+                            <span className="block text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1">Team Captain</span>
+                            <span className="text-xl md:text-3xl font-black italic text-inox-cyan uppercase tracking-tighter leading-none block">
+                                {team.captain_name || team.roster.find(a => a.zwid === team.captain_id)?.name || 'Pending'}
+                            </span>
+                        </div>
+                    )}
                     
                     <div className="text-zinc-500 shrink-0">
                         {expandedTeam === team.id ? <ChevronUp size={32} /> : <ChevronDown size={32} />}
