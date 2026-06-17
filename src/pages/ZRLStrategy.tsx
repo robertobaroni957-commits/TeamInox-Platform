@@ -137,19 +137,21 @@ function ZRLStrategyContent() {
                                         <p className="text-lg font-black text-white italic">
                                             {(() => {
                                                 const json = JSON.parse(race.raw_json || '{}');
-                                                return json.eventDate ? new Date(json.eventDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Data non disponibile';
+                                                const dateSource = json.eventDate || race.scheduled_at;
+                                                return dateSource ? new Date(dateSource).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Data non disponibile';
                                             })()}
                                         </p>
                                     </div>
                                     <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                                        Race {idx + 1}
+                                        {race.name}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                     <DetailBox label="Date" value={(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        return json.eventDate ? new Date(json.eventDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
+                                        const dateSource = json.eventDate || race.scheduled_at;
+                                        return dateSource ? new Date(dateSource).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
                                     })()} />
                                     <DetailBox label="Laps" value={race.laps || 1} />
                                     <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
@@ -165,7 +167,7 @@ function ZRLStrategyContent() {
                                         const totalElev = ((json.lapAscentInMeters || 0) * laps) + (json.leadinAscentInMeters || 0);
                                         return totalElev > 0 ? `${Math.round(totalElev)} M` : '---';
                                     })()} />
-                                    <DetailBox label="Difficulty" value={`${JSON.parse(race.raw_json || '{}').courseDifficulty || '?'}/5`} />
+                                    <DetailBox label="Difficulty" value={JSON.parse(race.raw_json || '{}').courseDifficulty ? `${JSON.parse(race.raw_json || '{}').courseDifficulty}/5` : 'N/D'} />
                                 </div>
 
                                 <div className="space-y-4 pt-6 border-t border-zinc-900">
