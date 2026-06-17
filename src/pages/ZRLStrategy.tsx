@@ -138,11 +138,26 @@ function ZRLStrategyContent() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <DetailBox label="Date" value={(() => {
+                                        const json = JSON.parse(race.raw_json || '{}');
+                                        return json.eventDate ? new Date(json.eventDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
+                                    })()} />
                                     <DetailBox label="Laps" value={race.laps || 1} />
-                                    <DetailBox label="Difficulty" value={`${JSON.parse(race.raw_json || '{}').courseDifficulty}/5`} />
-                                    <DetailBox label="Pace" value="10/10" />
+                                    <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
+                                    <DetailBox label="Distance" value={(() => {
+                                        const json = JSON.parse(race.raw_json || '{}');
+                                        const laps = race.laps || 1;
+                                        const totalDist = (( (json.lapDistanceInMeters || 0) * laps) + (json.leadinDistanceInMeters || 0)) / 1000;
+                                        return totalDist > 0 ? `${totalDist.toFixed(1)} KM` : '---';
+                                    })()} />
+                                    <DetailBox label="Elevation" value={(() => {
+                                        const json = JSON.parse(race.raw_json || '{}');
+                                        const laps = race.laps || 1;
+                                        const totalElev = ((json.lapAscentInMeters || 0) * laps) + (json.leadinAscentInMeters || 0);
+                                        return totalElev > 0 ? `${Math.round(totalElev)} M` : '---';
+                                    })()} />
+                                    <DetailBox label="Difficulty" value={`${JSON.parse(race.raw_json || '{}').courseDifficulty || '?'}/5`} />
                                 </div>
 
                                 <div className="space-y-4 pt-6 border-t border-zinc-900">
