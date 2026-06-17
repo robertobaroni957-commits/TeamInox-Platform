@@ -101,10 +101,10 @@ function ZRLStrategyContent() {
                                 <div className="flex gap-4">
                                     {(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        // Calcolo robusto basato su lapDistance/Ascent direttamente dal JSON
-                                        const laps = race.laps || 1;
-                                        const totalDist = (( (json.lapDistanceInMeters || 0) * laps) + (json.leadinDistanceInMeters || 0)) / 1000;
-                                        const totalElev = ((json.lapAscentInMeters || 0) * laps) + (json.leadinAscentInMeters || 0);
+                                        // Calcolo robusto: preferiamo duration del JSON se presente, altrimenti laps del DB
+                                        const effectiveLaps = json.duration || race.laps || 1;
+                                        const totalDist = (( (json.lapDistanceInMeters || 0) * effectiveLaps) + (json.leadinDistanceInMeters || 0)) / 1000;
+                                        const totalElev = ((json.lapAscentInMeters || 0) * effectiveLaps) + (json.leadinAscentInMeters || 0);
                                         
                                         return (
                                             <>
@@ -137,19 +137,22 @@ function ZRLStrategyContent() {
                                         <p className="text-lg font-black text-white italic">
                                             {(() => {
                                                 const json = JSON.parse(race.raw_json || '{}');
-                                                // Tentativo di parsing della data più robusto
+                                                // Tentativo di parsing della data estremo
                                                 const rawDate = json.eventDate || race.scheduled_at;
                                                 if (!rawDate) return 'Data non disponibile';
                                                 
-                                                const dateObj = new Date(rawDate);
-                                                if (isNaN(dateObj.getTime())) {
-                                                    // Se fallisce, proviamo a pulire la stringa (spesso WTRL manda formati sporchi)
-                                                    const cleanDate = String(rawDate).split(' ')[0]; 
-                                                    const retryDate = new Date(cleanDate);
-                                                    if (isNaN(retryDate.getTime())) return 'Data non valida';
-                                                    return retryDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-                                                }
-                                                return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+                                                // Supporto per diversi formati (ISO, SQL, ecc)
+                                                const dateStr = String(rawDate).replace(' ', 'T');
+                                                const dateObj = new Date(dateStr);
+                                                
+                                                if (isNaN(dateObj.getTime())) return 'Data non valida';
+                                                
+                                                return dateObj.toLocaleDateString('it-IT', { 
+                                                    weekday: 'long', 
+                                                    day: 'numeric', 
+                                                    month: 'long',
+                                                    year: 'numeric'
+                                                });
                                             })()}
                                         </p>
                                     </div>
@@ -162,21 +165,22 @@ function ZRLStrategyContent() {
                                     <DetailBox label="Date" value={(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
                                         const rawDate = json.eventDate || race.scheduled_at;
-                                        const dateObj = new Date(rawDate);
+                                        const dateStr = String(rawDate).replace(' ', 'T');
+                                        const dateObj = new Date(dateStr);
                                         return !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
                                     })()} />
-                                    <DetailBox label="Laps" value={race.laps || 1} />
+                                    <DetailBox label="Laps" value={JSON.parse(race.raw_json || '{}').duration || race.laps || 1} />
                                     <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
                                     <DetailBox label="Distance" value={(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        const laps = race.laps || 1;
-                                        const totalDist = (( (json.lapDistanceInMeters || 0) * laps) + (json.leadinDistanceInMeters || 0)) / 1000;
+                                        const effectiveLaps = json.duration || race.laps || 1;
+                                        const totalDist = (( (json.lapDistanceInMeters || 0) * effectiveLaps) + (json.leadinDistanceInMeters || 0)) / 1000;
                                         return totalDist > 0 ? `${totalDist.toFixed(1)} KM` : '---';
                                     })()} />
                                     <DetailBox label="Elevation" value={(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        const laps = race.laps || 1;
-                                        const totalElev = ((json.lapAscentInMeters || 0) * laps) + (json.leadinAscentInMeters || 0);
+                                        const effectiveLaps = json.duration || race.laps || 1;
+                                        const totalElev = ((json.lapAscentInMeters || 0) * effectiveLaps) + (json.leadinAscentInMeters || 0);
                                         return totalElev > 0 ? `${Math.round(totalElev)} M` : '---';
                                     })()} />
                                     <DetailBox label="Difficulty" value={JSON.parse(race.raw_json || '{}').courseDifficulty ? `${JSON.parse(race.raw_json || '{}').courseDifficulty}/5` : 'N/D'} />
