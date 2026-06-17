@@ -41,12 +41,8 @@ const handleResponse = async (res: Response) => {
     throw new Error(errorMessage);
   }
   
-  if (!contentType || !contentType.includes("application/json")) {
-    const text = await res.text();
-    console.error("Ricevuta risposta non-JSON:", text);
-    throw new Error("Il server ha risposto con un formato non valido. Controlla le API.");
-  }
-  
+  // Rimuoviamo il controllo rigido sul Content-Type se la risposta è OK
+  // Il server potrebbe non inviare sempre l'header corretto
   return res.json();
 };
 
