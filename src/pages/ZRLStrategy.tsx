@@ -76,14 +76,22 @@ function ZRLStrategyContent() {
 
             {/* RACE GRID */}
             <div className="grid grid-cols-1 gap-12">
-                {categoryRaces.length > 0 ? categoryRaces.map((race, idx) => (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        key={race.id}
-                        className="group bg-[#090a10] border border-zinc-800 rounded-[3rem] overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[450px] shadow-2xl hover:border-zinc-700 transition-all"
-                    >
+                {categoryRaces.length > 0 ? categoryRaces.map((race, idx) => {
+                    console.log(`DEBUG: Race ${race.id} raw_json:`, race.raw_json);
+                    const json = JSON.parse(race.raw_json || '{}');
+
+                    return (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            key={race.id}
+                            className="group bg-[#090a10] border border-zinc-800 rounded-[3rem] overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[450px] shadow-2xl hover:border-zinc-700 transition-all"
+                        >
+                            {/* ... */}
+                        </motion.div>
+                    );
+                }) : (
                         {/* Course Visual */}
                         <div className="lg:w-2/5 relative bg-zinc-900 overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
