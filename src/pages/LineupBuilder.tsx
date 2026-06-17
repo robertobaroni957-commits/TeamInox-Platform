@@ -100,19 +100,9 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
         status: 'confirmed'
       };
       
-      const response = await fetch('/api/lineup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}`
-        },
-        body: JSON.stringify(entry),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
+      console.log("DEBUG: Adding to lineup - Entry =", entry);
+      await api.updateLineup(entry);
+      console.log("DEBUG: Successfully added to lineup");
       
       setLineup(prev => [...prev, { 
         ...entry, 
@@ -208,7 +198,7 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
                 onChange={(e) => setSelectedTeam(Number(e.target.value))} 
                 className="bg-zinc-900 border border-zinc-800 text-white text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:border-orange-500 transition-all w-full shadow-lg"
               >
-                {teams.map(t => <option key={t.id} value={t.id}>{t.name} (B)</option>)}
+                {teams.map(t => <option key={t.id} value={t.id}>{t.name} ({t.category || 'N/A'})</option>)}
               </select>
             </div>
             

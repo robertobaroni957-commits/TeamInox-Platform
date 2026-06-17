@@ -19,14 +19,20 @@ export default function RaceSelector({
         
         const raceMap = new Map();
         activeRound.races.forEach((race: any) => {
-            // Se la gara contiene il nome del round o il round è generico, la includiamo
-            if (race.name.toLowerCase().includes(activeRoundName) || activeRoundName.includes('round')) {
-                const key = `${race.world}_${race.route}_${race.date}`;
+            // Supportiamo sia 'date' che 'scheduled_at' (backend v2/v3)
+            const raceDate = race.date || race.scheduled_at;
+            
+            // Includiamo la gara se contiene il nome del round o se il round è quello attivo
+            const matchesRound = race.name.toLowerCase().includes(activeRoundName) || 
+                               activeRoundName.includes('round');
+
+            if (matchesRound) {
+                const key = `${race.world}_${race.route}_${raceDate}`;
                 if (!raceMap.has(key)) {
                     raceMap.set(key, {
                         id: race.id,
                         name: race.name,
-                        date: race.date,
+                        date: raceDate,
                         world: race.world || 'UNK',
                         route: race.route || 'Unknown Route'
                     });
@@ -58,7 +64,7 @@ export default function RaceSelector({
             <option value="" disabled className="text-zinc-500">-- Scegli Gara --</option>
             {races.map((race: any) => (
                 <option key={race.id} value={race.id}>
-                    {race.name} ({formatRaceDate(race.date)} • {(race.world || 'UNK').substring(0,3).toUpperCase()})
+                    {race.route || race.name} ({formatRaceDate(race.date)} • {(race.world || 'UNK').substring(0,3).toUpperCase()})
                 </option>
             ))}
             {races.length === 0 && <option disabled>Nessuna gara disponibile</option>}
