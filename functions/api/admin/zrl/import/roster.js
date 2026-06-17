@@ -42,10 +42,13 @@ export async function onRequestPost(context) {
             }
             
             // Estrazione manager (moderators) e capitano dai metadati WTRL
+            // Supporto flessibile per meta.administrators o direttamente sotto meta
             const admins = meta.administrators || {};
-            const captainId = admins.captain?.profileId ? parseInt(admins.captain.profileId) : null;
-            const managerIds = Array.isArray(admins.managers) 
-                ? admins.managers.map((m) => parseInt(m.profileId)) 
+            const captainId = (admins.captain?.profileId || meta.captain?.profileId) ? parseInt(admins.captain?.profileId || meta.captain?.profileId) : null;
+            
+            const rawManagers = admins.managers || meta.managers || [];
+            const managerIds = Array.isArray(rawManagers) 
+                ? rawManagers.map((m) => parseInt(m.profileId)) 
                 : [];
             
             return {

@@ -65,17 +65,21 @@ export async function onRequestPost({ request, env }) {
             }
 
             // Estrazione Capitano e Manager
+            // Supporto flessibile per meta.administrators o direttamente sotto meta
             const admins = meta.administrators || {};
-            const captain_id = admins.captain?.profileId ? parseInt(admins.captain.profileId) : null;
-            const managerIds = Array.isArray(admins.managers) 
-                ? admins.managers.map(m => parseInt(m.profileId)) 
+            const captain_data = admins.captain || meta.captain;
+            const captain_id = captain_data?.profileId ? parseInt(captain_data.profileId) : null;
+            
+            const rawManagers = admins.managers || meta.managers || [];
+            const managerIds = Array.isArray(rawManagers) 
+                ? rawManagers.map(m => parseInt(m.profileId)) 
                 : [];
 
             // 1. UPSERT ADMINS
             const staff = [];
-            if (admins.captain) staff.push({ ...admins.captain, role: 'captain' });
-            if (Array.isArray(admins.managers)) {
-                admins.managers.forEach(m => staff.push({ ...m, role: 'moderator' }));
+            if (captain_data) staff.push({ ...captain_data, role: 'captain' });
+            if (Array.isArray(rawManagers)) {
+                rawManagers.forEach(m => staff.push({ ...m, role: 'moderator' }));
             }
 
             for (const person of staff) {
