@@ -77,8 +77,23 @@ function ZRLStrategyContent() {
             {/* RACE GRID */}
             <div className="grid grid-cols-1 gap-12">
                 {categoryRaces.length > 0 ? categoryRaces.map((race, idx) => {
-                    console.log(`DEBUG: Race ${race.id} raw_json:`, race.raw_json);
                     const json = JSON.parse(race.raw_json || '{}');
+                    const effectiveLaps = json.duration || race.laps || 1;
+                    const totalDist = (( (json.lapDistanceInMeters || 0) * effectiveLaps) + (json.leadinDistanceInMeters || 0)) / 1000;
+                    const totalElev = ((json.lapAscentInMeters || 0) * effectiveLaps) + (json.leadinAscentInMeters || 0);
+                    
+                    const rawDate = json.eventDate || race.scheduled_at;
+                    let displayDate = 'Data non disponibile';
+                    let shortDate = 'N/D';
+                    
+                    if (rawDate) {
+                        // Supporto per timestamp numerici o stringhe ISO
+                        const parsedDate = isNaN(Number(rawDate)) ? new Date(String(rawDate).replace(' ', 'T')) : new Date(Number(rawDate));
+                        if (!isNaN(parsedDate.getTime())) {
+                            displayDate = parsedDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                            shortDate = parsedDate.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+                        }
+                    }
 
                     return (
                         <motion.div 
@@ -88,143 +103,86 @@ function ZRLStrategyContent() {
                             key={race.id}
                             className="group bg-[#090a10] border border-zinc-800 rounded-[3rem] overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[450px] shadow-2xl hover:border-zinc-700 transition-all"
                         >
-                            {/* ... */}
+                            {/* Course Visual */}
+                            <div className="lg:w-2/5 relative bg-zinc-900 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
+                                <div className="absolute inset-0 flex flex-col justify-end p-10 z-20">
+                                    <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-[0.4em] mb-2">{race.world}</span>
+                                    <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-4">{race.route}</h3>
+                                    <div className="flex gap-4">
+                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
+                                            <Activity size={14} className="text-zinc-600" /> {totalDist > 0 ? totalDist.toFixed(1) : '---'} KM
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
+                                            <ArrowUpRight size={14} className="text-zinc-600" /> {totalElev > 0 ? Math.round(totalElev) : '---'} M
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="absolute inset-0 opacity-40 group-hover:scale-110 transition-transform duration-1000">
+                                    <img 
+                                        src={`https://zwiftinsider.com/wp-content/uploads/world-${race.world.toLowerCase()}.jpg`} 
+                                        className="w-full h-full object-cover" 
+                                        onError={(e) => e.currentTarget.src = "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800"}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Tactical Details */}
+                            <div className="flex-1 p-10 lg:p-12 flex flex-col justify-between">
+                                <div className="space-y-8">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Event Timing</p>
+                                            <p className="text-lg font-black text-white italic">{displayDate}</p>
+                                        </div>
+                                        <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                            {race.name}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <DetailBox label="Date" value={shortDate} />
+                                        <DetailBox label="Laps" value={effectiveLaps} />
+                                        <DetailBox label="Format" value={json.raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
+                                        <DetailBox label="Distance" value={totalDist > 0 ? `${totalDist.toFixed(1)} KM` : '---'} />
+                                        <DetailBox label="Elevation" value={totalElev > 0 ? `${Math.round(totalElev)} M` : '---'} />
+                                        <DetailBox label="Difficulty" value={json.courseDifficulty ? `${json.courseDifficulty}/5` : 'N/D'} />
+                                    </div>
+
+                                    <div className="space-y-4 pt-6 border-t border-zinc-900">
+                                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-400">
+                                            <BarChart3 size={16} className="text-[#fc6719]" /> Tactical Segments
+                                        </div>
+                                        <div className="flex flex-wrap gap-3">
+                                            {json.segments?.map((seg: any) => (
+                                                <div key={seg.segmentId} className="px-5 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center gap-4 shadow-inner group/seg hover:border-zinc-700 transition-all">
+                                                    <div className={`w-2 h-2 rounded-full ${seg.segmentName.includes('Sprint') ? 'bg-inox-cyan shadow-[0_0_15px_rgba(0,188,212,0.5)]' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`} />
+                                                    <span className="text-xs font-black text-white uppercase italic tracking-tight">{seg.segmentName}</span>
+                                                    <span className="text-sm font-black text-[#fc6719] bg-orange-500/10 px-2 py-0.5 rounded-lg border border-orange-500/20">x{seg.segmentVisits}</span>
+                                                </div>
+                                            )) || <p className="text-sm text-zinc-700 italic uppercase font-bold">Nessun segmento speciale mappato</p>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 flex gap-4">
+                                    <a 
+                                        href={json.courseUrl || `https://zwiftinsider.com/route/${race.route.toLowerCase().replace(/ /g, '-')}/`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 py-5 bg-white text-black font-black italic uppercase rounded-2xl text-sm tracking-widest hover:bg-[#fc6719] hover:text-white transition-all shadow-xl text-center flex items-center justify-center gap-2 group/btn"
+                                    >
+                                        Course Analysis
+                                        <ExternalLink size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                    </a>
+                                    <button className="p-5 bg-zinc-900 text-zinc-500 hover:text-white rounded-2xl border border-zinc-800 transition-all">
+                                        <Share2Icon size={20} />
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
                     );
                 }) : (
-                        {/* Course Visual */}
-                        <div className="lg:w-2/5 relative bg-zinc-900 overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
-                            <div className="absolute inset-0 flex flex-col justify-end p-10 z-20">
-                                <span className="text-[10px] font-black text-[#fc6719] uppercase tracking-[0.4em] mb-2">{race.world}</span>
-                                <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-4">{race.route}</h3>
-                                <div className="flex gap-4">
-                                    {(() => {
-                                        const json = JSON.parse(race.raw_json || '{}');
-                                        // Calcolo robusto: preferiamo duration del JSON se presente, altrimenti laps del DB
-                                        const effectiveLaps = json.duration || race.laps || 1;
-                                        const totalDist = (( (json.lapDistanceInMeters || 0) * effectiveLaps) + (json.leadinDistanceInMeters || 0)) / 1000;
-                                        const totalElev = ((json.lapAscentInMeters || 0) * effectiveLaps) + (json.leadinAscentInMeters || 0);
-                                        
-                                        return (
-                                            <>
-                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                                    <Activity size={14} className="text-zinc-600" /> {totalDist > 0 ? totalDist.toFixed(1) : '---'} KM
-                                                </div>
-                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-zinc-400">
-                                                    <ArrowUpRight size={14} className="text-zinc-600" /> {totalElev > 0 ? Math.round(totalElev) : '---'} M
-                                                </div>
-                                            </>
-                                        );
-                                    })()}
-                                </div>
-                            </div>
-                            <div className="absolute inset-0 opacity-40 group-hover:scale-110 transition-transform duration-1000">
-                                <img 
-                                    src={`https://zwiftinsider.com/wp-content/uploads/world-${race.world.toLowerCase()}.jpg`} 
-                                    className="w-full h-full object-cover" 
-                                    onError={(e) => e.currentTarget.src = "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800"}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tactical Details */}
-                        <div className="flex-1 p-10 lg:p-12 flex flex-col justify-between">
-                            <div className="space-y-8">
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Event Timing</p>
-                                        <p className="text-lg font-black text-white italic">
-                                            {(() => {
-                                                const json = JSON.parse(race.raw_json || '{}');
-                                                // Tentativo di parsing della data estremo
-                                                const rawDate = json.eventDate || race.scheduled_at;
-                                                if (!rawDate) return 'Data non disponibile';
-                                                
-                                                // Supporto per diversi formati (ISO, SQL, ecc)
-                                                const dateStr = String(rawDate).replace(' ', 'T');
-                                                const dateObj = new Date(dateStr);
-                                                
-                                                if (isNaN(dateObj.getTime())) return 'Data non valida';
-                                                
-                                                return dateObj.toLocaleDateString('it-IT', { 
-                                                    weekday: 'long', 
-                                                    day: 'numeric', 
-                                                    month: 'long',
-                                                    year: 'numeric'
-                                                });
-                                            })()}
-                                        </p>
-                                    </div>
-                                    <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                                        {race.name}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    <DetailBox label="Date" value={(() => {
-                                        const json = JSON.parse(race.raw_json || '{}');
-                                        const rawDate = json.eventDate || race.scheduled_at;
-                                        const dateStr = String(rawDate).replace(' ', 'T');
-                                        const dateObj = new Date(dateStr);
-                                        return !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
-                                    })()} />
-                                    <DetailBox label="Laps" value={JSON.parse(race.raw_json || '{}').duration || race.laps || 1} />
-                                    <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
-                                    <DetailBox label="Distance" value={(() => {
-                                        const json = JSON.parse(race.raw_json || '{}');
-                                        const effectiveLaps = json.duration || race.laps || 1;
-                                        const totalDist = (( (json.lapDistanceInMeters || 0) * effectiveLaps) + (json.leadinDistanceInMeters || 0)) / 1000;
-                                        return totalDist > 0 ? `${totalDist.toFixed(1)} KM` : '---';
-                                    })()} />
-                                    <DetailBox label="Elevation" value={(() => {
-                                        const json = JSON.parse(race.raw_json || '{}');
-                                        const effectiveLaps = json.duration || race.laps || 1;
-                                        const totalElev = ((json.lapAscentInMeters || 0) * effectiveLaps) + (json.leadinAscentInMeters || 0);
-                                        return totalElev > 0 ? `${Math.round(totalElev)} M` : '---';
-                                    })()} />
-                                    <DetailBox label="Difficulty" value={JSON.parse(race.raw_json || '{}').courseDifficulty ? `${JSON.parse(race.raw_json || '{}').courseDifficulty}/5` : 'N/D'} />
-                                </div>
-
-                                <div className="space-y-4 pt-6 border-t border-zinc-900">
-                                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-400">
-                                        <BarChart3 size={16} className="text-[#fc6719]" /> Tactical Segments
-                                    </div>
-                                    <div className="flex flex-wrap gap-3">
-                                        {JSON.parse(race.raw_json || '{}').segments?.map((seg: any) => (
-                                            <div key={seg.segmentId} className="px-5 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center gap-4 shadow-inner group/seg hover:border-zinc-700 transition-all">
-                                                <div className={`w-2 h-2 rounded-full ${seg.segmentName.includes('Sprint') ? 'bg-inox-cyan shadow-[0_0_15px_rgba(0,188,212,0.5)]' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`} />
-                                                <span className="text-xs font-black text-white uppercase italic tracking-tight">{seg.segmentName}</span>
-                                                <span className="text-sm font-black text-[#fc6719] bg-orange-500/10 px-2 py-0.5 rounded-lg border border-orange-500/20">x{seg.segmentVisits}</span>
-                                            </div>
-                                        )) || <p className="text-sm text-zinc-700 italic uppercase font-bold">Nessun segmento speciale mappato</p>}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 flex gap-4">
-                                {(() => {
-                                    const json = JSON.parse(race.raw_json || '{}');
-                                    const analysisUrl = json.courseUrl || `https://zwiftinsider.com/route/${race.route.toLowerCase().replace(/ /g, '-')}/`;
-                                    return (
-                                        <a 
-                                            href={analysisUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 py-5 bg-white text-black font-black italic uppercase rounded-2xl text-sm tracking-widest hover:bg-[#fc6719] hover:text-white transition-all shadow-xl text-center flex items-center justify-center gap-2 group/btn"
-                                        >
-                                            Course Analysis
-                                            <ExternalLink size={18} className="group-hover/btn:translate-x-1 transition-transform" />
-                                        </a>
-                                    );
-                                })()}
-                                <button className="p-5 bg-zinc-900 text-zinc-500 hover:text-white rounded-2xl border border-zinc-800 transition-all">
-                                    <Share2Icon size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )) : (
                     <div className="py-40 text-center space-y-6">
                         <MapIcon size={80} className="text-zinc-900 mx-auto" />
                         <h3 className="text-2xl font-black text-zinc-700 uppercase italic">Intelligence Room Offline</h3>
