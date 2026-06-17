@@ -137,8 +137,19 @@ function ZRLStrategyContent() {
                                         <p className="text-lg font-black text-white italic">
                                             {(() => {
                                                 const json = JSON.parse(race.raw_json || '{}');
-                                                const dateSource = json.eventDate || race.scheduled_at;
-                                                return dateSource ? new Date(dateSource).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Data non disponibile';
+                                                // Tentativo di parsing della data più robusto
+                                                const rawDate = json.eventDate || race.scheduled_at;
+                                                if (!rawDate) return 'Data non disponibile';
+                                                
+                                                const dateObj = new Date(rawDate);
+                                                if (isNaN(dateObj.getTime())) {
+                                                    // Se fallisce, proviamo a pulire la stringa (spesso WTRL manda formati sporchi)
+                                                    const cleanDate = String(rawDate).split(' ')[0]; 
+                                                    const retryDate = new Date(cleanDate);
+                                                    if (isNaN(retryDate.getTime())) return 'Data non valida';
+                                                    return retryDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+                                                }
+                                                return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
                                             })()}
                                         </p>
                                     </div>
@@ -150,8 +161,9 @@ function ZRLStrategyContent() {
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                     <DetailBox label="Date" value={(() => {
                                         const json = JSON.parse(race.raw_json || '{}');
-                                        const dateSource = json.eventDate || race.scheduled_at;
-                                        return dateSource ? new Date(dateSource).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
+                                        const rawDate = json.eventDate || race.scheduled_at;
+                                        const dateObj = new Date(rawDate);
+                                        return !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'N/D';
                                     })()} />
                                     <DetailBox label="Laps" value={race.laps || 1} />
                                     <DetailBox label="Format" value={JSON.parse(race.raw_json || '{}').raceFormat?.replace('wtrl', '')?.toUpperCase() || 'RACE'} />
@@ -187,15 +199,21 @@ function ZRLStrategyContent() {
                             </div>
 
                             <div className="mt-8 flex gap-4">
-                                <a 
-                                    href={`https://zwiftinsider.com/route/${race.route.toLowerCase().replace(/ /g, '-')}/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 py-5 bg-white text-black font-black italic uppercase rounded-2xl text-sm tracking-widest hover:bg-[#fc6719] hover:text-white transition-all shadow-xl text-center flex items-center justify-center gap-2 group/btn"
-                                >
-                                    Course Analysis
-                                    <ExternalLink size={18} className="group-hover/btn:translate-x-1 transition-transform" />
-                                </a>
+                                {(() => {
+                                    const json = JSON.parse(race.raw_json || '{}');
+                                    const analysisUrl = json.courseUrl || `https://zwiftinsider.com/route/${race.route.toLowerCase().replace(/ /g, '-')}/`;
+                                    return (
+                                        <a 
+                                            href={analysisUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 py-5 bg-white text-black font-black italic uppercase rounded-2xl text-sm tracking-widest hover:bg-[#fc6719] hover:text-white transition-all shadow-xl text-center flex items-center justify-center gap-2 group/btn"
+                                        >
+                                            Course Analysis
+                                            <ExternalLink size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                        </a>
+                                    );
+                                })()}
                                 <button className="p-5 bg-zinc-900 text-zinc-500 hover:text-white rounded-2xl border border-zinc-800 transition-all">
                                     <Share2Icon size={20} />
                                 </button>
