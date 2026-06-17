@@ -58,7 +58,15 @@ export async function onRequestPost({ request, env }) {
 
                 const existingId = racesMap.get(raceName);
                 const rawJsonString = JSON.stringify(race);
-                const laps = (race.segments && race.segments.length > 0) ? race.segments[0].segmentVisits : 1;
+                
+                // Migliorato rilevamento Laps: WTRL usa 'duration' per il numero di giri nei formati Scratch/Race.
+                // Se duration non c'è o è 0, proviamo a guardare i segmenti, altrimenti default a 1.
+                let laps = 1;
+                if (race.duration && typeof race.duration === 'number' && race.duration > 0) {
+                    laps = race.duration;
+                } else if (race.segments && race.segments.length > 0) {
+                    laps = race.segments[0].segmentVisits || 1;
+                }
 
                 if (existingId) {
                     raceQueries.push(env.ZRL_DB.prepare(`
