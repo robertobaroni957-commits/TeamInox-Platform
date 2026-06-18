@@ -167,10 +167,16 @@ export const api = {
     });
   },
 
-  updateRaceAvailability: async (roundId: number, status: string): Promise<any> => {
+  updateRaceAvailability: async (raceId: number, status: string): Promise<any> => {
     return apiFetch(`${API_BASE}/availability`, {
       method: 'POST',
-      body: JSON.stringify({ type: 'race', payload: { roundId, status } }),
+      body: JSON.stringify({ 
+        type: 'race', 
+        payload: { 
+            roundId: Number(raceId),
+            status: String(status)
+        } 
+      }),
     });
   },
 
