@@ -66,6 +66,12 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
+      // Salviamo gli slot orari nello stato
+      setTimeSlots(data.timeSlots || []);
+
+      // Salviamo le gare nello stato
+      setRaces(allRaces);
+
       // Inizializziamo le preferenze
       const prefs: Record<string, number | null> = {};
       (data.timeSlots || []).forEach(slot => {
@@ -107,7 +113,12 @@ const Availability: React.FC = () => { // force-cache-invalidation
         setSaving(false);
       }
     } else {
-      setCurrentStep(1);
+      // Se ci sono gare ma non slot orari, salta direttamente al calendario
+      if (timeSlots.length === 0 && races.length > 0) {
+        setCurrentStep(2);
+      } else {
+        setCurrentStep(1);
+      }
     }
   };
 

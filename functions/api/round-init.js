@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
 
     // 🔥 SINGLE SOURCE OF TRUTH (V3 ONLY)
     const query = `
-      INSERT INTO rounds_v2 (
+      INSERT INTO rounds (
         wtrl_id,
         name,
         starts_at,

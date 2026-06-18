@@ -34,7 +34,7 @@ export async function onRequestGet(context) {
                 (SELECT COUNT(*) FROM round_teams rt WHERE rt.round_id = r.id) as team_count,
                 (SELECT COUNT(*) FROM race_lineup rl WHERE rl.round_id = r.id) as lineup_count,
                 (SELECT COUNT(*) FROM availability a WHERE a.round_id = r.id) as availability_count
-            FROM rounds_v2 r
+            FROM rounds r
             ORDER BY r.starts_at ASC, r.id ASC
         `).all();
 

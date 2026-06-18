@@ -14,6 +14,8 @@ export const sanitize = (val, paramName = 'unknown') => {
     
     // Se è un oggetto, tenta l'estrazione intelligente
     if (typeof val === 'object') {
+        console.log(`[dbUtils] Trace: Sanitizing ${paramName}, value: ${JSON.stringify(val)}`);
+        
         // Estrazione prioritaria per chiavi comuni
         const keys = ['id', 'zwid', 'wtrl_id', 'athlete_id', 'team_id', 'round_id', 'race_id', 'slotId', 'level'];
         for (const key of keys) {

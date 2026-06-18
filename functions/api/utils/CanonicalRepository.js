@@ -2,35 +2,43 @@ import { sanitize } from "./dbUtils";
 
 const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
+        // Query availability_races only if zwid is provided, otherwise skip the subquery
+        const statusSubquery = zwid
+            ? `(SELECT status FROM availability_races WHERE zwid = ? AND race_id = ra.id)`
+            : `NULL`;
+
         const query = `
             SELECT 
                 r.id, r.wtrl_id, r.season_code, r.round_number, r.name,
                 r.starts_at, r.ends_at, r.sync_state,
                 ra.id as race_id, ra.name as race_name, ra.date as race_date, 
                 ra.world, ra.route, ra.laps, ra.raw_json,
-                (SELECT status FROM availability_races WHERE zwid = ? AND race_id = ra.id) as status
-            FROM rounds r
+                ${statusSubquery} as status
+            FROM rounds_v2 r
             LEFT JOIN zrl_round_groups rg ON r.wtrl_id = rg.external_season_id
             LEFT JOIN zrl_races ra ON rg.id = ra.zrl_round_group_id
             WHERE r.season_code = ?
             ORDER BY r.round_number, ra.id;
         `;
 
-        console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}'`);
+        console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}', zwid: ${zwid}`);
         
-        // Log dei parametri di binding PRIMA della sanitizzazione e dopo
-        console.log(`[CanonicalRepository] Raw zwid=${zwid}, Raw seasonCode='${seasonCode}'`);
-        console.log(`[CanonicalRepository] Binding params: seasonCode='${sanitize(seasonCode, 'seasonCode')}' (type: ${typeof sanitize(seasonCode, 'seasonCode')}), zwid=${sanitize(zwid, 'zwid')} (type: ${typeof sanitize(zwid, 'zwid')})`);
-        
-        const { results } = await db.prepare(query).bind(sanitize(zwid, 'zwid'), sanitize(seasonCode, 'seasonCode')).all();
+        // Bind params: if zwid provided we have 2 params (zwid, seasonCode), otherwise just (seasonCode)
+        const safeSeasonCode = sanitize(seasonCode, 'seasonCode');
+        let results;
+        if (zwid) {
+            const safeZwid = sanitize(zwid, 'zwid');
+            ({ results } = await db.prepare(query).bind(safeZwid, safeSeasonCode).all());
+        } else {
+            ({ results } = await db.prepare(query).bind(safeSeasonCode).all());
+        }
         
         console.log(`[CanonicalRepository] Query results count: ${results ? results.length : 'null'}`);
         if (results && results.length > 0) {
             console.log(`[CanonicalRepository] First row example: ${JSON.stringify(results[0])}`);
         } else {
-            // Debug the specific rows in DB for this season code
-            const check = await db.prepare("SELECT count(*) as count FROM rounds WHERE season_code = ?").bind(sanitize(seasonCode, 'seasonCode')).first();
-            console.log(`[CanonicalRepository] DB check for season '${seasonCode}': found ${check?.count} rows`);
+            const check = await db.prepare("SELECT count(*) as count FROM rounds_v2 WHERE season_code = ?").bind(safeSeasonCode).first();
+            console.log(`[CanonicalRepository] DB check for season '${seasonCode}': found ${check?.count} rows in rounds_v2`);
         }
         
         const roundsMap = new Map();
@@ -77,7 +85,7 @@ const RoundRepository = {
                 r.starts_at, r.ends_at, r.sync_state,
                 ra.id as race_id, ra.name as race_name, ra.date as race_date, 
                 ra.world, ra.route, ra.laps, ra.raw_json
-            FROM rounds r
+            FROM rounds_v2 r
             LEFT JOIN zrl_round_groups rg ON r.wtrl_id = rg.external_season_id
             LEFT JOIN zrl_races ra ON rg.id = ra.zrl_round_group_id
             WHERE r.id = ?

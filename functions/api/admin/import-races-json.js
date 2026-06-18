@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
 
         if (minDate && maxDate) {
             raceQueries.push(env.ZRL_DB.prepare(`
-                UPDATE rounds_v2 
+                UPDATE rounds 
                 SET starts_at = ?, ends_at = ?, sync_state = 'COMPLETED', updated_at = CURRENT_TIMESTAMP
                 WHERE wtrl_id = ?
             `).bind(minDate, maxDate, wtrlIdInt));

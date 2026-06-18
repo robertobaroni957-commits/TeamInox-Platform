@@ -173,7 +173,7 @@ export const api = {
       body: JSON.stringify({ 
         type: 'race', 
         payload: { 
-            roundId: Number(raceId),
+            raceId: Number(raceId),
             status: String(status)
         } 
       }),

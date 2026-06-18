@@ -2,7 +2,7 @@
 // API Availability - Canonical
 // ================================
 import { getRoundRepository } from "./utils/repositoryLoader";
-import { sanitize } from "./dbUtils";
+import { sanitize } from "./utils/dbUtils";
 
 export async function onRequestGet(context) {
     console.log("[DEBUG] onRequestGet reached");
@@ -48,7 +48,7 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
+        const userRounds = await repo.getCanonicalRoundsWithUserStatus('zrl_25_26', sanitize(zwid, 'zwid'));
 
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
         const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid, 'zwid')).all();
@@ -113,16 +113,16 @@ export async function onRequestPost(context) {
 
         // Race Availability
         if (type === 'race') {
-            if (!payload || payload.roundId === undefined || payload.status === undefined) {
+            if (!payload || payload.raceId === undefined || payload.status === undefined) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
             // Sanitizzazione sicura
-            const rId = sanitize(payload.roundId);
+            const raceId = sanitize(payload.raceId);
             const status = sanitize(payload.status);
             
-            if (zwid === null || rId === null || status === null) {
-                console.error(`[CRITICAL] Bind failed: zwid=${zwid}, rId=${rId}, status=${status}`);
+            if (zwid === null || raceId === null || status === null) {
+                console.error(`[CRITICAL] Bind failed: zwid=${zwid}, raceId=${raceId}, status=${status}`);
                 return new Response(JSON.stringify({ error: "Invalid ID/status types" }), { status: 400 });
             }
 
@@ -131,7 +131,7 @@ export async function onRequestPost(context) {
                 INSERT OR REPLACE INTO availability_races 
                 (zwid, race_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(sanitize(zwid), rId, status).run();
+            `).bind(sanitize(zwid), raceId, status).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }

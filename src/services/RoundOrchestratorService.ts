@@ -7,8 +7,8 @@ export const RoundOrchestratorService = {
     // We can lookup by internal id or wtrl_id
     const isWtrlId = typeof roundId === 'string' || roundId > 100000; // heuristic
     const query = isWtrlId 
-      ? "SELECT sync_state as status FROM rounds_v2 WHERE wtrl_id = ?"
-      : "SELECT sync_state as status FROM rounds_v2 WHERE id = ?";
+      ? "SELECT sync_state as status FROM rounds WHERE wtrl_id = ?"
+      : "SELECT sync_state as status FROM rounds WHERE id = ?";
       
     return await db.prepare(query).bind(roundId).first();
   },
@@ -16,8 +16,8 @@ export const RoundOrchestratorService = {
   updateStatus: async (db: D1Database, roundId: number | string, status: RoundSyncState) => {
     const isWtrlId = typeof roundId === 'string' || roundId > 100000;
     const query = isWtrlId
-      ? "UPDATE rounds_v2 SET sync_state = ?, updated_at = CURRENT_TIMESTAMP WHERE wtrl_id = ?"
-      : "UPDATE rounds_v2 SET sync_state = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+      ? "UPDATE rounds SET sync_state = ?, updated_at = CURRENT_TIMESTAMP WHERE wtrl_id = ?"
+      : "UPDATE rounds SET sync_state = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
       
     await db.prepare(query).bind(status, roundId).run();
   },
