@@ -70,16 +70,23 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: manteniamo tutto tranne ARCHIVED e ROUND
+      // Filtriamo le gare
       const filteredRaces = allRaces.filter(r => {
+        if (!r.name) return false;
         const n = r.name.toUpperCase();
-        return !n.includes('ARCHIVED') && !n.includes('ROUND');
+        
+        // 1. Escludiamo esplicitamente 'ARCHIVED' e 'ROUND'
+        if (n.includes('ARCHIVED') || n.includes('ROUND')) return false;
+
+        // 2. Teniamo solo le gare che hanno 'RACE' nel nome (case-insensitive)
+        return n.includes('RACE');
       });
       
       // Deduplichiamo basandoci sul nome pulito
       const uniqueRacesMap = new Map();
       filteredRaces.forEach(r => {
-        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim();
+        // Nome pulito (es: "Race 1 (A)" -> "Race 1")
+        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').replace(/\s*-\s*RACE\s+\d+/i, '').trim();
         const key = cleanName.toUpperCase();
         
         if (!uniqueRacesMap.has(key)) {
@@ -87,6 +94,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
         }
       });
       
+      // Ordiniamo le gare per numero (Race 1, Race 2, etc)
       const uniqueRaces = Array.from(uniqueRacesMap.values()).sort((a, b) => {
           const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
           const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
