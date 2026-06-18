@@ -258,11 +258,16 @@ const Availability: React.FC = () => { // force-cache-invalidation
             <div className="grid gap-4">
               {races.map(race => {
                 const isPresent = presences[race.id] === 'available';
-                const raceDate = new Date(race.date);
+                const formattedDate = race.date ? new Date(race.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD';
                 return (
                   <button key={race.id} onClick={() => setPresences(prev => ({ ...prev, [race.id]: isPresent ? 'unavailable' : 'available' }))} className={`p-6 rounded-[2.5rem] border text-left transition-all ${isPresent ? 'border-[#fc6719] bg-[#fc6719]/5' : 'border-zinc-800 bg-zinc-900/40'}`}>
-                    <div className="flex justify-between items-center">
-                        <div className="text-xl font-black italic text-white">{race.name}</div>
+                    <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                            <div className="text-xl font-black italic text-white">{race.name}</div>
+                            <div className="text-sm text-zinc-400 mt-1">
+                                <span className="font-bold text-[#fc6719]">{formattedDate}</span> • {race.route}
+                            </div>
+                        </div>
                         <div className={isPresent ? 'text-[#fc6719]' : 'text-zinc-600'}><Zap /></div>
                     </div>
                   </button>
