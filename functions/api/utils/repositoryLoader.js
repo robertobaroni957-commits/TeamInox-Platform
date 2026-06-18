@@ -2,6 +2,7 @@
 import { RoundRepository } from './CanonicalRepository';
 
 export const getRoundRepository = (db) => ({
-    getCanonicalRounds: (seasonCode) => RoundRepository.getCanonicalRounds(db, seasonCode),
+    getCanonicalRounds: (seasonCode) => RoundRepository.getCanonicalRoundsWithUserStatus(db, seasonCode, null),
+    getCanonicalRoundsWithUserStatus: (seasonCode, zwid) => RoundRepository.getCanonicalRoundsWithUserStatus(db, seasonCode, zwid),
     getRoundById: (roundId) => RoundRepository.getRoundById(db, roundId)
 });
