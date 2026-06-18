@@ -58,22 +58,29 @@ const Availability: React.FC = () => { // force-cache-invalidation
       
       // Flatten: Trasforma i round con gare annidate in una lista piatta di gare
       const allRaces = roundList.reduce((acc: any[], round: any) => {
-          const roundRaces = (round.races || []).map((race: any) => ({
+          const roundRaces = (round.races || []).map((race: any) => {
+            const courseName = race.raw_json ? JSON.parse(race.raw_json).courseName : race.route;
+            return {
               ...race,
               roundId: round.id,
               roundName: round.name,
-              syncState: round.lifecycle?.sync_state // Assumiamo sync_state nel lifecycle
-          }));
+              syncState: round.lifecycle?.sync_state,
+              displayName: courseName || race.name
+            };
+          });
           return [...acc, ...roundRaces];
       }, []);
 
-      // DEBUG: Logghiamo cosa stiamo filtrando
-      console.log("[Availability] All races found:", allRaces);
-
-      // CORREZIONE: Filtro semplificato per mostrare le gare
-      const filteredRaces = allRaces.filter(r => r.name);
+      // Filtriamo le gare: escludiamo ARCHIVED
+      // Deduplichiamo basandoci sul displayName
+      const uniqueRacesMap = new Map();
+      allRaces.filter(r => r.name && !r.name.toLowerCase().includes('archived')).forEach(r => {
+        if (!uniqueRacesMap.has(r.displayName)) {
+          uniqueRacesMap.set(r.displayName, r);
+        }
+      });
       
-      console.log("[Availability] Filtered races:", filteredRaces);
+      const filteredRaces = Array.from(uniqueRacesMap.values());
       
       setRaces(filteredRaces);
       setTimeSlots(data.timeSlots || []);
@@ -93,7 +100,6 @@ const Availability: React.FC = () => { // force-cache-invalidation
       filteredRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
-      setPresences(currentPresences);
       setPresences(currentPresences);
 
     } catch (e: any) {
