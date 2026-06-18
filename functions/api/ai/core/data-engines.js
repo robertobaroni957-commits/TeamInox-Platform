@@ -8,15 +8,15 @@
  * Aggregates all data for a single race focusing on a specific team.
  */
 export async function getRaceContext(db, round_id, team_id) {
-    // 1. Race Metadata (Try rounds_v2 + zrl_races first, then rounds)
+    // 1. Race Metadata (Try rounds + zrl_races first, then rounds)
     let race = await db.prepare(`
         SELECT 
-            rv2.id, rv2.wtrl_id, rv2.name, rv2.starts_at as date,
-            zr.world, zr.route, rv2.round_number
-        FROM rounds_v2 rv2
-        LEFT JOIN zrl_round_groups zrg ON rv2.wtrl_id = zrg.external_season_id
+            r.id, r.wtrl_id, r.name, r.starts_at as date,
+            zr.world, zr.route, r.round_number
+        FROM rounds r
+        LEFT JOIN zrl_round_groups zrg ON r.wtrl_id = zrg.external_season_id
         LEFT JOIN zrl_races zr ON zrg.id = zr.zrl_round_group_id
-        WHERE rv2.id = ? OR rv2.wtrl_id = ?
+        WHERE r.id = ? OR r.wtrl_id = ?
         LIMIT 1
     `).bind(round_id, round_id).first();
 
@@ -85,7 +85,7 @@ export async function getRaceContext(db, round_id, team_id) {
  */
 export async function getRoundContext(db, round_id) {
     let round = await db.prepare(`
-        SELECT id, wtrl_id, name, starts_at as date, round_number FROM rounds_v2 
+        SELECT id, wtrl_id, name, starts_at as date, round_number FROM rounds 
         WHERE id = ? OR wtrl_id = ?
     `).bind(round_id, round_id).first();
 
@@ -160,7 +160,7 @@ export async function getSeasonContext(db, season_code) {
     const { results: roundPerformance } = await db.prepare(`
         SELECT dr.team_name, dr.round_id, SUM(dr.points_total) as points
         FROM division_results dr
-        JOIN rounds_v2 r ON dr.round_id = r.wtrl_id
+        JOIN rounds r ON dr.round_id = r.wtrl_id
         WHERE r.season_code = ? AND dr.rider_name IS NOT NULL AND r.round_number <= 4
         GROUP BY dr.team_name, dr.round_id
     `).bind(season_code).all();
