@@ -44,6 +44,7 @@ export async function onRequestGet(context) {
         }
 
         const repo = getRoundRepository(env.ZRL_DB);
+        console.log(`[DEBUG] GET Availability - Calling repository: zwid=${zwid} (${typeof zwid})`);
         const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
         
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
