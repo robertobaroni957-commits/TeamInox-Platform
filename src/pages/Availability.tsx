@@ -82,14 +82,15 @@ const Availability: React.FC = () => { // force-cache-invalidation
         }
       });
       
-      // Ordiniamo le gare per numero
       const uniqueRaces = Array.from(uniqueRacesMap.values()).sort((a, b) => {
           const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
           const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
           return numA - numB;
       });
       
+      console.log("[Availability Debug] uniqueRaces before setRaces:", uniqueRaces);
       setRaces(uniqueRaces);
+      console.log("[Availability Debug] setRaces called with:", uniqueRaces);
       setTimeSlots(data.timeSlots || []);
 
       if (data.intent !== undefined) setIntent(data.intent);
