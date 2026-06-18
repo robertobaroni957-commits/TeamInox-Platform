@@ -116,9 +116,11 @@ export async function onRequestPost(context) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
+            // Forza conversione esplicita e logga i tipi
             const rId = Number(payload.roundId);
             const status = String(payload.status);
-            console.log(`[DEBUG] Bind values: zwid=${zwid}, roundId=${rId}, status=${status}`);
+            
+            console.log(`[DEBUG] Bind: zwid=${zwid} (${typeof zwid}), race_id=${rId} (${typeof rId}), status=${status} (${typeof status})`);
 
             // Scrittura nella tabella specifica per le gare
             await env.ZRL_DB.prepare(`
