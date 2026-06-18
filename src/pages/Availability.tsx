@@ -52,17 +52,19 @@ const Availability: React.FC = () => {
       
       if (data.error) throw new Error(data.error);
 
-      // Assumiamo che data sia un array di gare (dalla struttura JSON fornita)
-      // O contenga 'races'
-      const allRaces = Array.isArray(data) ? data : (data.races || []);
+      // CORREZIONE: Gestione flessibile della risposta API
+      // Se data è un array, è la lista dei round. Se è un oggetto, cerchiamo 'rounds'
+      const roundList = Array.isArray(data) ? data : (data.rounds || []);
       
-      // Filtriamo le gare "ARCHIVED" e quelle nulle
-      const activeRaces = allRaces.filter(r => r && r.name && !r.name.includes('ARCHIVED'));
-      
-      setRaces(activeRaces);
-      setTimeSlots(data.timeSlots || []);
-      
-      if (data.intent !== undefined) setIntent(data.intent);
+      // Flatten: Trasforma i round con gare annidate in una lista piatta di gare
+      const allRaces = roundList.reduce((acc: any[], round: any) => {
+          const roundRaces = (round.races || []).map((race: any) => ({
+              ...race,
+              roundId: round.id,
+              roundName: round.name
+          }));
+          return [...acc, ...roundRaces];
+      }, []);
 
       // Inizializziamo le preferenze
       const prefs: Record<string, number | null> = {};
