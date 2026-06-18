@@ -70,38 +70,9 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare
-      const filteredRaces = allRaces.filter(r => {
-        if (!r.name) return false;
-        const n = r.name.toUpperCase();
-        
-        // 1. Escludiamo esplicitamente 'ARCHIVED' e 'ROUND'
-        if (n.includes('ARCHIVED') || n.includes('ROUND')) return false;
-
-        // 2. Teniamo solo le gare che hanno 'RACE' nel nome (case-insensitive)
-        return n.includes('RACE');
-      });
-      
-      // Deduplichiamo basandoci sul nome pulito
-      const uniqueRacesMap = new Map();
-      filteredRaces.forEach(r => {
-        // Nome pulito (es: "Race 1 (A)" -> "Race 1")
-        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').replace(/\s*-\s*RACE\s+\d+/i, '').trim();
-        const key = cleanName.toUpperCase();
-        
-        if (!uniqueRacesMap.has(key)) {
-            uniqueRacesMap.set(key, { ...r, name: cleanName });
-        }
-      });
-      
-      // Ordiniamo le gare per numero (Race 1, Race 2, etc)
-      const uniqueRaces = Array.from(uniqueRacesMap.values()).sort((a, b) => {
-          const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
-          const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
-          return numA - numB;
-      });
-      
-      setRaces(uniqueRaces);
+      // --- DEBUG: Rimuoviamo temporaneamente tutti i filtri per vedere se le gare appaiono ---
+      console.log("[Availability] All races before filtering:", allRaces);
+      setRaces(allRaces);
       setTimeSlots(data.timeSlots || []);
 
       if (data.intent !== undefined) setIntent(data.intent);
@@ -116,7 +87,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
 
       // Inizializziamo le presenze
       const currentPresences: Record<number, string> = {};
-      uniqueRaces.forEach((r: any) => {
+      allRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
       setPresences(currentPresences);
