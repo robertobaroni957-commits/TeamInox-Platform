@@ -6,10 +6,10 @@ import { getRoundRepository } from "./utils/repositoryLoader";
 export async function onRequestGet(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = Number(user?.zwid);
+    const zwid = user?.zwid ? Number(user.zwid) : null;
     const role = user?.role;
 
-    if (!zwid) {
+    if (zwid === null || isNaN(zwid)) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" }
@@ -20,10 +20,11 @@ export async function onRequestGet(context) {
         const url = new URL(request.url);
         const isAdminRequest = url.searchParams.get('all') === 'true';
 
+        // ============ Admin / Moderator ============
         if (isAdminRequest && (role === 'admin' || role === 'moderator')) {
             const results = await env.ZRL_DB.batch([
-                env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
-                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.zwid = a.zwid`),
+                env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`).bind(),
+                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.zwid = a.zwid`).bind(),
                 env.ZRL_DB.prepare(`
                     SELECT a.zwid, a.name, a.base_category, 
                            GROUP_CONCAT(t.name, ', ') as team
@@ -31,7 +32,7 @@ export async function onRequestGet(context) {
                     LEFT JOIN team_members tm ON a.zwid = tm.athlete_id
                     LEFT JOIN teams t ON tm.team_id = t.wtrl_team_id
                     GROUP BY a.zwid
-                `)
+                `).bind()
             ]);
 
             return new Response(JSON.stringify({
@@ -43,11 +44,13 @@ export async function onRequestGet(context) {
             });
         }
 
+        // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        console.log(`[DEBUG] GET Availability - Calling repository: zwid=${zwid} (${typeof zwid})`);
+        
+        // Passiamo explicitamente zwid come numero
         const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
         
-        const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
+        const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).bind().all();
         const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid).all();
         const participationIntent = await env.ZRL_DB.prepare(`
                 SELECT intent FROM zrl_participation_intent 
@@ -75,9 +78,9 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = Number(user?.zwid);
+    const zwid = user?.zwid ? Number(user.zwid) : null;
 
-    if (!zwid) {
+    if (zwid === null || isNaN(zwid)) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
@@ -85,6 +88,7 @@ export async function onRequestPost(context) {
         const body = await request.json();
         const { type, payload } = body;
 
+        // Intent
         if (type === 'intent') {
             const intentValue = payload.intent === true ? 1 : 0;
             await env.ZRL_DB.prepare(`
@@ -96,6 +100,7 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
 
+        // Preferences
         if (type === 'preferences') {
             const statements = payload.map(p => env.ZRL_DB.prepare(`
                     INSERT OR REPLACE INTO user_time_preferences 
@@ -106,18 +111,17 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
 
+        // Race Availability
         if (type === 'race') {
-            console.log("[DEBUG] Payload ricevuto:", JSON.stringify(payload));
             if (!payload || payload.roundId === undefined || payload.status === undefined) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
+            // Estrazione sicura
             let rawId = payload.roundId;
-            let rId = Number(typeof rawId === 'object' && rawId !== null ? (rawId.id || rawId) : rawId);
+            const rId = Number(typeof rawId === 'object' && rawId !== null ? (rawId.id || rawId) : rawId);
             const status = String(payload.status);
             
-            console.log(`[DEBUG] Final Bind: zwid=${zwid} (${typeof zwid}), race_id=${rId} (${typeof rId}), status=${status} (${typeof status})`);
-
             if (isNaN(zwid) || isNaN(rId)) {
                 return new Response(JSON.stringify({ error: "Invalid ID types" }), { status: 400 });
             }
