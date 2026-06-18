@@ -35,7 +35,7 @@ const Availability: React.FC = () => {
   const [intent, setIntent] = useState<boolean | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [userPrefs, setUserPrefs] = useState<Record<string, number>>({});
-  const [races, setRaces] = useState<Round[]>([]);
+  const [races, setRaces] = useState<any[]>([]); // Memorizza le gare singole
   const [presences, setPresences] = useState<Record<number, string>>({});
   
   const [loading, setLoading] = useState(true);
@@ -57,8 +57,18 @@ const Availability: React.FC = () => {
       const slots = data.timeSlots || [];
       const roundList = data.rounds || [];
 
+      // Flatten: Trasforma i round con gare annidate in una lista piatta di gare
+      const allRaces = roundList.reduce((acc: any[], round: any) => {
+          const roundRaces = (round.races || []).map((race: any) => ({
+              ...race,
+              roundId: round.id,
+              roundName: round.name
+          }));
+          return [...acc, ...roundRaces];
+      }, []);
+
       setTimeSlots(slots);
-      setRaces(roundList);
+      setRaces(allRaces);
       
       // Intent salvato
       if (data.intent !== undefined) {
@@ -73,9 +83,9 @@ const Availability: React.FC = () => {
       });
       setUserPrefs(prefs);
 
-      // Inizializziamo le presenze in modo sicuro
+      // Inizializziamo le presenze (usando race.id)
       const currentPresences: Record<number, string> = {};
-      roundList.forEach(r => {
+      allRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
       setPresences(currentPresences);
@@ -100,7 +110,6 @@ const Availability: React.FC = () => {
   const handleIntentSelection = async (value: boolean) => {
     setIntent(value);
     if (!value) {
-      // Se sceglie di NON partecipare, salviamo subito e usciamo
       setSaving(true);
       try {
         await api.updateIntent(false);
@@ -112,7 +121,6 @@ const Availability: React.FC = () => {
         setSaving(false);
       }
     } else {
-      // Se sceglie di SI, andiamo al prossimo step
       setCurrentStep(1);
     }
   };
@@ -121,10 +129,7 @@ const Availability: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      // 1. Salviamo l'intento
       await api.updateIntent(true);
-
-      // 2. Salviamo le preferenze orarie
       const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
       await api.updateTimePreferences(prefsPayload);
 
@@ -145,14 +150,14 @@ const Availability: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      // Salviamo tutto (compreso l'ultimo step delle gare)
       await api.updateIntent(true);
       
       const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
       await api.updateTimePreferences(prefsPayload);
 
-      const presencePromises = Object.entries(presences).map(([roundId, status]) => 
-        api.updateRaceAvailability(parseInt(roundId), status)
+      // Invia la disponibilità per ogni gara
+      const presencePromises = Object.entries(presences).map(([raceId, status]) => 
+        api.updateRaceAvailability(parseInt(raceId), status)
       );
       await Promise.all(presencePromises);
 
@@ -302,7 +307,7 @@ const Availability: React.FC = () => {
               <div className="w-16 h-16 rounded-[2rem] bg-zinc-800 text-[#fc6719] border border-[#fc6719]/30 flex items-center justify-center font-black italic text-3xl shadow-[0_0_30px_rgba(252,103,25,0.1)]">2</div>
               <div>
                 <h2 className="text-4xl font-black italic text-white uppercase tracking-tight leading-none">Calendario Gare</h2>
-                <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em] mt-2">Conferma la tua presenza effettiva per ogni data.</p>
+                <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em] mt-2">Conferma la tua presenza effettiva per ogni gara.</p>
               </div>
             </div>
 
