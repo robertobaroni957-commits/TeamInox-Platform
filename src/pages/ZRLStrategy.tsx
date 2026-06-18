@@ -25,7 +25,6 @@ import { RoundControlProvider, useRoundControl } from './admin/RoundControlConte
 function ZRLStrategyContent() {
     const { rounds, selectedWtrlId, activeRound, activeRaces } = useRoundControl();
     const [selectedCategory, setSelectedCategory] = useState<'A' | 'C'>('A');
-    const [loading, setLoading] = useState(false);
 
     const categories = [
         { id: 'A', label: 'Categories A / B', color: 'bg-red-500' },
