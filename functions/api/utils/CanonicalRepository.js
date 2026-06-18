@@ -18,6 +18,11 @@ const RoundRepository = {
 
         const { results } = await db.prepare(query).bind(sanitize(zwid, 'zwid'), sanitize(seasonCode, 'seasonCode')).all();
         
+        console.log(`[CanonicalRepository] Query results count: ${results?.length}`);
+        if (results && results.length > 0) {
+            console.log(`[CanonicalRepository] First row example: ${JSON.stringify(results[0])}`);
+        }
+        
         const roundsMap = new Map();
 
         for (const row of results) {
