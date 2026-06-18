@@ -22,13 +22,14 @@ export default function RoundRealityPanel() {
     activeRaces
       .filter(r => {
         if (!r || !r.name) return false;
-        // Rimuoviamo il filtro aggressivo che esclude Round o ARCHIVED
-        return true;
+        const n = r.name.toUpperCase();
+        // Filtriamo per mantenere solo gare valide (Race 1-4)
+        return !n.includes('ARCHIVED') && (n.includes('RACE 1') || n.includes('RACE 2') || n.includes('RACE 3') || n.includes('RACE 4'));
       })
       .forEach(r => {
         // Pulizia profonda del nome: "Race 1 (A)" -> "RACE 1"
         const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
-        const category = r.subgroup_label || 'A'; // Estrai categoria dal JSON se possibile
+        const category = r.subgroup_label || 'A';
 
         if (!map.has(cleanName)) {
           // Usiamo il nome originale senza categoria per la visualizzazione
