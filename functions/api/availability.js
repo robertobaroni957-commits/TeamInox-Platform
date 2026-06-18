@@ -24,8 +24,8 @@ export async function onRequestGet(context) {
         // ============ Admin / Moderator ============
         if (isAdminRequest && (role === 'admin' || role === 'moderator')) {
             const results = await env.ZRL_DB.batch([
-                env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`).bind(),
-                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.zwid = a.zwid`).bind(),
+                env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
+                env.ZRL_DB.prepare(`SELECT v.*, a.name FROM availability v JOIN athletes a ON v.zwid = a.zwid`),
                 env.ZRL_DB.prepare(`
                     SELECT a.zwid, a.name, a.base_category, 
                            GROUP_CONCAT(t.name, ', ') as team
@@ -33,7 +33,7 @@ export async function onRequestGet(context) {
                     LEFT JOIN team_members tm ON a.zwid = tm.athlete_id
                     LEFT JOIN teams t ON tm.team_id = t.wtrl_team_id
                     GROUP BY a.zwid
-                `).bind()
+                `)
             ]);
 
             return new Response(JSON.stringify({
@@ -47,7 +47,7 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
+        const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid));
         
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
         const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid)).all();
@@ -120,7 +120,7 @@ export async function onRequestPost(context) {
             const rId = sanitize(payload.roundId);
             const status = sanitize(payload.status);
             
-            if (rId === null || status === null) {
+            if (zwid === null || rId === null || status === null) {
                 console.error(`[CRITICAL] Bind failed: zwid=${zwid}, rId=${rId}, status=${status}`);
                 return new Response(JSON.stringify({ error: "Invalid ID/status types" }), { status: 400 });
             }
