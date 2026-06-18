@@ -30,7 +30,7 @@ const STEPS = [
   { id: 'races', title: 'Calendario', icon: CalendarCheck }
 ];
 
-const Availability: React.FC = () => {
+const Availability: React.FC = () => { // force-cache-invalidation
   const [currentStep, setCurrentStep] = useState(0);
   const [intent, setIntent] = useState<boolean | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
