@@ -164,10 +164,10 @@ export async function onRequestPost(context) {
 
             console.log(`[DEBUG] Inserimento availability: roundId=${payload.roundId}, status=${payload.status}`);
 
-            // Validation: Check if round exists
-            const roundCheck = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE id = ?").bind(payload.roundId).first();
+            // Validation: Check if round exists in rounds_v2
+            const roundCheck = await env.ZRL_DB.prepare("SELECT id FROM rounds_v2 WHERE id = ?").bind(payload.roundId).first();
             if (!roundCheck) {
-                console.error(`[DEBUG] Invalid roundId: ${payload.roundId}`);
+                console.error(`[DEBUG] Invalid roundId in rounds_v2: ${payload.roundId}`);
                 return new Response(JSON.stringify({ error: `Invalid roundId: ${payload.roundId}` }), { 
                     status: 400,
                     headers: { "Content-Type": "application/json" }
