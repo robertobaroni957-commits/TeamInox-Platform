@@ -22,24 +22,22 @@ export default function RoundRealityPanel() {
     activeRaces
       .filter(r => {
         if (!r || !r.name) return false;
-        const n = r.name.toUpperCase();
-        // Filtro ultra-aggressivo
-        const isGarbage = n.includes('ARCHIVED') || n.includes('TBD') || n.includes('UNKNOWN') || n.includes('ROUND');
-        const hasValidCategory = r.category && r.category !== 'Unknown';
-        return !isGarbage && hasValidCategory;
+        // Rimuoviamo il filtro aggressivo che esclude Round o ARCHIVED
+        return true;
       })
       .forEach(r => {
         // Pulizia profonda del nome: "Race 1 (A)" -> "RACE 1"
         const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
+        const category = r.subgroup_label || 'A'; // Estrai categoria dal JSON se possibile
 
         if (!map.has(cleanName)) {
           // Usiamo il nome originale senza categoria per la visualizzazione
           const displayName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim();
-          map.set(cleanName, { ...r, name: displayName, categories: [r.category] });
+          map.set(cleanName, { ...r, name: displayName, categories: [category] });
         } else {
           const existing = map.get(cleanName);
-          if (!existing.categories.includes(r.category)) {
-              existing.categories.push(r.category);
+          if (!existing.categories.includes(category)) {
+              existing.categories.push(category);
               existing.categories.sort();
           }
         }
