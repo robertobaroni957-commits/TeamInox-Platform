@@ -63,7 +63,7 @@ export async function onRequestGet(context) {
             env.ZRL_DB.prepare(`
                 SELECT r.id, r.name, r.starts_at as date,
                     (SELECT status FROM availability WHERE zwid = ? AND round_id = r.id) as status
-                FROM rounds_v2 r
+                FROM rounds r
                 WHERE r.season_code = 'zrl_25_26'
                 ORDER BY r.starts_at ASC
             `).bind(zwid),
@@ -164,8 +164,8 @@ export async function onRequestPost(context) {
 
             console.log(`[DEBUG] Inserimento availability: roundId=${payload.roundId}, status=${payload.status}`);
 
-            // Validation: Check if round exists in rounds_v2
-            const roundCheck = await env.ZRL_DB.prepare("SELECT id FROM rounds_v2 WHERE id = ?").bind(payload.roundId).first();
+            // Validation: Check if round exists in rounds
+            const roundCheck = await env.ZRL_DB.prepare("SELECT id FROM rounds WHERE id = ?").bind(payload.roundId).first();
             if (!roundCheck) {
                 console.error(`[DEBUG] Invalid roundId in rounds_v2: ${payload.roundId}`);
                 return new Response(JSON.stringify({ error: `Invalid roundId: ${payload.roundId}` }), { 
