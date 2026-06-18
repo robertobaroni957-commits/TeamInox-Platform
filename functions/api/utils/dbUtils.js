@@ -4,7 +4,7 @@
  * Sanitizza un valore per il binding in una query SQLite D1.
  * Garantisce che l'oggetto non venga passato direttamente, causando D1_TYPE_ERROR.
  */
-export const sanitize = (val) => {
+export const sanitize = (val, paramName = 'unknown') => {
     if (val === null || val === undefined) return null;
     
     // Se è un numero, stringa o booleano (primitivi), restituiscilo
@@ -20,7 +20,7 @@ export const sanitize = (val) => {
             if (key in val) return Number(val[key]);
         }
         
-        console.error("[dbUtils] Attempted to bind unsupported object:", val);
+        console.error(`[dbUtils] CRITICAL: Attempted to bind unsupported object to ${paramName}:`, JSON.stringify(val));
         return null; 
     }
     

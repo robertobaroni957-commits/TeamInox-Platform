@@ -47,14 +47,14 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid));
-        
+        const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
+
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
-        const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid)).all();
+        const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid, 'zwid')).all();
         const participationIntent = await env.ZRL_DB.prepare(`
                 SELECT intent FROM zrl_participation_intent 
                 WHERE zwid = ? AND series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
-            `).bind(sanitize(zwid)).all();
+            `).bind(sanitize(zwid, 'zwid')).all();
 
         return new Response(JSON.stringify({
             timeSlots: timeSlots.results,
