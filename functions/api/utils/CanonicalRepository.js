@@ -1,8 +1,7 @@
-// functions/api/utils/CanonicalRepository.js
+import { sanitize } from "./dbUtils";
+
 export const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
-        // Ensure zwid is a number or null
-        const safeZwid = zwid === null ? null : Number(zwid);
         const query = `
             SELECT 
                 r.id, r.wtrl_id, r.season_code, r.round_number, r.name,
@@ -17,7 +16,7 @@ export const RoundRepository = {
             ORDER BY r.round_number, ra.id;
         `;
 
-        const { results } = await db.prepare(query).bind(safeZwid, seasonCode).all();
+        const { results } = await db.prepare(query).bind(sanitize(zwid, 'zwid'), sanitize(seasonCode, 'seasonCode')).all();
         
         const roundsMap = new Map();
 
@@ -48,7 +47,7 @@ export const RoundRepository = {
                     route: row.route,
                     laps: row.raw_json ? (JSON.parse(row.raw_json).duration || row.laps || 1) : (row.laps || 1),
                     raw_json: row.raw_json,
-                    status: row.status // Availability status
+                    status: row.status
                 });
             }
         }
@@ -70,7 +69,7 @@ export const RoundRepository = {
             ORDER BY ra.id;
         `;
 
-        const { results } = await db.prepare(query).bind(roundId).all();
+        const { results } = await db.prepare(query).bind(sanitize(roundId, 'roundId')).all();
         if (!results || results.length === 0) return null;
 
         return {
@@ -96,3 +95,5 @@ export const RoundRepository = {
         };
     }
 };
+
+export { RoundRepository };
