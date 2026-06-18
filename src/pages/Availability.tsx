@@ -71,10 +71,11 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: manteniamo solo quelle che seguono il pattern 'RACE X' ed escludiamo ARCHIVED/ROUND
+      // Filtriamo le gare: manteniamo solo 'Race 1' - 'Race 4'
       const filteredRaces = allRaces.filter(r => {
         const n = r.name.toUpperCase();
-        return !n.includes('ARCHIVED') && !n.includes('ROUND') && /RACE\s+\d+/.test(n);
+        // Regex precisa per Race 1, 2, 3, 4
+        return !n.includes('ARCHIVED') && !n.includes('ROUND') && /RACE\s+[1-4](\s+|$)/i.test(n);
       });
       
       // Deduplichiamo basandoci sul nome pulito
@@ -86,7 +87,11 @@ const Availability: React.FC = () => { // force-cache-invalidation
         }
       });
       
-      const uniqueRaces = Array.from(uniqueRacesMap.values());
+      const uniqueRaces = Array.from(uniqueRacesMap.values()).sort((a, b) => {
+          const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
+          const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
+          return numA - numB;
+      });
       
       setRaces(uniqueRaces);
       setTimeSlots(data.timeSlots || []);
