@@ -46,8 +46,6 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        
-        // Passiamo explicitamente zwid come numero
         const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
         
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).bind().all();
