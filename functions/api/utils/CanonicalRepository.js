@@ -1,4 +1,4 @@
-export const RoundRepository = {
+const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
         const query = `
             SELECT 
@@ -93,3 +93,5 @@ export const RoundRepository = {
         };
     }
 };
+
+export default RoundRepository;
