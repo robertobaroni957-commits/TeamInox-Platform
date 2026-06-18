@@ -62,20 +62,18 @@ const Availability: React.FC = () => { // force-cache-invalidation
               ...race,
               roundId: round.id,
               roundName: round.name,
-              roundNumber: round.round_number // Aggiunto per filtrare
+              syncState: round.lifecycle?.sync_state // Assumiamo sync_state nel lifecycle
           }));
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: escludiamo ARCHIVED e nomi vuoti
-      let filteredRaces = allRaces.filter(r => r.name && !r.name.toLowerCase().includes('archived'));
+      // Filtriamo le gare: escludiamo ARCHIVED e manteniamo solo round con sync_state 'CREATED' (attivi)
+      const filteredRaces = allRaces.filter(r => 
+        r.name && 
+        !r.name.toLowerCase().includes('archived') && 
+        r.syncState === 'CREATED'
+      );
 
-      // Filtriamo per round attivo (il round con il numero più alto)
-      if (filteredRaces.length > 0) {
-        const maxRound = Math.max(...filteredRaces.map(r => r.roundNumber || 0));
-        filteredRaces = filteredRaces.filter(r => r.roundNumber === maxRound);
-      }
-      
       setRaces(filteredRaces);
       setTimeSlots(data.timeSlots || []);
 
