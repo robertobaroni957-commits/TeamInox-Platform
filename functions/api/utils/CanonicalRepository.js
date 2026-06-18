@@ -1,12 +1,15 @@
+// functions/api/utils/CanonicalRepository.js
 export const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
+        // Ensure zwid is a number or null
+        const safeZwid = zwid === null ? null : Number(zwid);
         const query = `
             SELECT 
                 r.id, r.wtrl_id, r.season_code, r.round_number, r.name,
                 r.starts_at, r.ends_at, r.sync_state,
                 ra.id as race_id, ra.name as race_name, ra.date as race_date, 
                 ra.world, ra.route, ra.laps, ra.raw_json,
-                (SELECT status FROM availability WHERE zwid = ? AND round_id = ra.id) as status
+                (SELECT status FROM availability_races WHERE zwid = ? AND race_id = ra.id) as status
             FROM rounds r
             LEFT JOIN zrl_round_groups rg ON r.wtrl_id = rg.external_season_id
             LEFT JOIN zrl_races ra ON rg.id = ra.zrl_round_group_id
@@ -14,7 +17,7 @@ export const RoundRepository = {
             ORDER BY r.round_number, ra.id;
         `;
 
-        const { results } = await db.prepare(query).bind(zwid, seasonCode).all();
+        const { results } = await db.prepare(query).bind(safeZwid, seasonCode).all();
         
         const roundsMap = new Map();
 
@@ -87,7 +90,7 @@ export const RoundRepository = {
                 date: r.race_date,
                 world: r.world,
                 route: r.route,
-                laps: r.raw_json ? (JSON.parse(r.raw_json).duration || r.laps || 1) : (r.laps || 1),
+                laps: r.raw_json ? (JSON.parse(r.raw_json).duration || r.laps || 1) : (row.laps || 1),
                 raw_json: r.raw_json
             }))
         };
