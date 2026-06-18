@@ -98,8 +98,8 @@ export function RoundControlProvider({ children }: { children: ReactNode }) {
             return;
         }
         try {
-            // Aggiornato per usare round_v2_id come richiesto dal nuovo endpoint
-            const res = await fetch(`/api/get-races?round_v2_id=${targetId}`);
+            // Aggiornato per usare round_id come richiesto dal nuovo modello canonico
+            const res = await fetch(`/api/get-races?round_id=${targetId}`);
             if (res.ok) {
                 const data = await res.json();
                 setActiveRaces(data);

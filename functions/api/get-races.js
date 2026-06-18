@@ -2,13 +2,13 @@ import { getRoundRepository } from "./utils/repositoryLoader";
 
 export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
-    const round_v2_id = url.searchParams.get("round_v2_id");
+    const round_id = url.searchParams.get("round_id");
 
-    if (!round_v2_id) return new Response(JSON.stringify({ error: "round_v2_id mancante" }), { status: 400 });
+    if (!round_id) return new Response(JSON.stringify({ error: "round_id mancante" }), { status: 400 });
 
     try {
         const repo = getRoundRepository(env.ZRL_DB);
-        const canonicalRound = await repo.getRoundById(parseInt(round_v2_id, 10));
+        const canonicalRound = await repo.getRoundById(parseInt(round_id, 10));
 
         if (!canonicalRound) return new Response(JSON.stringify({ error: "Round non trovato" }), { status: 404 });
         
