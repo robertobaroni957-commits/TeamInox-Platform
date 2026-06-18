@@ -48,7 +48,15 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        const userRounds = await repo.getCanonicalRoundsWithUserStatus('zrl_25_26', sanitize(zwid, 'zwid'));
+        const allRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
+
+        // Filtriamo per round attivo: prendiamo quello con il round_number più alto tra quelli non archiviati/completati
+        // Se non ne troviamo uno 'CREATED', prendiamo quello con il numero più alto
+        const activeRound = allRounds
+            .filter(r => r.lifecycle?.sync_state !== 'ARCHIVED')
+            .sort((a, b) => b.round_number - a.round_number)[0];
+
+        const userRounds = activeRound ? [activeRound] : allRounds;
 
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
         const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid, 'zwid')).all();
