@@ -199,6 +199,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
   );
 
   const renderStep = () => {
+    console.log("[Availability Debug] renderStep called with races:", races);
     switch (currentStep) {
       case 0: // INTENT
         return (
