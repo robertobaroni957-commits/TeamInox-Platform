@@ -14,14 +14,14 @@ const RoundRepository = {
                 ra.id as race_id, ra.name as race_name, ra.date as race_date, 
                 ra.world, ra.route, ra.laps, ra.raw_json,
                 ${statusSubquery} as status
-            FROM rounds_v2 r
+            FROM rounds r
             LEFT JOIN zrl_round_groups rg ON r.wtrl_id = rg.external_season_id
             LEFT JOIN zrl_races ra ON rg.id = ra.zrl_round_group_id
             WHERE r.season_code = ?
             ORDER BY r.round_number, ra.id;
         `;
 
-        console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}', zwid: ${zwid}`);
+        console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}'`);
         
         // Bind params: if zwid provided we have 2 params (zwid, seasonCode), otherwise just (seasonCode)
         const safeSeasonCode = sanitize(seasonCode, 'seasonCode');
@@ -34,12 +34,6 @@ const RoundRepository = {
         }
         
         console.log(`[CanonicalRepository] Query results count: ${results ? results.length : 'null'}`);
-        if (results && results.length > 0) {
-            console.log(`[CanonicalRepository] First row example: ${JSON.stringify(results[0])}`);
-        } else {
-            const check = await db.prepare("SELECT count(*) as count FROM rounds_v2 WHERE season_code = ?").bind(safeSeasonCode).first();
-            console.log(`[CanonicalRepository] DB check for season '${seasonCode}': found ${check?.count} rows in rounds_v2`);
-        }
         
         const roundsMap = new Map();
 
@@ -85,7 +79,7 @@ const RoundRepository = {
                 r.starts_at, r.ends_at, r.sync_state,
                 ra.id as race_id, ra.name as race_name, ra.date as race_date, 
                 ra.world, ra.route, ra.laps, ra.raw_json
-            FROM rounds_v2 r
+            FROM rounds r
             LEFT JOIN zrl_round_groups rg ON r.wtrl_id = rg.external_season_id
             LEFT JOIN zrl_races ra ON rg.id = ra.zrl_round_group_id
             WHERE r.id = ?
