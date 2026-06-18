@@ -18,15 +18,16 @@ export default function RoundRealityPanel() {
     const map = new Map<string, any>();
 
     if (!activeRaces || !Array.isArray(activeRaces)) return [];
-
-    activeRaces
-      .filter(r => {
-        if (!r || !r.name) return false;
-        const n = r.name.toUpperCase();
-        // Filtriamo per mantenere solo gare valide (Race 1-4)
-        return !n.includes('ARCHIVED') && (n.includes('RACE 1') || n.includes('RACE 2') || n.includes('RACE 3') || n.includes('RACE 4'));
-      })
-      .forEach(r => {
+activeRaces
+  .filter(r => {
+    if (!r || !r.name) return false;
+    const n = r.name.toUpperCase();
+    // Filtriamo per mantenere solo gare che seguono il pattern 'RACE X'
+    // Escludiamo esplicitamente 'ROUND' e 'ARCHIVED'
+    return !n.includes('ARCHIVED') && !n.includes('ROUND') && /RACE\s+\d+/.test(n);
+  })
+  .forEach(r => {
+    // ... (rest of the logic)
         // Pulizia profonda del nome: "Race 1 (A)" -> "RACE 1"
         const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
         const category = r.subgroup_label || 'A';
