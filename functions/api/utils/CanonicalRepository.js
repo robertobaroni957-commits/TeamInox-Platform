@@ -16,11 +16,16 @@ const RoundRepository = {
             ORDER BY r.round_number, ra.id;
         `;
 
+        console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}'`);
         const { results } = await db.prepare(query).bind(sanitize(zwid, 'zwid'), sanitize(seasonCode, 'seasonCode')).all();
         
-        console.log(`[CanonicalRepository] Query results count: ${results?.length}`);
+        console.log(`[CanonicalRepository] Query results count: ${results ? results.length : 'null'}`);
         if (results && results.length > 0) {
             console.log(`[CanonicalRepository] First row example: ${JSON.stringify(results[0])}`);
+        } else {
+            // Debug the specific rows in DB for this season code
+            const check = await db.prepare("SELECT count(*) as count FROM rounds WHERE season_code = ?").bind(sanitize(seasonCode, 'seasonCode')).first();
+            console.log(`[CanonicalRepository] DB check for season '${seasonCode}': found ${check?.count} rows`);
         }
         
         const roundsMap = new Map();
