@@ -120,7 +120,7 @@ export async function onRequestPost(context) {
                 INSERT OR REPLACE INTO availability_races 
                 (zwid, race_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(zwid, payload.roundId, payload.status).run();
+            `).bind(zwid, Number(payload.roundId), String(payload.status)).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
