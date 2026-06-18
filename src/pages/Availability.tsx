@@ -66,25 +66,28 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Salviamo gli slot orari nello stato
+      // Filtriamo le gare: escludiamo ARCHIVED e nomi vuoti
+      const filteredRaces = allRaces.filter(r => r.name && !r.name.toLowerCase().includes('archived'));
+
+      setRaces(filteredRaces);
       setTimeSlots(data.timeSlots || []);
 
-      // Salviamo le gare nello stato
-      setRaces(allRaces);
+      if (data.intent !== undefined) setIntent(data.intent);
 
       // Inizializziamo le preferenze
       const prefs: Record<string, number | null> = {};
-      (data.timeSlots || []).forEach(slot => {
-        const existing = data.preferences?.find(p => p.time_slot_id === slot.id);
+      (data.timeSlots || []).forEach((slot: any) => {
+        const existing = data.preferences?.find((p: any) => p.time_slot_id === slot.id);
         prefs[slot.id] = existing ? existing.preference_level : null;
       });
       setUserPrefs(prefs as Record<string, number>);
 
       // Inizializziamo le presenze
       const currentPresences: Record<number, string> = {};
-      allRaces.forEach((r: any) => {
+      filteredRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
+      setPresences(currentPresences);
       setPresences(currentPresences);
 
     } catch (e: any) {
