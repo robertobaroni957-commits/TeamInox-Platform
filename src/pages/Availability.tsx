@@ -76,7 +76,7 @@ const Availability: React.FC = () => {
 
       // Inizializziamo le presenze
       const currentPresences: Record<number, string> = {};
-      activeRaces.forEach((r: any) => {
+      allRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
       setPresences(currentPresences);
