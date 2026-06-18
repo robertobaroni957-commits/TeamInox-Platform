@@ -93,6 +93,7 @@ export function RoundControlProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadRaces() {
         const targetId = selectedRoundId || activeRound?.id;
+        console.log("[RoundControl] Loading races for round:", targetId);
         if (!targetId) {
             setActiveRaces([]);
             return;
@@ -102,7 +103,10 @@ export function RoundControlProvider({ children }: { children: ReactNode }) {
             const res = await fetch(`/api/get-races?round_id=${targetId}`);
             if (res.ok) {
                 const data = await res.json();
+                console.log("[RoundControl] Races loaded:", data);
                 setActiveRaces(data);
+            } else {
+                console.error("[RoundControl] Fetch races failed:", res.status);
             }
         } catch (e) {
             console.error("Error loading races", e);
