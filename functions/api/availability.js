@@ -50,11 +50,10 @@ export async function onRequestGet(context) {
         const repo = getRoundRepository(env.ZRL_DB);
         const allRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
 
-        // Filtriamo per round attivo: prendiamo quello con il round_number più alto tra quelli non archiviati/completati
-        // Se non ne troviamo uno 'CREATED', prendiamo quello con il numero più alto
+        // Filtriamo per round attivo: prendiamo quello con il round_number più BASSO tra quelli non archiviati
         const activeRound = allRounds
             .filter(r => r.lifecycle?.sync_state !== 'ARCHIVED')
-            .sort((a, b) => b.round_number - a.round_number)[0];
+            .sort((a, b) => a.round_number - b.round_number)[0];
 
         const userRounds = activeRound ? [activeRound] : allRounds;
 
