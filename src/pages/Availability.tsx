@@ -52,8 +52,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
       
       if (data.error) throw new Error(data.error);
 
-      // CORREZIONE: Gestione flessibile della risposta API
-      // Se data è un array, è la lista dei round. Se è un oggetto, cerchiamo 'rounds'
+      // Gestione flessibile della risposta API
       const roundList = Array.isArray(data) ? data : (data.rounds || []);
       
       // Flatten: Trasforma i round con gare annidate in una lista piatta di gare
@@ -71,21 +70,15 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo e puliamo le gare
+      // Filtriamo le gare: manteniamo tutto tranne ARCHIVED e ROUND
       const filteredRaces = allRaces.filter(r => {
         const n = r.name.toUpperCase();
-        // 1. Escludiamo esplicitamente 'ARCHIVED'
-        if (n.includes('ARCHIVED')) return false;
-        // 2. Escludiamo round generici e manteniamo solo i pattern 'Race X'
-        if (n.includes('ROUND')) return false;
-        // 3. Manteniamo solo Race 1, 2, 3, 4
-        return /RACE\s+[1-4](\s+|$)/i.test(n);
+        return !n.includes('ARCHIVED') && !n.includes('ROUND');
       });
       
       // Deduplichiamo basandoci sul nome pulito
       const uniqueRacesMap = new Map();
       filteredRaces.forEach(r => {
-        // Nome pulito (es: "Race 1 (A)" -> "Race 1")
         const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim();
         const key = cleanName.toUpperCase();
         
