@@ -72,9 +72,9 @@ export async function onRequestPost(context) {
     
         const secret = new TextEncoder().encode(env.JWT_SECRET);
         
-        // Ensure admin remains admin, other roles become user
+        // Ensure admin, moderator, captain remain, other roles become user
         let role = user.role ? user.role.toString().trim().toLowerCase() : 'user';
-        if (role !== 'admin' && role !== 'moderator') {
+        if (role !== 'admin' && role !== 'moderator' && role !== 'captain') {
             role = 'user';
         }
 
