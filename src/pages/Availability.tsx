@@ -70,20 +70,11 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: rimuoviamo le archiviate e puliamo i nomi
-      const filteredRaces = allRaces.filter(r => {
-        if (!r.name) return false;
-        const n = r.name.toUpperCase();
-        return !n.includes('ARCHIVED');
-      });
-      
-      // Deduplichiamo basandoci sul nome pulito
+      // Rimuoviamo il filtraggio restrittivo, manteniamo solo la pulizia dei nomi e la deduplicazione
       const uniqueRacesMap = new Map();
-      filteredRaces.forEach(r => {
-        // Logica migliorata per estrarre 'Race X' dal nome completo
-        // Cerca 'Race' seguito da un numero, ignorando il resto
-        const match = r.name.match(/Race\s+\d+/i);
-        const cleanName = match ? match[0] : r.name.replace(/\s*\([A-Z]\)$/i, '').replace(/\s*-\s*RACE\s+\d+/i, '').trim();
+      allRaces.forEach(r => {
+        // Nome pulito
+        const cleanName = r.name || 'Gara senza nome';
         const key = cleanName.toUpperCase();
         
         if (!uniqueRacesMap.has(key)) {
@@ -261,10 +252,8 @@ const Availability: React.FC = () => { // force-cache-invalidation
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8 py-10">
             <h2 className="text-4xl font-black italic text-white uppercase">Calendario Gare</h2>
             <div className="grid gap-4">
-              {console.log("[Availability Rendering] Rendering races:", races)}
               {races.length === 0 && <p className="text-white">Nessuna gara trovata.</p>}
               {races.map(race => {
-                console.log("[Availability Rendering] Rendering race:", race);
                 const isPresent = presences[race.id] === 'available';
                 const formattedDate = race.date ? new Date(race.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD';
                 return (
