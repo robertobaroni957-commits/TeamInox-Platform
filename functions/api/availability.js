@@ -2,6 +2,7 @@
 // API Availability - Canonical
 // ================================
 import { getRoundRepository } from "./utils/repositoryLoader";
+import { sanitize } from "./utils/dbUtils";
 
 export async function onRequestGet(context) {
     const { env, data, request } = context;
@@ -48,12 +49,12 @@ export async function onRequestGet(context) {
         const repo = getRoundRepository(env.ZRL_DB);
         const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
         
-        const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).bind().all();
-        const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(zwid).all();
+        const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
+        const userPrefs = await env.ZRL_DB.prepare(`SELECT * FROM user_time_preferences WHERE zwid = ?`).bind(sanitize(zwid)).all();
         const participationIntent = await env.ZRL_DB.prepare(`
                 SELECT intent FROM zrl_participation_intent 
                 WHERE zwid = ? AND series_id = (SELECT id FROM series WHERE is_active = 1 LIMIT 1)
-            `).bind(zwid).all();
+            `).bind(sanitize(zwid)).all();
 
         return new Response(JSON.stringify({
             timeSlots: timeSlots.results,
@@ -93,7 +94,7 @@ export async function onRequestPost(context) {
                 INSERT OR REPLACE INTO zrl_participation_intent 
                 (zwid, series_id, intent) 
                 VALUES (?, (SELECT id FROM series WHERE is_active = 1 LIMIT 1), ?)
-            `).bind(zwid, intentValue).run();
+            `).bind(sanitize(zwid), intentValue).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
@@ -104,7 +105,7 @@ export async function onRequestPost(context) {
                     INSERT OR REPLACE INTO user_time_preferences 
                     (zwid, time_slot_id, preference_level) 
                     VALUES (?, ?, ?)
-                `).bind(zwid, Number(p.slotId), Number(p.level)));
+                `).bind(sanitize(zwid), sanitize(p.slotId), sanitize(p.level)));
             await env.ZRL_DB.batch(statements);
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
@@ -115,20 +116,21 @@ export async function onRequestPost(context) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
-            // Estrazione sicura
-            let rawId = payload.roundId;
-            const rId = Number(typeof rawId === 'object' && rawId !== null ? (rawId.id || rawId) : rawId);
-            const status = String(payload.status);
+            // Sanitizzazione sicura
+            const rId = sanitize(payload.roundId);
+            const status = sanitize(payload.status);
             
-            if (isNaN(zwid) || isNaN(rId)) {
-                return new Response(JSON.stringify({ error: "Invalid ID types" }), { status: 400 });
+            if (rId === null || status === null) {
+                console.error(`[CRITICAL] Bind failed: zwid=${zwid}, rId=${rId}, status=${status}`);
+                return new Response(JSON.stringify({ error: "Invalid ID/status types" }), { status: 400 });
             }
 
+            // Scrittura nella tabella specifica per le gare
             await env.ZRL_DB.prepare(`
                 INSERT OR REPLACE INTO availability_races 
                 (zwid, race_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(zwid, rId, status).run();
+            `).bind(sanitize(zwid), rId, status).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
