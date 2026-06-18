@@ -140,9 +140,10 @@ const Availability: React.FC = () => {
       await api.updateTimePreferences(prefsPayload);
 
       // Invia la disponibilità per ogni gara
-      const presencePromises = Object.entries(presences).map(([raceId, status]) => 
-        api.updateRaceAvailability(parseInt(raceId), status)
-      );
+      const presencePromises = Object.entries(presences).map(([raceId, status]) => {
+        const id = parseInt(raceId, 10);
+        return api.updateRaceAvailability(id, status);
+      });
       await Promise.all(presencePromises);
 
       setSuccess(true);
