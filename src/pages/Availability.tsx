@@ -117,8 +117,8 @@ const Availability: React.FC = () => {
       const prefsPayload = Object.entries(userPrefs).map(([slotId, level]) => ({ slotId, level }));
       await api.updateTimePreferences(prefsPayload);
 
-      if (goToNext && races.length > 0) {
-        setCurrentStep(2);
+      if (goToNext) {
+        setCurrentStep(2); // Passa allo step delle gare
       } else {
         setSuccess(true);
         setTimeout(() => navigate('/dashboard'), 2000);
