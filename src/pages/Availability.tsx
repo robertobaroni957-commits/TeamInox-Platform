@@ -67,11 +67,11 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: escludiamo ARCHIVED e manteniamo solo round con sync_state 'CREATED' (attivi)
+      // Filtriamo le gare: escludiamo ARCHIVED e manteniamo solo round con sync_state valido per l'utente (non solo CREATED)
       const filteredRaces = allRaces.filter(r => 
         r.name && 
         !r.name.toLowerCase().includes('archived') && 
-        r.syncState === 'CREATED'
+        (r.syncState === 'CREATED' || r.syncState === 'COMPLETED' || r.syncState === 'PENDING')
       );
 
       setRaces(filteredRaces);
