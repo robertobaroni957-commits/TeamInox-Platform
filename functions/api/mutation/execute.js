@@ -52,20 +52,20 @@ export async function onRequestPost({ request, env }) {
             const insertStmts = [];
 
             // 1. Identify the Round in the 2026 schema
-            const roundV2 = await db.prepare("SELECT * FROM rounds_v2 WHERE id = ?").bind(roundId).first();
+            const roundV2 = await db.prepare("SELECT * FROM rounds WHERE id = ?").bind(sanitize(roundId, 'roundId')).first();
             if (!roundV2) {
-                return new Response(JSON.stringify({ success: false, error: "ROUND_V2_NOT_FOUND", roundId }), { status: 404, headers: corsHeaders });
+                return new Response(JSON.stringify({ success: false, error: "ROUND_NOT_FOUND", roundId }), { status: 404, headers: corsHeaders });
             }
 
             // 2. Find/Create Round Group mapping
-            let roundGroup = await db.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(roundV2.wtrl_id).first();
+            let roundGroup = await db.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(sanitize(roundV2.wtrl_id, 'wtrl_id')).first();
             if (!roundGroup) {
-                await db.prepare("INSERT INTO zrl_round_groups (series_id, round_index, external_season_id, description) VALUES (1, ?, ?, ?)").bind(roundV2.round_number, roundV2.wtrl_id, roundV2.name).run();
-                roundGroup = await db.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(roundV2.wtrl_id).first();
+                await db.prepare("INSERT INTO zrl_round_groups (series_id, round_index, external_season_id, description) VALUES (1, ?, ?, ?)").bind(sanitize(roundV2.round_number, 'round_number'), sanitize(roundV2.wtrl_id, 'wtrl_id'), sanitize(roundV2.name, 'name')).run();
+                roundGroup = await db.prepare("SELECT id FROM zrl_round_groups WHERE external_season_id = ?").bind(sanitize(roundV2.wtrl_id, 'wtrl_id')).first();
             }
             const roundGroupId = roundGroup.id;
 
-            // Normalize input: it could be a single direct WTRL object or an array of {key, data}
+            // Normalize input
             const itemsToProcess = Array.isArray(results) ? results : [{ 
                 key: results.args?.class || results.zrldivision || results.payload?.[0]?.class, 
                 data: results 
@@ -83,7 +83,7 @@ export async function onRequestPost({ request, env }) {
 
                 if (isGC) {
                     // --- GC STANDINGS LOGIC ---
-                    insertStmts.push(db.prepare("DELETE FROM zrl_team_standings WHERE round_group_id = ? AND league_key = ?").bind(roundGroupId, leagueKey));
+                    insertStmts.push(db.prepare("DELETE FROM zrl_team_standings WHERE round_group_id = ? AND league_key = ?").bind(sanitize(roundGroupId, 'roundGroupId'), sanitize(leagueKey, 'leagueKey')));
 
                     for (const team of data) {
                         const teamName = team.d || team.teamname || "Unknown";
@@ -96,10 +96,10 @@ export async function onRequestPost({ request, env }) {
                                 r1, r2, r3, r4, r5, r6, r7, r8, is_inox
                             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         `).bind(
-                            roundGroupId, leagueKey, teamName, team.c, 
-                            team.j, team.e, team.k, team.i, (parseInt(team.e) || 0),
-                            team.r1, team.r2, team.r3, team.r4, team.r5, team.r6, team.r7, team.r8,
-                            isInox ? 1 : 0
+                            sanitize(roundGroupId, 'roundGroupId'), sanitize(leagueKey, 'leagueKey'), sanitize(teamName, 'teamName'), sanitize(team.c, 'rank'),
+                            sanitize(team.j, 'league_points'), sanitize(team.e, 'pts_fal'), sanitize(team.k, 'pts_fts'), sanitize(team.i, 'pts_finish'), sanitize((parseInt(team.e) || 0), 'total_race_points'),
+                            sanitize(team.r1, 'r1'), sanitize(team.r2, 'r2'), sanitize(team.r3, 'r3'), sanitize(team.r4, 'r4'), sanitize(team.r5, 'r5'), sanitize(team.r6, 'r6'), sanitize(team.r7, 'r7'), sanitize(team.r8, 'r8'),
+                            sanitize(isInox ? 1 : 0, 'is_inox')
                         ));
                     }
                 } else {
@@ -107,22 +107,21 @@ export async function onRequestPost({ request, env }) {
                     const raceNum = rawData?.args?.race || roundV2.round_number;
                     const raceName = `Race ${raceNum}`;
 
-                    let zrlRace = await db.prepare("SELECT id FROM zrl_races WHERE zrl_round_group_id = ? AND name = ?").bind(roundGroupId, raceName).first();
+                    let zrlRace = await db.prepare("SELECT id FROM zrl_races WHERE zrl_round_group_id = ? AND name = ?").bind(sanitize(roundGroupId, 'roundGroupId'), sanitize(raceName, 'raceName')).first();
                     if (!zrlRace) {
-                        await db.prepare("INSERT INTO zrl_races (zrl_round_group_id, name, date) VALUES (?, ?, ?)").bind(roundGroupId, raceName, roundV2.starts_at).run();
-                        zrlRace = await db.prepare("SELECT id FROM zrl_races WHERE zrl_round_group_id = ? AND name = ?").bind(roundGroupId, raceName).first();
+                        await db.prepare("INSERT INTO zrl_races (zrl_round_group_id, name, date) VALUES (?, ?, ?)").bind(sanitize(roundGroupId, 'roundGroupId'), sanitize(raceName, 'raceName'), sanitize(roundV2.starts_at, 'starts_at')).run();
+                        zrlRace = await db.prepare("SELECT id FROM zrl_races WHERE zrl_round_group_id = ? AND name = ?").bind(sanitize(roundGroupId, 'roundGroupId'), sanitize(raceName, 'raceName')).first();
                     }
                     const targetRaceId = zrlRace.id;
 
-                    insertStmts.push(db.prepare("DELETE FROM division_results WHERE round_id = ? AND league_key = ?").bind(targetRaceId, leagueKey));
+                    insertStmts.push(db.prepare("DELETE FROM division_results WHERE round_id = ? AND league_key = ?").bind(sanitize(targetRaceId, 'targetRaceId'), sanitize(leagueKey, 'leagueKey')));
 
                     for (const team of data) {
                         const teamName = team.teamname || team.name || "Unknown Team";
                         const isInoxTeam = teamName.toUpperCase().includes("INOX");
                         const riders = team.a || [];
 
-                        // 1. Insert TEAM SUMMARY record (crucial for TTT and overall accuracy)
-                        // We use rider_name = NULL and zwid = NULL to identify team records
+                        // 1. Insert TEAM SUMMARY record
                         insertStmts.push(db.prepare(`
                             INSERT INTO division_results (
                                 round_id, league_key, team_name, rider_name, zwid, 
@@ -131,13 +130,13 @@ export async function onRequestPost({ request, env }) {
                             )
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         `).bind(
-                            targetRaceId, leagueKey, teamName, null, null,
-                            parseInt(team.p1) || null, parseFloat(team.timeResult) || 0,
-                            parseInt(team.finp) || 0, parseInt(team.falp) || 0, parseInt(team.ftsp) || 0,
-                            parseInt(team.totp) || 0, isInoxTeam ? 1 : 0
+                            sanitize(targetRaceId, 'targetRaceId'), sanitize(leagueKey, 'leagueKey'), sanitize(teamName, 'teamName'), null, null,
+                            sanitize(parseInt(team.p1) || null, 'position'), sanitize(parseFloat(team.timeResult) || 0, 'time'),
+                            sanitize(parseInt(team.finp) || 0, 'pts_finish'), sanitize(parseInt(team.falp) || 0, 'pts_fal'), sanitize(parseInt(team.ftsp) || 0, 'pts_fts'),
+                            sanitize(parseInt(team.totp) || 0, 'points_total'), sanitize(isInoxTeam ? 1 : 0, 'is_inox')
                         ));
 
-                        // 2. Insert individual riders (for detail views)
+                        // 2. Insert individual riders
                         for (const r of riders) {
                             const zwid = parseInt(r.zid || r.zwid || 0);
                             const riderName = r.name || "Unknown Rider";
@@ -156,9 +155,9 @@ export async function onRequestPost({ request, env }) {
                                 )
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             `).bind(
-                                targetRaceId, leagueKey, teamName, riderName, zwid,
-                                position, time, pts_finish, pts_fal, pts_fts,
-                                pts_total, isInoxTeam ? 1 : 0
+                                sanitize(targetRaceId, 'targetRaceId'), sanitize(leagueKey, 'leagueKey'), sanitize(teamName, 'teamName'), sanitize(riderName, 'riderName'), sanitize(zwid, 'zwid'),
+                                sanitize(position, 'position'), sanitize(time, 'time'), sanitize(pts_finish, 'pts_finish'), sanitize(pts_fal, 'pts_fal'), sanitize(pts_fts, 'pts_fts'),
+                                sanitize(pts_total, 'pts_total'), sanitize(isInoxTeam ? 1 : 0, 'is_inox')
                             ));
                         }
                     }
