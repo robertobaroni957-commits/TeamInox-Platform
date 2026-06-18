@@ -117,11 +117,20 @@ export async function onRequestPost(context) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
-            // Forza conversione esplicita e logga i tipi
-            const rId = Number(payload.roundId);
+            // Estrarre l'ID in modo robusto se arriva come oggetto
+            let rId = payload.roundId;
+            if (typeof rId === 'object' && rId !== null) {
+                rId = rId.id || rId.value || rId;
+            }
+            rId = Number(rId);
+
             const status = String(payload.status);
             
-            console.log(`[DEBUG] Bind: zwid=${zwid} (${typeof zwid}), race_id=${rId} (${typeof rId}), status=${status} (${typeof status})`);
+            console.log(`[DEBUG] Final Bind: zwid=${zwid} (${typeof zwid}), race_id=${rId} (${typeof rId}), status=${status} (${typeof status})`);
+
+            if (isNaN(rId)) {
+                return new Response(JSON.stringify({ error: "Invalid raceId type" }), { status: 400 });
+            }
 
             // Scrittura nella tabella specifica per le gare
             await env.ZRL_DB.prepare(`
