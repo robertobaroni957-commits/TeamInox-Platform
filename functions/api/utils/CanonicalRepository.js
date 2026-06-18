@@ -1,6 +1,6 @@
 import { sanitize } from "./dbUtils";
 
-export const RoundRepository = {
+const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
         const query = `
             SELECT 
@@ -95,3 +95,5 @@ export const RoundRepository = {
         };
     }
 };
+
+export { RoundRepository };
