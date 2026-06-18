@@ -2,7 +2,7 @@
 // API Availability - Canonical
 // ================================
 import { getRoundRepository } from "./utils/repositoryLoader";
-import { sanitize } from "./utils/dbUtils";
+import { sanitize } from "./dbUtils";
 
 export async function onRequestGet(context) {
     const { env, data, request } = context;
