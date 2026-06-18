@@ -6,7 +6,7 @@ import { getRoundRepository } from "./utils/repositoryLoader";
 export async function onRequestGet(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = Number(user?.zwid); // Forza zwid a Number
+    const zwid = Number(user?.zwid);
     const role = user?.role;
 
     if (!zwid) {
@@ -20,7 +20,6 @@ export async function onRequestGet(context) {
         const url = new URL(request.url);
         const isAdminRequest = url.searchParams.get('all') === 'true';
 
-        // ============ Admin / Moderator ============
         if (isAdminRequest && (role === 'admin' || role === 'moderator')) {
             const results = await env.ZRL_DB.batch([
                 env.ZRL_DB.prepare(`SELECT p.*, a.name FROM user_time_preferences p JOIN athletes a ON p.zwid = a.zwid`),
@@ -44,7 +43,6 @@ export async function onRequestGet(context) {
             });
         }
 
-        // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
         const userRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', zwid);
         
@@ -76,8 +74,7 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = Number(user?.zwid); // Forza zwid a Number
-
+    const zwid = Number(user?.zwid);
 
     if (!zwid) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -87,7 +84,6 @@ export async function onRequestPost(context) {
         const body = await request.json();
         const { type, payload } = body;
 
-        // Intent
         if (type === 'intent') {
             const intentValue = payload.intent === true ? 1 : 0;
             await env.ZRL_DB.prepare(`
@@ -99,40 +95,32 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // Preferences
         if (type === 'preferences') {
             const statements = payload.map(p => env.ZRL_DB.prepare(`
                     INSERT OR REPLACE INTO user_time_preferences 
                     (zwid, time_slot_id, preference_level) 
                     VALUES (?, ?, ?)
-                `).bind(zwid, p.slotId, p.level));
+                `).bind(zwid, Number(p.slotId), Number(p.level)));
             await env.ZRL_DB.batch(statements);
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
 
-        // Race Availability
         if (type === 'race') {
             console.log("[DEBUG] Payload ricevuto:", JSON.stringify(payload));
             if (!payload || payload.roundId === undefined || payload.status === undefined) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
 
-            // Estrarre l'ID in modo robusto se arriva come oggetto
-            let rId = payload.roundId;
-            if (typeof rId === 'object' && rId !== null) {
-                rId = rId.id || rId.value || rId;
-            }
-            rId = Number(rId);
-
+            let rawId = payload.roundId;
+            let rId = Number(typeof rawId === 'object' && rawId !== null ? (rawId.id || rawId) : rawId);
             const status = String(payload.status);
             
             console.log(`[DEBUG] Final Bind: zwid=${zwid} (${typeof zwid}), race_id=${rId} (${typeof rId}), status=${status} (${typeof status})`);
 
-            if (isNaN(rId)) {
-                return new Response(JSON.stringify({ error: "Invalid raceId type" }), { status: 400 });
+            if (isNaN(zwid) || isNaN(rId)) {
+                return new Response(JSON.stringify({ error: "Invalid ID types" }), { status: 400 });
             }
 
-            // Scrittura nella tabella specifica per le gare
             await env.ZRL_DB.prepare(`
                 INSERT OR REPLACE INTO availability_races 
                 (zwid, race_id, status, updated_at) 
