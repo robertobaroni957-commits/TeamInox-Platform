@@ -30,7 +30,7 @@ const STEPS = [
   { id: 'races', title: 'Calendario', icon: CalendarCheck }
 ];
 
-const Availability: React.FC = () => { // force-cache-invalidation
+const Availability: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [intent, setIntent] = useState<boolean | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -49,11 +49,13 @@ const Availability: React.FC = () => { // force-cache-invalidation
     setError(null);
     try {
       const data = await api.getUserAvailability();
+      console.log("[Availability Debug] API Response:", data);
       
       if (data.error) throw new Error(data.error);
 
       // Gestione flessibile della risposta API
       const roundList = Array.isArray(data) ? data : (data.rounds || []);
+      console.log("[Availability Debug] Round list:", roundList);
       
       // Flatten: Trasforma i round con gare annidate in una lista piatta di gare
       const allRaces = roundList.reduce((acc: any[], round: any) => {
@@ -70,27 +72,10 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Rimuoviamo il filtraggio restrittivo, manteniamo solo la pulizia dei nomi e la deduplicazione
-      const uniqueRacesMap = new Map();
-      allRaces.forEach(r => {
-        // Nome pulito
-        const cleanName = r.name || 'Gara senza nome';
-        const key = cleanName.toUpperCase();
-        
-        if (!uniqueRacesMap.has(key)) {
-            uniqueRacesMap.set(key, { ...r, name: cleanName });
-        }
-      });
+      console.log("[Availability Debug] All races flattened:", allRaces);
       
-      const uniqueRaces = Array.from(uniqueRacesMap.values()).sort((a, b) => {
-          const numA = parseInt(a.name.match(/\d+/)?.[0] || '0');
-          const numB = parseInt(b.name.match(/\d+/)?.[0] || '0');
-          return numA - numB;
-      });
-      
-      console.log("[Availability Debug] uniqueRaces before setRaces:", uniqueRaces);
-      setRaces(uniqueRaces);
-      console.log("[Availability Debug] setRaces called with:", uniqueRaces);
+      // FORZIAMO IL RENDERING DI TUTTE LE GARE SENZA FILTRI PER DEBUG
+      setRaces(allRaces);
       setTimeSlots(data.timeSlots || []);
 
       if (data.intent !== undefined) setIntent(data.intent);
@@ -105,10 +90,11 @@ const Availability: React.FC = () => { // force-cache-invalidation
 
       // Inizializziamo le presenze
       const currentPresences: Record<number, string> = {};
-      uniqueRaces.forEach((r: any) => {
+      allRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
       setPresences(currentPresences);
+      console.log("[Availability Debug] Final races set to:", allRaces);
 
     } catch (e: any) {
       console.error('Error loading data:', e);
@@ -200,7 +186,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
   );
 
   const renderStep = () => {
-    console.log("[Availability Debug] renderStep called with races:", races);
+    console.log("[Availability Debug] renderStep races:", races);
     switch (currentStep) {
       case 0: // INTENT
         return (
@@ -254,7 +240,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8 py-10">
             <h2 className="text-4xl font-black italic text-white uppercase">Calendario Gare</h2>
             <div className="grid gap-4">
-              {races.length === 0 && <p className="text-white">Nessuna gara trovata.</p>}
+              {races.length === 0 && <p className="text-white">Nessuna gara trovata (debug: {races.length}).</p>}
               {races.map(race => {
                 const isPresent = presences[race.id] === 'available';
                 const formattedDate = race.date ? new Date(race.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD';
