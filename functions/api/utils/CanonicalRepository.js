@@ -17,6 +17,11 @@ const RoundRepository = {
         `;
 
         console.log(`[CanonicalRepository] Executing query for seasonCode: '${seasonCode}'`);
+        
+        // Log dei parametri di binding PRIMA della sanitizzazione e dopo
+        console.log(`[CanonicalRepository] Raw zwid=${zwid}, Raw seasonCode='${seasonCode}'`);
+        console.log(`[CanonicalRepository] Binding params: seasonCode='${sanitize(seasonCode, 'seasonCode')}' (type: ${typeof sanitize(seasonCode, 'seasonCode')}), zwid=${sanitize(zwid, 'zwid')} (type: ${typeof sanitize(zwid, 'zwid')})`);
+        
         const { results } = await db.prepare(query).bind(sanitize(zwid, 'zwid'), sanitize(seasonCode, 'seasonCode')).all();
         
         console.log(`[CanonicalRepository] Query results count: ${results ? results.length : 'null'}`);
