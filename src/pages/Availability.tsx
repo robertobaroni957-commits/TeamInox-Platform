@@ -71,19 +71,26 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: manteniamo solo 'Race 1' - 'Race 4'
+      // Filtriamo e puliamo le gare
       const filteredRaces = allRaces.filter(r => {
         const n = r.name.toUpperCase();
-        // Regex precisa per Race 1, 2, 3, 4
-        return !n.includes('ARCHIVED') && !n.includes('ROUND') && /RACE\s+[1-4](\s+|$)/i.test(n);
+        // 1. Escludiamo esplicitamente 'ARCHIVED'
+        if (n.includes('ARCHIVED')) return false;
+        // 2. Escludiamo round generici e manteniamo solo i pattern 'Race X'
+        if (n.includes('ROUND')) return false;
+        // 3. Manteniamo solo Race 1, 2, 3, 4
+        return /RACE\s+[1-4](\s+|$)/i.test(n);
       });
       
       // Deduplichiamo basandoci sul nome pulito
       const uniqueRacesMap = new Map();
       filteredRaces.forEach(r => {
-        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
-        if (!uniqueRacesMap.has(cleanName)) {
-            uniqueRacesMap.set(cleanName, { ...r, name: cleanName.toLowerCase().replace(/^\w/, c => c.toUpperCase()) });
+        // Nome pulito (es: "Race 1 (A)" -> "Race 1")
+        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim();
+        const key = cleanName.toUpperCase();
+        
+        if (!uniqueRacesMap.has(key)) {
+            uniqueRacesMap.set(key, { ...r, name: cleanName });
         }
       });
       
