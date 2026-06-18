@@ -90,7 +90,7 @@ export const RoundRepository = {
                 date: r.race_date,
                 world: r.world,
                 route: r.route,
-                laps: r.raw_json ? (JSON.parse(r.raw_json).duration || r.laps || 1) : (row.laps || 1),
+                laps: r.raw_json ? (JSON.parse(r.raw_json).duration || r.laps || 1) : (r.laps || 1),
                 raw_json: r.raw_json
             }))
         };
