@@ -51,18 +51,17 @@ export async function onRequestGet(context) {
         const allRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
 
         // Filtriamo per round attivo:
-        // 1. Priorità allo stato 'ACTIVE'
-        // 2. Se non c'è, il più basso round_number tra i 'CREATED'
+        // Priorità allo stato 'ACTIVE', poi 'CREATED', ordinati per round_number
         const activeRound = allRounds
-            .filter(r => r.lifecycle?.sync_state !== 'ARCHIVED')
+            .filter(r => r.lifecycle?.sync_state === 'ACTIVE' || r.lifecycle?.sync_state === 'CREATED')
             .sort((a, b) => {
-                const stateOrder = { 'ACTIVE': 0, 'CREATED': 1, 'PENDING': 2 };
+                const stateOrder = { 'ACTIVE': 0, 'CREATED': 1 };
                 const stateA = stateOrder[a.lifecycle?.sync_state] ?? 99;
                 const stateB = stateOrder[b.lifecycle?.sync_state] ?? 99;
                 if (stateA !== stateB) return stateA - stateB;
                 return a.round_number - b.round_number;
             })[0];
-
+            
         const userRounds = activeRound ? [activeRound] : allRounds;
 
         const timeSlots = await env.ZRL_DB.prepare(`SELECT * FROM league_times ORDER BY slot_order`).all();
