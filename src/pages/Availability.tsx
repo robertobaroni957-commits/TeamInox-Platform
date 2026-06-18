@@ -67,13 +67,14 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: escludiamo ARCHIVED e manteniamo solo round con sync_state valido per l'utente (non solo CREATED)
-      const filteredRaces = allRaces.filter(r => 
-        r.name && 
-        !r.name.toLowerCase().includes('archived') && 
-        (r.syncState === 'CREATED' || r.syncState === 'COMPLETED' || r.syncState === 'PENDING')
-      );
+      // DEBUG: Logghiamo cosa stiamo filtrando
+      console.log("[Availability] All races found:", allRaces);
 
+      // CORREZIONE: Filtro semplificato per mostrare le gare
+      const filteredRaces = allRaces.filter(r => r.name);
+      
+      console.log("[Availability] Filtered races:", filteredRaces);
+      
       setRaces(filteredRaces);
       setTimeSlots(data.timeSlots || []);
 
