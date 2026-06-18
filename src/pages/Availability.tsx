@@ -71,18 +71,24 @@ const Availability: React.FC = () => { // force-cache-invalidation
           return [...acc, ...roundRaces];
       }, []);
 
-      // Filtriamo le gare: escludiamo ARCHIVED
-      // Deduplichiamo basandoci sul displayName
+      // Filtriamo le gare: manteniamo solo quelle che seguono il pattern 'RACE X' ed escludiamo ARCHIVED/ROUND
+      const filteredRaces = allRaces.filter(r => {
+        const n = r.name.toUpperCase();
+        return !n.includes('ARCHIVED') && !n.includes('ROUND') && /RACE\s+\d+/.test(n);
+      });
+      
+      // Deduplichiamo basandoci sul nome pulito
       const uniqueRacesMap = new Map();
-      allRaces.filter(r => r.name && !r.name.toLowerCase().includes('archived')).forEach(r => {
-        if (!uniqueRacesMap.has(r.displayName)) {
-          uniqueRacesMap.set(r.displayName, r);
+      filteredRaces.forEach(r => {
+        const cleanName = r.name.replace(/\s*\([A-Z]\)$/i, '').trim().toUpperCase();
+        if (!uniqueRacesMap.has(cleanName)) {
+            uniqueRacesMap.set(cleanName, { ...r, name: cleanName.toLowerCase().replace(/^\w/, c => c.toUpperCase()) });
         }
       });
       
-      const filteredRaces = Array.from(uniqueRacesMap.values());
+      const uniqueRaces = Array.from(uniqueRacesMap.values());
       
-      setRaces(filteredRaces);
+      setRaces(uniqueRaces);
       setTimeSlots(data.timeSlots || []);
 
       if (data.intent !== undefined) setIntent(data.intent);
@@ -97,7 +103,7 @@ const Availability: React.FC = () => { // force-cache-invalidation
 
       // Inizializziamo le presenze
       const currentPresences: Record<number, string> = {};
-      filteredRaces.forEach((r: any) => {
+      uniqueRaces.forEach((r: any) => {
         currentPresences[r.id] = r.status || 'unavailable';
       });
       setPresences(currentPresences);
