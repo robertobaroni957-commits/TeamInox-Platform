@@ -6,7 +6,7 @@ import { getRoundRepository } from "./utils/repositoryLoader";
 export async function onRequestGet(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = user?.zwid;
+    const zwid = Number(user?.zwid); // Forza zwid a Number
     const role = user?.role;
 
     if (!zwid) {
@@ -76,7 +76,8 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
     const { env, data, request } = context;
     const user = data?.user;
-    const zwid = user?.zwid;
+    const zwid = Number(user?.zwid); // Forza zwid a Number
+
 
     if (!zwid) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
