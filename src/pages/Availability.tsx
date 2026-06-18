@@ -258,7 +258,10 @@ const Availability: React.FC = () => { // force-cache-invalidation
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8 py-10">
             <h2 className="text-4xl font-black italic text-white uppercase">Calendario Gare</h2>
             <div className="grid gap-4">
+              {console.log("[Availability Rendering] Rendering races:", races)}
+              {races.length === 0 && <p className="text-white">Nessuna gara trovata.</p>}
               {races.map(race => {
+                console.log("[Availability Rendering] Rendering race:", race);
                 const isPresent = presences[race.id] === 'available';
                 const formattedDate = race.date ? new Date(race.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'TBD';
                 return (
