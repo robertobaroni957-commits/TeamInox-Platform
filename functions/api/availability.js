@@ -5,6 +5,7 @@ import { getRoundRepository } from "./utils/repositoryLoader";
 import { sanitize } from "./dbUtils";
 
 export async function onRequestGet(context) {
+    console.log("[DEBUG] onRequestGet reached");
     const { env, data, request } = context;
     const user = data?.user;
     const zwid = user?.zwid ? Number(user.zwid) : null;
