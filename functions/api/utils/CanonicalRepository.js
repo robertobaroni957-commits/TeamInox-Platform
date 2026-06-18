@@ -1,4 +1,5 @@
-const RoundRepository = {
+// functions/api/utils/CanonicalRepository.js
+export const RoundRepository = {
     async getCanonicalRoundsWithUserStatus(db, seasonCode, zwid) {
         const query = `
             SELECT 
@@ -93,5 +94,3 @@ const RoundRepository = {
         };
     }
 };
-
-export default RoundRepository;
