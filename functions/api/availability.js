@@ -111,16 +111,21 @@ export async function onRequestPost(context) {
 
         // Race Availability
         if (type === 'race') {
+            console.log("[DEBUG] Payload ricevuto:", JSON.stringify(payload));
             if (!payload || payload.roundId === undefined || payload.status === undefined) {
                 return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
             }
+
+            const rId = Number(payload.roundId);
+            const status = String(payload.status);
+            console.log(`[DEBUG] Bind values: zwid=${zwid}, roundId=${rId}, status=${status}`);
 
             // Scrittura nella tabella specifica per le gare
             await env.ZRL_DB.prepare(`
                 INSERT OR REPLACE INTO availability_races 
                 (zwid, race_id, status, updated_at) 
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(zwid, Number(payload.roundId), String(payload.status)).run();
+            `).bind(zwid, rId, status).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }

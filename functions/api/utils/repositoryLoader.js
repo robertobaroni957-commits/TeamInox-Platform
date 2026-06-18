@@ -1,5 +1,5 @@
 // functions/api/utils/repositoryLoader.js
-import { RoundRepository } from './CanonicalRepository';
+import RoundRepository from './CanonicalRepository';
 
 export const getRoundRepository = (db) => ({
     getCanonicalRounds: (seasonCode) => RoundRepository.getCanonicalRoundsWithUserStatus(db, seasonCode, null),
