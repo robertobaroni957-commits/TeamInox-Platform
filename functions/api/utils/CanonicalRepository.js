@@ -20,7 +20,6 @@ const RoundRepository = {
             LEFT JOIN races rc ON rc.round_id = r.id AND ra.name = rc.name AND ra.date = rc.scheduled_at
             WHERE r.season_code = ?
               AND (ra.id IS NULL OR ra.name NOT LIKE 'ARCHIVED%')
-            GROUP BY r.id, COALESCE(SUBSTR(rc.name, 1, 6), ra.id, r.id)
             ORDER BY r.round_number, ra.id;
         `;
 
@@ -59,16 +58,21 @@ const RoundRepository = {
 
             if (row.race_id) {
                 const round = roundsMap.get(row.id);
-                round.races.push({
-                    id: row.race_id,
-                    name: row.race_name,
-                    date: row.race_date,
-                    world: row.world,
-                    route: row.route,
-                    laps: row.raw_json ? (JSON.parse(row.raw_json).duration || row.laps || 1) : (row.laps || 1),
-                    raw_json: row.raw_json,
-                    status: row.status
-                });
+                // Deduplicate by name prefix (e.g. "Race 1")
+                const prefix = row.race_name ? row.race_name.substring(0, 6) : '';
+                const alreadyExists = round.races.some(r => r.name && r.name.substring(0, 6) === prefix);
+                if (!alreadyExists) {
+                    round.races.push({
+                        id: row.race_id,
+                        name: row.race_name,
+                        date: row.race_date,
+                        world: row.world,
+                        route: row.route,
+                        laps: row.raw_json ? (JSON.parse(row.raw_json).duration || row.laps || 1) : (row.laps || 1),
+                        raw_json: row.raw_json,
+                        status: row.status
+                    });
+                }
             }
         }
 
