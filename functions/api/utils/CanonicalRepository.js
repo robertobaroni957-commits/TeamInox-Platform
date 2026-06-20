@@ -15,11 +15,11 @@ const RoundRepository = {
                 ra.world, ra.route, ra.laps, ra.raw_json,
                 ${statusSubquery} as status
             FROM rounds r
-            LEFT JOIN zrl_round_groups rg ON rg.external_season_id = r.wtrl_id
-            LEFT JOIN zrl_races ra ON ra.zrl_round_group_id = rg.id
-            LEFT JOIN races rc ON rc.round_id = r.id AND ra.name = rc.name AND ra.date = rc.scheduled_at
+            JOIN zrl_round_groups rg ON rg.external_season_id = r.wtrl_id
+            JOIN zrl_races ra ON ra.zrl_round_group_id = rg.id
+            JOIN races rc ON rc.round_id = r.id AND ra.name = rc.name AND ra.date = rc.scheduled_at
             WHERE r.season_code = ?
-              AND (ra.id IS NULL OR ra.name NOT LIKE 'ARCHIVED%')
+              AND ra.name NOT LIKE 'ARCHIVED%'
             ORDER BY r.round_number, ra.id;
         `;
 
