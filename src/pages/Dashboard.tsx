@@ -8,7 +8,6 @@ import {
   Users,
   Flag,
   AlertCircle,
-  Shield,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DASHBOARD_CONFIG } from '../services/dashboardConfig';
@@ -68,17 +67,13 @@ const Dashboard: React.FC = () => {
   const isAdmin = user?.role === 'admin' || user?.role === 'moderator';
   const isCaptain = user?.role === 'captain';
 
-  const allItems = DASHBOARD_CONFIG.filter(item => {
-    if (isAdmin && item.id === 'zrl-questionnaire') return false;
+  const filteredMenuItems = DASHBOARD_CONFIG.filter(item => {
+    // La card zrl-command è solo per admin/moderator
+    if (item.adminOnly === true && !isAdmin) return false;
+    // La card zrl-hub è solo per non-admin
+    if (item.id === 'zrl-hub' && isAdmin) return false;
     return hasPermission(user?.role, item.permission, isZRLParticipant);
   });
-
-  // Admin: tutto piatto, nessuna sezione ZRL HUB separata
-  // Captain/user: split per sezione
-  const zrlHubItems = allItems.filter(item => item.section === 'zrl');
-  const generalItems = isAdmin
-    ? allItems
-    : allItems.filter(item => item.section !== 'zrl');
 
   if (loading) return null;
 
@@ -141,11 +136,11 @@ const Dashboard: React.FC = () => {
             HELLO, <span className="text-zinc-800">{user?.username || 'RIDER'}</span>
           </h1>
           <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest max-w-xl">
-             {isAdmin
-               ? "Pannello di controllo globale. Monitora e gestisci l'intera infrastruttura InoxTeam."
-               : isCaptain
-               ? "Captain Deck. Gestisci la tua squadra e le disponibilità ZRL."
-               : "Benvenuto nel Deck Operativo. Seleziona un modulo per iniziare la tua sessione."}
+            {isAdmin
+              ? "Pannello di controllo globale. Monitora e gestisci l'intera infrastruttura InoxTeam."
+              : isCaptain
+              ? "Captain Deck. Gestisci la tua squadra e le disponibilità ZRL."
+              : "Benvenuto nel Deck Operativo. Seleziona un modulo per iniziare la tua sessione."}
           </p>
         </div>
       </section>
@@ -155,7 +150,7 @@ const Dashboard: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={() => navigate('/availability')}
+          onClick={() => navigate('/zrl-operations')}
           className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between cursor-pointer group hover:bg-orange-500/20 transition-all"
         >
           <div className="flex items-center gap-6">
@@ -168,42 +163,15 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 text-orange-500 font-black italic uppercase text-sm group-hover:gap-5 transition-all">
-            Vai al Questionario <ArrowUpRight size={18} />
+            Vai allo ZRL Hub <ArrowUpRight size={18} />
           </div>
         </motion.div>
       )}
 
-      {/* ZRL HUB — solo per captain e user (non admin) */}
-      {!isAdmin && zrlHubItems.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-1.5 bg-[#fc6719]/10 border border-[#fc6719]/20 rounded-full">
-              <span className="text-[9px] font-black text-[#fc6719] uppercase tracking-[0.3em]">ZRL Hub</span>
-            </div>
-            <div className="flex-1 h-px bg-zinc-900" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {zrlHubItems.map(renderCard)}
-          </div>
-        </section>
-      )}
-
-      {/* PORTAL GRID generale */}
-      {generalItems.length > 0 && (
-        <section className="space-y-4">
-          {!isAdmin && (
-            <div className="flex items-center gap-3">
-              <div className="px-4 py-1.5 bg-zinc-800/60 border border-zinc-700/40 rounded-full">
-                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.3em]">Piattaforma</span>
-              </div>
-              <div className="flex-1 h-px bg-zinc-900" />
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {generalItems.map(renderCard)}
-          </div>
-        </section>
-      )}
+      {/* PORTAL GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredMenuItems.map(renderCard)}
+      </div>
 
       {/* QUICK STATUS BAR */}
       <footer className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-zinc-900">
