@@ -13,7 +13,8 @@ import {
   Activity,
   ClipboardCheck,
   Settings,
-  Sparkles
+  Sparkles,
+  ListOrdered
 } from 'lucide-react';
 import type { Permission } from './permissions';
 
@@ -27,11 +28,12 @@ export interface DashboardCardConfig {
   color: string;
   size: 'sm' | 'md' | 'lg';
   permission: Permission;
+  section?: 'zrl' | 'general';
   alert?: (data: any) => string | null;
 }
 
 export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
-  // ZRL PRIMARY COMMAND (Unified Hub)
+  // ZRL PRIMARY COMMAND (Unified Hub) — admin/moderator only
   {
     id: 'zrl-command',
     title: "ZRL Command Center",
@@ -41,7 +43,8 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/zrl-operations",
     color: "from-orange-500 to-red-600",
     size: "lg",
-    permission: 'zrl.lineup'
+    permission: 'zrl.lineup',
+    section: 'general'
   },
   // AI NARRATIVE
   {
@@ -53,9 +56,10 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/ai/narrative",
     color: "from-purple-500 to-indigo-600",
     size: "md",
-    permission: 'ai.narrative'
+    permission: 'ai.narrative',
+    section: 'general'
   },
-  // ZRL MODULES (For all roles)
+  // ZRL HUB — Questionario
   {
     id: 'zrl-questionnaire',
     title: "Questionario",
@@ -65,7 +69,34 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/availability",
     color: "from-blue-400 to-indigo-500",
     size: "md",
-    permission: 'questionnaire.view'
+    permission: 'questionnaire.view',
+    section: 'zrl'
+  },
+  // ZRL HUB — Lineup
+  {
+    id: 'zrl-lineup',
+    title: "Lineup di Gara",
+    subtitle: "Composizione Squadra",
+    desc: "Componi e gestisci la lineup per le gare ZRL della tua squadra.",
+    icon: Crosshair,
+    path: "/lineup",
+    color: "from-orange-400 to-red-500",
+    size: "md",
+    permission: 'zrl.lineup',
+    section: 'zrl'
+  },
+  // ZRL HUB — Risultati/Classifiche
+  {
+    id: 'zrl-results',
+    title: "Classifiche ZRL",
+    subtitle: "Division Results",
+    desc: "Visualizza i risultati e le classifiche dei round ZRL.",
+    icon: ListOrdered,
+    path: "/zrl-results",
+    color: "from-emerald-400 to-teal-500",
+    size: "md",
+    permission: 'zrl.results',
+    section: 'zrl'
   },
   // WINTER TOUR
   {
@@ -77,7 +108,8 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/ranking",
     color: "from-yellow-400 to-orange-500",
     size: "md",
-    permission: 'wt.view'
+    permission: 'wt.view',
+    section: 'general'
   },
   // SOCIAL / EVENTS
   {
@@ -89,7 +121,8 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/events",
     color: "from-emerald-500 to-teal-700",
     size: "sm",
-    permission: 'events.view'
+    permission: 'events.view',
+    section: 'general'
   },
   // ADMIN / SYSTEM
   {
@@ -101,8 +134,7 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/admin/users",
     color: "from-blue-500 to-indigo-600",
     size: "md",
-    permission: 'admin.system'
+    permission: 'admin.system',
+    section: 'general'
   }
 ];
-
-
