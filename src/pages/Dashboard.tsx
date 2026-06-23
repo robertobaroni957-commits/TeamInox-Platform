@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
-          <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-black italic tracking-tighter uppercase leading-none">
             HELLO, <span className="text-zinc-800">{user?.username || 'RIDER'}</span>
           </h1>
           <p className="text-zinc-500 font-bold italic text-sm uppercase tracking-widest max-w-xl">
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => navigate('/zrl-operations')}
-          className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-between cursor-pointer group hover:bg-orange-500/20 transition-all"
+          className="p-4 md:p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer group hover:bg-orange-500/20 transition-all"
         >
           <div className="flex items-center gap-6">
             <div className="p-4 rounded-2xl bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]">

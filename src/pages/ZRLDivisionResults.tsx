@@ -184,7 +184,7 @@ const ZRLDivisionResults: React.FC = () => {
                   <span className="text-[12px] font-black text-zinc-500 uppercase tracking-[0.4em]">Official Standings</span>
                 </div>
               </div>
-              <h1 className={`font-black italic tracking-tighter uppercase leading-none text-white ${snapshotMode ? 'text-9xl' : 'text-7xl lg:text-9xl'}`}>
+              <h1 className={`font-black italic tracking-tighter uppercase leading-none text-white ${snapshotMode ? 'text-9xl' : 'text-4xl md:text-6xl lg:text-9xl'}`}>
                 ZRL <span className="text-zinc-800">RESULTS</span>
               </h1>
               <p className="text-zinc-500 text-lg font-bold uppercase tracking-[0.2em] max-w-2xl leading-relaxed">
@@ -346,33 +346,33 @@ const ZRLDivisionResults: React.FC = () => {
 
         {/* STATS OVERVIEW */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
+           <div className="p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
               <Users size={32} className="text-zinc-600 mb-2" />
-              <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>   
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>{results.length} Teams</p>
+              <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">Division Size</p>
+              <p className={`${snapshotMode ? 'text-8xl' : 'text-4xl md:text-6xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>{results.length} Teams</p>
            </div>
-           
-           <div className={`p-12 rounded-[4rem] border flex flex-col gap-4 relative overflow-hidden group transition-all shadow-2xl backdrop-blur-sm ${viewMode === 'gc' ? 'bg-inox-orange/10 border-inox-orange/30 hover:border-inox-orange/50' : 'bg-inox-cyan/10 border-inox-cyan/30 hover:border-inox-cyan/50'}`}>
+
+           <div className={`p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] border flex flex-col gap-4 relative overflow-hidden group transition-all shadow-2xl backdrop-blur-sm ${viewMode === 'gc' ? 'bg-inox-orange/10 border-inox-orange/30 hover:border-inox-orange/50' : 'bg-inox-cyan/10 border-inox-cyan/30 hover:border-inox-cyan/50'}`}>
               <div className="absolute -top-2 -right-2 p-12 opacity-[0.04] group-hover:opacity-[0.1] transition-opacity">
                  {viewMode === 'gc' ? <Star size={150} /> : <Zap size={150} />}
               </div>
               {viewMode === 'gc' ? <Star size={32} className="text-inox-orange mb-2" /> : <Zap size={32} className="text-inox-cyan mb-2" />}
               <p className={`text-[12px] font-black uppercase tracking-widest ${viewMode === 'gc' ? 'text-inox-orange/70' : 'text-inox-cyan/70'}`}>INOX Position</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic tracking-tighter ${viewMode === 'gc' ? 'text-inox-orange' : 'text-inox-cyan'}`}>{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
+              <p className={`${snapshotMode ? 'text-8xl' : 'text-4xl md:text-6xl lg:text-8xl'} font-black italic tracking-tighter ${viewMode === 'gc' ? 'text-inox-orange' : 'text-inox-cyan'}`}>{inoxTeam ? `#${inoxTeam.rank}` : 'N/A'}</p>
            </div>
 
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
+           <div className="p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
               <Trophy size={32} className="text-zinc-600 mb-2" />
               <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">{viewMode === 'gc' ? 'League Points (J)' : 'Finish Pts'}</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
+              <p className={`${snapshotMode ? 'text-8xl' : 'text-4xl md:text-6xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
                 {inoxTeam ? (viewMode === 'gc' ? inoxTeam.league_points : inoxTeam.pts_finish) : '0'}
               </p>
            </div>
 
-           <div className="p-12 rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
+           <div className="p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] bg-zinc-900/40 border border-zinc-800 flex flex-col gap-4 relative overflow-hidden group hover:border-zinc-700 transition-all shadow-2xl backdrop-blur-sm">
               <Activity size={32} className="text-zinc-600 mb-2" />
               <p className="text-[12px] font-black text-zinc-500 uppercase tracking-widest">{viewMode === 'gc' ? 'Total Race Pts (Σ)' : 'Bonus Pts (F/F)'}</p>
-              <p className={`${snapshotMode ? 'text-8xl' : 'text-7xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
+              <p className={`${snapshotMode ? 'text-8xl' : 'text-4xl md:text-6xl lg:text-8xl'} font-black italic text-white tracking-tighter`}>
                 {inoxTeam ? (viewMode === 'gc' ? inoxTeam.total_race_points : (inoxTeam.pts_fal + inoxTeam.pts_fts)) : '0'}
               </p>
            </div>
@@ -519,16 +519,16 @@ const ZRLDivisionResults: React.FC = () => {
 
       {/* FLOATING CAPTURE BUTTON */}
       {!snapshotMode && (
-        <div className="fixed bottom-12 right-12 flex gap-6 z-[200]">
+        <div className="fixed bottom-6 right-6 md:bottom-12 md:right-12 flex gap-3 md:gap-6 z-[200]">
           <button
             onClick={() => setSnapshotMode(!snapshotMode)}
-            className="w-20 h-20 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 hover:text-white transition-all group"
+            className="w-14 h-14 md:w-20 md:h-20 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 hover:text-white transition-all group"
           >
-            {snapshotMode ? <X size={32} /> : <LayoutGrid size={32} className="group-hover:rotate-90 transition-transform duration-500" />}
+            {snapshotMode ? <X size={24} /> : <LayoutGrid size={24} className="group-hover:rotate-90 transition-transform duration-500" />}
           </button>
           <button
             onClick={handleCapture}
-            className={`px-16 py-8 ${viewMode === 'gc' ? 'bg-inox-orange shadow-[0_0_40px_rgba(252,103,25,0.3)]' : 'bg-inox-cyan shadow-[0_0_40px_rgba(0,255,255,0.3)]'} text-black font-black italic rounded-full hover:scale-105 transition-all uppercase text-2xl tracking-tighter border border-black/10`}
+            className={`px-6 py-3 md:px-16 md:py-8 ${viewMode === 'gc' ? 'bg-inox-orange shadow-[0_0_40px_rgba(252,103,25,0.3)]' : 'bg-inox-cyan shadow-[0_0_40px_rgba(0,255,255,0.3)]'} text-black font-black italic rounded-full hover:scale-105 transition-all uppercase text-sm md:text-2xl tracking-tighter border border-black/10`}
           >
             SAVE RANKING
           </button>

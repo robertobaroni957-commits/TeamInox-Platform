@@ -219,7 +219,7 @@ const UserManagement: React.FC = () => {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-800 pb-6 gap-4">
         <div>
           <span className="text-red-500 font-black text-xs tracking-[0.3em] uppercase italic">System Administration</span>
-          <h1 className="text-6xl font-black italic tracking-tighter leading-none mt-2 text-white uppercase">
+          <h1 className="text-3xl md:text-6xl font-black italic tracking-tighter leading-none mt-2 text-white uppercase">
             USER <span className="text-zinc-600">MANAGEMENT</span>
           </h1>
         </div>

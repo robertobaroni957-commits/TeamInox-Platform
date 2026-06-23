@@ -288,7 +288,7 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey: initialLeagu
                           </ResponsiveContainer>
                         </div>
 
-                      <div className="grid grid-cols-3 gap-6">
+                      <div className="grid grid-cols-3 gap-3 md:gap-6">
                          {[
                            { label: 'Finish', val: team.totals.finish, color: 'text-white' },
                            { label: 'FAL', val: team.totals.fal, color: 'text-orange-500' },
@@ -315,8 +315,8 @@ const ZRLSeasonStats: React.FC<ZRLSeasonStatsProps> = ({ leagueKey: initialLeagu
                   <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter">Division <span className="text-zinc-800">Top 10</span></h2>
                </div>
                
-               <div className="bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden">
-                  <table className="w-full text-left">
+               <div className="bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden overflow-x-auto">
+                  <table className="w-full text-left min-w-[400px]">
                      <thead>
                         <tr className="bg-zinc-900/50 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
                            <th className="px-8 py-6">Rank</th>

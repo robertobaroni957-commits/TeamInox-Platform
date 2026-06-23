@@ -186,13 +186,13 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
   return (
     <div className={`transition-all duration-500 ${snapshotMode ? 'bg-[#050505] p-0 overflow-hidden' : 'space-y-8'}`}>
       {!isEmbedded && !snapshotMode && (
-        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center border-b border-zinc-800 pb-6 gap-6 px-6 pt-6 bg-zinc-950/50 sticky top-0 z-50 backdrop-blur-md">
+        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center border-b border-zinc-800 pb-4 gap-4 px-4 md:px-6 pt-4 md:pt-6 bg-zinc-950/50 sticky top-0 z-50 backdrop-blur-md">
           <div className="flex-shrink-0">
             <div className="flex items-center gap-2 mb-1">
               <Shield className="text-orange-500" size={14} />
               <span className="text-orange-500 font-black text-[9px] tracking-[0.3em] uppercase italic">Capitancy Ops</span>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-black italic tracking-tighter leading-none text-white uppercase">
               Lineup <span className="text-zinc-600">Builder</span>
             </h1>
           </div>
@@ -210,7 +210,7 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
               </select>
             </div>
             
-            <div className="md:col-span-7 flex flex-col gap-1 min-w-[280px]">
+            <div className="md:col-span-7 flex flex-col gap-1 min-w-0">
               <label className="text-[9px] font-black uppercase text-zinc-500 ml-2">Select Race</label>
               <div className="h-[44px]">
                 <RaceSelector 
