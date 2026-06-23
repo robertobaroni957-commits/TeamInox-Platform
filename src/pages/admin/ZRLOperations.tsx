@@ -33,7 +33,7 @@ const ALL_STEPS: Step[] = [
 // Step ids visibili per ogni profilo
 const STEP_IDS_ADMIN    = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const STEP_IDS_CAPTAIN  = [2, 3, 6, 7, 8, 9];   // squadre, lineup, classifiche + analisi/mappa
-const STEP_IDS_ROSTER   = [3, 6];                // solo lineup e classifiche
+const STEP_IDS_ROSTER   = [6];                   // solo classifiche
 const STEP_IDS_NOTROSTER = [];                   // nessun step: mostra solo il CTA questionario
 
 const ZRLOperations: React.FC = () => {
