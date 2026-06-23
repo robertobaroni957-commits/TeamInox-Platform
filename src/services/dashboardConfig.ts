@@ -46,7 +46,7 @@ export const DASHBOARD_CONFIG: DashboardCardConfig[] = [
     path: "/zrl-operations",
     color: "from-orange-500 to-red-600",
     size: "lg",
-    permission: 'zrl.view',
+    permission: 'questionnaire.view',
     adminOnly: false,
   },
   // AI NARRATIVE
