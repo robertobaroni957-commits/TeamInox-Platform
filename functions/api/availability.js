@@ -48,7 +48,7 @@ export async function onRequestGet(context) {
 
         // ============ User: Canonical Path ============
         const repo = getRoundRepository(env.ZRL_DB);
-        const allRounds = await repo.getCanonicalRoundsWithUserStatus(env.ZRL_DB, 'zrl_25_26', sanitize(zwid, 'zwid'));
+        const allRounds = await repo.getCanonicalRoundsWithUserStatus('zrl_25_26', sanitize(zwid, 'zwid'));
 
         // Filtriamo per round attivo:
         // Priorità allo stato 'ACTIVE', poi 'CREATED', ordinati per round_number
