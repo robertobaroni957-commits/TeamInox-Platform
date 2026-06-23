@@ -1,10 +1,13 @@
 export async function onRequestGet(context) {
-  const { env, request } = context;
+  const { env, request, data } = context;
 
   try {
     const url = new URL(request.url);
     const seasonId = url.searchParams.get("season_id");
     const seasonCode = url.searchParams.get("season_code") || 'zrl_25_26';
+    const myOnly = url.searchParams.get("my") === 'true';
+
+    const user = data?.user;
 
     let query = `SELECT 
       t.wtrl_team_id,
@@ -17,10 +20,18 @@ export async function onRequestGet(context) {
       a.name as captain_name
     FROM teams t
     LEFT JOIN athletes a ON t.captain_id = a.zwid`;
-    
+
+    let bindings = [];
+    if (myOnly && user?.zwid) {
+      query += ` WHERE t.captain_id = ?`;
+      bindings.push(Number(user.zwid));
+    }
+
     query += ` ORDER BY t.category ASC, t.division ASC, t.name ASC`;
 
-    const { results } = await env.ZRL_DB.prepare(query).all();
+    const { results } = bindings.length
+      ? await env.ZRL_DB.prepare(query).bind(...bindings).all()
+      : await env.ZRL_DB.prepare(query).all();
 
     return new Response(JSON.stringify({ 
         success: true, 

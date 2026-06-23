@@ -33,7 +33,15 @@ const LineupBuilder: React.FC<LineupBuilderProps> = ({ isEmbedded = false }) => 
   const loadInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      const teamsData = await api.getTeams();
+      const token = localStorage.getItem('inox_token');
+      let isCaptain = false;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          isCaptain = payload.role === 'captain';
+        } catch (_) {}
+      }
+      const teamsData = await api.getTeams(isCaptain);
       setTeams(teamsData);
       if (teamsData.length > 0) setSelectedTeam(teamsData[0].id);
     } catch (e: any) {

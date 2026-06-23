@@ -108,8 +108,9 @@ export const api = {
     return data.rounds || data;
   },
 
-  getTeams: async (): Promise<Team[]> => {
-    const data = await apiFetch(`${API_BASE}/teams`);
+  getTeams: async (myOnly = false): Promise<Team[]> => {
+    const url = myOnly ? `${API_BASE}/teams?my=true` : `${API_BASE}/teams`;
+    const data = await apiFetch(url);
     return data.teams || data;
   },
 
