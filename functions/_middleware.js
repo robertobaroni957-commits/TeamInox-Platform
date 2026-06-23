@@ -18,7 +18,6 @@ const PUBLIC_ROUTES = new Set([
   '/api/create-admin',
   '/api/get-races',
   '/api/rounds',
-  '/api/teams',
   '/api/roster',
 ]);
 
