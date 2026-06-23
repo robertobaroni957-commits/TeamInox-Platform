@@ -17,15 +17,13 @@ export async function onRequestGet(context) {
       t.division, 
       t.captain_id, 
       t.club_id,
-      COALESCE(
-        (SELECT a2.name FROM team_members tm2 JOIN athletes a2 ON tm2.athlete_id = a2.zwid WHERE tm2.team_id = t.wtrl_team_id AND a2.role = 'captain' LIMIT 1),
-        (SELECT a3.name FROM athletes a3 WHERE a3.zwid = t.captain_id)
-      ) as captain_name
-    FROM teams t`;
+      a.name as captain_name
+    FROM teams t
+    LEFT JOIN athletes a ON t.captain_id = a.zwid`;
 
     let bindings = [];
     if (myOnly && user?.zwid) {
-      query += ` WHERE EXISTS (SELECT 1 FROM team_members tm WHERE tm.team_id = t.wtrl_team_id AND tm.athlete_id = ?)`;
+      query += ` WHERE t.captain_id = ?`;
       bindings.push(Number(user.zwid));
     }
 
