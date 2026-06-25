@@ -1,258 +1,276 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  ChevronLeft, Trophy, Star, Shield, LayoutGrid, Settings, 
-  Plus, Save, Loader2, AlertCircle, CheckCircle2 
-} from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, FileJson2, Layers3, Link2, ShieldAlert, Timer, Trophy } from 'lucide-react';
+import { hasPermission } from '../services/permissions';
+import { getWinterTourNextStage, winterTourRepository, type WinterTourStage } from '../services/winterTour';
 
-interface PointConfig {
-  position: number;
-  points: number;
-}
+const readStoredRole = () => {
+  const token = localStorage.getItem('inox_token');
 
-interface WinterSeries {
-  id: number;
-  name: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-}
+  if (!token) {
+    return 'guest';
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role === 'athlete' ? 'user' : payload.role || 'guest';
+  } catch {
+    return 'guest';
+  }
+};
 
 const WinterTourManagement: React.FC = () => {
   const navigate = useNavigate();
+  const [role, setRole] = useState('guest');
+  const [stages, setStages] = useState<WinterTourStage[]>([]);
+  const [cumulativeLoaded, setCumulativeLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [seasons, setSeasons] = useState<WinterSeries[]>([]);
-  const [activeSeason, setActiveSeason] = useState<WinterSeries | null>(null);
-  const [points, setPoints] = useState<PointConfig[]>([]);
-  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
-
-  const [newSeasonName, setNewSeasonName] = useState('Master Winter Tour 2026/27');
-
-  const fetchSeasons = async () => {
-    try {
-      const response = await fetch('/api/admin/winter-tour', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
-      });
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setSeasons(data);
-        const active = data.find(s => s.is_active);
-        if (active) {
-          setActiveSeason(active);
-          fetchSeasonDetails(active.id);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching seasons:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSeasonDetails = async (id: number) => {
-    try {
-      const response = await fetch(`/api/admin/winter-tour?series_id=${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('inox_token')}` }
-      });
-      const data = await response.json();
-      setPoints(data.points || []);
-    } catch (err) {
-      console.error("Error fetching season details:", err);
-    }
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSeasons();
+    setRole(readStoredRole());
   }, []);
 
-  const handleCreateSeason = async () => {
-    setActionLoading(true);
-    try {
-      const response = await fetch('/api/admin/winter-tour', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}` 
-        },
-        body: JSON.stringify({
-          action: 'create_series',
-          payload: { name: newSeasonName, start_date: new Date().toISOString() }
-        })
-      });
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Nuova stagione creata!' });
-        fetchSeasons();
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Errore durante la creazione.' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const handleUpdatePoints = async () => {
-    if (!activeSeason) return;
-    setActionLoading(true);
-    try {
-      const response = await fetch('/api/admin/winter-tour', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('inox_token')}` 
-        },
-        body: JSON.stringify({
-          action: 'update_points',
-          payload: { series_id: activeSeason.id, point_map: points }
-        })
-      });
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Sistema punti aggiornato!' });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Errore durante l\'aggiornamento.' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+    const loadOperations = async () => {
+      setLoading(true);
+      setError(null);
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="animate-spin text-[#fc6719]" size={48} />
-    </div>
-  );
+      try {
+        const [loadedStages] = await Promise.all([
+          winterTourRepository.loadStages(),
+          winterTourRepository.loadCumulativeResults().then(() => {
+            if (isMounted) {
+              setCumulativeLoaded(true);
+            }
+          }),
+        ]);
+
+        if (isMounted) {
+          setStages(loadedStages);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(loadError instanceof Error ? loadError.message : 'Impossibile leggere i dati Winter Tour.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadOperations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const canManage = hasPermission(role, 'wt.manage');
+  const raceSnapshots = useMemo(() => winterTourRepository.listAvailableRaceSnapshots(), []);
+  const nextStage = useMemo(() => getWinterTourNextStage(stages), [stages]);
+  const seasonLabel = useMemo(() => {
+    if (stages.length === 0) {
+      return 'Winter Tour';
+    }
+
+    const firstYear = new Date(stages[0].date).getFullYear();
+    const lastYear = new Date(stages[stages.length - 1].date).getFullYear();
+
+    return `${firstYear}/${String(lastYear).slice(-2)}`;
+  }, [stages]);
+
+  if (!canManage) {
+    return (
+      <div className="rounded-[2.5rem] border border-red-500/30 bg-red-500/10 p-8 text-red-200">
+        <div className="mb-4 inline-flex rounded-2xl bg-red-500/10 p-3 text-red-400">
+          <ShieldAlert size={22} />
+        </div>
+        <h1 className="text-3xl font-black italic uppercase">Accesso riservato</h1>
+        <p className="mt-3 text-sm text-red-100/80">Questo pannello operativo è disponibile solo per i ruoli con permesso `wt.manage`.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-xl font-black italic uppercase tracking-[0.2em] text-[#fc6719]">Loading Winter Operations...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-[2.5rem] border border-red-500/30 bg-red-500/10 p-8 text-red-300">
+        <h1 className="text-2xl font-black uppercase">Winter Tour operations unavailable</h1>
+        <p className="mt-3 text-sm">{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 text-white">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-zinc-800 pb-8">
-        <div className="flex items-center gap-6">
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-[#fc6719] hover:border-[#fc6719]/40 transition-all group"
+    <div className="space-y-8 pb-12 text-white">
+      <header className="flex flex-col gap-5 border-b border-zinc-800 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-center gap-5">
+          <button
+            onClick={() => navigate('/winter-tour')}
+            className="group rounded-2xl border border-zinc-800 bg-zinc-900 p-3 text-zinc-400 transition hover:border-[#fc6719]/40 hover:text-[#fc6719]"
           >
-            <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+            <ChevronLeft size={22} className="transition group-hover:-translate-x-1" />
           </button>
           <div>
-            <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">Gestione <span className="text-[#fc6719]">Winter Tour</span></h1>
-            <p className="text-zinc-500 font-medium italic text-xs mt-2 uppercase tracking-widest">Pannello di controllo Master Winter Tour</p>
+            <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+              Winter Tour <span className="text-[#fc6719]">Operations</span>
+            </h1>
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">
+              File-based integration inside INOXTEAM PLATFORM
+            </p>
           </div>
         </div>
-        <div className="flex gap-3">
-           <select 
-             value={activeSeason?.id} 
-             onChange={(e) => {
-               const s = seasons.find(x => x.id === parseInt(e.target.value));
-               if (s) {
-                 setActiveSeason(s);
-                 fetchSeasonDetails(s.id);
-               }
-             }}
-             className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-xs font-black uppercase italic outline-none focus:border-[#fc6719]"
-           >
-             {seasons.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-           </select>
+
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/winter-tour"
+            className="rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-100 transition hover:border-inox-cyan"
+          >
+            Apri Hub
+          </Link>
+          <Link
+            to="/ranking"
+            className="rounded-2xl bg-[#fc6719] px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-black transition hover:scale-[1.02]"
+          >
+            Apri Classifiche
+          </Link>
         </div>
       </header>
 
-      {message && (
-        <div className={`p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in zoom-in duration-300 ${
-          message.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-500' : 'bg-red-500/10 border-red-500/50 text-red-500'
-        }`}>
-          {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-          <p className="font-bold uppercase text-[10px] tracking-widest">{message.text}</p>
-        </div>
-      )}
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: 'Season', value: seasonLabel, icon: Trophy },
+          { label: 'Stages', value: stages.length, icon: Layers3 },
+          { label: 'Snapshots', value: raceSnapshots.length, icon: FileJson2 },
+          { label: 'Cumulative', value: cumulativeLoaded ? 'READY' : 'MISSING', icon: Timer },
+        ].map((item) => (
+          <div key={item.label} className="rounded-[2rem] border border-zinc-800 bg-zinc-950 p-6">
+            <div className="mb-4 inline-flex rounded-2xl bg-[#fc6719]/10 p-3 text-[#fc6719]">
+              <item.icon size={18} />
+            </div>
+            <div className="text-3xl font-black italic text-white">{item.value}</div>
+            <div className="mt-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">{item.label}</div>
+          </div>
+        ))}
+      </section>
 
-      {/* Grid di Gestione */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Configurazione Punti */}
-        <div className="lg:col-span-2 p-8 rounded-[2.5rem] bg-zinc-950 border border-zinc-900 shadow-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between mb-8">
-             <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#fc6719]/10 rounded-lg text-[#fc6719]">
-                   <Settings size={20} />
+      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <div className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-black italic uppercase">Stato integrazione</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Il modulo MWT è stato portato dentro la piattaforma come sorgente file-based, senza dipendenze da database.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { title: 'Hub front-end unificato', status: 'OK', desc: 'Dashboard card e pagina dedicata Winter Tour dentro il layout principale.' },
+              { title: 'Calendario ufficiale', status: 'OK', desc: 'Tappe e metadati route lette direttamente dal dataset MWT integrato.' },
+              { title: 'Classifica generale', status: cumulativeLoaded ? 'OK' : 'CHECK', desc: 'Snapshot cumulato consumato direttamente dalla piattaforma.' },
+              { title: 'Tool esterni Python', status: 'READY', desc: 'Contratto file pronto per essere collegato a un ingest automatizzato successivo.' },
+            ].map((item) => (
+              <div key={item.title} className="rounded-[1.75rem] border border-zinc-800 bg-black/20 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-black uppercase tracking-tight text-white">{item.title}</h3>
+                  <span className="rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300">
+                    {item.status}
+                  </span>
                 </div>
-                <h3 className="text-xl font-black italic uppercase">Regolamento Punteggi</h3>
-             </div>
-             <button 
-               onClick={handleUpdatePoints}
-               disabled={actionLoading}
-               className="px-6 py-2.5 bg-[#fc6719] text-black font-black italic uppercase rounded-xl text-[10px] tracking-widest hover:scale-105 transition-all disabled:opacity-50 flex items-center gap-2"
-             >
-               {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salva Schema
-             </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
-             {(points.length > 0 ? points : Array.from({length: 15}, (_, i) => ({position: i+1, points: 0}))).map((p, idx) => (
-               <div key={idx} className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 group hover:border-[#fc6719]/30 transition-all">
-                  <span className="block text-[8px] font-black text-zinc-600 uppercase mb-2">Posizione {p.position}</span>
-                  <input 
-                    type="number" 
-                    value={p.points} 
-                    onChange={(e) => {
-                      const newPoints = [...points];
-                      if (newPoints[idx]) newPoints[idx].points = parseInt(e.target.value) || 0;
-                      else newPoints[idx] = { position: idx + 1, points: parseInt(e.target.value) || 0 };
-                      setPoints(newPoints);
-                    }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-center text-lg font-black italic outline-none focus:border-[#fc6719]" 
-                  />
-               </div>
-             ))}
+                <p className="mt-3 text-sm text-zinc-500">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Nuova Stagione */}
-        <div className="p-8 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 shadow-xl flex flex-col justify-between">
-           <div>
-              <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-[#fc6719] mb-6">
-                 <Plus size={24} />
-              </div>
-              <h3 className="text-xl font-black italic uppercase mb-2">Nuova Edizione</h3>
-              <p className="text-zinc-500 text-sm italic mb-8">Archivia la stagione corrente e inizializza un nuovo Master Winter Tour.</p>
-              
-              <div className="space-y-4 mb-8">
-                 <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-black uppercase text-zinc-600 ml-2">Nome Competizione</label>
-                    <input 
-                      type="text" 
-                      value={newSeasonName}
-                      onChange={(e) => setNewSeasonName(e.target.value)}
-                      className="bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-4 font-bold text-white outline-none focus:border-[#fc6719]" 
-                    />
-                 </div>
-              </div>
-           </div>
-           
-           <button 
-             onClick={handleCreateSeason}
-             disabled={actionLoading}
-             className="w-full py-4 bg-white text-black font-black italic rounded-2xl hover:bg-[#fc6719] hover:text-white transition-all uppercase text-xs tracking-[0.2em] shadow-lg flex items-center justify-center gap-3"
-           >
-             {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Trophy size={18} />} Inizializza Ora
-           </button>
-        </div>
-      </div>
+        <div className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-black italic uppercase">Manifest sorgenti</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Queste sono le sorgenti che oggi il frontend utilizza come base dell&apos;integrazione MWT.
+            </p>
+          </div>
 
-      {/* Sezione Tappe */}
-      <div className="p-10 rounded-[3rem] bg-zinc-950 border border-zinc-900 shadow-xl">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-2">
-            <LayoutGrid size={14} className="text-[#fc6719]" /> Gestione Tappe <span className="text-white">{activeSeason?.name}</span>
-          </h3>
-          <button className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-white transition-all flex items-center gap-2">
-             <Plus size={14} /> Aggiungi Tappa
-          </button>
+          <div className="space-y-4">
+            {[
+              'modules/MWT-main1/stages.json',
+              'modules/MWT-main1/cumulative_results.json',
+              ...raceSnapshots.map((snapshot) => `modules/MWT-main1/${snapshot.fileName}`),
+            ].map((source) => (
+              <div key={source} className="flex items-center gap-3 rounded-2xl border border-zinc-800 bg-black/20 px-4 py-3">
+                <div className="rounded-xl bg-white/5 p-2 text-inox-cyan">
+                  <Link2 size={16} />
+                </div>
+                <span className="text-sm font-medium text-zinc-300">{source}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        <div className="p-12 border-2 border-dashed border-zinc-900 rounded-[2rem] text-center">
-          <p className="text-zinc-700 font-black italic uppercase tracking-tighter text-xl">Nessuna tappa configurata</p>
-          <p className="text-zinc-800 text-xs mt-2 uppercase tracking-widest font-bold">Inizia aggiungendo la prima prova del campionato</p>
+      </section>
+
+      <section className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-black italic uppercase">Copertura risultati</h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Snapshot di tappa già disponibili per il frontend integrato.
+          </p>
         </div>
-      </div>
+
+        <div className="flex flex-wrap gap-3">
+          {raceSnapshots.map((snapshot) => (
+            <div key={snapshot.stageId} className="rounded-2xl border border-zinc-800 bg-black/20 px-4 py-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">Stage {snapshot.stageId}</div>
+              <div className="mt-1 text-sm font-bold text-white">{snapshot.fileName}</div>
+            </div>
+          ))}
+          {raceSnapshots.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-zinc-800 px-4 py-6 text-sm text-zinc-500">
+              Nessuno snapshot di tappa disponibile.
+            </div>
+          )}
+        </div>
+
+        {nextStage && (
+          <div className="mt-8 rounded-[2rem] border border-zinc-800 bg-black/20 p-5">
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">Next scheduled stage</div>
+            <div className="mt-2 text-xl font-black italic text-white">{nextStage.route.it}</div>
+            <div className="mt-1 text-sm text-zinc-400">{new Date(nextStage.date).toLocaleString('it-IT')}</div>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-black italic uppercase">Contratto per tool esterni</h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Per completare il prodotto, il prossimo step naturale è collegare i generatori esterni a questo contratto dati.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            'Input raw per tappa: fin.json, fal_<cat>.json, fts_<cat>.json',
+            'Output per snapshot tappa: gara_<n>_results.json',
+            'Output cumulato: cumulative_results.json',
+            'Fase successiva: endpoint/API o upload admin che aggiorni queste sorgenti',
+          ].map((item) => (
+            <div key={item} className="rounded-[1.75rem] border border-zinc-800 bg-black/20 p-5 text-sm text-zinc-300">
+              {item}
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

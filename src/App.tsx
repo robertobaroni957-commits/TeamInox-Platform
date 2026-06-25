@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ZRLParticipantRoute from './components/ZRLParticipantRoute';
 
 import { ZRLRealityProvider } from './services/ZRLRealityProvider';
 import { ActiveRoundProvider } from './context/ActiveRoundContext';
@@ -28,6 +29,7 @@ const EventsCenter = lazyWithRetry(() => import('./pages/EventsCenter'));
 const NarrativePage = lazyWithRetry(() => import('./pages/NarrativePage'));
 const Availability = lazyWithRetry(() => import('./pages/Availability'));
 const LineupBuilder = lazyWithRetry(() => import('./pages/LineupBuilder'));
+const WinterTourHub = lazyWithRetry(() => import('./pages/WinterTourHub'));
 
 /* =========================
    🔹 ZRL MODULES (HEAVY)
@@ -111,19 +113,20 @@ const App: React.FC = () => {
               <Route path="admin" element={<Navigate to="/dashboard" replace />} />
 
               <Route path="racing" element={<Racing />} />
+              <Route path="winter-tour" element={<WinterTourHub />} />
               <Route path="ranking" element={<Ranking />} />
               <Route path="events" element={<EventsCenter />} />
               <Route path="ai/narrative" element={<NarrativePage />} />
               <Route path="teams" element={<Teams />} />
               <Route path="availability" element={<Availability />} />
-              <Route path="lineup" element={<LineupBuilder />} />
+              <Route path="lineup" element={<ZRLParticipantRoute><LineupBuilder /></ZRLParticipantRoute>} />
 
               {/* ZRL */}
-              <Route path="zrl-results" element={<ZRLDivisionResults />} />
+              <Route path="zrl-results" element={<ZRLParticipantRoute><ZRLDivisionResults /></ZRLParticipantRoute>} />
               <Route path="zrl-ingest" element={<ZRLResultIngestor />} />
-              <Route path="zrl-analytics" element={<ZRLAnalytics />} />
-              <Route path="zrl-season-stats" element={<ZRLSeasonStats />} />
-              <Route path="zrl-strategy" element={<ZRLStrategy />} />
+              <Route path="zrl-analytics" element={<ZRLParticipantRoute><ZRLAnalytics /></ZRLParticipantRoute>} />
+              <Route path="zrl-season-stats" element={<ZRLParticipantRoute><ZRLSeasonStats /></ZRLParticipantRoute>} />
+              <Route path="zrl-strategy" element={<ZRLParticipantRoute><ZRLStrategy /></ZRLParticipantRoute>} />
               <Route path="zrl-operations" element={<ZRLOperations />} />
               <Route path="zrl-round-manager" element={<ZRLOperationsDashboard />} />
               <Route path="admin/season-init" element={<SeasonInitialization />} />

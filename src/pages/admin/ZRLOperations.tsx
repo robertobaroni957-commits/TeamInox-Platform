@@ -99,24 +99,33 @@ const ZRLOperations: React.FC = () => {
             {isCaptain
               ? "Gestisci la tua squadra, la lineup e le classifiche."
               : isOnRoster
-              ? "Accedi alla tua lineup e alle classifiche di divisione."
-              : "Compila il questionario per esprimere la tua disponibilità."}
+              ? "Accedi ai moduli ZRL disponibili per chi è nei roster ufficiali WTRL."
+              : "Il questionario è sempre disponibile. Le altre funzioni si sbloccano solo se sei nel roster ufficiale WTRL."}
           </p>
         </section>
       )}
 
-      {/* CTA QUESTIONARIO — per tutti i non-admin che devono ancora rispondere */}
-      {!isAdmin && needsQuestionnaire && (
+      {!isAdmin && (
         <button
           onClick={() => navigate('/availability')}
-          className="w-full p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 transition-all text-left flex items-center justify-between group"
+          className={`w-full p-6 rounded-[2rem] transition-all text-left flex items-center justify-between group ${
+            needsQuestionnaire
+              ? 'bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20'
+              : 'bg-zinc-900 border border-zinc-800 hover:border-orange-500/30'
+          }`}
         >
           <div>
-            <p className="text-[10px] font-black text-orange-400 uppercase tracking-[0.3em] mb-1">Azione richiesta</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-1 ${needsQuestionnaire ? 'text-orange-400' : 'text-zinc-500'}`}>
+              {needsQuestionnaire ? 'Azione richiesta' : 'Sempre disponibile'}
+            </p>
             <h3 className="text-2xl font-black italic text-white uppercase">Questionario Disponibilità</h3>
-            <p className="text-zinc-500 text-xs font-bold uppercase mt-1">Conferma la tua partecipazione al prossimo round ZRL.</p>
+            <p className="text-zinc-500 text-xs font-bold uppercase mt-1">
+              {needsQuestionnaire
+                ? 'Conferma la tua partecipazione al prossimo round ZRL.'
+                : 'Apri o aggiorna in qualsiasi momento disponibilità, intent e preferenze orarie.'}
+            </p>
           </div>
-          <ClipboardCheck size={32} className="text-orange-400 group-hover:scale-110 transition-transform shrink-0 ml-6" />
+          <ClipboardCheck size={32} className={`${needsQuestionnaire ? 'text-orange-400' : 'text-zinc-400'} group-hover:scale-110 transition-transform shrink-0 ml-6`} />
         </button>
       )}
 
@@ -148,10 +157,10 @@ const ZRLOperations: React.FC = () => {
       )}
 
       {/* Stato vuoto: non in roster e questionario già compilato */}
-      {!loadingState && !isAdmin && visibleSteps.length === 0 && !needsQuestionnaire && (
+      {!loadingState && !isAdmin && visibleSteps.length === 0 && (
         <div className="text-center py-20">
           <p className="text-zinc-500 font-bold italic uppercase tracking-widest text-sm">
-            Non sei ancora inserito in nessun roster ZRL per questo round.
+            Non sei ancora inserito in nessun roster ufficiale WTRL. Il questionario resta comunque sempre accessibile.
           </p>
         </div>
       )}

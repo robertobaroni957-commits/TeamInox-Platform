@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { executeMutation } from './api/mutationClient';
 import { apiFetch } from './api';
+import type { Role } from './permissions';
 
 interface ZRLRealityContextType {
   rounds: UseQueryResult<any[], Error>;
@@ -16,8 +17,25 @@ interface ZRLRealityContextType {
 
 const ZRLRealityContext = createContext<ZRLRealityContextType | undefined>(undefined);
 
+const getCurrentRole = (): Role | null => {
+  const token = localStorage.getItem('inox_token');
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return (payload.role || 'guest') as Role;
+  } catch {
+    return null;
+  }
+};
+
 export function ZRLRealityProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const currentRole = getCurrentRole();
+  const canReadAdminRoster = currentRole === 'admin' || currentRole === 'moderator';
 
   const rounds = useQuery({
     queryKey: ['rounds'],
@@ -57,6 +75,7 @@ export function ZRLRealityProvider({ children }: { children: ReactNode }) {
 
   const roster = useQuery({
     queryKey: ['roster'],
+    enabled: canReadAdminRoster,
     queryFn: async () => {
       const json = await apiFetch('/api/admin/list_users');
       return Array.isArray(json) ? json : json?.users || [];
@@ -85,8 +104,8 @@ export function ZRLRealityProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const isLoading = rounds.isLoading || teams.isLoading || roster.isLoading;
-  const isError = rounds.isError || teams.isError || roster.isError;
+  const isLoading = rounds.isLoading || teams.isLoading || (canReadAdminRoster && roster.isLoading);
+  const isError = rounds.isError || teams.isError || (canReadAdminRoster && roster.isError);
 
   return (
     <ZRLRealityContext.Provider value={{

@@ -38,7 +38,9 @@ const handleResponse = async (res: Response) => {
     } catch (e) {
       // Ignora errori nel parsing dell'errore
     }
-    throw new Error(errorMessage);
+    const error = new Error(errorMessage) as Error & { status?: number };
+    error.status = res.status;
+    throw error;
   }
   
   // Rimuoviamo il controllo rigido sul Content-Type se la risposta è OK

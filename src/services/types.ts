@@ -116,6 +116,14 @@ export interface InoxEvent {
   strava_segment_id?: string;
   category?: string;
   is_active?: boolean;
+  source?: 'manual' | 'zwift';
+  image_url?: string;
+  sport?: string;
+  event_type?: string;
+  start_at?: string;
+  date_label?: string;
+  total_signed_up?: number;
+  tags?: string[];
 }
 
 export interface UserData {

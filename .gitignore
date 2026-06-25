@@ -24,3 +24,6 @@ logs/
 .wrangler/
 quarantine-root-cleanup/
 backup_*.sql 
+.aider*
+# Local tools - DO NOT COMMIT
+Masters Winter TourXXX/

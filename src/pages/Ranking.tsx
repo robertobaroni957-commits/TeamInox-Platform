@@ -1,46 +1,52 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { hasPermission } from '../services/permissions';
+import {
+  buildCumulativeRankingRows,
+  buildStageRankingRows,
+  formatWinterTourRankingValue,
+  sortWinterTourRankingRows,
+  winterTourAgeCategoryMap,
+  winterTourRepository,
+  type WinterTourCategory,
+  type WinterTourLanguage,
+  type WinterTourRankingMode,
+  type WinterTourRankingRow,
+  type WinterTourStage,
+} from '../services/winterTour';
 
-interface Rider {
-  zwid: number;
-  name: string;
-  tname?: string;
-  flag?: string;
-  category: string;
-  total?: number;
-  time?: number;
-  tempo_time?: number;
-  pts_sprint?: number;
-  pts_kom?: number;
-  fin?: number;
-  [key: string]: any;
-}
+const readStoredRole = () => {
+  const token = localStorage.getItem('inox_token');
 
-const ageCategoryMap: Record<string, string> = { 'A': '0-29', 'B': '30-39', 'C': '40-49', 'D': '50-59', 'E': '60+' };
+  if (!token) {
+    return 'guest';
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role === 'athlete' ? 'user' : payload.role || 'guest';
+  } catch {
+    return 'guest';
+  }
+};
 
 const Ranking: React.FC = () => {
   const [role, setRole] = useState<string>('guest');
   useEffect(() => {
-    const token = localStorage.getItem('inox_token');
-    if (token) {
-        try {
-            const p = JSON.parse(atob(token.split('.')[1]));
-            setRole(p.role);
-        } catch {}
-    }
+    setRole(readStoredRole());
   }, []);
 
-  const [language, setLanguage] = useState<'it' | 'en'>('it');
-  const [races, setRaces] = useState<{ text: string; value: string }[]>([]);
+  const [language, setLanguage] = useState<WinterTourLanguage>('it');
+  const [stages, setStages] = useState<WinterTourStage[]>([]);
   const [selectedRace, setSelectedRace] = useState('cumulative');
-  const [selectedCategory, setSelectedCategory] = useState('A');
-  const [selectedType, setSelectedType] = useState('punti');
-  const [riders, setRiders] = useState<Rider[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<WinterTourCategory>('A');
+  const [selectedType, setSelectedType] = useState<WinterTourRankingMode>('punti');
+  const [riders, setRiders] = useState<WinterTourRankingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const t = (key: string) => {
-    const translations: any = {
+    const translations: Record<string, Record<WinterTourLanguage, string>> = {
+      'hub': { it: 'Winter Tour Hub', en: 'Winter Tour Hub' },
       'title': { it: 'CLASSIFICHE TOUR', en: 'TOUR RANKINGS' },
       'subtitle': { it: 'Seleziona una gara, la classifica e un gruppo di età.', en: 'Select a race, ranking, and age group.' },
       'race': { it: 'Gara:', en: 'Race:' },
@@ -56,68 +62,75 @@ const Ranking: React.FC = () => {
       'climber': { it: 'Punti Scalatore', en: 'Climber Points' },
       'pos': { it: 'Pos', en: 'Pos' },
       'athlete': { it: 'Atleta', en: 'Athlete' },
-      'team': { it: 'Squadra', en: 'Team' }
+      'team': { it: 'Squadra', en: 'Team' },
+      'coverage': { it: 'Snapshot disponibili', en: 'Available snapshots' }
     };
     return translations[key]?.[language] || key;
   };
 
-  const secondsToHms = (d: number | undefined) => {
-    if (d === undefined || d === null || isNaN(d) || d === 0) return "--:--:--.---";
-    const h = Math.floor(d / 3600);
-    const m = Math.floor((d % 3600) / 60);
-    const s = Math.floor(d % 60);
-    const ms = Math.round((d - Math.floor(d)) * 1000);
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
-  };
+  const raceSnapshots = useMemo(() => winterTourRepository.listAvailableRaceSnapshots(), []);
 
-  const loadRaces = useCallback(async () => {
-    const availableRaces = [
+  const raceOptions = useMemo(
+    () => [
       { text: t('cumulative'), value: 'cumulative' },
-      ...Array.from({ length: 17 }, (_, i) => ({
-        text: `Gara ${i + 1}`,
-        value: `Gara_Masters_Winter_Tour_-_Stage_${i + 1}_risultati.json`
-      }))
-    ];
-    setRaces(availableRaces);
-  }, [language]);
+      ...raceSnapshots.map((snapshot) => {
+        const stage = stages.find((entry) => entry.id === snapshot.stageId);
+        const routeLabel = stage ? stage.route[language] : `Stage ${snapshot.stageId}`;
 
-  const loadRanking = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const url = selectedRace === 'cumulative' ? '/cumulative_results.json' : `/${selectedRace}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('File not found');
-      const jsonData = await response.json();
-      
-      let data: Rider[] = [];
-      if (selectedRace === 'cumulative') {
-        data = jsonData.results[selectedCategory] || [];
-      } else {
-        data = (jsonData.race_results || []).filter((r: any) => r.category === selectedCategory);
+        return {
+          text: `${t('race')} ${snapshot.stageId} · ${routeLabel}`,
+          value: `stage:${snapshot.stageId}`,
+        };
+      }),
+    ],
+    [language, raceSnapshots, stages],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRanking = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const loadedStages = stages.length > 0 ? stages : await winterTourRepository.loadStages();
+
+        if (isMounted && stages.length === 0) {
+          setStages(loadedStages);
+        }
+
+        let nextRows: WinterTourRankingRow[] = [];
+
+        if (selectedRace === 'cumulative') {
+          const cumulativeResults = await winterTourRepository.loadCumulativeResults();
+          nextRows = buildCumulativeRankingRows(cumulativeResults, selectedCategory);
+        } else {
+          const selectedStageId = Number(selectedRace.replace('stage:', ''));
+          const stageResults = await winterTourRepository.loadStageResults(selectedStageId);
+          nextRows = buildStageRankingRows(stageResults, selectedCategory);
+        }
+
+        if (isMounted) {
+          setRiders(sortWinterTourRankingRows(nextRows, selectedType));
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load Winter Tour ranking.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
+    };
 
-      const isTime = selectedType === 'tempo';
-      const scoreKey = selectedRace === 'cumulative' 
-        ? (isTime ? 'time' : (selectedType === 'punti' ? 'total' : (selectedType === 'sprinter' ? 'pts_sprint' : 'pts_kom')))
-        : (isTime ? 'tempo_time' : (selectedType === 'punti' ? 'tempo_time' : (selectedType === 'sprinter' ? 'pts_sprint' : 'pts_kom')));
+    loadRanking();
 
-      const sorted = [...data].sort((a, b) => {
-        const valA = a[scoreKey] || (isTime ? Infinity : 0);
-        const valB = b[scoreKey] || (isTime ? Infinity : 0);
-        return isTime ? valA - valB : valB - valA;
-      });
-
-      setRiders(sorted);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedRace, selectedCategory, selectedType]);
-
-  useEffect(() => { loadRaces(); }, [loadRaces]);
-  useEffect(() => { loadRanking(); }, [loadRanking]);
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCategory, selectedRace, selectedType, stages]);
 
   return (
     <div className="p-6 min-h-screen bg-zinc-950 text-white">
@@ -127,6 +140,9 @@ const Ranking: React.FC = () => {
             <h1 className="text-5xl font-black italic tracking-tighter uppercase">
               {t('title')} <span className="text-inox-orange">2025/26</span>
             </h1>
+            <a href="/winter-tour" className="px-4 py-2 bg-zinc-900 text-white font-black italic uppercase rounded-lg text-[10px] hover:border-inox-cyan border border-zinc-800 transition-all">
+              {t('hub')}
+            </a>
             {hasPermission(role, 'wt.manage') && (
               <a href="/winter-tour-management" className="px-4 py-2 bg-yellow-600 text-white font-black italic uppercase rounded-lg text-[10px] hover:bg-yellow-700 transition-all">
                 Amministrazione Tour
@@ -151,7 +167,7 @@ const Ranking: React.FC = () => {
             onChange={(e) => setSelectedRace(e.target.value)}
             className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:border-inox-orange outline-none"
           >
-            {races.map(r => <option key={r.value} value={r.value}>{r.text}</option>)}
+            {raceOptions.map(r => <option key={r.value} value={r.value}>{r.text}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-2">
@@ -161,7 +177,7 @@ const Ranking: React.FC = () => {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:border-inox-orange outline-none"
           >
-            {Object.keys(ageCategoryMap).map(cat => <option key={cat} value={cat}>{ageCategoryMap[cat]}</option>)}
+            {Object.entries(winterTourAgeCategoryMap).map(([cat, label]) => <option key={cat} value={cat}>{label}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-2">
@@ -176,6 +192,10 @@ const Ranking: React.FC = () => {
             <option value="sprinter">{t('sprinter')}</option>
             <option value="scalatore">{t('climber')}</option>
           </select>
+        </div>
+        <div className="ml-auto rounded-2xl border border-zinc-800 bg-black/20 px-4 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">{t('coverage')}</div>
+          <div className="mt-1 text-lg font-black italic text-white">{raceSnapshots.length}</div>
         </div>
       </div>
 
@@ -201,7 +221,7 @@ const Ranking: React.FC = () => {
                   const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
                   
                   return (
-                    <tr key={rider.zwid} className="hover:bg-zinc-800/20 transition-all group">
+                    <tr key={`${rider.zwid}-${selectedRace}-${selectedCategory}-${selectedType}`} className="hover:bg-zinc-800/20 transition-all group">
                       <td className="px-6 py-5 font-black text-xl italic">
                         {medal ? <span className="text-2xl">{medal}</span> : <span className="text-zinc-700">#{rank}</span>}
                       </td>
@@ -215,7 +235,7 @@ const Ranking: React.FC = () => {
                         {rider.tname || t('individual')}
                       </td>
                       <td className="px-6 py-5 font-black text-inox-orange italic text-lg">
-                        {selectedType === 'tempo' ? secondsToHms(rider.time || rider.tempo_time) : `${rider.total || rider.pts_sprint || rider.pts_kom || 0} PTS`}
+                        {formatWinterTourRankingValue(rider, selectedType)}
                       </td>
                     </tr>
                   );

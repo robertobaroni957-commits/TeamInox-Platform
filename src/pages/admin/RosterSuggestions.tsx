@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Users, Clock, Zap, CheckCircle2, ChevronRight, AlertCircle, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,6 +13,10 @@ interface SuggestedTeam {
   athletes: { zwid: number; name: string; level: number }[];
 }
 
+const MIN_ROSTER_SIZE = 4;
+const MAX_ROSTER_SIZE = 12;
+const MAX_TEAMS_PER_ATHLETE = 2;
+
 const RosterSuggestions: React.FC = () => {
   const [suggestions, setSuggestions] = useState<SuggestedTeam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +29,22 @@ const RosterSuggestions: React.FC = () => {
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [totalPreferences, setTotalPreferences] = useState<number>(0);
+
+  const getAthleteAssignmentCounts = (proposals: SuggestedTeam[]) => {
+    const assignmentCounts = new Map<number, { name: string; count: number }>();
+
+    proposals.forEach((proposal) => {
+      proposal.athletes.forEach((athlete) => {
+        const current = assignmentCounts.get(athlete.zwid);
+        assignmentCounts.set(athlete.zwid, {
+          name: athlete.name,
+          count: (current?.count || 0) + 1,
+        });
+      });
+    });
+
+    return assignmentCounts;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,52 +73,55 @@ const RosterSuggestions: React.FC = () => {
   }, []);
 
   const handleConfigureTeam = (selectedTeam: SuggestedTeam) => {
-    const countForSlotAndCategory = confirmedProposals.filter(
+    const proposalAlreadySelected = confirmedProposals.some(
       (proposal) => proposal.slot_id === selectedTeam.slot_id && proposal.category === selectedTeam.category
-    ).length;
+    );
 
-    if (countForSlotAndCategory < 2) {
-      setConfirmedProposals([...confirmedProposals, selectedTeam]);
-    } else {
-      console.log(`Limit reached for ${selectedTeam.slot_name}`);
+    if (proposalAlreadySelected) {
+      setValidationErrors([
+        `Esiste già una proposta confermata per slot ${selectedTeam.slot_name} e categoria ${selectedTeam.category}.`,
+      ]);
+      return;
     }
+
+    const nextProposals = [...confirmedProposals, selectedTeam];
+    const athleteAssignmentCounts = getAthleteAssignmentCounts(nextProposals);
+    const limitViolations = Array.from(athleteAssignmentCounts.entries())
+      .filter(([, assignment]) => assignment.count > MAX_TEAMS_PER_ATHLETE)
+      .map(
+        ([athleteId, assignment]) =>
+          `Corridore "${assignment.name}" (ID: ${athleteId}) eccede il limite di ${MAX_TEAMS_PER_ATHLETE} squadre: assegnato a ${assignment.count}.`,
+      );
+
+    if (limitViolations.length > 0) {
+      setValidationErrors(limitViolations);
+      return;
+    }
+
+    setValidationErrors([]);
+    setConfirmedProposals(nextProposals);
   };
 
   const validateRosters = (): string[] => {
     const errors: string[] = [];
-    const runnerCategoryAssignments = new Map<number, Map<string, number>>(); 
 
     confirmedProposals.forEach((proposal, index) => {
       const teamIdentifier = `Proposta ${index + 1} (Slot: ${proposal.slot_name}, Cat: ${proposal.category})`;
-      if (proposal.athletes.length < 4) {
-        errors.push(`${teamIdentifier}: Minimo 4 corridori richiesti, trovati ${proposal.athletes.length}.`);
+      if (proposal.athletes.length < MIN_ROSTER_SIZE) {
+        errors.push(`${teamIdentifier}: Minimo ${MIN_ROSTER_SIZE} corridori richiesti, trovati ${proposal.athletes.length}.`);
       }
-      if (proposal.athletes.length > 12) {
-        errors.push(`${teamIdentifier}: Massimo 12 corridori permessi, trovati ${proposal.athletes.length}.`);
+      if (proposal.athletes.length > MAX_ROSTER_SIZE) {
+        errors.push(`${teamIdentifier}: Massimo ${MAX_ROSTER_SIZE} corridori permessi, trovati ${proposal.athletes.length}.`);
       }
     });
 
-    confirmedProposals.forEach((proposal) => {
-      const teamCategory = proposal.category;
-      proposal.athletes.forEach(athlete => {
-        const runnerId = athlete.zwid;
-        const runnerPrimaryCategory = String(athlete.level); 
-
-        if (!runnerCategoryAssignments.has(runnerId)) {
-          runnerCategoryAssignments.set(runnerId, new Map<string, number>());
-        }
-        const assignmentsForRunner = runnerCategoryAssignments.get(runnerId)!;
-
-        if (teamCategory === runnerPrimaryCategory) {
-          const currentCount = assignmentsForRunner.get(runnerPrimaryCategory) || 0;
-          const newCount = currentCount + 1;
-          assignmentsForRunner.set(runnerPrimaryCategory, newCount);
-
-          if (newCount > 2) {
-            errors.push(`Corridore "${athlete.name}" (ID: ${runnerId}) eccede il limite di 2 team nella categoria ${runnerPrimaryCategory}.`);
-          }
-        }
-      });
+    const athleteAssignmentCounts = getAthleteAssignmentCounts(confirmedProposals);
+    athleteAssignmentCounts.forEach((assignment, athleteId) => {
+      if (assignment.count > MAX_TEAMS_PER_ATHLETE) {
+        errors.push(
+          `Corridore "${assignment.name}" (ID: ${athleteId}) eccede il limite di ${MAX_TEAMS_PER_ATHLETE} squadre: assegnato a ${assignment.count}.`,
+        );
+      }
     });
 
     return errors;
@@ -109,17 +132,22 @@ const RosterSuggestions: React.FC = () => {
     setValidationErrors(errors);
   };
 
+  const confirmedAssignmentCounts = useMemo(
+    () => getAthleteAssignmentCounts(confirmedProposals),
+    [confirmedProposals],
+  );
+
+  const filteredSuggestions = suggestions.filter(suggestion =>
+    (selectedCategory === '' || suggestion.category === selectedCategory) &&
+    (selectedSlot === '' || suggestion.slot_name === selectedSlot)
+  );
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-orange-500 font-black italic text-xl animate-pulse uppercase tracking-widest">
         Analisi preferenze in corso...
       </div>
     </div>
-  );
-
-  const filteredSuggestions = suggestions.filter(suggestion =>
-    (selectedCategory === '' || suggestion.category === selectedCategory) &&
-    (selectedSlot === '' || suggestion.slot_name === selectedSlot)
   );
 
   return (
@@ -135,6 +163,9 @@ const RosterSuggestions: React.FC = () => {
           </h1>
           <p className="text-zinc-400 font-bold uppercase text-xs mt-4 tracking-widest italic">
             Distribuzione atleti per Categoria e Slot Orario espressi nel sistema.
+          </p>
+          <p className="text-zinc-500 font-bold uppercase text-[10px] mt-3 tracking-[0.2em]">
+            Vincoli hard: minimo 4, massimo 12 atleti per squadra, massimo 2 squadre per atleta.
           </p>
         </div>
         <div className="bg-zinc-900/60 px-8 py-5 rounded-[2rem] border border-zinc-800 shadow-2xl">
@@ -207,6 +238,24 @@ const RosterSuggestions: React.FC = () => {
               </div>
 
               <div className="p-8">
+                <div className="mb-5 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                    Fav {team.favorite_count}
+                  </span>
+                  <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                    Ok {team.acceptable_count}
+                  </span>
+                  {team.count < MIN_ROSTER_SIZE && (
+                    <span className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-red-300">
+                      sotto minimo
+                    </span>
+                  )}
+                  {team.count > MAX_ROSTER_SIZE && (
+                    <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-yellow-300">
+                      sopra massimo
+                    </span>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar">
                   {[...team.athletes].sort((a, b) => a.name.localeCompare(b.name)).map(athlete => (
                     <div key={athlete.zwid} className="flex items-center justify-between p-4 bg-zinc-900/60 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md group/rider">
@@ -252,8 +301,34 @@ const RosterSuggestions: React.FC = () => {
                         <Clock size={12} className="text-zinc-500" />
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{proposal.slot_name}</span>
                       </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                          {proposal.athletes.length} atleti
+                        </span>
+                        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                          Fav {proposal.favorite_count}
+                        </span>
+                        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+                          Ok {proposal.acceptable_count}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                </div>
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {proposal.athletes.slice(0, 6).map((athlete) => {
+                    const assignmentCount = confirmedAssignmentCounts.get(athlete.zwid)?.count || 0;
+                    const overLimit = assignmentCount > MAX_TEAMS_PER_ATHLETE;
+
+                    return (
+                      <div key={`${proposal.slot_id}-${proposal.category}-${athlete.zwid}`} className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black/20 px-4 py-3">
+                        <span className="text-xs font-black uppercase tracking-tight text-zinc-200">{athlete.name}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${overLimit ? 'text-red-300' : 'text-zinc-500'}`}>
+                          {assignmentCount}/{MAX_TEAMS_PER_ATHLETE} squadre
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

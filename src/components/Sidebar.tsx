@@ -123,6 +123,7 @@ const Sidebar: React.FC = () => {
               {/* Winter Tour Section */}
               <div className="space-y-1">
                 <div className="px-3 py-1 text-[7px] font-black text-zinc-600 uppercase tracking-[0.2em]">Master Winter Tour</div>
+                <NavItem to="/winter-tour" icon={Star} label="Winter Hub" />
                 {isAdmin ? (
                   <NavItem to="/winter-tour-management" icon={Trophy} label="Winter Management" />
                 ) : (

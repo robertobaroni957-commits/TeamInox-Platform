@@ -33,6 +33,7 @@ const Dashboard: React.FC = () => {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const userObj = { username: payload.username, role: payload.role as Role, zwid: payload.zwid };
+        const canReadAdminUsers = userObj.role === 'admin' || userObj.role === 'moderator';
         setUser(userObj);
         
         Promise.all([
@@ -44,7 +45,7 @@ const Dashboard: React.FC = () => {
         }).catch(err => console.error("Error fetching dashboard data:", err));
 
         Promise.all([
-          api.listUsers().catch(() => []),
+          canReadAdminUsers ? api.listUsers().catch(() => []) : Promise.resolve([]),
           api.getTeams().catch(() => []),
           api.getSeries().catch(() => [])
         ]).then(([users, teams, series]) => {
