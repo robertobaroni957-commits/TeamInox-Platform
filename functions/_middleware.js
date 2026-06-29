@@ -19,6 +19,9 @@ const PUBLIC_ROUTES = new Set([
   '/api/get-races',
   '/api/rounds',
   '/api/roster',
+  '/api/winter-tour/stages',
+  '/api/winter-tour/rankings',
+  '/api/winter-tour/scoring-rules',
 ]);
 
 function jsonError(message, status = 500) {

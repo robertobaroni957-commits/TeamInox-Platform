@@ -7,5 +7,10 @@ binding = "ZRL_DB"
 database_name = "team_inox_prod_v3"
 database_id = "0a88961d-ab35-4a32-88aa-6e3579b2ea0c"
 
+[[d1_databases]]
+binding = "WINTER_TOUR_DB"
+database_name = "winter_tour_db"
+database_id = "7e127263-df26-444a-9b48-8df0c3453896"
+
 [ai]
 binding = "AI"

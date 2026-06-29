@@ -106,60 +106,36 @@ export const winterTourAgeCategoryMap: Record<WinterTourCategory, string> = {
   E: '60+',
 };
 
-const embeddedStages = Object.values(
-  import.meta.glob('../../modules/MWT-main1/stages.json', {
-    eager: true,
-    import: 'default',
-  }),
-) as WinterTourStage[][];
-
-const embeddedCumulativeResults = Object.values(
-  import.meta.glob('../../modules/MWT-main1/cumulative_results.json', {
-    eager: true,
-    import: 'default',
-  }),
-) as WinterTourCumulativeResults[];
-
-const embeddedStageSnapshots = Object.entries(
-  import.meta.glob('../../modules/MWT-main1/gara_*_results.json', {
-    eager: true,
-    import: 'default',
-  }) as Record<string, WinterTourStageResultsFile>,
-)
-  .map(([path, data]) => {
-    const match = path.match(/gara_(\d+)_results\.json$/i);
-
-    return match
-      ? {
-          stageId: Number(match[1]),
-          fileName: path.split('/').pop() ?? path,
-          data,
-        }
-      : null;
-  })
-  .filter((snapshot): snapshot is WinterTourRaceSnapshot => snapshot !== null)
-  .sort((first, second) => first.stageId - second.stageId);
-
-const stagesDataset = embeddedStages[0] ?? [];
-const cumulativeDataset = embeddedCumulativeResults[0] ?? {
-  races_processed: 0,
-  max_times_per_race: [],
-  results: {},
-};
+let cachedStages: WinterTourStage[] = [];
 
 export const winterTourRepository = {
-  loadStages: async (): Promise<WinterTourStage[]> => stagesDataset,
-  loadCumulativeResults: async (): Promise<WinterTourCumulativeResults> => cumulativeDataset,
-  loadStageResults: async (stageId: number): Promise<WinterTourStageResultsFile> => {
-    const snapshot = embeddedStageSnapshots.find((entry) => entry.stageId === stageId);
-
-    if (!snapshot) {
-      throw new Error(`Snapshot classifica non disponibile per la tappa ${stageId}.`);
-    }
-
-    return snapshot.data;
+  loadStages: async (): Promise<WinterTourStage[]> => {
+    const token = localStorage.getItem('inox_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : undefined;
+    const resp = await fetch('/api/winter-tour/stages', { headers });
+    if (!resp.ok) throw new Error("Errore nel caricamento del calendario.");
+    cachedStages = await resp.json();
+    return cachedStages;
   },
-  listAvailableRaceSnapshots: (): WinterTourRaceSnapshot[] => embeddedStageSnapshots,
+  loadCumulativeResults: async (): Promise<WinterTourCumulativeResults> => {
+    const resp = await fetch('/api/winter-tour/rankings?stage_id=cumulative');
+    if (!resp.ok) throw new Error("Errore nel caricamento della classifica generale.");
+    return await resp.json();
+  },
+  loadStageResults: async (stageId: number): Promise<WinterTourStageResultsFile> => {
+    const resp = await fetch(`/api/winter-tour/rankings?stage_id=${stageId}`);
+    if (!resp.ok) throw new Error(`Errore nel caricamento della classifica per la tappa ${stageId}.`);
+    return await resp.json();
+  },
+  listAvailableRaceSnapshots: (): WinterTourRaceSnapshot[] => {
+    return cachedStages
+      .filter((s) => s.status === 'published')
+      .map((s) => ({
+        stageId: s.id,
+        fileName: `gara_${s.id}_results.json`,
+        data: { race_results: [] }
+      }));
+  },
 };
 
 export const getLocalizedValue = (

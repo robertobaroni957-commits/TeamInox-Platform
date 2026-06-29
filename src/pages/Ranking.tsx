@@ -68,7 +68,7 @@ const Ranking: React.FC = () => {
     return translations[key]?.[language] || key;
   };
 
-  const raceSnapshots = useMemo(() => winterTourRepository.listAvailableRaceSnapshots(), []);
+  const raceSnapshots = useMemo(() => winterTourRepository.listAvailableRaceSnapshots(), [stages]);
 
   const raceOptions = useMemo(
     () => [

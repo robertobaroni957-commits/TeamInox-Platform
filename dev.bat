@@ -17,7 +17,7 @@ REM ❌ NON uccidere tutto Node globalmente
 REM taskkill /F /IM node.exe >nul 2>&1
 
 echo [1] Starting Wrangler...
-start cmd /k "npx wrangler pages dev dist --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID%"
+start cmd /k "npx wrangler pages dev dist --port %WRANGLER_PORT% --d1 ZRL_DB=%D1_DB_ID% --d1 WINTER_TOUR_DB=winter_tour_db"
 
 timeout /t 3 >nul
 
