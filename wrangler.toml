@@ -10,7 +10,7 @@ database_id = "0a88961d-ab35-4a32-88aa-6e3579b2ea0c"
 [[d1_databases]]
 binding = "WINTER_TOUR_DB"
 database_name = "winter_tour_db"
-database_id = "7e127263-df26-444a-9b48-8df0c3453896"
+database_id = "8a25e163-9e36-441b-abf4-6462748591c8"
 
 [ai]
 binding = "AI"
