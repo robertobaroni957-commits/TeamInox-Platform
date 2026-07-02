@@ -291,6 +291,12 @@ const WinterTourManagement: React.FC = () => {
   const [importing, setImporting] = useState(false);
   const [rawDataLoaded, setRawDataLoaded] = useState<any>(null);
 
+  // Import: auto-populate zwift_event_id from selected stage
+  const selectedStageData = stages.find(s => s.id.toString() === importStageId);
+  const autoEventId = selectedStageData?.zwift_event_id?.toString() || '';
+
+  // Show optional credentials section
+  const [showCredentials, setShowCredentials] = useState(false);
   const resetImportFlow = () => {
     setImportStep(1);
     setImportSegments([]);
@@ -300,32 +306,28 @@ const WinterTourManagement: React.FC = () => {
     setRawDataLoaded(null);
   };
 
-  // Step 1: Download & Parse Segments
+  // Step 1: Load data from ZwiftPower using the stage's zwift_event_id
   const handleLoadImportData = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    setStatusImportMessage("Caricamento dati in corso...");
+    setStatusImportMessage('Connessione a ZwiftPower in corso...');
     setImporting(true);
 
     try {
       const token = localStorage.getItem('inox_token');
-      let payload: any = {
+      const payload: any = {
         stage_id: parseInt(importStageId),
-        download_only: true
+        download_only: true,
+        // zwift_event_id comes from the stage record automatically in the backend
+        // but we can pass it explicitly as override
+        zwift_event_id: parseInt(autoEventId)
       };
 
-      if (importMethod === 'scrape') {
+      // If credentials provided, attach them (authenticated scraper)
+      if (showCredentials && zpUsername && zpPassword) {
         payload.zwift_username = zpUsername;
         payload.zwift_password = zpPassword;
-        payload.zwift_event_id = parseInt(zpEventId);
-      } else {
-        if (!manualFinJson.trim()) throw new Error("Incolla il JSON dei risultati di arrivo.");
-        payload.manual_fin_data = JSON.parse(manualFinJson);
-        payload.zwift_event_id = parseInt(zpEventId) || undefined;
-        if (manualPrimesJson.trim()) {
-          payload.manual_primes_data = JSON.parse(manualPrimesJson);
-        }
       }
 
       const resp = await fetch('/api/admin/winter-tour/import', {
@@ -338,29 +340,23 @@ const WinterTourManagement: React.FC = () => {
       });
 
       const res = await resp.json();
-      if (!resp.ok) throw new Error(res.error || "Impossibile caricare i dati.");
+      if (!resp.ok) throw new Error(res.error || 'Impossibile caricare i dati.');
 
       setRawDataLoaded(res.fetchedData);
       setImportSegments(res.segments || []);
       
-      // Initialize mappings
+      // Smart auto-map segments based on name keywords
       const initialMappings: typeof segmentMappings = {};
-      res.segments.forEach((seg: string) => {
+      (res.segments as string[]).forEach((seg: string) => {
         const lower = seg.toLowerCase();
-        const isKom = lower.includes('kom') || lower.includes('climb') || lower.includes('salita') || lower.includes('brae') || lower.includes('kicker');
-        const isSprint = lower.includes('sprint') || lower.includes('volt') || lower.includes('traguardo');
-
-        initialMappings[seg] = {
-          SPRINT: isSprint,
-          KOM: isKom,
-          FAL: true,
-          FTS: true
-        };
+        const isKom = lower.includes('kom') || lower.includes('climb') || lower.includes('salita') || lower.includes('brae') || lower.includes('kicker') || lower.includes('hill');
+        const isSprint = lower.includes('sprint') || lower.includes('volt') || lower.includes('traguardo') || lower.includes('champion');
+        initialMappings[seg] = { SPRINT: isSprint, KOM: isKom, FAL: true, FTS: true };
       });
 
       setSegmentMappings(initialMappings);
       setImportStep(2);
-      setStatusImportMessage("Segmenti rilevati! Associa le classifiche.");
+      setStatusImportMessage(`✅ Dati caricati. ${res.segments?.length || 0} segmenti rilevati.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore nel caricamento dei dati di gara.');
       setStatusImportMessage('');
@@ -875,128 +871,102 @@ const WinterTourManagement: React.FC = () => {
           <h2 className="text-2xl font-black italic uppercase mb-2">Ingestor Risultati ZwiftPower</h2>
           <p className="text-sm text-zinc-500 mb-6">Carica, associa i segmenti intermedi, calcola i punteggi in base al regolamento e pubblica le classifiche.</p>
 
-          {/* STEP 1: FORM CARICAMENTO */}
+          {/* STEP 1: SELEZIONE TAPPA */}
           {importStep === 1 && (
             <form onSubmit={handleLoadImportData} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Seleziona Tappa di Riferimento</label>
-                  <select
-                    value={importStageId}
-                    onChange={e => setImportStageId(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                  >
-                    <option value="">-- Scegli tappa --</option>
-                    {stages.map(s => (
-                      <option key={s.id} value={s.id}>
-                        Stage {s.stage_number} · {s.route.it} (ID Zwift: {s.zwift_event_id})
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Metodo di Importazione</label>
-                  <select
-                    value={importMethod}
-                    onChange={e => setImportMethod(e.target.value as any)}
-                    className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                  >
-                    <option value="manual">Incolla JSON manualmente (Scelta consigliata/Bypass CF)</option>
-                    <option value="scrape">Scarica direttamente da ZwiftPower (Richiede credenziali)</option>
-                  </select>
-                </div>
+              {/* Selezione tappa */}
+              <div className="space-y-2">
+                <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Seleziona Tappa</label>
+                <select
+                  value={importStageId}
+                  onChange={e => setImportStageId(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
+                >
+                  <option value="">-- Scegli tappa --</option>
+                  {stages.map(s => (
+                    <option key={s.id} value={s.id}>
+                      Stage {s.stage_number} · {s.route.it || s.route.en} · ZP ID: {s.zwift_event_id}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {importMethod === 'scrape' ? (
-                <div className="grid gap-6 border-t border-zinc-850 pt-6 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">ZwiftPower Username</label>
-                    <input
-                      type="text"
-                      value={zpUsername}
-                      onChange={e => setZpUsername(e.target.value)}
-                      required
-                      placeholder="Username / Email"
-                      className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                    />
+              {/* Info tappa selezionata */}
+              {selectedStageData && (
+                <div className="rounded-2xl border border-zinc-800 bg-black/20 px-5 py-4 flex flex-wrap items-center gap-6">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Evento ZwiftPower</div>
+                    <div className="mt-1 font-mono text-lg font-bold text-white">{autoEventId}</div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">ZwiftPower Password</label>
-                    <input
-                      type="password"
-                      value={zpPassword}
-                      onChange={e => setZpPassword(e.target.value)}
-                      required
-                      placeholder="Password"
-                      className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                    />
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Stato</div>
+                    <span className={`mt-1 inline-block rounded-full px-3 py-0.5 text-[10px] font-black uppercase ${
+                      selectedStageData.status === 'published'
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                    }`}>
+                      {selectedStageData.status}
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Zwift Event ID (Bypass)</label>
-                    <input
-                      type="number"
-                      value={zpEventId}
-                      onChange={e => setZpEventId(e.target.value)}
-                      placeholder="Usa ID tappa se vuoto"
-                      className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6 border-t border-zinc-850 pt-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Zwift Event ID</label>
-                    <input
-                      type="number"
-                      value={zpEventId}
-                      onChange={e => setZpEventId(e.target.value)}
-                      placeholder="ID Gara su ZwiftPower (es. 5247620)"
-                      className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
-                    />
-                  </div>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">JSON Risultati Arrivo (fin)</label>
-                        <a href={`https://zwiftpower.com/cache3/results/${zpEventId || 'EVENT_ID'}_view.json`} target="_blank" rel="noreferrer" className="text-[10px] text-inox-cyan hover:underline">Apri link ZwiftPower</a>
-                      </div>
-                      <textarea
-                        value={manualFinJson}
-                        onChange={e => setManualFinJson(e.target.value)}
-                        required
-                        placeholder="Incolla il contenuto di cache3/results/[ID]_view.json"
-                        rows={10}
-                        className="w-full rounded-xl border border-zinc-800 bg-black font-mono px-4 py-2.5 text-xs text-white focus:border-[#fc6719] outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">JSON Traguardi Volanti (primes) - Opzionale</label>
-                        <span className="text-[10px] text-zinc-500">Mappa i FAL/FTS se incollati</span>
-                      </div>
-                      <textarea
-                        value={manualPrimesJson}
-                        onChange={e => setManualPrimesJson(e.target.value)}
-                        placeholder='Opzionale. Se hai primes volanti, incolla un oggetto JSON contenente le chiavi "fal_A", "fts_A", "fal_B"...'
-                        rows={10}
-                        className="w-full rounded-xl border border-zinc-800 bg-black font-mono px-4 py-2.5 text-xs text-white focus:border-[#fc6719] outline-none"
-                      />
-                    </div>
+                  <div className="ml-auto flex gap-3">
+                    <a
+                      href={`https://zwiftpower.com/events.php?zid=${autoEventId}`}
+                      target="_blank" rel="noreferrer"
+                      className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-zinc-300 hover:text-white transition"
+                    >
+                      Apri su ZwiftPower ↗
+                    </a>
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-end pt-4 border-t border-zinc-800">
+              {/* Credenziali opzionali */}
+              <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/30 p-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCredentials(v => !v)}
+                  className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-400 hover:text-white transition"
+                >
+                  <span className={`transition-transform ${showCredentials ? 'rotate-90' : ''}`}>▶</span>
+                  Credenziali ZwiftPower (opzionale — solo se il fetch anonimo fallisce)
+                </button>
+
+                {showCredentials && (
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Username ZwiftPower</label>
+                      <input
+                        type="text"
+                        value={zpUsername}
+                        onChange={e => setZpUsername(e.target.value)}
+                        placeholder="Username / Email"
+                        className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Password ZwiftPower</label>
+                      <input
+                        type="password"
+                        value={zpPassword}
+                        onChange={e => setZpPassword(e.target.value)}
+                        placeholder="Password"
+                        className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white focus:border-[#fc6719] outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-2">
                 <button
                   type="submit"
-                  disabled={importing}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#fc6719] px-6 py-2.5 text-xs font-black uppercase tracking-wider text-black transition hover:scale-[1.02] disabled:opacity-50"
+                  disabled={importing || !importStageId}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#fc6719] px-8 py-3 text-sm font-black uppercase tracking-wider text-black transition hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Play size={16} />
-                  {importing ? "Caricamento in corso..." : "Carica Dati e Rileva Segmenti"}
+                  <Download size={16} />
+                  {importing ? 'Caricamento da ZwiftPower...' : 'Carica Risultati da ZwiftPower'}
                 </button>
               </div>
             </form>

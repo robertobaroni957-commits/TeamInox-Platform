@@ -58,13 +58,20 @@ async function loginToZwiftPower(username, password) {
   return sessionHeaders;
 }
 
-async function safeRequest(url, sessionHeaders) {
-  const resp = await fetch(url, { headers: sessionHeaders });
-  if (!resp.ok) throw new Error(`Richiesta fallita con status ${resp.status}`);
+async function safeRequest(url, sessionHeaders = null) {
+  const options = sessionHeaders ? { headers: sessionHeaders } : {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json, text/plain, */*',
+      'Referer': 'https://zwiftpower.com/'
+    }
+  };
+  const resp = await fetch(url, options);
+  if (!resp.ok) throw new Error(`Richiesta fallita con status ${resp.status} per ${url}`);
   return resp;
 }
 
-async function downloadEventJsons(eventId, sessionHeaders) {
+async function downloadEventJsons(eventId, sessionHeaders = null) {
   const urls = {
     fin: `https://zwiftpower.com/cache3/results/${eventId}_view.json`
   };
@@ -304,19 +311,23 @@ export async function onRequestPost(context) {
         if (!fetchedData[`fal_${cat}`]) fetchedData[`fal_${cat}`] = { data: [] };
         if (!fetchedData[`fts_${cat}`]) fetchedData[`fts_${cat}`] = { data: [] };
       }
+    } else if (zwift_username && zwift_password) {
+      // Run authenticated scraper
+      const sessionHeaders = await loginToZwiftPower(zwift_username, zwift_password);
+      fetchedData = await downloadEventJsons(eventId, sessionHeaders);
     } else {
-      // Run automated scraper
-      if (!zwift_username || !zwift_password) {
+      // Anonymous fetch — try ZwiftPower public endpoints directly using zwift_event_id
+      console.log(`🌐 Fetch anonimo da ZwiftPower per event_id=${eventId}...`);
+      fetchedData = await downloadEventJsons(eventId, null);
+
+      if (!fetchedData || !fetchedData.fin) {
         return new Response(JSON.stringify({ 
-          error: "ZwiftPower credentials (username/password) or manual JSON data are required" 
+          error: `Impossibile recuperare i dati da ZwiftPower per l'evento ${eventId}. Verifica che i risultati siano pubblicati su ZwiftPower oppure inserisci le credenziali ZP.`
         }), {
-          status: 400,
+          status: 422,
           headers: { "Content-Type": "application/json" }
         });
       }
-
-      const sessionHeaders = await loginToZwiftPower(zwift_username, zwift_password);
-      fetchedData = await downloadEventJsons(eventId, sessionHeaders);
     }
 
     if (!fetchedData || !fetchedData.fin) {
@@ -400,11 +411,19 @@ export async function onRequestPost(context) {
         const times = catResults.map(r => r.time).filter(t => t > 0);
         const maxTime = times.length > 0 ? Math.max(...times) : 0;
 
+        // Sort finishers by time ascending to get true tempo positions
+        const finishers = catResults
+          .filter(r => r.time > 0)
+          .sort((a, b) => a.time - b.time || b.total - a.total);
+        
+        const tempoPosMap = new Map();
+        finishers.forEach((r, idx) => {
+          tempoPosMap.set(r.zwid, idx + 1);
+        });
+
         catResults.forEach((r, index) => {
-          // Calculate tempo position (riders with time > 0)
-          // For simplicity we use points sorting index as starting position, 
-          // but we can also sort by time for tempo_pos. Let's do that
           const pointsPosition = index + 1;
+          const tempoPosition = r.time > 0 ? tempoPosMap.get(r.zwid) : null;
           
           batchOps.push(wtDb.prepare(`
             INSERT INTO wt_results (
@@ -415,7 +434,7 @@ export async function onRequestPost(context) {
           `).bind(
             parseInt(stage_id), cat, r.name, r.tname || null, r.zwid, r.flag || null,
             pointsPosition, r.fin, r.fal, r.fts, r.total,
-            r.time, r.time > 0 ? pointsPosition : null, r.pts_sprint, r.pts_kom
+            r.time, tempoPosition, r.pts_sprint, r.pts_kom
           ));
         });
       });
