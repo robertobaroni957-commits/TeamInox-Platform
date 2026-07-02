@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, FileJson2, Layers3, Link2, ShieldAlert, Timer, Trophy, 
   CalendarDays, Plus, Trash2, Edit2, Save, Download, Upload, Check, 
-  AlertCircle, Settings, Play, Database
+  AlertCircle, Settings, Play, Database, Wrench, RotateCcw, Zap, ShieldOff
 } from 'lucide-react';
 import { hasPermission } from '../services/permissions';
 import { getWinterTourNextStage, winterTourRepository, type WinterTourStage } from '../services/winterTour';
@@ -34,7 +34,7 @@ const WinterTourManagement: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
 
   // Tabs: 'stages' | 'scoring' | 'import'
-  const [activeTab, setActiveTab] = useState<'stages' | 'scoring' | 'import'>('stages');
+  const [activeTab, setActiveTab] = useState<'stages' | 'scoring' | 'import' | 'maintenance'>('stages');
 
   // Authorization check
   useEffect(() => {
@@ -455,6 +455,107 @@ const WinterTourManagement: React.FC = () => {
     }));
   };
 
+  // ==========================================
+  // TAB 4: MANUTENZIONE DB
+  // ==========================================
+  interface DbStatus {
+    counts: { stages: number; results: number; scoring_rules: number; settings: number };
+    stages: Array<{ id: number; stage_number: number; route_it: string; date: string; status: string; result_count: number }>;
+  }
+
+  const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
+  const [dbStatusLoading, setDbStatusLoading] = useState(false);
+  const [initLog, setInitLog] = useState<string[]>([]);
+  const [initLoading, setInitLoading] = useState(false);
+  const [resetStageId, setResetStageId] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetAllConfirm, setResetAllConfirm] = useState('');
+  const [resetAllLoading, setResetAllLoading] = useState(false);
+
+  const getToken = () => localStorage.getItem('inox_token');
+
+  const fetchDbStatus = async () => {
+    setDbStatusLoading(true);
+    try {
+      const resp = await fetch('/api/admin/winter-tour/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ action: 'status' }),
+      });
+      const res = await resp.json();
+      if (!resp.ok) throw new Error(res.error);
+      setDbStatus(res);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore nel recupero stato DB.');
+    } finally {
+      setDbStatusLoading(false);
+    }
+  };
+
+  const handleInitAction = async (action: string, label: string) => {
+    setInitLoading(true);
+    setInitLog(prev => [...prev, `▶ ${label}...`]);
+    try {
+      const resp = await fetch('/api/admin/winter-tour/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ action }),
+      });
+      const res = await resp.json();
+      if (!resp.ok) throw new Error(res.error);
+      const msg = res.message || (res.steps ? Object.entries(res.steps).map(([k, v]: any) => `  ${k}: ${v.message}`).join('\n') : JSON.stringify(res));
+      setInitLog(prev => [...prev, `✅ ${msg}`]);
+      await fetchDbStatus();
+    } catch (err) {
+      setInitLog(prev => [...prev, `❌ Errore: ${err instanceof Error ? err.message : String(err)}`]);
+    } finally {
+      setInitLoading(false);
+    }
+  };
+
+  const handleResetStage = async () => {
+    if (!resetStageId) return;
+    if (!window.confirm(`Sei sicuro di voler resettare i risultati della tappa ${resetStageId}? L'azione è irreversibile.`)) return;
+    setResetLoading(true);
+    try {
+      const resp = await fetch('/api/admin/winter-tour/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ action: 'reset_stage_results', stage_id: parseInt(resetStageId) }),
+      });
+      const res = await resp.json();
+      if (!resp.ok) throw new Error(res.error);
+      setSuccess(res.message);
+      setResetStageId('');
+      await fetchDbStatus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore nel reset tappa.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResetAll = async () => {
+    if (resetAllConfirm !== 'CONFERMA') return;
+    setResetAllLoading(true);
+    try {
+      const resp = await fetch('/api/admin/winter-tour/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ action: 'reset_all_results', confirm_phrase: 'CONFERMA' }),
+      });
+      const res = await resp.json();
+      if (!resp.ok) throw new Error(res.error);
+      setSuccess(res.message);
+      setResetAllConfirm('');
+      await fetchDbStatus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore nel reset globale.');
+    } finally {
+      setResetAllLoading(false);
+    }
+  };
+
   if (!canManage) {
     return (
       <div className="rounded-[2.5rem] border border-red-500/30 bg-red-500/10 p-8 text-red-200">
@@ -519,15 +620,21 @@ const WinterTourManagement: React.FC = () => {
       )}
 
       {/* NAVIGATION TABS */}
-      <div className="flex border-b border-zinc-800">
+      <div className="flex flex-wrap border-b border-zinc-800">
         {[
           { id: 'stages', label: 'Calendario & Tappe', icon: Layers3 },
           { id: 'scoring', label: 'Sistema Punteggio', icon: Settings },
-          { id: 'import', label: 'Importa Risultati', icon: Database }
+          { id: 'import', label: 'Importa Risultati', icon: Database },
+          { id: 'maintenance', label: 'Manutenzione DB', icon: Wrench },
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id as any); resetImportFlow(); setIsEditing(false); }}
+            onClick={() => {
+              setActiveTab(tab.id as any);
+              resetImportFlow();
+              setIsEditing(false);
+              if (tab.id === 'maintenance') fetchDbStatus();
+            }}
             className={`flex items-center gap-2 border-b-2 px-6 py-4 text-xs font-black uppercase tracking-wider transition ${
               activeTab === tab.id
                 ? 'border-[#fc6719] text-[#fc6719]'
@@ -1159,6 +1266,221 @@ const WinterTourManagement: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* CONTENT: TAB 4 (MANUTENZIONE DB) */}
+      {activeTab === 'maintenance' && (
+        <div className="space-y-6">
+
+          {/* STATUS CARD */}
+          <div className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-black italic uppercase">Stato Database</h2>
+                <p className="mt-1 text-sm text-zinc-500">Diagnostica in tempo reale del database WINTER_TOUR_DB.</p>
+              </div>
+              <button
+                onClick={fetchDbStatus}
+                disabled={dbStatusLoading}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-100 transition hover:border-inox-cyan disabled:opacity-50"
+              >
+                <RotateCcw size={14} className={dbStatusLoading ? 'animate-spin' : ''} />
+                Aggiorna Stato
+              </button>
+            </div>
+
+            {dbStatus ? (
+              <div className="space-y-6">
+                {/* Counts */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {[
+                    { label: 'Tappe', value: dbStatus.counts.stages, color: 'text-[#fc6719]' },
+                    { label: 'Risultati', value: dbStatus.counts.results, color: 'text-[#00f0ff]' },
+                    { label: 'Regole Punteggio', value: dbStatus.counts.scoring_rules, color: 'text-emerald-400' },
+                    { label: 'Settings', value: dbStatus.counts.settings, color: 'text-zinc-300' },
+                  ].map(item => (
+                    <div key={item.label} className="rounded-2xl border border-zinc-800 bg-black/20 p-5 text-center">
+                      <div className={`text-3xl font-black italic ${item.color}`}>{item.value}</div>
+                      <div className="mt-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Stage breakdown table */}
+                {dbStatus.stages.length > 0 && (
+                  <div className="overflow-x-auto rounded-2xl border border-zinc-800">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-zinc-800 text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                          <th className="px-4 py-3 text-left">#</th>
+                          <th className="px-4 py-3 text-left">Percorso</th>
+                          <th className="px-4 py-3 text-left">Data</th>
+                          <th className="px-4 py-3 text-center">Status</th>
+                          <th className="px-4 py-3 text-right">Risultati</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dbStatus.stages.map(s => (
+                          <tr key={s.id} className="border-b border-zinc-800/50 transition hover:bg-zinc-900/40">
+                            <td className="px-4 py-2.5 font-black text-zinc-400">{s.stage_number}</td>
+                            <td className="px-4 py-2.5 font-bold text-white">{s.route_it}</td>
+                            <td className="px-4 py-2.5 text-zinc-400">{new Date(s.date).toLocaleDateString('it-IT')}</td>
+                            <td className="px-4 py-2.5 text-center">
+                              <span className={`rounded-full px-3 py-0.5 text-[10px] font-black uppercase ${
+                                s.status === 'published'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                              }`}>
+                                {s.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-black text-zinc-200">{s.result_count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-zinc-800 py-10 text-center text-sm text-zinc-500">
+                {dbStatusLoading ? 'Caricamento dati...' : 'Clicca su "Aggiorna Stato" per caricare la diagnostica.'}
+              </div>
+            )}
+          </div>
+
+          {/* INIT SECTION */}
+          <div className="rounded-[2.5rem] border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black italic uppercase">Inizializzazione</h2>
+              <p className="mt-1 text-sm text-zinc-500">Crea le tabelle e popola i dati di base. Tutte le operazioni sono idempotenti (sicure da rieseguire).</p>
+            </div>
+
+            <div className="mb-6 flex flex-wrap gap-3">
+              <button
+                onClick={() => handleInitAction('full_init', 'Full Init (Schema + Punteggi + Tappe)')}
+                disabled={initLoading}
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-emerald-500 disabled:opacity-50"
+              >
+                <Zap size={15} />
+                Full Init (tutto)
+              </button>
+              <button
+                onClick={() => handleInitAction('init_schema', 'Crea Schema Tabelle')}
+                disabled={initLoading}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-200 transition hover:border-emerald-500/50 disabled:opacity-50"
+              >
+                <Database size={14} />
+                Init Schema
+              </button>
+              <button
+                onClick={() => handleInitAction('seed_scoring_rules', 'Seed Regole di Punteggio')}
+                disabled={initLoading}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-200 transition hover:border-emerald-500/50 disabled:opacity-50"
+              >
+                <Settings size={14} />
+                Seed Scoring Rules
+              </button>
+              <button
+                onClick={() => handleInitAction('seed_stages', 'Seed 18 Tappe')}
+                disabled={initLoading}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-200 transition hover:border-emerald-500/50 disabled:opacity-50"
+              >
+                <CalendarDays size={14} />
+                Seed Stages
+              </button>
+            </div>
+
+            {/* Log Output */}
+            {initLog.length > 0 && (
+              <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Log operazioni</span>
+                  <button
+                    onClick={() => setInitLog([])}
+                    className="text-[10px] text-zinc-600 transition hover:text-zinc-300"
+                  >
+                    Pulisci
+                  </button>
+                </div>
+                <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-emerald-300">
+                  {initLog.join('\n')}
+                  {initLoading && '\n⏳ In corso...'}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* RESET RESULTS SECTION */}
+          <div className="rounded-[2.5rem] border border-orange-500/20 bg-zinc-950 p-6 md:p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black italic uppercase text-orange-400">Reset Risultati Tappa</h2>
+              <p className="mt-1 text-sm text-zinc-500">Cancella i risultati di una tappa specifica e riporta il suo stato a "scheduled".</p>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
+              <select
+                value={resetStageId}
+                onChange={e => setResetStageId(e.target.value)}
+                className="rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500"
+              >
+                <option value="">— Seleziona tappa —</option>
+                {(dbStatus?.stages ?? stages.map(s => ({ id: s.id, stage_number: s.stage_number ?? s.id, route_it: s.route.it, status: s.status ?? 'scheduled', result_count: 0 }))).map(s => (
+                  <option key={s.id} value={s.id}>
+                    Tappa {s.stage_number} — {s.route_it} [{s.status}, {s.result_count} risultati]
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleResetStage}
+                disabled={!resetStageId || resetLoading}
+                className="inline-flex items-center gap-2 rounded-2xl border border-orange-500/40 bg-orange-500/10 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] text-orange-400 transition hover:bg-orange-500/20 disabled:opacity-40"
+              >
+                <RotateCcw size={14} className={resetLoading ? 'animate-spin' : ''} />
+                {resetLoading ? 'Reset in corso...' : 'Reset Risultati Tappa'}
+              </button>
+            </div>
+          </div>
+
+          {/* RESET ALL — admin only */}
+          {role === 'admin' && (
+            <div className="rounded-[2.5rem] border border-red-500/30 bg-zinc-950 p-6 md:p-8">
+              <div className="mb-6 flex items-start gap-4">
+                <div className="rounded-2xl bg-red-500/10 p-3 text-red-400">
+                  <ShieldOff size={20} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black italic uppercase text-red-400">Reset TUTTI i Risultati</h2>
+                  <p className="mt-1 text-sm text-zinc-500">Cancella tutti i risultati da <code className="rounded bg-zinc-800 px-1 text-xs">wt_results</code> e riporta ogni tappa a "scheduled". <strong className="text-red-400">Azione irreversibile.</strong> Solo per ruolo admin.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                    Digita <span className="font-mono text-red-400">CONFERMA</span> per sbloccare
+                  </label>
+                  <input
+                    type="text"
+                    value={resetAllConfirm}
+                    onChange={e => setResetAllConfirm(e.target.value)}
+                    placeholder="CONFERMA"
+                    className="rounded-xl border border-red-500/30 bg-black px-4 py-2.5 font-mono text-sm text-white outline-none focus:border-red-500"
+                  />
+                </div>
+                <button
+                  onClick={handleResetAll}
+                  disabled={resetAllConfirm !== 'CONFERMA' || resetAllLoading}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-red-600/80 px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-red-600 disabled:opacity-30"
+                >
+                  <Trash2 size={14} />
+                  {resetAllLoading ? 'Reset in corso...' : 'Reset Completo DB'}
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       )}
     </div>
